@@ -1,0 +1,30 @@
+
+OBJS  = $(patsubst %.cpp,%.o,$(filter %.cpp,$(SRC)) )
+DEPS = $(patsubst %.cpp,%.d,$(filter %.cpp,$(SRC)) )
+	
+do_build: subdirs $(DEPS) $(OBJS)
+	@-cp -f *.o $(BUILD_DIR)
+	
+.PHONY: subdirs $(SUBDIRS)
+
+subdirs: $(SUBDIRS)
+
+$(SUBDIRS): FOLDER_NAME = $(shell pwd)
+$(SUBDIRS):
+	@echo '-----   building' $(FOLDER_NAME)/$@
+	@make -C $@ --no-print-directory -s all
+	@echo '-----   end     ' $(FOLDER_NAME)/$@
+
+
+clean-subdirs:
+	@@for p in $(SUBDIRS); do \
+		echo '-----   cleaning ' $$p; \
+		make -C $$p --no-print-directory clean; \
+	done
+
+.cpp.o:
+	@echo "[$@]"
+	@$(GPP) $(GPPFLAGS) -D${TARGET_DEVICE} -c -o $@ $<
+	
+%.d: %.cpp
+	@$(GPP) -M $(GPPFLAGS) -D${TARGET_DEVICE} $< > $@
