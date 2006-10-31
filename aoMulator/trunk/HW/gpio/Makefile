@@ -10,6 +10,10 @@ ifeq ("$(TARGET_DEVICE)","AV3XX")
 SRC += mas.cpp i2c_TSC.cpp i2c_RTC.cpp gio_vid_uart1RX.cpp gio_spdif_uart1TX.cpp gio_lcd.cpp
 endif
 
+ifeq ("$(TARGET_DEVICE)","JBMM")
+SRC += i2c_RTC.cpp
+endif
+
 ifeq ("$(TARGET_DEVICE)","AV4XX")
 SRC += i2c_RTC.cpp gio_connection.cpp
 endif

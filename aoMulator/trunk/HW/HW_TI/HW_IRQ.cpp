@@ -15,8 +15,9 @@
 
 #include <HW/HW_IRQ.h>
 
-extern char ** str_irq_fiq;
 
+
+extern char ** str_irq_fiq;
 
 #include "irq_cmd_line_fct.h"
 
@@ -75,13 +76,19 @@ void HW_IRQ::calcEntry(void)
 
 void HW_IRQ::do_INT(int num)
 {
+#ifndef DSC21
     int type=((0x1<<REAL_NUM(num))&fsel[REG_NUM(num)])?FIQ:IRQ;
-
+#else
+    int type=(num==WDT_FIQ)?FIQ:IRQ;
+    num=(num==WDT_FIQ)?0:num;
+#endif
     status[(type==FIQ?0:IRQ_OFFSET)+REG_NUM(num)] &= ((~(0x1<<REAL_NUM(num))) & 0xFFFF);
+#ifndef DSC21
     calcEntry();
+#endif
     DEBUG_HW(IRQ_HW_DEBUG,"%s Doing %s num = %x (%d)\n",
         name,type==FIQ?"FIQ":"IRQ",num,
-        (type==FIQ?0:NB_OF_REG/2)+REG_NUM(num)  );
+        (type==FIQ?0:NB_FIQ)+REG_NUM(num)  );
     if(type==FIQ)
     {
         have_int_FIQ = true;
@@ -95,3 +102,4 @@ void HW_IRQ::do_INT(int num)
             cur_irq_fct = cpu_do_irq;
     }
 }
+

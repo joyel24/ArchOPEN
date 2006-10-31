@@ -24,7 +24,7 @@ clean-subdirs:
 
 .cpp.o:
 	@echo "[$@]"
-	@$(GPP) $(GPPFLAGS) -D${TARGET_DEVICE} -c -o $@ $<
+	@$(GPP) $(GPPFLAGS) -D${TARGET_DEVICE} -D${TARGET_CHIP} -c -o $@ $<
 	
 %.d: %.cpp
-	@$(GPP) -M $(GPPFLAGS) -D${TARGET_DEVICE} $< > $@
+	@$(GPP) -M $(GPPFLAGS) -D${TARGET_DEVICE} -D${TARGET_CHIP} $< > $@

@@ -63,11 +63,16 @@ HW_TI::HW_TI(mem_space * mem,HW_cpld * hw_cpld):HW_node(TI_REG_START,TI_REG_END,
 
     hw_dma = new HW_dma(mem);
     add_item(hw_dma);
-
+    
+#ifdef CCD_START
     add_item(new HW_null(CCD_START,CCD_END,"CCD"));
+#endif    
+#ifdef PREVIEW_START
     add_item(new HW_null(PREVIEW_START,PREVIEW_END,"Preview"));
+#endif    
+#ifdef PAL_NTSC_ENC_START
     add_item(new HW_null(PAL_NTSC_ENC_START,PAL_NTSC_ENC_END,"NTSC_PAL Encoder"));
-
+#endif
     chip_init();
     arch_init();
 
