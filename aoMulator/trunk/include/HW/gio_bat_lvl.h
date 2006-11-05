@@ -1,5 +1,5 @@
-/*
-*   main.cpp
+/* 
+*   gio_bat_lvl.h
 *
 *   AV3XX emulator
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -10,17 +10,23 @@
 * KIND, either express of implied.
 */
 
-#include <HW/i2c_gpio.h>
-#include <HW/mas.h>
-#include <HW/HW_gpio.h>
+#ifndef __GIO_BAT_LVL_H
+#define __GIO_BAT_LVL_H
 
-#include <HW/i2c_RTC.h>
-#include <HW/mas.h>
+#include "emu.h"
+#include "HW_gpio.h"
 
-extern i2c_master * i2c;
 
-void arch_init_main(void)
-{
-    i2c->register_i2c((i2c_device *)new i2c_RTC());
-    i2c->register_i2c((i2c_device *)new i2c_MAS());
-}
+
+class GIO_BAT_LVL:public gpio_port {
+    public:
+        GIO_BAT_LVL(void);
+        
+        void set_gpio(void);
+        void clear_gpio(void);
+};
+
+
+
+#endif 
+

@@ -1,5 +1,5 @@
-/*
-*   main.cpp
+/* 
+*   gio_bat_lvl.cpp
 *
 *   AV3XX emulator
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -9,18 +9,25 @@
 * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 * KIND, either express of implied.
 */
+#include <stdlib.h>
+#include <stdio.h>
 
-#include <HW/i2c_gpio.h>
-#include <HW/mas.h>
-#include <HW/HW_gpio.h>
+#include <HW/gio_bat_lvl.h>
 
-#include <HW/i2c_RTC.h>
-#include <HW/mas.h>
+#warning should add a cmdline to simulate bat low
 
-extern i2c_master * i2c;
-
-void arch_init_main(void)
+GIO_BAT_LVL::GIO_BAT_LVL(void):gpio_port(GPIO_BAT_LVL,"JBM BAT lvl")
 {
-    i2c->register_i2c((i2c_device *)new i2c_RTC());
-    i2c->register_i2c((i2c_device *)new i2c_MAS());
+    state = 1;  /* default => bat ok */
 }
+
+void GIO_BAT_LVL::set_gpio(void)
+{
+    
+}
+
+void GIO_BAT_LVL::clear_gpio(void)
+{
+    
+}
+

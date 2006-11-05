@@ -22,7 +22,11 @@ HW_dsp::HW_dsp(void):HW_access(DSP_START,DSP_END,"dsp_arm")
 uint32_t HW_dsp::read(uint32_t addr,int size)
 {
     DEBUG_HW(DSP_HW_DEBUG,"%s read @0x%08x, size %x\n",name,addr,size);
+#ifndef DSC21   
     return 0;
+#else
+    return 1;
+#endif    
 }
 
 void HW_dsp::write(uint32_t addr,uint32_t val,int size)

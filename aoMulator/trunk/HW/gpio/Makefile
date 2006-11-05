@@ -11,7 +11,7 @@ SRC += mas.cpp i2c_TSC.cpp i2c_RTC.cpp gio_vid_uart1RX.cpp gio_spdif_uart1TX.cpp
 endif
 
 ifeq ("$(TARGET_DEVICE)","JBMM")
-SRC += i2c_RTC.cpp
+SRC += i2c_RTC.cpp gio_lcd.cpp mas.cpp gio_bat_lvl.cpp
 endif
 
 ifeq ("$(TARGET_DEVICE)","AV4XX")

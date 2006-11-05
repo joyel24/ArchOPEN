@@ -33,6 +33,7 @@ uint32_t HW_IRQ::read(uint32_t addr,int size)
             ret_val=status[0];
             status[0] &= 0xFFFF;
             DEBUG_HW(IRQ_HW_DEBUG,"%s read %s STATUS @0x%08x, size %x send %x\n",name,str_irq_fiq[0],addr,size,ret_val);
+            break;
         case INT_IRQ_STATUS + IRQ_0:         //mod_val=0xFFF7;
             ret_val=status[1];
             status[1] &= 0xFFFF;
@@ -41,7 +42,8 @@ uint32_t HW_IRQ::read(uint32_t addr,int size)
             break;
         case INT_IRQ_STATUS + IRQ_1:
             ret_val=status[2];
-            status[2] &= 0x07FF;
+            status[2] &= 0x07F7;    // !!!!MOD        
+#warning MOD IRQ for GIO0
             DEBUG_HW(IRQ_HW_DEBUG,"%s read IRQ1 STATUS @0x%08x, size %x send %x\n",
                     name,addr,size,ret_val);
             break;

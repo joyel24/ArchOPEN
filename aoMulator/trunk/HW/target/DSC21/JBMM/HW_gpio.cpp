@@ -13,14 +13,16 @@
 
 #include <HW/HW_gpio.h>
 
-//#include <HW/gio_lcd.h>
+#include <HW/gio_lcd.h>
+#include <HW/gio_bat_lvl.h>
 //#include <HW/gio_vid_uart1RX.h>
 //#include <HW/gio_spdif_uart1TX.h>
 
 
 void HW_gpio::arch_init(void)
 {
-    //register_port(new GIO_LCD());
+    register_port(new GIO_LCD());
+    register_port(new GIO_BAT_LVL());    
     //register_port(new GIO_VID_UART1_RX());
     //register_port(new GIO_SPDIF_UART1_TX());
 }
