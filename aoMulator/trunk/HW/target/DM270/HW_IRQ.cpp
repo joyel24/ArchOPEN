@@ -194,3 +194,28 @@ void HW_IRQ::write(uint32_t addr,uint32_t val,int size)
     }
 }
 
+void HW_IRQ::calcEntry(void)
+{
+    int size_conv[] = {4,8,16,32};
+    int real_status[2];
+
+    real_status[NB_IRQ];
+
+    entry[0] = eabase;
+    entry[1] = eabase;
+
+    for(int i=0;i<NB_IRQ;i++)
+    {
+        real_status[i] = (~status[i+IRQ_OFFSET])&enable[i];
+    }
+
+
+    for(int i=0;i<NB_INT;i++)
+    {
+        if(real_status[REG_NUM(prio[i])]&(1<<REAL_NUM(prio[i])))
+        {
+            entry[1] += (i+1)*size_conv[bloc_size];
+            break;
+        }
+    }
+}

@@ -27,34 +27,34 @@ HW_dma::HW_dma(mem_space * mem):HW_access(DMA_START,DMA_END,"DMA")
 uint32_t HW_dma::read(uint32_t addr,int size)
 {
     int ret_val = 0;
-
+  
     switch(addr)
     {
-        case DMA_START+0x0:
+        case DMA_SRC_HI:
             ret_val = (dma_src >> 16)&0xFFFF;
             DEBUG_HW(DMA_HW_DEBUG,"DMA - read - SRC HI = %x\n",ret_val);
             break;
-        case DMA_START+0x2:
+        case DMA_SRC_LO:
             ret_val = dma_src&0xFFFF;
             DEBUG_HW(DMA_HW_DEBUG,"DMA - read - SRC LO = %x\n",ret_val);
             break;
-        case DMA_START+0x4:
+        case DMA_DST_HI:
             ret_val = (dma_dst >> 16)&0xFFFF;
             DEBUG_HW(DMA_HW_DEBUG,"DMA - read - DST HI = %x\n",ret_val);
             break;
-        case DMA_START+0x6:
+        case DMA_DST_LO:
             ret_val = dma_src&0xFFFF;
             DEBUG_HW(DMA_HW_DEBUG,"DMA - read - DST LO = %x\n",ret_val);
             break;
-        case DMA_START+0x8:
+        case DMA_SIZE:
             ret_val = dma_size;
             DEBUG_HW(DMA_HW_DEBUG,"DMA - read - SIZE = %x\n",ret_val);
             break;
-        case DMA_START+0xa:
+        case DMA_SEL:
             ret_val = device_sel;
             DEBUG_HW(DMA_HW_DEBUG,"DMA - read - DEVICE SELECT = %x\n",ret_val);
             break;
-        case DMA_START+0xc:
+        case DMA_CTL:
             ret_val = 0;
             DEBUG_HW(DMA_HW_DEBUG,"DMA - read - DMA state = %x\n",ret_val);
             break;
@@ -70,32 +70,32 @@ void HW_dma::write(uint32_t addr,uint32_t val,int size)
 {
 
     switch(addr)
-    {
-        case DMA_START+0x0:
+    {    
+        case DMA_SRC_HI:
             dma_src = (dma_src&0xFFFF) | ((val << 16)&0xFFFF0000);
             DEBUG_HW(DMA_HW_DEBUG,"DMA - write - SRC HI = %x (src=%x)\n",val,dma_src);
             break;
-        case DMA_START+0x2:
+        case DMA_SRC_LO:
             dma_src = (dma_src&0xFFFF0000) | (val & 0xFFFF);
             DEBUG_HW(DMA_HW_DEBUG,"DMA - write - SRC LO = %x (src=%x)\n",val,dma_src);
             break;
-        case DMA_START+0x4:
+        case DMA_DST_HI:
             dma_dst = (dma_dst&0xFFFF) | ((val << 16)&0xFFFF0000);
             DEBUG_HW(DMA_HW_DEBUG,"DMA - write - DST HI = %x (dst=%x)\n",val,dma_dst);
             break;
-        case DMA_START+0x6:
+        case DMA_DST_LO:
             dma_dst = (dma_dst&0xFFFF0000) | (val & 0xFFFF);
             DEBUG_HW(DMA_HW_DEBUG,"DMA - write - DST LO = %x (dst=%x)\n",val,dma_dst);
             break;
-        case DMA_START+0x8:
+        case DMA_SIZE:
             dma_size = val;
             DEBUG_HW(DMA_HW_DEBUG,"DMA - write - SIZE = %x\n",val);
             break;
-        case DMA_START+0xA:
+        case DMA_SEL:
             device_sel = val&0xFF;
             DEBUG_HW(DMA_HW_DEBUG,"DMA - write - DEVICE SELECT = %x\n",val);
             break;
-        case DMA_START+0xC:
+        case DMA_GO:
             dma_endian = (val>>8)&0x1;
             DEBUG_HW(DMA_HW_DEBUG,"DMA - write - START - (endian=%x)",dma_endian);
             if(val & 0x1)
@@ -105,6 +105,8 @@ void HW_dma::write(uint32_t addr,uint32_t val,int size)
                 switch(device_sel)
                 {
                     case DMA_SDRAM_TO_ATA:
+                        if(dma_src>SDRAM_START)
+                            dma_src-=SDRAM_START;
                         for (int i = 0; i < dma_size; i++)
                             data[i+data_ptr] = mem->read(SDRAM_START + dma_src + i,1);
                         data_ptr+=dma_size;
@@ -118,6 +120,8 @@ void HW_dma::write(uint32_t addr,uint32_t val,int size)
                         DEBUG_HW(DMA_HW_DEBUG,"done");
                         break;
                     case DMA_ATA_TO_SDRAM:
+                        if(dma_dst>SDRAM_START)
+                            dma_dst-=SDRAM_START;
                         DEBUG_HW(DMA_HW_DEBUG,"real dest = %x , src val (%x/%x) %02x%02x%02x%02x  ",SDRAM_START + dma_dst,data_ptr,
                             data_size,data[data_ptr]&0xFF,data[data_ptr+1]&0xFF,data[data_ptr+2]&0xFF,data[data_ptr+3]&0xFF);
                         for (int i = 0; i < dma_size; i++)

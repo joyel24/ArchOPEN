@@ -45,6 +45,7 @@
 
 //#define HAS_VID0
 #define HAS_LCD
+#define DISP_BMAP 2
 //#define HAS_UART_XWIN
 
 /************************************************************ HW config */
@@ -75,8 +76,8 @@
 #define IRQ_END     TI_REG_START+0x5D0
 
 #define FIQ_0    0x0
-#define IRQ_0    0x0
-#define IRQ_1    0x2
+#define IRQ_0    0x2
+#define IRQ_1    0x0
 
 #define INT_FIQ_STATUS  (IRQ_START+0x00)
 #define INT_IRQ_STATUS  (IRQ_START+0x02)
@@ -123,7 +124,7 @@
   "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", \
                     \
   "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", \
-  "BTN-OFF", "BTN-ON", "UKN", "SCL", "SDA", "UKN", "UKN", "UKN"  \
+  "BTN-OFF", "BTN-ON", "HD_PW", "SCL", "SDA", "UKN", "UKN", "UKN"  \
 }
 
 #define GPIO_ON_NUM    0x19
@@ -138,6 +139,8 @@
 #define GPIO_MAS_PR              0x1F
 
 #define GPIO_LCD                 0x17
+
+#define GPIO_HD_PW               0x1A
 
 #define GPIO_BAT_LVL             0x1D
 
@@ -180,10 +183,19 @@
 
 /********************** DMA      ****************************************/
 #define DMA_START   TI_REG_START+0xb80
-#define DMA_END     TI_REG_START+0xc00
+#define DMA_END     TI_REG_START+0xb90
 
-#define DMA_SDRAM_TO_ATA  0x51
-#define DMA_ATA_TO_SDRAM  0x15
+#define DMA_SDRAM_TO_ATA  0x1
+#define DMA_ATA_TO_SDRAM  0x0
+
+#define DMA_SRC_HI  DMA_START+0x8
+#define DMA_SRC_LO  DMA_START+0x6
+#define DMA_DST_HI  DMA_START+0xC
+#define DMA_DST_LO  DMA_START+0xA
+#define DMA_SIZE    DMA_START+0x4
+#define DMA_SEL     DMA_START+0x2
+#define DMA_CTL     DMA_START+0xE
+#define DMA_GO      DMA_START+0x0
 
 /********************** DSP      ****************************************/
 
@@ -191,19 +203,20 @@
 #define DSP_END     TI_REG_START+0x710
 
 /********************** IDE ****************************************/
-#define IDE_BASE    0x04000800
-#define IDE_END     0x04000400
 
-#define IDE_DATA                          (IDE_BASE+0x000)
-#define IDE_ERROR                         (IDE_BASE+0x100)
-#define IDE_NSECTOR                       (IDE_BASE+0x200)
-#define IDE_SECTOR                        (IDE_BASE+0x300)
-#define IDE_LCYL                          (IDE_BASE+0x400)
-#define IDE_HCYL                          (IDE_BASE+0x500)
-#define IDE_SELECT                        (IDE_BASE+0x600)
-#define IDE_CONTROL                       (IDE_BASE+0x680)
-#define IDE_STATUS                        (IDE_BASE+0x700)
-#define IDE_COMMAND                       (IDE_BASE+0x700)
+#define IDE_BASE    0x04000000
+#define IDE_END     0x04000FFF
+
+#define IDE_DATA                          (IDE_BASE+0x800)
+#define IDE_ERROR                         (IDE_BASE+0x900)
+#define IDE_NSECTOR                       (IDE_BASE+0xa00)
+#define IDE_SECTOR                        (IDE_BASE+0xb00)
+#define IDE_LCYL                          (IDE_BASE+0xc00)
+#define IDE_HCYL                          (IDE_BASE+0xd00)
+#define IDE_SELECT                        (IDE_BASE+0xe00)
+#define IDE_CONTROL                       (IDE_BASE+0xe80)
+#define IDE_STATUS                        (IDE_BASE+0xf00)
+#define IDE_COMMAND                       (IDE_BASE+0xf00)
 
 /********************** CPLD     ****************************************/
 #define CPLD_START       0x02000000

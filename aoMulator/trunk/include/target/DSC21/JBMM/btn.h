@@ -29,7 +29,7 @@
 
 #define BTN_INIT_VAL  0x2
 
-#define NB_BTN 10
+#define NB_BTN 11
 
 #define PRIVATE_DECLARATION \
 GPIO_BTN * ON_btn;          \

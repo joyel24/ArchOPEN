@@ -43,6 +43,10 @@ class HW_IRQ : public HW_access {
         int prio[NB_IRQ];
         int bloc_size;
         void calcEntry(void);
+        int calc_id(void);
+        int count_int(void);
+        int raw;
+        int id;
 };
 
 #endif // __HW_IRQ_H

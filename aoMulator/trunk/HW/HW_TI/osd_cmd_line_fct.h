@@ -61,8 +61,8 @@ int HW_OSD::do_cmd_updt_lcd(int argc,char ** argv)
 {
     uint32_t start_addr=0;
     
-    if(OSD_offset_regs[2]>SDRAM_START)
-        lcd->updte_lcd(OSD_offset_regs[2],LCD_BMAP);
+    if(OSD_offset_regs[DISP_BMAP]>SDRAM_START)
+        lcd->updte_lcd(OSD_offset_regs[DISP_BMAP],LCD_BMAP);
     
     /*if(argc>0) !!!!!!!!!!!! need to be changed to take a second arg: display type = VID or BMAP
     {

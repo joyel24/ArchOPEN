@@ -50,6 +50,7 @@
 
 //#define HAS_VID0
 #define HAS_LCD
+
 //#define HAS_UART_XWIN
 
 /************************************************************ HW config */
@@ -194,6 +195,15 @@
 
 #define DMA_SDRAM_TO_ATA  0x51
 #define DMA_ATA_TO_SDRAM  0x15
+
+#define DMA_SRC_HI  DMA_START+0x0
+#define DMA_SRC_LO  DMA_START+0x2
+#define DMA_DST_HI  DMA_START+0x4
+#define DMA_DST_LO  DMA_START+0x6
+#define DMA_SIZE    DMA_START+0x8
+#define DMA_SEL     DMA_START+0xa
+#define DMA_CTL     DMA_START+0xc
+#define DMA_GO      DMA_START+0xc
 
 #define DSP_START   TI_REG_START+0x600
 #define DSP_END     TI_REG_START+0x610

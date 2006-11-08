@@ -36,13 +36,13 @@ uint32_t HW_IRQ::read(uint32_t addr,int size)
             break;
         case INT_IRQ_STATUS + IRQ_0:         //mod_val=0xFFF7;
             ret_val=status[1];
-            status[1] &= 0xFFFF;
+            status[1] &= 0xFFF7;
             DEBUG_HW(IRQ_HW_DEBUG,"%s read IRQ0 STATUS @0x%08x, size %x send %x\n",
                     name,addr,size,ret_val);
             break;
         case INT_IRQ_STATUS + IRQ_1:
             ret_val=status[2];
-            status[2] &= 0x07F7;    // !!!!MOD        
+            status[2] &= 0x07FF;    // !!!!MOD        
 #warning MOD IRQ for GIO0
             DEBUG_HW(IRQ_HW_DEBUG,"%s read IRQ1 STATUS @0x%08x, size %x send %x\n",
                     name,addr,size,ret_val);
@@ -52,7 +52,7 @@ uint32_t HW_IRQ::read(uint32_t addr,int size)
             DEBUG_HW(IRQ_HW_DEBUG,"%s read %s ENABLE @0x%08x, size %x send %x\n",
                 name,str_irq_fiq[0],addr,size,ret_val);
             break;
-        case INT_IRQ_ENABLE :
+        case INT_IRQ_ENABLE + IRQ_0:
             ret_val=enable[1]&0xFFFF;
             DEBUG_HW(IRQ_HW_DEBUG,"%s read %s ENABLE @0x%08x, size %x send %x\n",
                 name,str_irq_fiq[1],addr,size,ret_val);
@@ -63,13 +63,13 @@ uint32_t HW_IRQ::read(uint32_t addr,int size)
                 name,str_irq_fiq[2],addr,size,ret_val);
             break;
         case INT_ID:
-            ret_val=0;
-            DEBUG_HW(IRQ_HW_DEBUG,"%s read INT ID (not supported) @0x%08x, size %x send %x\n",
+            ret_val=id;
+            DEBUG_HW(IRQ_HW_DEBUG,"%s read INT ID  @0x%08x, size %x send %x\n",
                 name,addr,size,ret_val);
             break;
         case INT_RAW:
-            ret_val=0;
-            DEBUG_HW(IRQ_HW_DEBUG,"%s read INT RAW (not supported) @0x%08x, size %x send %x\n",
+            ret_val=raw;
+            DEBUG_HW(IRQ_HW_DEBUG,"%s read INT RAW  @0x%08x, size %x send %x\n",
                 name,addr,size,ret_val);
             break;
         default:
@@ -90,34 +90,42 @@ void HW_IRQ::write(uint32_t addr,uint32_t val,int size)
                 name,val,addr,size);
             break;
         case INT_IRQ_STATUS + IRQ_0:         //mod_val=0xFFF7;
-        case INT_IRQ_STATUS + IRQ_1:
-            num = (addr-INT_IRQ_STATUS)/2;
-            status[1+num]=(status[1+num]|val)&0xFFFF;
+            status[1]=(status[1]|val)&0xFFF7;
+            calcEntry();
             DEBUG_HW(IRQ_HW_DEBUG,"%s write %x to %s STATUS @0x%08x, size %x\n",
-                name,val,str_irq_fiq[num+1],addr,size);
+                name,val,str_irq_fiq[1],addr,size);
+            break;
+        case INT_IRQ_STATUS + IRQ_1:
+            status[2]=(status[2]|val)&0xFFFF;
+            calcEntry();
+            DEBUG_HW(IRQ_HW_DEBUG,"%s write %x to %s STATUS @0x%08x, size %x\n",
+                name,val,str_irq_fiq[2],addr,size);
             break;
         case INT_FIQ_ENABLE :
             enable[0]=val&0x1;
             DEBUG_HW(IRQ_HW_DEBUG,"%s write %x to FIQ ENABLE %d @0x%08x, size %x\n",
                 name,val,num,addr,size);
             break;
-        case INT_IRQ_ENABLE :
+        case INT_IRQ_ENABLE + IRQ_0:
             enable[1]=val&0xFFFF;
+            calcEntry();
             DEBUG_HW(IRQ_HW_DEBUG,"%s write %x to IRQ0 ENABLE %d @0x%08x, size %x\n",
                 name,val,num,addr,size);
             break; 
         case INT_IRQ_ENABLE + IRQ_1:
-            enable[1]=val&0x07FF;
+            enable[2]=val&0x07FF;
+            calcEntry();
             DEBUG_HW(IRQ_HW_DEBUG,"%s write %x to IRQ0 ENABLE %d @0x%08x, size %x\n",
                 name,val,num,addr,size);
             break;
         case INT_ID:
-            DEBUG_HW(IRQ_HW_DEBUG,"%s write %x to INT ID (not supported) @0x%08x, size %x\n",
+            DEBUG_HW(IRQ_HW_DEBUG,"%s write %x to INT ID (what should we do ?) @0x%08x, size %x\n",
                 name,val,addr,size);
             break;
         case INT_RAW:
-            DEBUG_HW(IRQ_HW_DEBUG,"%s write %x to INT RAW (not supported) @0x%08x, size %x\n",
+            DEBUG_HW(IRQ_HW_DEBUG,"%s write %x to INT RAW 0x%08x, size %x\n",
                 name,val,addr,size);
+            raw=val;
             break;
         default:
             DEBUG_HW(IRQ_HW_DEBUG,"%s UKN write %x to @0x%08x, size %x\n",name,val,addr,size);
@@ -125,3 +133,51 @@ void HW_IRQ::write(uint32_t addr,uint32_t val,int size)
     }
 }
 
+#define CNT_MASK (raw&2)
+#define ID_MASK (raw&1)
+
+void HW_IRQ::calcEntry(void)
+{
+    int real_status[2];
+    int tmp_status[2];
+    int cnt=0;
+    id=-1;
+    
+    
+    real_status[0] = (~status[1])&enable[1];
+    real_status[1] = (~status[2])&enable[2];
+    tmp_status[0] = (~status[1]);
+    tmp_status[1] = (~status[2]);
+
+
+    for(int i=0;i<NB_INT;i++)
+    {
+        if(CNT_MASK)
+        {
+            if(tmp_status[REG_NUM(i)]) cnt++;
+        }
+        else
+        {
+            if(real_status[REG_NUM(i)]) cnt++;
+        }
+        
+        if(id==-1)
+        {
+            if(ID_MASK)
+            {
+                if(tmp_status[REG_NUM(i)]) id=i;
+            }
+            else
+            {
+                if(real_status[REG_NUM(i)]) id=i;
+            }
+        }
+        
+    }
+    
+    if(id==-1) id=0;
+    
+    id |= (cnt<<8);
+    printf("id = %x\n",id);
+    
+}

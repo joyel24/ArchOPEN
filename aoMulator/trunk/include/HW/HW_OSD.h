@@ -21,6 +21,10 @@ class HW_OSD;
 #include <HW/HW_lcd.h>
 #include <HW/mem_space.h>
 
+#ifndef DISP_BMAP
+#define DISP_BMAP 2
+#endif
+
 struct buffer_info {
     int x;
     int y;

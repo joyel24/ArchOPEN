@@ -177,8 +177,8 @@ void HW_lcd::nxtStep(int * config,uint32_t * addr)
     switch (event.type) 
     {
         case Expose :
-            if(config[2]&0x1 && addr[2]>SDRAM_START)
-                updte_lcd(addr[2],LCD_BMAP);
+            if(config[DISP_BMAP]&0x1 && addr[DISP_BMAP]>SDRAM_START)
+                updte_lcd(addr[DISP_BMAP],LCD_BMAP);
 #ifdef HAS_VID0
             if(config[1]&0x1 && addr[0]>SDRAM_START)
                 updte_lcd(addr[0],LCD_VID);
@@ -198,14 +198,20 @@ void HW_lcd::nxtStep(int * config,uint32_t * addr)
 void HW_lcd::drawPix(uint32_t addr,uint32_t val)
 {
     int i,j;
-    int w=osd->OSD_width_regs[2]*32;
-    int z=(osd->OSD_config_regs[2] & 0xc00)==0?1:0;
+#ifndef DSC21
+    int w=osd->OSD_width_regs[DISP_BMAP]*32;
+    int z=(osd->OSD_config_regs[DISP_BMAP] & 0xc00)==0?1:0;
 
     addr >>= z;
     w >>= z;
 
     i=addr%w;
     j=addr/w;
+#else    
+    addr >>= (osd->OSD_config_regs[DISP_BMAP] & 0xc00)==0?1:0;
+    i=(addr%SCREEN_WIDTH);
+    j=addr/SCREEN_WIDTH;
+#endif    
     XSetForeground(display, gc, colorTab[val&0xFF]);
     XDrawPoint(display, window1, gc, i, j);
 }
@@ -233,18 +239,19 @@ void HW_lcd::updte_lcd(uint32_t base_addr,int type)
     int b=0;
     char data[4];
     uint32_t color;
-
-    int bz=(osd->OSD_config_regs[2] & 0xc00)==0?1:0;
-    int bw=osd->OSD_width_regs[2]*32;
-    int bh=osd->OSD_info_regs[2].height;
+#ifndef DSC21
+    int bz=(osd->OSD_config_regs[DISP_BMAP] & 0xc00)==0?1:0;
+    int bw=osd->OSD_width_regs[DISP_BMAP]*32;
+    int bh=osd->OSD_info_regs[DISP_BMAP].height;
     int vw=osd->OSD_width_regs[0]*8;
     int vh=osd->OSD_info_regs[0].height;
 
     bw >>= bz;
-
+#endif
     lcd_update_cnt[type]++;
     if(type == LCD_BMAP)
     {
+#ifndef DSC21
         for(int j = 0 ; j < bh ; j++)
             for(int i = 0 ; i < bw ; i++)
             {
@@ -252,6 +259,15 @@ void HW_lcd::updte_lcd(uint32_t base_addr,int type)
                 XSetForeground(display, gc, color);
                 XDrawPoint(display, window1, gc, i, j);
             }
+#else	    
+	for(int j = 0 ; j < SCREEN_HEIGHT+1 ; j++)
+            for(int i = 0 ; i < SCREEN_WIDTH+1 ; i++)        
+            {
+                color = colorTab[mem->read(base_addr+(j*(SCREEN_WIDTH)+i)*((osd->OSD_config_regs[DISP_BMAP] & 0xc00)==0?2:1),1)&0xFF];
+                XSetForeground(display, gc, color);
+                XDrawPoint(display, window1, gc, i, j);
+            }
+#endif
     }
 #ifdef HAS_VID0
     else if(type == LCD_VID)

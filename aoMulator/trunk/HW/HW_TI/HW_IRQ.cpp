@@ -45,33 +45,7 @@ HW_IRQ::HW_IRQ(void):HW_access(IRQ_START,IRQ_END,"IRQ/FIQ")
     have_int_FIQ = false;
     eabase = 0x0;
     bloc_size=0x0;
-}
-
-void HW_IRQ::calcEntry(void)
-{
-
-    int size_conv[] = {4,8,16,32};
-    int real_status[2];
-
-    real_status[NB_IRQ];
-
-    entry[0] = eabase;
-    entry[1] = eabase;
-
-    for(int i=0;i<NB_IRQ;i++)
-    {
-        real_status[i] = (~status[i+IRQ_OFFSET])&enable[i];
-    }
-
-
-    for(int i=0;i<NB_INT;i++)
-    {
-        if(real_status[REG_NUM(prio[i])]&(1<<REAL_NUM(prio[i])))
-        {
-            entry[1] += (i+1)*size_conv[bloc_size];
-            break;
-        }
-    }
+    raw=id=0;
 }
 
 void HW_IRQ::do_INT(int num)
@@ -83,9 +57,9 @@ void HW_IRQ::do_INT(int num)
     num=(num==WDT_FIQ)?0:num;
 #endif
     status[(type==FIQ?0:IRQ_OFFSET)+REG_NUM(num)] &= ((~(0x1<<REAL_NUM(num))) & 0xFFFF);
-#ifndef DSC21
+
     calcEntry();
-#endif
+
     DEBUG_HW(IRQ_HW_DEBUG,"%s Doing %s num = %x (%d)\n",
         name,type==FIQ?"FIQ":"IRQ",num,
         (type==FIQ?0:NB_FIQ)+REG_NUM(num)  );
@@ -102,4 +76,3 @@ void HW_IRQ::do_INT(int num)
             cur_irq_fct = cpu_do_irq;
     }
 }
-

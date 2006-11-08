@@ -218,6 +218,15 @@
 #define DMA_SDRAM_TO_ATA  0x53
 #define DMA_ATA_TO_SDRAM  0x35
 
+#define DMA_SRC_HI  DMA_START+0x0
+#define DMA_SRC_LO  DMA_START+0x2
+#define DMA_DST_HI  DMA_START+0x4
+#define DMA_DST_LO  DMA_START+0x6
+#define DMA_SIZE    DMA_START+0x8
+#define DMA_SEL     DMA_START+0xa
+#define DMA_CTL     DMA_START+0xc
+#define DMA_GO     DMA_START+0xc
+
 /********************** IDE ****************************************/
 #define IDE_BASE    0x05100000
 #define IDE_END     0x05100100
