@@ -42,7 +42,7 @@ uint32_t HW_IRQ::read(uint32_t addr,int size)
             break;
         case INT_IRQ_STATUS + IRQ_1:
             ret_val=status[2];
-            status[2] &= 0x07FF;    // !!!!MOD        
+            status[2] &= 0x07FF;    // !!!!MOD
 #warning MOD IRQ for GIO0
             DEBUG_HW(IRQ_HW_DEBUG,"%s read IRQ1 STATUS @0x%08x, size %x send %x\n",
                     name,addr,size,ret_val);
@@ -56,7 +56,7 @@ uint32_t HW_IRQ::read(uint32_t addr,int size)
             ret_val=enable[1]&0xFFFF;
             DEBUG_HW(IRQ_HW_DEBUG,"%s read %s ENABLE @0x%08x, size %x send %x\n",
                 name,str_irq_fiq[1],addr,size,ret_val);
-            break; 
+            break;
         case INT_IRQ_ENABLE + IRQ_1:
             ret_val=enable[2]&0x07FF;
             DEBUG_HW(IRQ_HW_DEBUG,"%s read %s ENABLE @0x%08x, size %x send %x\n",
@@ -111,7 +111,7 @@ void HW_IRQ::write(uint32_t addr,uint32_t val,int size)
             calcEntry();
             DEBUG_HW(IRQ_HW_DEBUG,"%s write %x to IRQ0 ENABLE %d @0x%08x, size %x\n",
                 name,val,num,addr,size);
-            break; 
+            break;
         case INT_IRQ_ENABLE + IRQ_1:
             enable[2]=val&0x07FF;
             calcEntry();
@@ -142,8 +142,8 @@ void HW_IRQ::calcEntry(void)
     int tmp_status[2];
     int cnt=0;
     id=-1;
-    
-    
+
+
     real_status[0] = (~status[1])&enable[1];
     real_status[1] = (~status[2])&enable[2];
     tmp_status[0] = (~status[1]);
@@ -154,30 +154,30 @@ void HW_IRQ::calcEntry(void)
     {
         if(CNT_MASK)
         {
-            if(tmp_status[REG_NUM(i)]) cnt++;
+            if(tmp_status[REG_NUM(i)]&(1<<REAL_NUM(i))) cnt++;
         }
         else
         {
-            if(real_status[REG_NUM(i)]) cnt++;
+            if(real_status[REG_NUM(i)]&(1<<REAL_NUM(i))) cnt++;
         }
-        
+
         if(id==-1)
         {
             if(ID_MASK)
             {
-                if(tmp_status[REG_NUM(i)]) id=i;
+                if(tmp_status[REG_NUM(i)]&(1<<REAL_NUM(i))) id=i;
             }
             else
             {
-                if(real_status[REG_NUM(i)]) id=i;
+                if(real_status[REG_NUM(i)]&(1<<REAL_NUM(i))) id=i;
             }
         }
-        
+
     }
-    
+
     if(id==-1) id=0;
-    
+
     id |= (cnt<<8);
-    printf("id = %x\n",id);
-    
+    //printf("id = %x\n",id);
+
 }

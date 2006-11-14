@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
+#include <HW/HW_TI.h>
 #include <HW/HW_ata.h>
 
 #include <HW/HW_dma.h>
@@ -20,14 +20,14 @@
 HW_dma::HW_dma(mem_space * mem):HW_access(DMA_START,DMA_END,"DMA")
 {
     dma_src=dma_dst=dma_size=0;
-    device_sel=dma_endian=0;
+    device_sel=dma_endian=run_status=0;
     this->mem=mem;
 }
 
 uint32_t HW_dma::read(uint32_t addr,int size)
 {
     int ret_val = 0;
-  
+
     switch(addr)
     {
         case DMA_SRC_HI:
@@ -55,7 +55,7 @@ uint32_t HW_dma::read(uint32_t addr,int size)
             DEBUG_HW(DMA_HW_DEBUG,"DMA - read - DEVICE SELECT = %x\n",ret_val);
             break;
         case DMA_CTL:
-            ret_val = 0;
+            ret_val = run_status | (dma_endian<<8) ;
             DEBUG_HW(DMA_HW_DEBUG,"DMA - read - DMA state = %x\n",ret_val);
             break;
         default:
@@ -70,7 +70,7 @@ void HW_dma::write(uint32_t addr,uint32_t val,int size)
 {
 
     switch(addr)
-    {    
+    {
         case DMA_SRC_HI:
             dma_src = (dma_src&0xFFFF) | ((val << 16)&0xFFFF0000);
             DEBUG_HW(DMA_HW_DEBUG,"DMA - write - SRC HI = %x (src=%x)\n",val,dma_src);
@@ -115,7 +115,7 @@ void HW_dma::write(uint32_t addr,uint32_t val,int size)
                         {
                             DEBUG_HW(DMA_HW_DEBUG," (finale) \n");
                             mem->hw_ata->write_buffer(data,data_size);
-                            mem->hw_ata->setStatus(IDE_STATUS_RDY);
+                            //mem->hw_ata->setStatus(IDE_STATUS_RDY);
                         }
                         DEBUG_HW(DMA_HW_DEBUG,"done");
                         break;
@@ -131,8 +131,9 @@ void HW_dma::write(uint32_t addr,uint32_t val,int size)
                         if(data_ptr>=data_size)
                         {
                             DEBUG_HW(DMA_HW_DEBUG," (finale) ");
-                            mem->hw_ata->setStatus(IDE_STATUS_RDY);
+                            //mem->hw_ata->setStatus(IDE_STATUS_RDY);
                         }
+                        run_status=1;
                         DEBUG_HW(DMA_HW_DEBUG,"done");
                         break;
                     default:
@@ -147,6 +148,23 @@ void HW_dma::write(uint32_t addr,uint32_t val,int size)
             break;
     }
 
+}
+
+void HW_dma::nxtStep(void)
+{
+    if(run_status)
+    {
+        nbWait++;
+        if(nbWait>40)
+        {
+            run_status=0;
+            if(data_ptr>=data_size)
+                mem->hw_ata->setStatus(IDE_STATUS_RDY);
+            nbWait=0;
+            mem->hw_TI->HW_irq->do_INT(INT_DMA);
+            DEBUG_HW(DMA_HW_DEBUG,"Stop DMA\n");
+        }
+    }
 }
 
 void HW_dma::init_ata_xfer(char * data,int data_ptr,int data_size)

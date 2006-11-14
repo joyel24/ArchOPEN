@@ -226,6 +226,8 @@
 #define DMA_CTL     DMA_START+0xc
 #define DMA_GO      DMA_START+0xc
 
+#define INT_DMA     15
+
 /********************** IDE ****************************************/
 #define IDE_BASE    0x05100000
 #define IDE_END     0x05100100

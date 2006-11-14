@@ -62,6 +62,8 @@ void HW_btn::processBtn(KeySym keysym)
             btn_var[BTN_DOWN]=BTN_INIT_VAL;
             break;
         case XK_KP_5:
+        case XK_S:
+        case XK_s:
             printf("ok\n");
             btn_var[BTN_OK]=BTN_INIT_VAL;
             break;

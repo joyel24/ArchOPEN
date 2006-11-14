@@ -28,32 +28,32 @@ void init_mem_static_fct(HW_OSD * osd);
 HW_OSD::HW_OSD(mem_space * mem):HW_access(OSD_START,OSD_END,"OSD")
 {
     init_mem_static_fct(this);
-    
+
     this->mem=mem;
-    
+
     for(int i=0;i<6;i++)
     {
         OSD_config_regs[i]=0;
-        
+
         OSD_info_regs[i].x=0;
         OSD_info_regs[i].y=0;
         OSD_info_regs[i].width=0;
         OSD_info_regs[i].height=0;
     }
-    
+
     for(int i=0;i<4;i++)
-    {  
+    {
         OSD_width_regs[i]=0;
-        
+
         OSD_offset_regs[i]=SDRAM_START;
     }
-    
+
     for(int i=0;i<8;i++)
     {
         OSD_pallette_bank1[i] = 0;
         OSD_pallette_bank2[i] = 0;
     }
-    
+
     OSD_main_shift_horiz=0;
     OSD_main_shift_vert=0;
     OSD_cursor_data=0;
@@ -62,7 +62,7 @@ HW_OSD::HW_OSD(mem_space * mem):HW_access(OSD_START,OSD_END,"OSD")
     OSD_pallette_data_wr=0;
     OSD_pallette_index=0;
     OSD_alt_vid_offset=0;
-    
+
     lcd = new HW_lcd(mem,this);
     vsync_timer=0;
 
@@ -95,8 +95,8 @@ void HW_OSD::chk_access(uint32_t addr,uint32_t val,int size)
     if((OSD_config_regs[DISP_BMAP]&0x1) && addr>=OSD_offset_regs[DISP_BMAP]
             && addr <= (OSD_offset_regs[DISP_BMAP]+OSD_width_regs[DISP_BMAP]*32*OSD_info_regs[DISP_BMAP].height))
 #else
-    if((OSD_config_regs[2]&0x1) && addr>=OSD_offset_regs[2]
-            && addr <= (OSD_offset_regs[2]+SCREEN_WIDTH*SCREEN_HEIGHT*2))
+    if((OSD_config_regs[DISP_BMAP]&0x1) && addr>=OSD_offset_regs[DISP_BMAP]
+            && addr <= (OSD_offset_regs[DISP_BMAP]+SCREEN_WIDTH*SCREEN_HEIGHT*2))
 #endif
     {        uint32_t v=val;
         uint32_t a=addr-OSD_offset_regs[DISP_BMAP];

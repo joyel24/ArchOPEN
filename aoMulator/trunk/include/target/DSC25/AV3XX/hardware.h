@@ -205,6 +205,8 @@
 #define DMA_CTL     DMA_START+0xc
 #define DMA_GO      DMA_START+0xc
 
+#define INT_DMA     15
+
 #define DSP_START   TI_REG_START+0x600
 #define DSP_END     TI_REG_START+0x610
 

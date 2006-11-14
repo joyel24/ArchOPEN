@@ -28,6 +28,7 @@ class HW_dma : public HW_access {
         void write(uint32_t addr,uint32_t val,int size);
 
         void init_ata_xfer(char * data,int data_ptr,int data_size);
+        void nxtStep(void);
 
     private:
         uint32_t dma_src;
@@ -35,6 +36,8 @@ class HW_dma : public HW_access {
         uint32_t dma_size;
         int device_sel;
         int dma_endian;
+        int run_status;
+        int nbWait;
 
         char * data;
         int data_ptr;
