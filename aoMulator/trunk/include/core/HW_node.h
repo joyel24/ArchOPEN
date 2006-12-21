@@ -35,6 +35,7 @@ public:
 
     virtual uint32_t read(uint32_t addr,int size);
     virtual void write(uint32_t addr,uint32_t val,int size);
+    virtual void printString(uint32_t addr);
 
 };
 

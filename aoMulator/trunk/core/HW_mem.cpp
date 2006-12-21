@@ -72,6 +72,16 @@ uint32_t HW_mem::read(uint32_t addr,int size)
     return  (*((unsigned long *) (mem+addr-start))) & (0xffffffff>>((4-size)<<3));
 }
 
+void HW_mem::printString(uint32_t addr)
+{
+    if(addr>=end)
+    {
+         DEBUG_HW(MEM_HW_DEBUG,"%s::printString(0x%08x) ERROR addr does not belong to a known zone\n",name,addr);
+         return ;
+    }
+    printf("%s\n",(char*)(mem+addr-start));
+}
+
 void HW_mem::write(uint32_t addr,uint32_t val,int size)
 {
     if(addr>=end)

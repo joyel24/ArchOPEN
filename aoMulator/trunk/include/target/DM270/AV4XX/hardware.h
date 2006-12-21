@@ -183,7 +183,7 @@
 
 /********************** PAL NTSC Encoder *******************************/
 #define PAL_NTSC_ENC_START   TI_REG_START+0x800
-#define PAL_NTSC_ENC_END     TI_REG_START+0x83A
+#define PAL_NTSC_ENC_END     TI_REG_START+0x84e
 
 /********************** CLOCK    ****************************************/
 #define CLOCK_START   TI_REG_START+0x880

@@ -110,5 +110,10 @@ void mem_space::write(uint32_t addr,uint32_t val,int size)
     hw_TI->chkMemAccess(addr,val,size);
 }
 
+void mem_space::printString(uint32_t addr)
+{
+    HW_node::printString(addr);
+}
+
 
 #include "mem_cmd_line_fct.h"

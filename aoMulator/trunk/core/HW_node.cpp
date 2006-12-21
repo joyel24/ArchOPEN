@@ -48,6 +48,12 @@ uint32_t HW_node::read(uint32_t addr,int size)
     return (size<4 || acc->full_size)?acc->read(addr,size):((acc->read(addr,2) | acc->read(addr+2,2) <<16));
 }
 
+void HW_node::printString(uint32_t addr)
+{
+    HW_access * acc = access_array[(addr-start)>>granularity_shift];
+    acc->printString(addr);
+}
+
 void HW_node::write(uint32_t addr,uint32_t val,int size)
 {
     HW_access * acc = access_array[(addr-start)>>granularity_shift];

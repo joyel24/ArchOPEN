@@ -500,6 +500,8 @@ void go(uint32_t start_address,uint32_t stack_address)
         #endif
         mem->hw_TI->nxtStep();
 
+        
+        
         /*
         ->uart_list[0]->nxtEvent();
         mem->hw_TI->uart_list[1]->nxtEvent();
@@ -535,6 +537,9 @@ void go(uint32_t start_address,uint32_t stack_address)
 
         address = T_FLAG ? PC_REAL&0xfffffffe : (PC_REAL+2)&0xfffffffc;
 
+       /* if(address >= 0x993efc && address <=0x993f48)
+            mem->printString(GET_REG(0));*/
+        
         bkpt->fct(bkpt,address,0);
         cmd_line_fct();
         bkpt_step->fct(bkpt_step,address,0);

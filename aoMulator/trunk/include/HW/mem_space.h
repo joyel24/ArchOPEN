@@ -38,7 +38,8 @@ class mem_space:public HW_node {
 
         uint32_t read(uint32_t addr,int size);
         void write(uint32_t addr,uint32_t val,int size);
-
+        void printString(uint32_t addr);
+        
         HW_mem * dsp_mem;
         HW_mem * flash_mem;
         HW_mem * sd;

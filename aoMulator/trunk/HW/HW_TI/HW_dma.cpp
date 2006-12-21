@@ -105,8 +105,8 @@ void HW_dma::write(uint32_t addr,uint32_t val,int size)
                 switch(device_sel)
                 {
                     case DMA_SDRAM_TO_ATA:
-                        if(dma_src>SDRAM_START)
-                            dma_src-=SDRAM_START;
+                        /*if(dma_src>SDRAM_START)
+                            dma_src-=SDRAM_START;*/
                         for (int i = 0; i < dma_size; i++)
                             data[i+data_ptr] = mem->read(SDRAM_START + dma_src + i,1);
                         data_ptr+=dma_size;
@@ -120,10 +120,11 @@ void HW_dma::write(uint32_t addr,uint32_t val,int size)
                         DEBUG_HW(DMA_HW_DEBUG,"done");
                         break;
                     case DMA_ATA_TO_SDRAM:
-                        if(dma_dst>SDRAM_START)
-                            dma_dst-=SDRAM_START;
-                        DEBUG_HW(DMA_HW_DEBUG,"real dest = %x , src val (%x/%x) %02x%02x%02x%02x  ",SDRAM_START + dma_dst,data_ptr,
-                            data_size,data[data_ptr]&0xFF,data[data_ptr+1]&0xFF,data[data_ptr+2]&0xFF,data[data_ptr+3]&0xFF);
+                        /*if(dma_dst>SDRAM_START)
+                            dma_dst-=SDRAM_START;*/
+                        DEBUG_HW(DMA_HW_DEBUG,"real dest = %x , src val (%x/%x) %02x%02x%02x%02x  ",
+                            SDRAM_START + dma_dst,data_ptr,data_size,data[data_ptr]&0xFF,data[data_ptr+1]&0xFF,
+                            data[data_ptr+2]&0xFF,data[data_ptr+3]&0xFF);
                         for (int i = 0; i < dma_size; i++)
                              mem->write(SDRAM_START + dma_dst + i,data[i+data_ptr] & 0xff,1);
                         data_ptr+=dma_size;

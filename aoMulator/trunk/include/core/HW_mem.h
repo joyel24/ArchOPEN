@@ -22,7 +22,8 @@ class HW_mem : public HW_access {
         HW_mem(char * fname,uint32_t start,uint32_t end,char * name, uint32_t load_offset);
         HW_mem(char * fname,uint32_t start,uint32_t end,char * name);
         ~HW_mem();
-
+        
+        void printString(uint32_t addr);
         uint32_t read(uint32_t addr,int size);
         void write(uint32_t addr,uint32_t val,int size);
 
