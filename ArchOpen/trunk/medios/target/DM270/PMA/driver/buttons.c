@@ -29,7 +29,7 @@ BTMASK_F1,       /*BTN_F1*/
 BTMASK_F2,       /*BTN_F2*/
 BTMASK_F3,       /*BTN_F3*/
 0,               /*BTN_F4*/
-0,               /*BTN_1*/
+BTMASK_BTN1,     /*BTN_1*/
 0,               /*BTN_2*/
 0,               /*BTN_3*/
 0,               /*BTN_4*/
@@ -41,7 +41,7 @@ BTMASK_OFF,      /*BTN_OFF*/
 
 int arch_btn_readHardware(void){
     int val;
-    int dir,fn,on_off;
+    int dir,fn,on_off,bt;
     int P1,P2;
 
     P1 =  (inw(BUTTON_PORT0));
@@ -51,7 +51,7 @@ int arch_btn_readHardware(void){
 
     
 
-    dir=fn=on_off=0;
+    dir=fn=bt=on_off=0;
         /*  U      |     D         |       L       |     R           */
     dir = (P1&0x1) | ((P1>>4)&0x2) | ((P1&0x2)<<1) | (((P1>>4)&0x1)<<3) ;
        /*  F1              |   F2             |    F3     */
@@ -59,10 +59,13 @@ int arch_btn_readHardware(void){
           /*  ON                |   OFF */
     on_off = (((P2>>4)&0x4)>>2) | (P2&0x2) ;
 
-    /* ON, OFF keys */
+    if(!GIO_IS_SET(GIO_SCR_SWITCH1_BTN))
+    {
+        bt |= 0x1;
+        //printk("B1\n");
+    }
 
-    val = (dir|(fn<<4)|(on_off<<12))&0xFFFF;
+    val = (dir|(fn<<4)|(bt<<8)|(on_off<<12))&0xFFFF;
 
     return val;
 }
-
