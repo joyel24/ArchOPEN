@@ -21,19 +21,24 @@
 
 void arch_ata_resetHD(void)
 {
+     outb(OMAP_HD_POWER_UP_REQUEST,OMAP_REQUEST_BASE);
+     while(inb(OMAP_REQUEST_BASE));
      outb(OMAP_HD_RESET_REQUEST,OMAP_REQUEST_BASE);
      while(inb(OMAP_REQUEST_BASE));
-     //printk("Reset done!\n");
+  //   mdelay(2000);
 }
 
 void arch_ata_powerUpHD(void)
 {
- //   CPLD_SET_PORT1(CPLD_HD_POWER); /* powering up HD */
+   //  outb(OMAP_HD_POWER_UP_REQUEST,OMAP_REQUEST_BASE);
+   //  while(inb(OMAP_REQUEST_BASE));
+     //printk("Power UP done!\n");
 }
 
 void arch_ata_powerDownHD(void)
 {
-  //  CPLD_CLEAR_PORT1(CPLD_HD_POWER);
+ //    outb(OMAP_HD_POWER_DOWN_REQUEST,OMAP_REQUEST_BASE);
+ //    while(inb(OMAP_REQUEST_BASE));
 }
 
 void arch_ata_selectHD(void)
@@ -53,5 +58,4 @@ void arch_ata_init(void)
 void arch_ide_intAction(int irq,struct pt_regs * regs)
 {
 }
-
 

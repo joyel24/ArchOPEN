@@ -32,31 +32,20 @@
 
 __attribute__((section(".fwuncomp_code"))) void arch_reload_firmware(void){
     void (*DM_restart)(void) = (void (*)(void)) 0x0;
-//    unsigned long i;
-    // disable interrupts
+    
     __cli();
     __clf();
 
-    /*for(i=0;i<0x8000;i++) {
-       *((unsigned char*)i) = *((unsigned char*)(0x18C0000 + i));
-    } */
     gfx_closeGraphics();
+    printk("About to return to Linux...\n");
 
-    outb(0x8,OMAP_REQUEST_BASE);
+    outb(OMAP_COPY_FW_REQUEST,OMAP_REQUEST_BASE);
     while(inb(OMAP_REQUEST_BASE));
-    //for(
-   //  while(1);
-   // gfx_planeSetBufferOffset (BMAP1,0x900000);
-   // gfx_planeSetSize(BMAP1,320,240,8);
-   // gfx_planeSetPos(BMAP1,0x9B,0x2A);
 
     DM_restart();
-
-   // outb(OMAP_RESTART_REQUEST,OMAP_REQUEST_BASE);
-   // while(inb(OMAP_REQUEST_BASE));
 }
 
 void arch_HaltMsg(void)
 {
-
+   reload_firmware();      // Yes, that's not a message but it should be OK for now...
 }

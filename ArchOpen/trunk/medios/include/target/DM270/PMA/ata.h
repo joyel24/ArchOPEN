@@ -46,16 +46,4 @@
 #define CF_COMMAND                       (CF_BASE+0x24)
 #define CF_ALTSTATUS                     (CF_BASE+0x28)
 
-/* Needed for ATA through OMAP       */
-
-#define OMAP_REQUEST_BASE                 0x018BFFCC
-#define OMAP_HD_READ_REQUEST              0x1
-#define OMAP_HD_WRITE_REQUEST             0x2
-#define OMAP_HD_STATUS_REQUEST            0x3
-#define OMAP_HD_ALTS_ERR_REQUEST          0x4
-#define OMAP_HD_CMD_REQUEST               0x5
-#define OMAP_HD_RESET_REQUEST             0x6
-#define OMAP_RESTART_REQUEST              0x7
-
-
 #endif

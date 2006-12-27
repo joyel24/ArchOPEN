@@ -129,7 +129,7 @@ void gui_init(){
     mih->chooser->itemCount=3;
     mih->chooser->index=0;
     menu->addItem(menu,mih);
-#if defined(AV4XX) || defined(PMA)
+#if defined(AV4XX) //|| defined(PMA)
     mic=widgetMenuCheckbox_create();
     mic->caption="Int Speacker";
     mic->cfgStored=false;
@@ -250,7 +250,7 @@ void gui_applySettings(){
     overclocking=menu->getCheckbox(menu,menu->indexFromCaption(menu,"Enable OC"))->checked;
     armFrequency=menu->getTrackbar(menu,menu->indexFromCaption(menu,"CPU frequency(Mhz)"))->value;
     
-#if defined(AV4XX) || defined(PMA)
+#if defined(AV4XX) //|| defined(PMA)
     if(menu->getCheckbox(menu,menu->indexFromCaption(menu,"Int Speacker"))->checked)
     {
         printk("Enable spkr\n");
