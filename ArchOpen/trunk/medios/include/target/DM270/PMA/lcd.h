@@ -22,15 +22,15 @@
 #define SCREEN_WIDTH                      320
 #define SCREEN_REAL_WIDTH                 320
 #define SCREEN_HEIGHT                     240
-#define SCREEN_ORIGIN_X                   155
-#define SCREEN_ORIGIN_Y                   42
+#define SCREEN_ORIGIN_X                   0
+#define SCREEN_ORIGIN_Y                   0
 
-#define SCREEN_LCD_SHIFT_X                0
-#define SCREEN_LCD_SHIFT_Y                0
-#define SCREEN_PAL_SHIFT_X                0
-#define SCREEN_PAL_SHIFT_Y                0
-#define SCREEN_NTSC_SHIFT_X               0
-#define SCREEN_NTSC_SHIFT_Y               0
+#define SCREEN_LCD_SHIFT_X                178
+#define SCREEN_LCD_SHIFT_Y                43
+#define SCREEN_PAL_SHIFT_X                143
+#define SCREEN_PAL_SHIFT_Y                4
+#define SCREEN_NTSC_SHIFT_X               130
+#define SCREEN_NTSC_SHIFT_Y               10
 
 #define LCD_WIDTH SCREEN_REAL_WIDTH
 #define LCD_HEIGHT SCREEN_HEIGHT

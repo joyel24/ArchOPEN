@@ -64,8 +64,8 @@
 #if defined(PMA)
 #define LCD_WIDTH 320
 #define LCD_HEIGHT 240
-#define X_OFFSET 0x9B
-#define Y_OFFSET 0x2A
+#define X_OFFSET 0x0
+#define Y_OFFSET 0x0
 #endif
 
 #define OSD_BITMAP1_WIDTH 160
@@ -74,6 +74,18 @@
 #define USER_MENU_QUIT -2
 
 #define OSD_BITMAP1_CONFIG  OSD_COMPONENT_ENABLE | OSD_BITMAP_8BIT | OSD_BITMAP_MERGEBACK | OSD_BITMAP_A7 | OSD_BITMAP_ZX1 | OSD_BITMAP_RAMCLUT
+
+#if defined(GMINI4XX) || defined(GMINI402)
+int bt_UP = BTMASK_UP;
+int bt_DOWN = BTMASK_DOWN;
+int bt_LEFT = BTMASK_LEFT;
+int bt_RIGHT = BTMASK_RIGHT;
+int bt_A = BTMASK_BTN1;
+int bt_B = BTMASK_BTN2;
+int bt_START = BTMASK_ON;
+int bt_SELECT = BTMASK_F3;
+int bt_MENU = BTMASK_F1;
+#endif
 
 #if defined(AV3XX)
 int bt_UP = BTMASK_UP;
@@ -104,11 +116,11 @@ int bt_UP = BTMASK_UP;
 int bt_DOWN = BTMASK_DOWN;
 int bt_LEFT = BTMASK_LEFT;
 int bt_RIGHT = BTMASK_RIGHT;
-int bt_A = BTMASK_F1;
-int bt_B = BTMASK_ON;
-int bt_START = BTMASK_F3;
-int bt_SELECT = BTMASK_OFF;
-int bt_MENU = BTMASK_F2;
+int bt_A = BTMASK_ON;
+int bt_B = BTMASK_BTN1;
+int bt_START = BTMASK_F2;
+int bt_SELECT = BTMASK_F3;
+int bt_MENU = BTMASK_F1;
 #endif
 
 unsigned long OSD_BITMAP1_ADDRESS;
@@ -266,21 +278,6 @@ int doevents(void)
 
     if (pressed)
     {
-#if defined(GMINI4XX) || defined(GMINI402)
-        if(pressed & BTMASK_UP)     pad_press(PAD_UP);
-        if(pressed & BTMASK_DOWN)   pad_press(PAD_DOWN);
-        if(pressed & BTMASK_LEFT)   pad_press(PAD_LEFT);
-        if(pressed & BTMASK_RIGHT)  pad_press(PAD_RIGHT);
-        if(pressed & BTMASK_BTN1)  pad_press(PAD_A);
-        if(pressed & BTMASK_BTN2) pad_press(PAD_B);
-        if(pressed & BTMASK_ON)     pad_press(PAD_START);
-#ifdef USE_MEDIOS_BROWSER
-        if(pressed & BTMASK_OFF) return 0;
-#endif
-        if(pressed & BTMASK_F3)  pad_press(PAD_SELECT);
-        if(pressed & BTMASK_F1) {if (do_user_menu() == USER_MENU_QUIT)
-#endif
-#if defined(AV3XX) || defined(AV4XX) || defined(PMA)
         if(pressed & bt_UP)     pad_press(PAD_UP);
         if(pressed & bt_DOWN)   pad_press(PAD_DOWN);
         if(pressed & bt_LEFT)   pad_press(PAD_LEFT);
@@ -293,7 +290,6 @@ int doevents(void)
         if(pressed & BTMASK_OFF) return 0;
 #endif
         if(pressed & bt_MENU) {if (do_user_menu() == USER_MENU_QUIT)
-#endif
         {
             cleanup();
 #ifdef STDALONE
@@ -308,19 +304,6 @@ int doevents(void)
     
     if (released)
     {
-
-#if defined(GMINI4XX) || defined(GMINI402)
-        if(released & BTMASK_UP)     pad_release(PAD_UP);
-        if(released & BTMASK_DOWN)   pad_release(PAD_DOWN);
-        if(released & BTMASK_LEFT)   pad_release(PAD_LEFT);
-        if(released & BTMASK_RIGHT)  pad_release(PAD_RIGHT);
-        if(released & BTMASK_BTN1)  pad_release(PAD_A);
-        if(released & BTMASK_BTN2) pad_release(PAD_B);
-        if(released & BTMASK_ON)     pad_release(PAD_START);
-        if(released & BTMASK_BTN3)  pad_release(PAD_SELECT);
-#endif
-
-#if defined(AV3XX) || defined(AV4XX) || defined(PMA)
         if(released & bt_UP)     pad_release(PAD_UP);
         if(released & bt_DOWN)   pad_release(PAD_DOWN);
         if(released & bt_LEFT)   pad_release(PAD_LEFT);
@@ -329,7 +312,6 @@ int doevents(void)
         if(released & bt_A) pad_release(PAD_A);
         if(released & bt_START)     pad_release(PAD_START);
         if(released & bt_SELECT)  pad_release(PAD_SELECT);
-#endif
     }
     
     return 1;

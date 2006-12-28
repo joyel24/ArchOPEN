@@ -19,6 +19,8 @@
 
 #include <sys_def/ctype.h>
 #include <sys_def/buttons.h>
+#include <driver/videnc.h>
+
 
 #include "defs.h"
 #include "avboy.h"
@@ -54,8 +56,8 @@
 #if defined(PMA)
 #define LCD_WIDTH 320
 #define LCD_HEIGHT 240
-#define X_OFFSET 0x9B
-#define Y_OFFSET 0x2A
+#define X_OFFSET 0x0
+#define Y_OFFSET 0x0
 #endif
 
 extern int frameskip;
@@ -65,6 +67,7 @@ int TVInt = 0;
 int ARMFreq = 0;
 int RotScreen = 0;
 int ZoomX=0;
+int TVmode=VIDENC_MODE_NTSC;
 
 int MENU_X=10;
 
@@ -419,20 +422,42 @@ static void do_opt_menu(void) {
         snprintf((char *)opt_menu[0], 17, "Frameskip      %1d", frameskip);
         break;
       case OM_ITEM_TV:
-        (*(volatile unsigned short *)(0x30800))^=0x4;
+        //(*(volatile unsigned short *)(0x30800))^=0x4;
         TVState = !TVState;
-        if(TVState)(*(volatile unsigned short *)(0x3058E))=0x2000;
-        else (*(volatile unsigned short *)(0x3058A))=0x2000;
+       // if(TVState)(*(volatile unsigned short *)(0x3058E))=0x2000;
+       // else (*(volatile unsigned short *)(0x3058A))=0x2000;
+        if(TVState) {
+           gfx_planeSetPos(BMAP1,(LCD_WIDTH-OSD_BITMAP1_WIDTH) + X_OFFSET + 40,(LCD_HEIGHT-OSD_BITMAP1_HEIGHT)/2 + Y_OFFSET + (TVStd ? 42 : 20));
+           videnc_setup(TVmode,TVInt);
+        }
+        else {
+           gfx_planeSetPos(BMAP1,(LCD_WIDTH-OSD_BITMAP1_WIDTH) + X_OFFSET,(LCD_HEIGHT-OSD_BITMAP1_HEIGHT)/2 + Y_OFFSET);
+           videnc_setup(VIDENC_MODE_LCD,false);
+        }
         snprintf((char *)opt_menu[1], 17, "TV Out       %s", (TVState ? " ON" : "OFF"));
         break;
       case OM_ITEM_TVS:
-        (*(volatile unsigned short *)(0x30800))^=0x8000;
+      //  (*(volatile unsigned short *)(0x30800))^=0x8000;
         TVStd = !TVStd;
+        if(TVStd) {
+           TVmode=VIDENC_MODE_PAL;
+        }
+        else {
+           TVmode=VIDENC_MODE_NTSC;
+        }
+        if(TVState) {
+           gfx_planeSetPos(BMAP1,(LCD_WIDTH-OSD_BITMAP1_WIDTH) + X_OFFSET + 40,(LCD_HEIGHT-OSD_BITMAP1_HEIGHT)/2 + Y_OFFSET + (TVStd ? 42 : 20));
+           videnc_setup(TVmode,TVInt);
+        }
         snprintf((char *)opt_menu[2], 17, "TV Standard %s", (TVStd ? " PAL" : "NTSC"));
         break;
       case OM_ITEM_TVI:
-        (*(volatile unsigned short *)(0x30800))^=0x4000;
+        //(*(volatile unsigned short *)(0x30800))^=0x4000;
         TVInt = !TVInt;
+        if(TVState) {
+           gfx_planeSetPos(BMAP1,(LCD_WIDTH-OSD_BITMAP1_WIDTH) + X_OFFSET + 40,(LCD_HEIGHT-OSD_BITMAP1_HEIGHT)/2 + Y_OFFSET + (TVStd ? 42 : 20));
+           videnc_setup(TVmode,TVInt);
+        }
         snprintf((char *)opt_menu[3], 17, "TV Interlaced  %s", (TVInt ? "Y" : "N"));
         break;
       case OM_ITEM_MO:
@@ -507,6 +532,8 @@ static void do_opt2_menu(void) {
            if(RotScreen==2) {
               fb.pitch=-1;
               gfx_planeSetSize(BMAP1,144,160,8);
+              
+              #if defined(AV3XX)
               bt_UP = BTMASK_RIGHT;
               bt_DOWN = BTMASK_LEFT;
               bt_LEFT = BTMASK_UP;
@@ -514,11 +541,41 @@ static void do_opt2_menu(void) {
               bt_A = BTMASK_F2;
               bt_B = BTMASK_F3;
               bt_SELECT = BTMASK_F1;
+              bt_START = BTMASK_ON;
+              bt_MENU = BTMASK_OFF;
+              #endif
+
+              #if defined(AV4XX)
+              bt_UP = BTMASK_RIGHT;
+              bt_DOWN = BTMASK_LEFT;
+              bt_LEFT = BTMASK_UP;
+              bt_RIGHT = BTMASK_DOWN;
+              bt_A = BTMASK_F2;
+              bt_B = BTMASK_F3;
+              bt_SELECT = BTMASK_F1;
+              bt_START = BTMASK_OFF;
+              bt_MENU = BTMASK_BTN1;
+              #endif
+              
+              #if defined(PMA)
+              bt_UP = BTMASK_RIGHT;
+              bt_DOWN = BTMASK_LEFT;
+              bt_LEFT = BTMASK_UP;
+              bt_RIGHT = BTMASK_DOWN;
+              bt_A = BTMASK_F2;
+              bt_B = BTMASK_F3;
+              bt_SELECT = BTMASK_F1;
+              bt_START = BTMASK_OFF;
+              bt_MENU = BTMASK_BTN1;
+              #endif
+
               MENU_X=2;
            }
            else if(RotScreen==1) {
               fb.pitch=1;
               gfx_planeSetSize(BMAP1,144,160,8);
+              
+              #if defined(AV3XX)
               bt_UP = BTMASK_LEFT;
               bt_DOWN = BTMASK_RIGHT;
               bt_LEFT = BTMASK_DOWN;
@@ -526,18 +583,76 @@ static void do_opt2_menu(void) {
               bt_A = BTMASK_F3;
               bt_B = BTMASK_F2;
               bt_SELECT = BTMASK_F1;
+              bt_START = BTMASK_ON;
+              bt_MENU = BTMASK_OFF;
+              #endif
+
+              #if defined(AV4XX)
+              bt_UP = BTMASK_LEFT;
+              bt_DOWN = BTMASK_RIGHT;
+              bt_LEFT = BTMASK_DOWN;
+              bt_RIGHT = BTMASK_UP;
+              bt_A = BTMASK_F2;
+              bt_B = BTMASK_F3;
+              bt_SELECT = BTMASK_F1;
+              bt_START = BTMASK_OFF;
+              bt_MENU = BTMASK_BTN1;
+              #endif
+              
+              #if defined(PMA)
+              bt_UP = BTMASK_LEFT;
+              bt_DOWN = BTMASK_RIGHT;
+              bt_LEFT = BTMASK_DOWN;
+              bt_RIGHT = BTMASK_UP;
+              bt_A = BTMASK_F2;
+              bt_B = BTMASK_F3;
+              bt_SELECT = BTMASK_F1;
+              bt_START = BTMASK_OFF;
+              bt_MENU = BTMASK_BTN1;
+              #endif
+
               MENU_X=2;
            }
            else {
               fb.pitch=OSD_BITMAP1_WIDTH;
               gfx_planeSetSize(BMAP1,160,144,8);
+
+              #if defined(AV3XX)
               bt_UP = BTMASK_UP;
               bt_DOWN = BTMASK_DOWN;
               bt_LEFT = BTMASK_LEFT;
               bt_RIGHT = BTMASK_RIGHT;
               bt_A = BTMASK_F2;
               bt_B = BTMASK_F1;
+              bt_START = BTMASK_ON;
               bt_SELECT = BTMASK_F3;
+              bt_MENU = BTMASK_OFF;
+              #endif
+
+              #if defined(AV4XX)
+              bt_UP = BTMASK_UP;
+              bt_DOWN = BTMASK_DOWN;
+              bt_LEFT = BTMASK_LEFT;
+              bt_RIGHT = BTMASK_RIGHT;
+              bt_A = BTMASK_BTN1;
+              bt_B = BTMASK_ON;
+              bt_START = BTMASK_F1;
+              bt_SELECT = BTMASK_OFF;
+              bt_MENU = BTMASK_F2;
+              #endif
+              
+              #if defined(PMA)
+              bt_UP = BTMASK_UP;
+              bt_DOWN = BTMASK_DOWN;
+              bt_LEFT = BTMASK_LEFT;
+              bt_RIGHT = BTMASK_RIGHT;
+              bt_A = BTMASK_ON;
+              bt_B = BTMASK_BTN1;
+              bt_START = BTMASK_F2;
+              bt_SELECT = BTMASK_F3;
+              bt_MENU = BTMASK_F1;
+              #endif
+
               MENU_X=10;
            }
         }
@@ -840,5 +955,3 @@ while(!done) {
   free(list);
   return;
 }
-
-
