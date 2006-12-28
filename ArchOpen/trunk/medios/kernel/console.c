@@ -34,12 +34,13 @@
 fnt_needFont(CON_FONT);
 
 extern struct graphics_operations g8ops;
+extern int gui_pal[256][3];
 
 char * con_gfxBuffer;
 
 struct graphicsBuffer con_gfxStruct = {
     offset             : 0,
-    state              : OSD_CON_BMAP_CFG,
+    state              : OSD_BMAP_1_CFG,
     enable             : 0,
     width              : SCREEN_WIDTH,
     real_width         : SCREEN_REAL_WIDTH,
@@ -49,6 +50,8 @@ struct graphicsBuffer con_gfxStruct = {
     bitsPerPixel       : 8,
     gops               : &g8ops
 };
+
+int con_paletteSave[256][3];
 
 char con_buffer[CON_BUFFER_SIZE];
 char con_colorBuffer[CON_BUFFER_SIZE];
@@ -219,7 +222,14 @@ void con_screenSwitch(){
     osd_setComponentConfig(OSD_CURSOR1, 0);
     osd_setComponentConfig(OSD_CURSOR2, 0);
     gfx_restoreComponent(BMAP1,&con_gfxStruct);
+    
+    // save palette & set medios palette
+    osd_savePalette(con_paletteSave,256);
+    osd_setEntirePalette(gui_pal,256,true);
   }else{
+    // restore palette
+    osd_setEntirePalette(con_paletteSave,256,false);
+
     gfx_restoreAllComponents();
   }
 

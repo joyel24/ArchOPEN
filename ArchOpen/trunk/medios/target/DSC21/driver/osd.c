@@ -96,7 +96,7 @@ void osd_setMainShift (int horizontal,int vertical)
 	outw(vertical,OSD_MAIN_SHIFT_VERT);
 }
 
-void osd_setEntirePalette(int palette[256][3],int size)
+void osd_setEntirePalette(int palette[][3],int size, bool isRgb)
 {
     /* no palette in DSC21*/
 }
@@ -107,6 +107,11 @@ void osd_setPaletteRGB(int r,int g, int b, int index)
 }
 
 void osd_setPallette (int Y, int Cr, int Cb, int index)
+{
+    /* no palette in DSC21*/
+}
+
+void osd_savePalette(int (*palette)[], int size)
 {
     /* no palette in DSC21*/
 }

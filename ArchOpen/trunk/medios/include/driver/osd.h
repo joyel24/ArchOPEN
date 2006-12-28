@@ -13,15 +13,18 @@
 #ifndef __OSD_H
 #define __OSD_H
 
+#include <sys_def/types.h>
+
 #include <target/chip/osd.h>
 
 int  osd_RGB2Packed(int r, int g, int b);
 void osd_setCursor2Bitmap (int index, int data);
 void osd_setMainConfig (int config);
 void osd_setMainShift (int horizontal,int vertical);
-void osd_setEntirePalette (int palette[256][3],int size);
+void osd_setEntirePalette (int palette[][3],int size,bool isRgb);
 void osd_setPaletteRGB(int r,int g,int b,int index);
 void osd_setPalette (int Y, int Cr, int Cb, int index);
+void osd_savePalette(int (*palette)[], int size);
 void osd_set16CPalette (int bankN, int index, int value);
 void osd_setAltOffset (int address);
 void osd_setComponentOffset (int component, int address);

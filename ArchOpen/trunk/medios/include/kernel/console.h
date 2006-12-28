@@ -22,7 +22,7 @@
 
 #define CON_FONT std4x6
 
-#define CON_BGCOLOR COLOR_ROM_BLACK
+#define CON_BGCOLOR COLOR_BLACK
 
 #define CON_MARGIN_X 2
 #define CON_MARGIN_Y 2

@@ -41,6 +41,4 @@
 #define OSD_CUR_1_CFG       0
 #define OSD_CUR_2_CFG       0
 
-#define OSD_CON_BMAP_CFG    OSD_BITMAP_ZX2 | OSD_BITMAP_ZY1 | OSD_BITMAP_8BIT | OSD_BITMAP_0TRANS
-
 #endif

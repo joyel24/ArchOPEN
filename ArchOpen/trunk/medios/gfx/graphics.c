@@ -194,7 +194,7 @@ void gfx_init(void)
     osd_setComponentConfig(OSD_CURSOR1, 0);
     osd_setComponentConfig(OSD_CURSOR2, 0);
 
-    osd_setEntirePalette(gui_pal,256);
+    osd_setEntirePalette(gui_pal,256,true);
 
     fnt_init();
 }
@@ -359,7 +359,7 @@ void gfx_openGraphics(void)
     current_font=0;
     buffers[BMAP1]->enable=1;
     osd_setComponentConfig(OSD_BITMAP1,buffers[BMAP1]->state|OSD_COMPONENT_ENABLE(buffers_comp[BMAP1]));
-    osd_setEntirePalette(gui_pal,256);
+    osd_setEntirePalette(gui_pal,256,true);
     //printk("BMAP1 @%x\n",buffers[BMAP1]->offset);
 }
 
@@ -643,7 +643,7 @@ void gfx_setPalletteRGB(int r, int g, int b, int index)
 
 void gfx_setEntirePalette(int palette[256][3],int size)
 {
-    osd_setEntirePalette(palette,size);
+    osd_setEntirePalette(palette,size,true);
 }
 
 void gfx_fontSet(int font_nb)

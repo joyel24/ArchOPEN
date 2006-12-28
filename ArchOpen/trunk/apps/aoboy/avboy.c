@@ -136,7 +136,7 @@ int app_main(int argc,char** argv)
 #ifdef USE_MEDIOS_BROWSER
 	while(1)
 	{
-		osd_setEntirePalette(gui_pal,256);
+		osd_setEntirePalette(gui_pal,256,true);
 		gfx_planeSetSize(BMAP1,LCD_WIDTH,LCD_HEIGHT,8);
 		gfx_planeSetPos(BMAP1,X_OFFSET,Y_OFFSET);
 		icon_init();

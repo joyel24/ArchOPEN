@@ -287,7 +287,7 @@ void DoButtonEvent(int button,bool released){
   if(!released && button_to_key[menuactive?1:0][button]=='M'){
 
     // medios palette
-    osd_setEntirePalette(gui_pal,256);
+    osd_setEntirePalette(gui_pal,256,true);
 
     gui_execute();
     gui_applySettings();

@@ -42,6 +42,4 @@
 #define OSD_CUR_1_CFG       0
 #define OSD_CUR_2_CFG       0
 
-#define OSD_CON_BMAP_CFG    OSD_BITMAP_ZX1 | OSD_BITMAP_8BIT | COLOR_TRSP << OSD_BITMAP_A_SHIFT
-
 #endif

@@ -10,6 +10,7 @@
 * KIND, either express of implied.
 */
 
+#include <lib/string.h>
 #include <kernel/io.h>
 
 #include <driver/hardware.h>
@@ -25,8 +26,10 @@ int osdLookupOffsetHI[4] = { OSD_SDRAM_OFF_HI_VID0_1 ,
                              OSD_SDRAM_OFF_HI_VID0_1 ,
 							 OSD_SDRAM_OFF_HI_BITMAP0_1,
 							 OSD_SDRAM_OFF_HI_BITMAP0_1 };
-							 
+
 int OSD_OFF_HI_SHIFT[4] = {0,8,0,8};
+
+int osd_palette[256][3];
 
 int osd_RGB2Packed(int r, int g, int b)
 {
@@ -58,42 +61,57 @@ void osd_setMainShift (int horizontal,int vertical)
 	outw(vertical,OSD_BITMAP0_SHIFT_VERT);
 }
 
-void osd_setEntirePalette(int palette[256][3],int size)
+void osd_setEntirePalette(int palette[][3],int size,bool isRgb)
 {
-    int i=0;
-    int y,cr,cb;
-    for(i=0;i<size;i++)
+    int i;
+    if(isRgb)
     {
-        y = (306*palette[i][0] + 601*palette[i][1] + 117*palette[i][2]) >> 10 ; 
-        cb = ((-173*palette[i][0] -339*palette[i][1] + 512*palette[i][2]) >> 10) + 128;
-        cr = ((512*palette[i][0] - 428*palette[i][1] - 84*palette[i][2]) >> 10) + 128;
-    
-        /*printk("[setPalette] (%03d) RGB=(%03d,%03d,%03d) YCrCb=(%03d,%03d,%03d)\n",i,
-                    palette[i][0],palette[i][1],palette[i][2],
-                    y,cr,cb);*/
-        
-        osd_setPalette (y, cr, cb, i);
+        for(i=0;i<size;i++)
+        {
+            osd_setPaletteRGB(palette[i][0], palette[i][1], palette[i][2], i);
+        }
+    }
+    else
+    {
+        for(i=0;i<size;i++)
+        {
+            osd_setPalette(palette[i][0], palette[i][1], palette[i][2], i);
+        }
     }
 }
 
 void osd_setPaletteRGB(int r,int g,int b,int index)
 {
-  osd_setPalette(RGB2Y(r,g,b), RGB2Cr(r,g,b),RGB2Cb(r,g,b),index);
+    osd_setPalette(RGB2Y(r,g,b), RGB2Cr(r,g,b),RGB2Cb(r,g,b),index);
 }
 
 void osd_setPalette (int Y, int Cr, int Cb, int index)
 {
-	Y&=0xFF;
-        Cr&=0xFF;
-        Cb&=0xFF;
+	Y&=0xff;
+    Cr&=0xff;
+    Cb&=0xff;
+    index&=0xff;
 
-        //printk("OSD set palette (%x,%x,%x) at %d\n",Y,Cr,Cb,index);
+    osd_palette[index][0]=Y;
+    osd_palette[index][1]=Cr;
+    osd_palette[index][2]=Cb;
+
+    //printk("OSD set palette (%x,%x,%x) at %d\n",Y,Cr,Cb,index);
 
 	while((inw(OSD_PAL_ACCESS_STATUS)&0x1) != 0) /* nothing */ ;
-        outw((Y << 8) | Cb,OSD_PAL_DATA_WRITE);
+
+    outw((Y << 8) | Cb,OSD_PAL_DATA_WRITE);
+
 	while((inw(OSD_PAL_ACCESS_STATUS)&0x1) != 0) /* nothing */ ;
-        outw((Cr << 8) | index,OSD_PAL_INDEX_WRITE);
-        while((inw(OSD_PAL_ACCESS_STATUS)&0x1) != 0) /* nothing */ ;
+
+    outw((Cr << 8) | index,OSD_PAL_INDEX_WRITE);
+
+    while((inw(OSD_PAL_ACCESS_STATUS)&0x1) != 0) /* nothing */ ;
+}
+
+void osd_savePalette(int (*palette)[], int size)
+{
+    memcpy(palette,osd_palette,size*3*sizeof(int));
 }
 
 void osd_set16CPalette (int bankN, int index, int value)
@@ -103,7 +121,6 @@ void osd_set16CPalette (int bankN, int index, int value)
 	val |= value << GET_BANK_SHIFT(index);
 	outw(val,GET_BANK_ADDR(bankN,index));
 }
-
 
 void osd_setAltOffset (int address)
 {
@@ -167,25 +184,14 @@ void osd_restorePlane(int component, unsigned int address, int x, int y, int w, 
 {
     int enbit=(enable)?OSD_COMPONENT_ENABLE(component):0;
 
-    osd_setComponentOffset (component,address);
-    osd_setComponentSize (component, 2*w, h);
+    osd_setComponentOffset(component,address);
+    osd_setComponentSize(component, 2*w, h);
     osd_setComponentPosition(component,x,y);
     osd_setComponentSourceWidth(component,(((bw*bpp)/32)/8));
-
-    switch(component)
-    {
-        case OSD_VIDEO1:
-            outw((inl(OSD_VID0_1_CONF) & 0xFF00) | (state|enbit),OSD_VID0_1_CONF);
-            break;
-        case OSD_VIDEO2:
-            outw((inl(OSD_VID0_1_CONF) & 0xFF) | ((state|enbit)<<8),OSD_VID0_1_CONF);
-            break;
-        default:
-            outw((state|enbit),OSD_COMP_CONF(component));
-    }
+    osd_setComponentConfig(component,state|enbit);
 }
 
 void osd_init()
 {
-  arch_osd_init();
+    arch_osd_init();
 }

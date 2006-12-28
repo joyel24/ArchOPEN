@@ -37,7 +37,7 @@ void printk(char *fmt, ...)
     if(printk_on_uart)
         uart_outString(debugmembuf,DEBUG_UART);
 #ifdef HAVE_CONSOLE
-    con_write(debugmembuf,COLOR_ROM_GREEN);
+    con_write(debugmembuf,COLOR_LIGHT_GREEN);
 #endif
 }
 
@@ -51,7 +51,7 @@ int printf(__const char * fmt, ...)
     if(printk_on_uart)
         uart_outString(debugmembuf,DEBUG_UART);
 #ifdef HAVE_CONSOLE
-    con_write(debugmembuf,COLOR_ROM_WHITE);
+    con_write(debugmembuf,COLOR_WHITE);
 #endif
     return res;
 }
@@ -63,7 +63,7 @@ int vprintf(__const char * fmt, va_list args)
     if(printk_on_uart)
         uart_outString(debugmembuf,DEBUG_UART);
 #ifdef HAVE_CONSOLE
-    con_write(debugmembuf,COLOR_ROM_WHITE);
+    con_write(debugmembuf,COLOR_WHITE);
 #endif
     return res;
 }

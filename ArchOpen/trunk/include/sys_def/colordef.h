@@ -7,10 +7,8 @@
 #ifndef COLORDEF_H
 #define COLORDEF_H
 
-#if defined(DSC25) || defined(DM270)
+#if defined(DSC25) || defined(DM270) || defined(DM320)
     #include <sys_def/colordef_DSC25.h>
-#elif defined(DM320)
-    #include <sys_def/colordef_DM320.h>
 #elif defined(DSC21)
     #include <sys_def/colordef_DSC21.h>
 #else
