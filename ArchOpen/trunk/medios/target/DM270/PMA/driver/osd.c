@@ -18,10 +18,12 @@
 #include <driver/hardware.h>
 #include <driver/osd.h>
 #include <driver/lcd.h>
+#include <driver/videnc.h>
 
 void arch_osd_init(void)
 {
 	osd_setMainShift(SCREEN_LCD_SHIFT_X, SCREEN_LCD_SHIFT_Y);
 
-// 	outw(9,VIDEO_BASE+0x2C); // LCD VSync
+ 	outw(0x12,VIDENC_BASE+0x2C); // LCD VSync
+	outw(0x4001,VIDENC_BASE);    // NTSC ( It's in PAL when we leave Linux... )
 }
