@@ -16,30 +16,32 @@
 
 #include <sys_def/types.h>
 
-void cfg_clear();
+typedef struct CFG_DATA_STRUCT CFG_DATA;
 
-void cfg_newFile();
-bool cfg_readFile(char * filename);
-bool cfg_writeFile(char * filename);
+void cfg_clear(CFG_DATA * data);
 
-void cfg_rewindItems();
-bool cfg_nextItem(char * * name,char * * value);
+CFG_DATA * cfg_newFile();
+CFG_DATA * cfg_readFile(char * filename);
+bool cfg_writeFile(CFG_DATA * data, char * filename);
 
-bool cfg_itemExists(char * name);
+void cfg_rewindItems(CFG_DATA * data);
+bool cfg_nextItem(CFG_DATA * data, char * * name,char * * value);
 
-char * cfg_readString(char * name);
-int cfg_readInt(char * name);
-bool cfg_readBool(char * name);
+bool cfg_itemExists(CFG_DATA * data, char * name);
 
-void cfg_writeString(char * name,char * value);
-void cfg_writeInt(char * name,int value);
-void cfg_writeBool(char * name,bool value);
+char * cfg_readString(CFG_DATA * data, char * name);
+int cfg_readInt(CFG_DATA * data, char * name);
+bool cfg_readBool(CFG_DATA * data, char * name);
 
-void cfg_addDummyLine(char * text);
+void cfg_writeString(CFG_DATA * data, char * name,char * value);
+void cfg_writeInt(CFG_DATA * data, char * name,int value);
+void cfg_writeBool(CFG_DATA * data, char * name,bool value);
 
-bool cfg_deleteItem(char * name);
+void cfg_addDummyLine(CFG_DATA * data, char * text);
+
+bool cfg_deleteItem(CFG_DATA * data, char * name);
 
 // debug
-void cfg_printItems();
+void cfg_printItems(CFG_DATA * data);
 
 #endif

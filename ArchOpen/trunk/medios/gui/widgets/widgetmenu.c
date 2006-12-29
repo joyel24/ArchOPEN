@@ -325,9 +325,11 @@ CHOOSER widgetMenu_getChooser(WIDGETMENU m,int index){
 bool widgetMenu_cfgLoad(WIDGETMENU m,char * filename){
     int i;
     WIDGETMENU_ITEM mi;
+    CFG_DATA * data;
 
     // read cfg file
-    if (!cfg_readFile(filename)){
+    data=cfg_readFile(filename);
+    if (data==NULL){
         return false;
     }
 
@@ -336,12 +338,12 @@ bool widgetMenu_cfgLoad(WIDGETMENU m,char * filename){
 
         mi=(WIDGETMENU_ITEM)m->items[i];
 
-        if(mi->cfgStored && cfg_itemExists(mi->cfgName)){
-            mi->cfgFromString(mi,cfg_readString(mi->cfgName));
+        if(mi->cfgStored && cfg_itemExists(data,mi->cfgName)){
+            mi->cfgFromString(mi,cfg_readString(data,mi->cfgName));
         }
     }
 
-    cfg_clear();
+    cfg_clear(data);
 
     return true;
 }
@@ -350,10 +352,12 @@ bool widgetMenu_cfgSave(WIDGETMENU m,char * filename){
     int i;
     WIDGETMENU_ITEM mi;
     char * s = malloc(256);
+    CFG_DATA * data;
 
     // try to read cfg file (we will update it), else create a new file
-    if (!cfg_readFile(filename)){
-        cfg_newFile();
+    data=cfg_readFile(filename);
+    if (data==NULL){
+        data=cfg_newFile();
     }
 
     // write stored items value
@@ -363,18 +367,18 @@ bool widgetMenu_cfgSave(WIDGETMENU m,char * filename){
 
         if(mi->cfgStored){
             mi->cfgToString(mi,s);
-            cfg_writeString(mi->cfgName,s);
+            cfg_writeString(data,mi->cfgName,s);
         }
     }
 
     free(s);
 
     // update or write cfg file
-    if (!cfg_writeFile(filename)){
+    if (!cfg_writeFile(data,filename)){
         return false;
     }
 
-    cfg_clear();
+    cfg_clear(data);
 
     return true;
 }

@@ -258,3 +258,32 @@ LABEL                   # label_create                # void
 ICON   # icon_load                 # char * filename
 ICON   # icon_add                  # char * name,unsigned char * data,int w,int h
 ICON   # icon_get                  # char * name
+
+
+#api_inc#sys_def/cfg_file.h
+#k_inc#fs/cfg_file.h
+
+void       # cfg_clear        # CFG_DATA * data
+
+CFG_DATA * # cfg_newFile      #
+CFG_DATA * # cfg_readFile     # char * filename
+bool       # cfg_writeFile    # CFG_DATA * data, char * filename
+
+void       # cfg_rewindItems  # CFG_DATA * data
+bool       # cfg_nextItem     # CFG_DATA * data, char * * name,char * * value
+
+bool       # cfg_itemExists   # CFG_DATA * data, char * name
+
+char *     # cfg_readString   # CFG_DATA * data, char * name
+int        # cfg_readInt      # CFG_DATA * data, char * name
+bool       # cfg_readBool     # CFG_DATA * data, char * name
+
+void       # cfg_writeString  # CFG_DATA * data, char * name,char * value
+void       # cfg_writeInt     # CFG_DATA * data, char * name,int value
+void       # cfg_writeBool    # CFG_DATA * data, char * name,bool value
+
+void       # cfg_addDummyLine # CFG_DATA * data, char * text
+
+bool       # cfg_deleteItem   # CFG_DATA * data, char * name
+
+void       # cfg_printItems   # CFG_DATA * data

@@ -84,14 +84,16 @@ static bool shell_parseHandlers(char * filename){
     char * value;
     char * ext = NULL;
     SHELL_HANDLER handler;
+    CFG_DATA * data;
 
-    if(!cfg_readFile(filename)) return false;
+    data=cfg_readFile(filename);
+    if(data==NULL) return false;
 
     printk("[shell] parsing '%s'\n",filename);
 
-    cfg_rewindItems();
+    cfg_rewindItems(data);
 
-    while(cfg_nextItem(&name,&value)){
+    while(cfg_nextItem(data,&name,&value)){
         if(!strcmp(name,"ext")){
             ext=strdup(value);
             strlwr(ext);
@@ -128,7 +130,7 @@ static bool shell_parseHandlers(char * filename){
         }
     }
 
-    cfg_clear();
+    cfg_clear(data);
 
     return true;
 }

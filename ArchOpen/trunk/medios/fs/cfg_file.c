@@ -26,19 +26,28 @@ typedef struct {
     char * value;
 } CFG_ITEM;
 
+
+struct CFG_DATA_STRUCT {
+    CFG_ITEM * items;
+    int count;
+    int current;
+};
+
+/*
 static CFG_ITEM * cfg_items = NULL;
 static int cfg_itemCount = 0;
 
 static int cfg_currentItem = -1;
+*/
 
-static CFG_ITEM * cfg_getItem(char * name){
+static CFG_ITEM * cfg_getItem(CFG_DATA * data, char * name){
     int i;
 
-    for(i=0;i<cfg_itemCount;++i){
+    for(i=0;i<data->count;++i){
 
-        if(!cfg_items[i].dummy && !cfg_items[i].deleted &&!strcmp(cfg_items[i].name,name)){
+        if(!data->items[i].dummy && !data->items[i].deleted &&!strcmp(data->items[i].name,name)){
 
-            return &cfg_items[i];
+            return &data->items[i];
         }
     }
 
@@ -46,53 +55,54 @@ static CFG_ITEM * cfg_getItem(char * name){
     return NULL;
 }
 
-static CFG_ITEM * cfg_addItem(){
-    if(cfg_items==NULL){
-        printk("[cfg] cfg_items not allocated !\n");
-        return NULL;
-    }
+static CFG_ITEM * cfg_addItem(CFG_DATA * data){
 
-    cfg_itemCount++;
+    data->count++;
 
-    cfg_items=realloc(cfg_items,cfg_itemCount*sizeof(CFG_ITEM));
+    data->items=realloc(data->items,data->count*sizeof(CFG_ITEM));
 
-    return &cfg_items[cfg_itemCount-1];
+    return &data->items[data->count-1];
 }
 
-void cfg_clear(){
+void cfg_clear(CFG_DATA * data){
     int i;
 
-    if (cfg_items!=NULL){
+    if (data->items!=NULL){
 
         // clear items data
-        for(i=0;i<cfg_itemCount;++i){
-            free(cfg_items[i].name);
-            if (!cfg_items[i].dummy) free(cfg_items[i].value);
+        for(i=0;i<data->count;++i){
+            free(data->items[i].name);
+            if (!data->items[i].dummy) free(data->items[i].value);
         }
 
-        free(cfg_items);
-        cfg_items=NULL;
+        free(data->items);
     }
 
-    cfg_itemCount=0;
+    free(data);
 }
 
-void cfg_newFile(){
-    cfg_clear();
-    cfg_items=malloc(0);
+CFG_DATA * cfg_newFile(){
+    CFG_DATA * data;
+
+    data=malloc(sizeof(CFG_DATA));
+
+    data->items=malloc(0);
+    data->count=0;
+    data->current=-1;
+
+    return data;
 }
 
-bool cfg_readFile(char * filename){
+CFG_DATA * cfg_readFile(char * filename){
     int f;
-    char * data;
+    char * filedata;
     char prev;
     int size;
     int namebeg,nameend,valbeg,valend;
     int i;
     int ii;
     CFG_ITEM * item;
-
-    cfg_clear();
+    CFG_DATA * data;
 
     // open the file and read its content into a temp buffer
 
@@ -100,38 +110,40 @@ bool cfg_readFile(char * filename){
 
     if (f<0){
         printk("[cfg] can't open file!\n");
-        return false;
+        return NULL;
     }
 
     size=filesize(f);
 
-    data=malloc(size);
+    filedata=malloc(size);
 
-    if (read(f,data,size)!=size){
+    if (read(f,filedata,size)!=size){
         printk("[cfg] read error!\n");
-        free(data);
+        free(filedata);
         close(f);
-        return false;
+        return NULL;
     }
 
     close(f);
+
+    data=cfg_newFile();
 
     // read the data once to count how many items there is and alloc cfg_items
 
     prev=0;
     for(i=0;i<size;++i){
-        if (prev=='\n' || prev==0) cfg_itemCount++;
-        prev=data[i];
+        if (prev=='\n' || prev==0) data->count++;
+        prev=filedata[i];
     }
 
-    cfg_items=malloc(cfg_itemCount*sizeof(CFG_ITEM));
+    data->items=malloc(data->count*sizeof(CFG_ITEM));
 
     // read again and fill cfg_items
 
     i=0;
     ii=0;
     do{
-        item=&cfg_items[ii];
+        item=&data->items[ii];
         item->dummy=true;
         item->deleted=false;
         item->name=NULL;
@@ -140,10 +152,10 @@ bool cfg_readFile(char * filename){
         namebeg=nameend=valbeg=valend=i;
 
         // parse a line
-        while(i<size && data[i]!='\r' && data[i]!='\n'){
+        while(i<size && filedata[i]!='\r' && filedata[i]!='\n'){
 
-            if(data[i]=='=' && valbeg==nameend){ // first '=' on a line?
-                item->dummy=data[namebeg]=='#'; // dummy item if no '=' or line is a comment
+            if(filedata[i]=='=' && valbeg==nameend){ // first '=' on a line?
+                item->dummy=filedata[namebeg]=='#'; // dummy item if no '=' or line is a comment
 
                 nameend=i;
                 valbeg=valend=i+1;
@@ -161,17 +173,17 @@ bool cfg_readFile(char * filename){
         // copy name
         item->name=malloc(nameend-namebeg+1);
         memset(item->name,0,nameend-namebeg+1);
-        strncpy(item->name,&data[namebeg],nameend-namebeg);
+        strncpy(item->name,&filedata[namebeg],nameend-namebeg);
 
         // copy value
         if(!item->dummy){
             item->value=malloc(valend-valbeg+1);
             memset(item->value,0,valend-valbeg+1);
-            strncpy(item->value,&data[valbeg],valend-valbeg);
+            strncpy(item->value,&filedata[valbeg],valend-valbeg);
         }
 
         // handle CR+LF
-        if (i<size-1 && data[i]=='\r' && data[i+1]=='\n'){
+        if (i<size-1 && filedata[i]=='\r' && filedata[i+1]=='\n'){
             i++;
         }
 
@@ -179,12 +191,12 @@ bool cfg_readFile(char * filename){
         ii++;
     }while(i<size);
 
-    free(data);
+    free(filedata);
 
-    return true;
+    return data;
 }
 
-bool cfg_writeFile(char * filename){
+bool cfg_writeFile(CFG_DATA * data, char * filename){
     int f;
     int i;
     CFG_ITEM * item;
@@ -199,8 +211,8 @@ bool cfg_writeFile(char * filename){
         return false;
     }
 
-    for(i=0;i<cfg_itemCount;++i){
-        item=&cfg_items[i];
+    for(i=0;i<data->count;++i){
+        item=&data->items[i];
 
         if(!item->deleted){
 
@@ -231,22 +243,22 @@ bool cfg_writeFile(char * filename){
     return true;
 }
 
-void cfg_rewindItems(){
-    cfg_currentItem=-1;
+void cfg_rewindItems(CFG_DATA * data){
+    data->current=-1;
 }
 
-bool cfg_nextItem(char * * name,char * * value){
+bool cfg_nextItem(CFG_DATA * data, char * * name,char * * value){
 
-    if(cfg_itemCount==0) return false;
+    if(data->count==0) return false;
 
     // find next valid item
     do{
-        cfg_currentItem++;
-    }while(cfg_items[cfg_currentItem].dummy || cfg_items[cfg_currentItem].deleted);
+        data->current++;
+    }while(data->items[data->current].dummy || data->items[data->current].deleted);
 
-    if(cfg_currentItem<cfg_itemCount){
-        *name=cfg_items[cfg_currentItem].name;
-        *value=cfg_items[cfg_currentItem].value;
+    if(data->current<data->count){
+        *name=data->items[data->current].name;
+        *value=data->items[data->current].value;
 
         return true;
     };
@@ -254,15 +266,15 @@ bool cfg_nextItem(char * * name,char * * value){
     return false;
 }
 
-bool cfg_itemExists(char * name){
+bool cfg_itemExists(CFG_DATA * data, char * name){
 
-    return cfg_getItem(name)!=NULL;
+    return cfg_getItem(data, name)!=NULL;
 }
 
-char * cfg_readString(char * name){
+char * cfg_readString(CFG_DATA * data, char * name){
     CFG_ITEM * item;
 
-    item=cfg_getItem(name);
+    item=cfg_getItem(data,name);
 
     if(item!=NULL){
 
@@ -272,20 +284,20 @@ char * cfg_readString(char * name){
     return "";
 }
 
-int cfg_readInt(char * name){
+int cfg_readInt(CFG_DATA * data, char * name){
 
-    return atoi(cfg_readString(name));
+    return atoi(cfg_readString(data,name));
 }
 
-bool cfg_readBool(char * name){
+bool cfg_readBool(CFG_DATA * data, char * name){
 
-    return (cfg_readInt(name))?true:false;
+    return (cfg_readInt(data,name))?true:false;
 }
 
-void cfg_writeString(char * name,char * value){
+void cfg_writeString(CFG_DATA * data, char * name,char * value){
     CFG_ITEM * item;
 
-    item=cfg_getItem(name);
+    item=cfg_getItem(data,name);
 
     if(item!=NULL){
 
@@ -294,7 +306,7 @@ void cfg_writeString(char * name,char * value){
     }else{
 
         // item not found -> create new item
-        item=cfg_addItem();
+        item=cfg_addItem(data);
 
         item->dummy=false;
         item->deleted=false;
@@ -305,29 +317,29 @@ void cfg_writeString(char * name,char * value){
     }
 }
 
-void cfg_writeInt(char * name,int value){
+void cfg_writeInt(CFG_DATA * data, char * name,int value){
     char sv[12];
 
     sprintf(sv,"%d",value);
 
-    cfg_writeString(name,sv);
+    cfg_writeString(data,name,sv);
 }
 
-void cfg_writeBool(char * name,bool value){
+void cfg_writeBool(CFG_DATA * data, char * name,bool value){
 
     if(value){
 
-        cfg_writeString(name,"1");
+        cfg_writeString(data,name,"1");
     }else{
 
-        cfg_writeString(name,"0");
+        cfg_writeString(data,name,"0");
     }
 }
 
-void cfg_addDummyLine(char * text){
+void cfg_addDummyLine(CFG_DATA * data, char * text){
     CFG_ITEM * item;
 
-    item=cfg_addItem();
+    item=cfg_addItem(data);
 
     item->dummy=true;
     item->deleted=false;
@@ -336,10 +348,10 @@ void cfg_addDummyLine(char * text){
     strcpy(item->name,text);
 }
 
-bool cfg_deleteItem(char * name){
+bool cfg_deleteItem(CFG_DATA * data, char * name){
     CFG_ITEM * item;
 
-    item=cfg_getItem(name);
+    item=cfg_getItem(data,name);
 
     if(item!=NULL){
 
@@ -351,17 +363,17 @@ bool cfg_deleteItem(char * name){
     return false;
 }
 
-void cfg_printItems(){
+void cfg_printItems(CFG_DATA * data){
     int i;
 
-    for(i=0;i<cfg_itemCount;++i){
-        if (cfg_items[i].deleted){
+    for(i=0;i<data->count;++i){
+        if (data->items[i].deleted){
             printk("i=%d deleted!\n",i);
         }else{
-            if (cfg_items[i].dummy){
-                printk("i=%d dummy! text='%s'\n",i,cfg_items[i].name);
+            if (data->items[i].dummy){
+                printk("i=%d dummy! text='%s'\n",i,data->items[i].name);
             }else{
-                printk("i=%d name='%s' value='%s'\n",i,cfg_items[i].name,cfg_items[i].value);
+                printk("i=%d name='%s' value='%s'\n",i,data->items[i].name,data->items[i].value);
             }
         }
     }

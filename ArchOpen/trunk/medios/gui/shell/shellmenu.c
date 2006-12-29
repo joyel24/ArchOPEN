@@ -103,14 +103,16 @@ static bool shellMenu_parse(char * filename){
     char * name;
     char * value;
     SHELLMENU_ITEM item = NULL;
+    CFG_DATA * data;
 
-    if(!cfg_readFile(filename)) return false;
+    data=cfg_readFile(filename);
+    if(data==NULL) return false;
 
     printk("[shell menu] parsing '%s'\n",filename);
 
-    cfg_rewindItems();
+    cfg_rewindItems(data);
 
-    while(cfg_nextItem(&name,&value)){
+    while(cfg_nextItem(data,&name,&value)){
         if(!strcmp(name,"name")){
             item=shellMenu_addItem();
             item->name=strdup(value);
@@ -163,7 +165,7 @@ static bool shellMenu_parse(char * filename){
         }
     }
 
-    cfg_clear();
+    cfg_clear(data);
 
     return true;
 }
