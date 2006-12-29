@@ -93,7 +93,7 @@
 #endif
 
 #if defined(PMA)
-    //#define GMINI_OVERCLOCKING
+    #define GMINI_OVERCLOCKING
 
    // #define SCREEN_USE_DSP
     //#define SCREEN_USE_RESIZE
