@@ -398,6 +398,7 @@ void gui_welcomeScreen(){
     gfx_planeHide(VID1);
     gfx_planeHide(BMAP1);
     gfx_setPlane(VID2);
+    gfx_planeSetSize(VID2,220,176,32);   // Gmini size, the welcome screen will be clear for all arch
 
     ip=intro_gmini4_data;
     op=gfx_planeGetBufferOffset(VID2);
