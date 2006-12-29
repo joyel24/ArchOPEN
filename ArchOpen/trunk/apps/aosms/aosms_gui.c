@@ -133,7 +133,7 @@ void gui_init(){
     mih->chooser->index=0;
     standardMenu->addItem(standardMenu,mih);
 
-#if defined(AV4XX) || defined(PMA)
+#if defined(AV4XX) //|| defined(PMA)
     mic=widgetMenuCheckbox_create();
     mic->caption="Int Speaker";
     mic->cfgStored=false;
@@ -350,7 +350,7 @@ void gui_applySettings(){
     overclocking=advancedMenu->getCheckbox(advancedMenu,advancedMenu->indexFromCaption(advancedMenu,"Enable OC"))->checked;
     armFrequency=advancedMenu->getTrackbar(advancedMenu,advancedMenu->indexFromCaption(advancedMenu,"CPU frequency(Mhz)"))->value;
 
-#if defined(AV4XX) || defined(PMA)
+#if defined(AV4XX) //|| defined(PMA)
     if(standardMenu->getCheckbox(standardMenu,standardMenu->indexFromCaption(standardMenu,"Int Speaker"))->checked){
         printk("Enable spkr\n");
         SPCKR_ON();
@@ -415,13 +415,14 @@ void gui_welcomeScreen(){
     gfx_putS(COLOR_BLACK,COLOR_WHITE,0,sh-10,     "Press a key to continue...");
 #endif
 
-#if defined(GMINI402) || defined(GMINI4XX)
+#if defined(GMINI402) || defined(GMINI4XX) || defined(PMA)
     unsigned long *ip,*op;
     int i;
 
     gfx_planeHide(VID1);
     gfx_planeHide(BMAP1);
     gfx_setPlane(VID2);
+    gfx_planeSetSize(VID2,220,176,32);   // Gmini size, the welcome screen will be clear for all arch
 
     ip=intro_gmini4_data;
     op=gfx_planeGetBufferOffset(VID2);
