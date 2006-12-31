@@ -48,6 +48,8 @@ void chooser_init(CHOOSER c){
     c->items=NULL;
     c->itemCount=0;
     c->index=-1;
+    c->wrap=WIDGET_WRAP_OFF;
+    c->orientation=WIDGET_ORIENTATION_HORIZ;
 }
 
 bool chooser_handleEvent(CHOOSER c,int evt){
@@ -57,26 +59,43 @@ bool chooser_handleEvent(CHOOSER c,int evt){
     // let's see if the ancestor handles the event
     if (widget_handleEvent((WIDGET)c,evt)) return true;
 
-    switch(evt){
-        case BTN_LEFT:
-            if (c->itemCount){
-                c->index=MAX(0,c->index-1);
-            }else{
-                c->index=-1;
+    if(evt==BTN_LEFT)
+    {
+        if (c->itemCount){
+            if(c->index == 0)
+            {
+                if(c->wrap)
+                    c->index=c->itemCount-1;
+                else
+                    c->index=0;
             }
-            c->paint(c);
-            break;
-        case BTN_RIGHT:
-            if (c->itemCount){
-                c->index=MIN(c->itemCount-1,c->index+1);
-            }else{
-                c->index=-1;
+            else
+                c->index--;
+        }else{
+            c->index=-1;
+        }
+        c->paint(c);
+    }
+    else if(evt==BTN_RIGHT)
+    {
+        if (c->itemCount){
+            if(c->index == (c->itemCount-1))
+            {
+                if(c->wrap)
+                    c->index=0;
+                else
+                    c->index=c->itemCount-1;
             }
-            c->paint(c);
-            break;
-        default:
-            handled=false;
-            break;
+            else
+                c->index+=1;
+        }else{
+            c->index=-1;
+        }
+        c->paint(c);
+    }
+    else
+    {
+        handled=false;
     }
 
     // onChange event
@@ -87,7 +106,7 @@ bool chooser_handleEvent(CHOOSER c,int evt){
 
 void chooser_paint(CHOOSER c){
     int x,y,bs;
-    int ax1,ax2,ay1,ay2,ay3;
+    int a1,a2,a3;
     int color;
 
     widget_paint((WIDGET)c);
@@ -114,31 +133,46 @@ void chooser_paint(CHOOSER c){
     // arrows
     y=c->y+c->margin;
     bs=c->height-2*c->margin;
-    ay1=y+bs*1/4;
-    ay2=y+bs*1/2;
-    ay3=y+bs*3/4;
+    a1=bs*1/4;
+    a2=bs*1/2;
+    a3=bs*3/4;
 
     // left arrow
     x=c->x+c->margin;
-    ax1=x+bs*1/4;
-    ax2=x+bs*3/4;
-
+        
     gfx_drawRect(c->foreColor,x,y,bs,bs);
     gfx_fillRect(color,x+1,y+1,bs-2,bs-2);
-
-    gfx_drawLine(c->foreColor,ax1,ay2,ax2,ay1);
-    gfx_drawLine(c->foreColor,ax1,ay2,ax2,ay3);
-    gfx_drawLine(c->foreColor,ax2,ay1,ax2,ay3);
-
+    
+    if(c->orientation==WIDGET_ORIENTATION_HORIZ)
+    {
+        gfx_drawLine(c->foreColor,x+a1,y+a2,x+a3,y+a1);
+        gfx_drawLine(c->foreColor,x+a1,y+a2,x+a3,y+a3);
+        gfx_drawLine(c->foreColor,x+a3,y+a1,x+a3,y+a3);
+    }
+    else
+    {
+        gfx_drawLine(c->foreColor,x+a1,y+a3,x+a2,y+a1);
+        gfx_drawLine(c->foreColor,x+a3,y+a3,x+a2,y+a1);
+        gfx_drawLine(c->foreColor,x+a1,y+a3,x+a3,y+a3);
+    }    
+    
     // right arrow
     x=c->x+c->width-c->margin-bs;
-    ax1=x+bs*1/4;
-    ax2=x+bs*3/4;
-
+        
     gfx_drawRect(c->foreColor,x,y,bs,bs);
     gfx_fillRect(color,x+1,y+1,bs-2,bs-2);
+    
+    if(c->orientation==WIDGET_ORIENTATION_HORIZ)
+    {
+        gfx_drawLine(c->foreColor,x+a3,y+a2,x+a1,y+a1);
+        gfx_drawLine(c->foreColor,x+a3,y+a2,x+a1,y+a3);
+        gfx_drawLine(c->foreColor,x+a1,y+a1,x+a1,y+a3);
+    }
+    else
+    {        
+        gfx_drawLine(c->foreColor,x+a1,y+a1,x+a2,y+a3);
+        gfx_drawLine(c->foreColor,x+a3,y+a1,x+a2,y+a3);
+        gfx_drawLine(c->foreColor,x+a1,y+a1,x+a3,y+a1);        
+    }
 
-    gfx_drawLine(c->foreColor,ax2,ay2,ax1,ay1);
-    gfx_drawLine(c->foreColor,ax2,ay2,ax1,ay3);
-    gfx_drawLine(c->foreColor,ax1,ay1,ax1,ay3);
 }

@@ -22,6 +22,8 @@
     WIDGET_MEMBERS                     \
                                        \
     CHOOSER_CHANGEEVENT onChange;      \
+    int orientation;                   \
+    int wrap;                          \
     char ** items;                     \
     int itemCount;                     \
     int index;

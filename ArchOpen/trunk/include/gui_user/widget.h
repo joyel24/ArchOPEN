@@ -18,6 +18,13 @@
 #include <sys_def/colordef.h>
 #include <sys_def/font.h>
 
+// Some constant
+#define WIDGET_ORIENTATION_HORIZ 1
+#define WIDGET_ORIENTATION_VERT  0
+
+#define WIDGET_WRAP_ON           1
+#define WIDGET_WRAP_OFF          0
+
 // default parameters
 #define WIDGET_DEFAULT_FORECOLOR COLOR_BLACK
 #define WIDGET_DEFAULT_BACKCOLOR COLOR_WHITE
