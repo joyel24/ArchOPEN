@@ -11,11 +11,11 @@ echo "" >> ${phpReportPath}${phpReportFile}
 
 
 # mediOS
-mediOS_arch="jbmm av1xx av3xx g4xx g402 av4xx"
+mediOS_arch="jbmm av1xx av3xx g4xx g402 av4xx pma"
 
-echo "Cpy mediOS folder"
+echo "Cpy SRC folder"
 cd ~/archopen_src
-cp -Rf mediOS build/
+#cp -Rf ArchOpen/trunk build/
 
 for arch in $mediOS_arch; do
 buildMediOS $arch ${phpReportPath}${phpReportFile} ${savPath}
@@ -25,11 +25,10 @@ done
 
 buildMediosApps ${phpReportPath}${phpReportFile} ${savPath}
 
-echo "removing mediOS folder"
-rm -Rf ~/archopen_src/build/mediOS
+echo "removing SRC folder"
+#rm -Rf ~/archopen_src/build/trunk
 
 echo "?>" >> ${phpReportPath}${phpReportFile}
 
 cd ${phpReportPath}
 mvFtp builds ${phpReportFile}
-#rm -f ${phpReportFile}

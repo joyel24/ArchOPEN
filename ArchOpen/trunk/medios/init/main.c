@@ -58,6 +58,8 @@
 
 #include <gfx/graphics.h>
 
+#include <gui/shell.h>
+
 #ifdef BUILD_LIB
 extern int app_main(int argc, char * argv[]);
 #endif

@@ -90,7 +90,7 @@ __attribute__((section(".fwuncomp_code"))) void arch_reload_firmware(void){
     gfx_planeSetSize(BMAP1,240*2,176,8);
     gfx_planeSetState(BMAP1,OSD_BITMAP_8BIT);
 
-    gfx_clearScreen(COLOR_ROM_BLACK);
+    gfx_clearScreen(0); // color black in ROM
     gfx_planeShow(BMAP1);
 
     // set default clock parameters (not reinitialized by the firmware)

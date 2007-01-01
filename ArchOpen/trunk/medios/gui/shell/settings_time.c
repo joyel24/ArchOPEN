@@ -241,7 +241,7 @@ void clock_setting(void)
     time[0]->setParam(time[0],0,23,1,2);
     time[0]->setPos(time[0],x,y);
     time[0]->setValue(time[0],now.tm_hour);
-    time[0]->onChange=hour_onChange;
+    time[0]->onChange=(SPINBOX_CHANGEEVENT)hour_onChange;
     menuList->addWidget(menuList,time[0]);    
         
     gfx_getStringSize(":",&sepW,&sepH);
@@ -310,7 +310,7 @@ void clock_setting(void)
     hourFormat->caption="12h format";
     hourFormat->font=TIME_DATE_GUIFONT;
     hourFormat->setRect(hourFormat,x,y,8,8);
-    hourFormat->onChange=checkbox_12_24_onChange;
+    hourFormat->onChange=(CHECKBOX_CHANGEEVENT)checkbox_12_24_onChange;
     hourFormat->checked=is12H;
     menuList->addWidget(menuList,hourFormat);
     
@@ -324,7 +324,7 @@ void clock_setting(void)
     dateFormat->font=TIME_DATE_GUIFONT;
     gfx_getStringSize(dateFormStr[0],&w,&h);
     dateFormat->setRect(dateFormat,x,y,w+29,h+1);    
-    dateFormat->onChange=chooser_date_onChange;
+    dateFormat->onChange=(CHOOSER_CHANGEEVENT)chooser_date_onChange;
     //dateFormat->btn_prev=BTN_DOWN;
     //dateFormat->btn_nxt=BTN_UP;
     dateFormat->wrap=WIDGET_WRAP_ON;
@@ -340,7 +340,7 @@ void clock_setting(void)
     mib->caption="OK"; 
     mib->font=TIME_DATE_GUIFONT;
     mib->setRect(mib,x,y,sepW+2,sepH+2);
-    mib->onClick=okBtn_click;
+    mib->onClick=(BUTTON_CLICKEVENT)okBtn_click;
     menuList->addWidget(menuList,mib);
         
     gfx_getStringSize("RESET",&sepW,&sepH);
@@ -350,7 +350,7 @@ void clock_setting(void)
     mib->caption="Reset"; 
     mib->font=TIME_DATE_GUIFONT;
     mib->setRect(mib,x,y,sepW+2,sepH+2);
-    mib->onClick=resetBtn_click;
+    mib->onClick=(BUTTON_CLICKEVENT)resetBtn_click;
     menuList->addWidget(menuList,mib);
     
     // intial paint

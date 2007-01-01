@@ -292,7 +292,8 @@ cat ./Makefile.conf.template | sed > ./Makefile.conf \
 if [ -f "./Makefile.conf" ]; then
 	echo "Done"
     if [ "$1" == "-d" ]; then
-        cp ./Makefile.conf ${CONFIGURE_TARGET_DEVICE}.conf
+        low_name=$(echo ${CONFIGURE_TARGET_DEVICE} | tr '[A-Z]' '[a-z]');
+        cp ./Makefile.conf ${low_name}.conf
     fi
 else
 	echo "Error"

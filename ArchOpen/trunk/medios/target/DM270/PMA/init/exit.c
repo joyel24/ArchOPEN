@@ -30,6 +30,8 @@
 
 #include <gfx/graphics.h>
 
+#include <init/exit.h>
+
 __attribute__((section(".fwuncomp_code"))) void arch_reload_firmware(void){
     void (*DM_restart)(void) = (void (*)(void)) 0x0;
     

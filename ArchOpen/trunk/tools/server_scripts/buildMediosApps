@@ -6,7 +6,7 @@ curTime=`date +"%H:%M"`
 phpReport=$1
 savPath=$2
 
-cd ~/archopen_src/build/mediOS
+cd ~/archopen_src/build/trunk
 cp -f ../av3xx.conf ./Makefile.conf
 make incdir
 make mk_api_file

@@ -70,11 +70,11 @@ void spinbox_init(SPINBOX t)
     t->handleEvent=(WIDGET_EVENTHANDLER)spinbox_handleEvent;
     t->paint=(WIDGET_PAINTHANDLER)spinbox_paint;
     t->onChange=NULL;
-    t->setParam=spinbox_setParam;
-    t->setFont=spinbox_setFont;
-    t->setPos=spinbox_setPos;
-    t->setValue=spinbox_setValue;
-    t->getValue=spinbox_getValue;
+    t->setParam=(SPINBOX_SETPARAM)spinbox_setParam;
+    t->setFont=(SPINBOX_SETFONT)spinbox_setFont;
+    t->setPos=(SPINBOX_SETPOS)spinbox_setPos;
+    t->setValue=(SPINBOX_SETVALUE)spinbox_setValue;
+    t->getValue=(SPINBOX_GETVALUE)spinbox_getValue;
     
     // properties
     spinbox_setParam(t,0,99,1,2);    

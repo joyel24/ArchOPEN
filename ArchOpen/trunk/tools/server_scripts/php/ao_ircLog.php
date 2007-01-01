@@ -3,8 +3,10 @@
 <H1>Irc log for #archopen</h1>
 
 <?
-if (isset($disp_log))
+
+if (isset($_GET["disp_log"]))
 {
+$disp_log=$_GET["disp_log"];
 echo "<a href='ao_ircLog.php'>Back</a><br><br>\n";
      $string_text=file_get_contents("irclog/".$disp_log); // load text file in var
      
@@ -17,6 +19,9 @@ echo "<br><br><a href='ao_ircLog.php'>Back</a><br><br>\n";
 }
 else
 {
+
+echo "<a href='/tiki-index.php'>back</a><p>\n";
+
 echo "<ul>\n";
 
 $time_inc=time();
@@ -34,6 +39,7 @@ while($time_inc>=$first_day)
     $time_inc-=24*60*60;
 }
 echo "</ul>\n";
+echo "<p><a href='/tiki-index.php'>back</a>\n";
 }
 ?>
 

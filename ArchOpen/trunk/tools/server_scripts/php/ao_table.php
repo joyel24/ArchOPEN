@@ -20,6 +20,10 @@ for($i=0;$i<$nb_days;$i++)
 }
 
 ?>
+
+<H1>ArchOpen Daily Builds</h1>
+
+<a href='/tiki-index.php'>back</a><p>
 <table border="1">
   <tbody>
     <tr>
@@ -74,7 +78,7 @@ for($j=0;$j<$nb_days;$j++)
                     echo "<br>";
                     echo "<a href='builds/".$arch_list[$i]."_reportMedios_".$cur_date.".log'>E:".$error[$cur_date][$arch_list[$i]]."</a>\n";
                     echo "<a href='builds/".$arch_list[$i]."_reportMedios_".$cur_date.".log'>W:".$warning[$cur_date][$arch_list[$i]]."</a><br>\n";
-                    echo "<a href='".$arch_list[$i]."_makeMedios_".$cur_date.".log'>Make log</a>\n";
+                    echo "<a href='builds/".$arch_list[$i]."_makeMedios_".$cur_date.".log'>Make log</a>\n";
                     echo "</td>\n";
                     
                }
@@ -94,5 +98,7 @@ for($j=0;$j<$nb_days;$j++)
 
 </tr>
 </tbody>
+</table>
+<p><a href='/tiki-index.php'>back</a>
 </body>
 </html>
