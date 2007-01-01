@@ -17,7 +17,7 @@ echo "tar+gz & zip"
 echo "clean tmp"
     rm -Rf $1
 echo "calling mvFtp"
-    mvFtp $1.tar.gz $1.zip
+    mvFtp src $1.tar.gz $1.zip
     rm -f $1.tar.gz $1.zip
 echo "back to where we were"
     cd ../
@@ -42,14 +42,15 @@ echo "tar+gz & zip"
 echo "clean tmp"
     rm -Rf $1
 echo "calling mvFtp"
-    mvFtp $1.tar.gz $1.zip
+    mvFtp src $1.tar.gz $1.zip
     rm -f $1.tar.gz $1.zip
 echo "back to where we were"
     cd ../
 }
 
 cd ~/archopen_src
-mkArchCvs mediOS
+#mkArchCvs mediOS
+mkArchSvn ArchOpen
 mkArchCvs avlo
 #mkArchCvs emu2
 mkArchSvn aoMulator

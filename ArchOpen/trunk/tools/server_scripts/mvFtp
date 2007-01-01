@@ -5,6 +5,8 @@ user=$AO_FTP_USER
 pass=$AO_FTP_PASS
 rdir=$AO_FTP_R_DIR
 if [ -n "$1" ]; then
+dname="$1"
+shift
 fname="$*"
 else
 echo "Error no file to send"
@@ -19,6 +21,7 @@ echo "user ${user} ${pass}" >> ftp.in
 echo "bin" >> ftp.in
 echo "prompt" >> ftp.in
 echo "cd ${rdir}" >> ftp.in
+echo "cd ${dname}" >> ftp.in
 for file in ${fname}; do
 echo "dele $file" >> ftp.in
 echo "put $file" >> ftp.in

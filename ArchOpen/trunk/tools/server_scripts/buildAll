@@ -31,5 +31,5 @@ rm -Rf ~/archopen_src/build/mediOS
 echo "?>" >> ${phpReportPath}${phpReportFile}
 
 cd ${phpReportPath}
-mvFtp ${phpReportFile}
+mvFtp builds ${phpReportFile}
 #rm -f ${phpReportFile}

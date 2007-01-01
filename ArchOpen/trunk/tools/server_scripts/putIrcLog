@@ -7,7 +7,7 @@ cd ~/eggdrop/logs/
 fname=archopen.${yestDate}.log
 
 if [ -e $fname ]; then
-mvFtp $fname
+mvFtp irclog $fname
 else
 echo "$fname not present"
 fi

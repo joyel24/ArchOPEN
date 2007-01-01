@@ -48,5 +48,5 @@ echo "\$nb_src[\"${curDate}\"][\"apps\"]=$tot;" >> ${phpReport}
 
 zip ${zipFile} *.med
 
-mvFtp $reportFile $makeResult $zipFile ${appsReportFile}
+mvFtp builds $reportFile $makeResult $zipFile ${appsReportFile}
 cp -f ${reportFile} ${makeResult} ${zipFile} ${appsReportFile} ${savPath}
