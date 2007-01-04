@@ -72,6 +72,8 @@ void clk_overclock(bool en){
         clkc_setClockParameters(CLK_DSP,9,1,2);
 #endif
     }
+    // wait a little for PPL to be in a sane state
+    mdelay(100);
 #endif
 };
 

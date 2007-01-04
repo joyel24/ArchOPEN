@@ -50,7 +50,8 @@ void clk_overclock(){
         clkc_setClockParameters(CLK_ACCEL,15,2,1);
         clkc_setClockParameters(CLK_DSP,9,1,2);
     }
-
+    // wait a little for PPL to be in a sane state
+    mdelay(100);
 #ifdef SOUND_USE_DSP
     dspCom->armBusy=0;
 #endif

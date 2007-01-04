@@ -20,6 +20,7 @@
 #include <sys_def/ctype.h>
 #include <sys_def/buttons.h>
 #include <driver/videnc.h>
+#include <driver/clkc.h>
 
 
 #include "defs.h"
@@ -188,6 +189,28 @@ static const char *opt2_menu[] = {
   "Previous Menu..."
 };
 
+void clk_overclock(bool en){
+#if defined(PMA) || defined(GMINI402) || defined(GMINI4XX) || defined(AV3XX)
+    if(en && ARMFreq){
+#if defined(AV3XX)
+        (*(volatile unsigned short *)(0x30880))=0x8080 + (ARMFreq<<4);
+#else
+        clkc_setClockFrequency(CLK_ARM,ARMFreq*10000000+100000000);
+#endif
+    }else{
+        // default params
+#if defined(AV3XX)
+        (*(volatile unsigned short *)(0x30880))=0x8021;
+#else
+        clkc_setClockParameters(CLK_ARM,15,2,2);
+        clkc_setClockParameters(CLK_ACCEL,15,2,1);
+#endif
+    }
+    // wait a little for PPL to be in a sane state
+    mdelay(100);
+#endif
+};
+
 /*
  * do_user_menu - create the user menu on the screen.
  *
@@ -216,6 +239,8 @@ int do_user_menu(void) {
     /* handle selected menu item */
     switch (mi) {
       case MM_ITEM_QUIT:
+        // don't overclock during hdd access
+        clk_overclock(false);
         ret = USER_MENU_QUIT;
       case MENU_CANCEL:
       case MM_ITEM_BACK:
@@ -285,6 +310,8 @@ static void build_slot_path(char *buf, size_t bufsiz, size_t slot_id) {
 static bool do_file(char *path/*, char *desc*/, bool is_load) {
   int fd; //, file_mode;
 
+  // don't overclock during hdd access
+  clk_overclock(false);
   /* load/save state */
   if (is_load) {
     fd = open(path, O_RDONLY );
@@ -316,6 +343,8 @@ static bool do_file(char *path/*, char *desc*/, bool is_load) {
 
   /* close file descriptor */
   close(fd);
+
+  clk_overclock(true);
 
   /* return true (for success) */
   return true;
@@ -352,6 +381,9 @@ static void slot_info(char *info_buf, size_t info_bufsiz, size_t slot_id) {
   /* get slot file path */
   build_slot_path(buf, 256, slot_id);
 
+  // don't overclock during hdd access
+  clk_overclock(false);
+
   /* attempt to open slot */
   if ((fd = open(buf, O_RDONLY)) >= 0) {
     snprintf(info_buf, info_bufsiz, "%2d. State Saved", slot_id + 1);
@@ -361,6 +393,7 @@ static void slot_info(char *info_buf, size_t info_bufsiz, size_t slot_id) {
     snprintf(info_buf, info_bufsiz, "%2d. Empty", slot_id + 1);
     free(buf);
   }
+  clk_overclock(true);
 }
 
 /*
@@ -659,14 +692,19 @@ static void do_opt2_menu(void) {
         break;
 #endif
       case OM2_ITEM_OCA:
-        ARMFreq++;
+#if defined(PMA)
+        if(ARMFreq<4)          // I don't want to destroy my PMA since there's no WTD!
+#endif
+           ARMFreq++;
         snprintf((char *)opt2_menu[OM2_ITEM_OCA], 17, "Overclock ARM  %1d", ARMFreq);
-        (*(volatile unsigned short *)(0x30880))=0x8080 + (ARMFreq<<4);
-       break;
+        //(*(volatile unsigned short *)(0x30880))=0x8080 + (ARMFreq<<4);
+        clk_overclock(true);
+        break;
       case OM2_ITEM_CAN:
         ARMFreq=0;
         snprintf((char *)opt2_menu[OM2_ITEM_OCA], 17, "Overclock ARM  %1d", ARMFreq);
-        (*(volatile unsigned short *)(0x30880))=0x8021;
+       // (*(volatile unsigned short *)(0x30880))=0x8021;
+        clk_overclock(false);
         break;
       case OM2_ITEM_PAL:
         while (btn_readState());

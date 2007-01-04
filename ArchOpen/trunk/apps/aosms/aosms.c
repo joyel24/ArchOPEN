@@ -68,6 +68,8 @@ void clk_overclock(bool en){
         clkc_setClockParameters(CLK_ARM,15,2,2);
         clkc_setClockParameters(CLK_ACCEL,15,2,1);
     }
+    // wait a little for PPL to be in a sane state
+    mdelay(100);
 #endif
 };
 
