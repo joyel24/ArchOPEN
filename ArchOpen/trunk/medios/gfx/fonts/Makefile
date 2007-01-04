@@ -4,7 +4,7 @@ SRC = $(FONT_LIST:%=%.c)
 
 GCCFLAGS += -I$(MEDIOS_SRC_PATH)/include/kernel
 
-OPT = $(FONT_LIST:%=-D_std%)
+OPT = $(FONT_LIST:%=-D_%)
 
 BUILD_DIR = ../
 

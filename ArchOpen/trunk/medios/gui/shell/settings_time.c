@@ -28,6 +28,7 @@
 
 #include <fs/cfg_file.h>
 
+//#define TIME_DATE_GUIFONT RADONWIDE
 #define TIME_DATE_GUIFONT RADONWIDE
 
 int isPm=0;
@@ -325,8 +326,8 @@ void clock_setting(void)
     gfx_getStringSize(dateFormStr[0],&w,&h);
     dateFormat->setRect(dateFormat,x,y,w+29,h+1);    
     dateFormat->onChange=(CHOOSER_CHANGEEVENT)chooser_date_onChange;
-    //dateFormat->btn_prev=BTN_DOWN;
-    //dateFormat->btn_nxt=BTN_UP;
+    dateFormat->evt_prev=BTN_DOWN;
+    dateFormat->evt_nxt=BTN_UP;
     dateFormat->wrap=WIDGET_WRAP_ON;
     dateFormat->orientation=WIDGET_ORIENTATION_VERT;
     menuList->addWidget(menuList,dateFormat);

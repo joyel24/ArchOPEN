@@ -10,7 +10,7 @@
 * KIND, either express of implied.
 *
 * Part of this code is from Rockbox project
-* Copyright (C) 2002 by Björn Stenberg
+* Copyright (C) 2002 by Bjï¿½n Stenberg
 *
 */
 
@@ -155,7 +155,7 @@ int open(char * name,int flags)
     if (FILE_APPEND(flags) && FILE_WRITE(flags))
     {
         ret_val = lseek((int)fd,0,SEEK_END);
-        if(ret_val!=MED_OK)
+        if(ret_val<0) /* lseek returns the current position, and sometinh <0 on error*/
         {
             printk("error seeking at end for file (flags APPEND)\n");
             fat_fileClose(fd);

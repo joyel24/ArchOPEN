@@ -24,37 +24,37 @@ void fnt_init(void)
     for(i=0;i<NBFONT;i++)
         font_table[i]=NULL;
 
-#ifdef _std4x6
+#ifdef _4x6
     fnt_initFont(std4x6)
 #endif
-#ifdef _std4x8
+#ifdef _4x8
     fnt_initFont(std4x8)
 #endif
-#ifdef _std5x7
+#ifdef _5x7
     fnt_initFont(std5x7)
 #endif
-#ifdef _std5x8
+#ifdef _5x8
     fnt_initFont(std5x8)
 #endif
-#ifdef _std6x9
+#ifdef _6x9
     fnt_initFont(std6x9)
 #endif
-#ifdef _std6x10
+#ifdef _6x10
     fnt_initFont(std6x10)
 #endif
-#ifdef _std6x12
+#ifdef _6x12
     fnt_initFont(std6x12)
 #endif
-#ifdef _std6x13
+#ifdef _6x13
     fnt_initFont(std6x13)
 #endif
-#ifdef _std7x13
+#ifdef _7x13
     fnt_initFont(std7x13)
 #endif
-#ifdef _std7x14
+#ifdef _7x14
     fnt_initFont(std7x14)
 #endif
-#ifdef _std8x13
+#ifdef _8x13
     fnt_initFont(std8x13)
 #endif
 #ifdef _cursive_9x15

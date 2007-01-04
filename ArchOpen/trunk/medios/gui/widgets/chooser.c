@@ -49,6 +49,8 @@ void chooser_init(CHOOSER c){
     c->itemCount=0;
     c->index=-1;
     c->wrap=WIDGET_WRAP_OFF;
+    c->evt_prev=BTN_LEFT;
+    c->evt_nxt=BTN_RIGHT;
     c->orientation=WIDGET_ORIENTATION_HORIZ;
 }
 
@@ -59,7 +61,7 @@ bool chooser_handleEvent(CHOOSER c,int evt){
     // let's see if the ancestor handles the event
     if (widget_handleEvent((WIDGET)c,evt)) return true;
 
-    if(evt==BTN_LEFT)
+    if(evt==c->evt_prev)
     {
         if (c->itemCount){
             if(c->index == 0)
@@ -76,7 +78,7 @@ bool chooser_handleEvent(CHOOSER c,int evt){
         }
         c->paint(c);
     }
-    else if(evt==BTN_RIGHT)
+    else if(evt==c->evt_nxt)
     {
         if (c->itemCount){
             if(c->index == (c->itemCount-1))

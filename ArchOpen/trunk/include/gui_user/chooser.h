@@ -25,6 +25,7 @@
     int orientation;                   \
     int wrap;                          \
     char ** items;                     \
+    int evt_prev,evt_nxt;              \
     int itemCount;                     \
     int index;
 

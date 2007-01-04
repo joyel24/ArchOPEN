@@ -54,7 +54,6 @@ int getDayOfWeek(int day,int month,int year)
     result%=7;
     if(result==0)
         result=7;
-    //printk("[getDayOfWeek]: %02d/%02d/%04d => %d\n",day,month,year,result);
     return result;
 }
 
@@ -63,8 +62,6 @@ MED_RET_T rtc_getTime(struct med_tm * valTime)
     struct tm_pv pv_dt;
     int retVal;
     
-    //  printk("[I2C - rtc] before read\n");
-    
     retVal=i2c_read(RTC_DEVICE, 0, (void*)(&pv_dt), 8);
             
     if(retVal<0)
@@ -72,8 +69,6 @@ MED_RET_T rtc_getTime(struct med_tm * valTime)
             printk("[I2C - rtc] Error, reading (err:%d)\n",retVal);
             return retVal;
     }
-    
-    //  printk("[I2C - rtc] read success\n");
     
     pv_dt.tm_wday&=0x7;
 
@@ -99,16 +94,6 @@ MED_RET_T rtc_setTime(struct med_tm *newTime)
     int wday;
     int retVal;
     
-    char tmp[0x14];
-    int i;
-    
-    /* print out everything */
-    printk("[set rtc] 0| ");
-    i2c_read(RTC_DEVICE, 0, (void*)tmp, 0x14);
-    for(i=0;i<0x14;i++)
-        printk("%02x ",tmp[i]);
-    printk("\n");
-    
     retVal=i2c_read(RTC_DEVICE, 0, (void*)(&pv_dt_ini), 8);
             
     if(retVal<0)
@@ -128,25 +113,12 @@ MED_RET_T rtc_setTime(struct med_tm *newTime)
     pv_dt.tm_mon=userToPv(newTime->tm_mon);
     pv_dt.tm_year=userToPv(year);
     
-    /*printk("Setting time: old= %02x:%02x:%02x newUS= %02d:%02d:%02d newPV= %02x:%02x:%02x new2= %02x:%02x:%02x\n",
-                                pv_dt_ini.tm_hour,pv_dt_ini.tm_min,pv_dt_ini.tm_sec,
-                                newTime->tm_hour,newTime->tm_min,newTime->tm_sec,
-                                pv_dt.tm_hour,pv_dt.tm_min,pv_dt.tm_sec,
-                                    RTC_MK_H(pv_dt_ini.tm_hour,pv_dt.tm_hour),
-                                    RTC_MK_M(pv_dt_ini.tm_min,pv_dt.tm_min),
-                                    RTC_MK_S(pv_dt_ini.tm_sec,pv_dt.tm_sec));*/
+    
     
     /* only writting h,m,s and d,m,y */
     
     wday=getDayOfWeek(newTime->tm_mday,newTime->tm_mon,newTime->tm_year);
     
-    /*sendRTC(RTC_S,RTC_MK_S(pv_dt_ini.tm_sec,pv_dt.tm_sec));
-    sendRTC(RTC_M,RTC_MK_M(pv_dt_ini.tm_min,pv_dt.tm_min));
-    sendRTC(RTC_H,RTC_MK_H(pv_dt_ini.tm_hour,pv_dt.tm_hour));
-    
-    sendRTC(RTC_DM,RTC_MK_DM(pv_dt_ini.tm_mday,pv_dt.tm_mday));
-    sendRTC(RTC_MO,RTC_MK_MO(pv_dt_ini.tm_mon,pv_dt.tm_mon));
-    sendRTC(RTC_Y,RTC_MK_Y(pv_dt_ini.tm_year,pv_dt.tm_year));*/
     
     pv_dt.tm_ms=0;
     pv_dt.tm_sec=RTC_MK_S(pv_dt_ini.tm_sec,pv_dt.tm_sec);
@@ -164,20 +136,7 @@ MED_RET_T rtc_setTime(struct med_tm *newTime)
         printk("[I2C - rtc] Error, writting (err:%d)\n",retVal);
         return retVal;
     }
-    
-    /* print out everything */
-    printk("[set rtc] 1| ");
-    i2c_read(RTC_DEVICE, 0, (void*)tmp, 0x14);
-    for(i=0;i<0x14;i++)
-        printk("%02x ",tmp[i]);
-    printk("\n");
-    //wday=getDayOfWeek(newTime->tm_mday,newTime->tm_mon,newTime->tm_year);
-    
-    
-    //sendRTC(RTC_DW,((wday&0x7) | 0x80));
-    /*if(newTime->tm_mday == 27 && newTime->tm_mon == 11)
-        sendRTC(RTC_DW,RTC_MK_DW(pv_dt_ini.tm_wday,5))*/
-    
+           
     return MED_OK;
 }
 
@@ -189,13 +148,6 @@ MED_RET_T init_rtc(void)
     
     struct med_tm valTime;
         
-    /*cb=0x10;
-    if((retVal=av3xx_i2c_write(AV3XX_RTC_DEVICE, 0x13, (void*)&cb, 1))<0)
-    {
-            printk("[I2C-rtc-ini] Step 1: Error, writting (err:%d)\n",retVal);
-            return -1;
-    } */ 
-    
     if((retVal=i2c_read(RTC_DEVICE, 0x04, (void*)&cb, 1))<0)
     {
         printk("[I2C-rtc-ini] Step 0: Error, reading (err:%d)\n",retVal);
@@ -247,7 +199,6 @@ MED_RET_T init_rtc(void)
     cwd=getDayOfWeek(valTime.tm_mday,valTime.tm_mon,valTime.tm_year);
     if(cwd!=valTime.tm_wday)
     {
-        //printk("setting DofW: %d (old %d)\n",cwd,valTime.tm_wday);
         sendRTC(RTC_DW,((cwd&0x7) | 0x80));
     }
     

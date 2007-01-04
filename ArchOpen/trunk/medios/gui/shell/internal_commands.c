@@ -40,6 +40,7 @@
 static bool intCmd_doBrowser(char * param);
 static bool intCmd_doReloadFirmware(char * param);
 static bool intCmd_doUsbMode(char * param);
+static bool intCmd_doTimeSetting(char * param);
 
 typedef struct{
     char * command;
@@ -58,6 +59,10 @@ INTERNAL_COMMAND intCmd_commands[] = {
     {
         command:  "usb_mode",
         function: intCmd_doUsbMode
+    },
+    {
+        command:  "set_time",
+        function: intCmd_doTimeSetting
     },
     /* should always be the last entry */
     {
@@ -181,5 +186,13 @@ static bool intCmd_doUsbMode(char * param){
         evt_freeHandler(eh);
     }
 
+    return true;
+}
+
+#include <gui/settings_time.h>
+
+static bool intCmd_doTimeSetting(char * param)
+{
+    clock_setting();
     return true;
 }
