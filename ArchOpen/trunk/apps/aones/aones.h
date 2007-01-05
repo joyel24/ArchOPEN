@@ -96,7 +96,7 @@
     #define GMINI_OVERCLOCKING
 
    // #define SCREEN_USE_DSP
-   // #define SCREEN_USE_RESIZE
+    #define SCREEN_USE_RESIZE
 
    // #define SOUND_USE_DSP
     //#define SOUND_USE_AIC23
@@ -117,7 +117,7 @@
 
     #define NES_LCD_X 0//64
     #define NES_LCD_Y 0
-    #define NES_LCD_W 256//256
+    #define NES_LCD_W 320//256
     #define NES_LCD_H 240
 
     
@@ -138,6 +138,9 @@ extern int frameSkip;
 extern int f3Use;
 extern bool buttonsSwap;
 extern bool overclocking;
+#ifdef SCREEN_USE_RESIZE
+extern bool useResize;
+#endif
 extern int armFrequency;
 extern int dspFrequency;
 extern int tvOut;
@@ -148,6 +151,6 @@ int emu_frameCompleted();
 long emu_joypad1State();
 long emu_joypad2State();
 void display_tvOutSet();
-
+void screen_init();
 
 #endif

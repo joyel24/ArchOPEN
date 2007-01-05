@@ -108,7 +108,15 @@ void gui_init(){
     mih->chooser->itemCount=4;
     mih->chooser->index=0;
     standardMenu->addItem(standardMenu,mih);
-
+#ifdef SCREEN_USE_RESIZE
+    mic=widgetMenuCheckbox_create();
+    mic->caption="Resize screen";
+    mic->cfgStored=true;
+    mic->cfgName="resize";
+    mic->checkbox->caption="Enabled";
+    mic->checkbox->checked=true;
+    standardMenu->addItem(standardMenu,mic);
+#endif
     mi=widgetMenuItem_create();
     mi->caption="Buttons:";
     mi->foreColor=GUI_TITLE_COLOR;
@@ -322,6 +330,9 @@ void gui_applySettings(){
     buttonsSwap=standardMenu->getCheckbox(standardMenu,standardMenu->indexFromCaption(standardMenu,"Swap buttons"))->checked;
     autoFire=standardMenu->getChooser(standardMenu,standardMenu->indexFromCaption(standardMenu,"Autofire"))->index;
     f3Use=standardMenu->getChooser(standardMenu,standardMenu->indexFromCaption(standardMenu,"F3 button use"))->index;
+#ifdef SCREEN_USE_RESIZE
+    useResize=standardMenu->getCheckbox(standardMenu,standardMenu->indexFromCaption(standardMenu,"Resize screen"))->checked;
+#endif
     frameSkip=advancedMenu->getTrackbar(advancedMenu,advancedMenu->indexFromCaption(advancedMenu,"Frameskip"))->value;
     cc=advancedMenu->getTrackbar(advancedMenu,advancedMenu->indexFromCaption(advancedMenu,"CPU cycles/line"))->value;
     sf=standardMenu->getChooser(advancedMenu,advancedMenu->indexFromCaption(advancedMenu,"Sound filter"))->index;
@@ -329,6 +340,7 @@ void gui_applySettings(){
     armFrequency=advancedMenu->getTrackbar(advancedMenu,advancedMenu->indexFromCaption(advancedMenu,"CPU frequency(Mhz)"))->value;
     dspFrequency=advancedMenu->getTrackbar(advancedMenu,advancedMenu->indexFromCaption(advancedMenu,"DSP frequency(Mhz)"))->value;
 
+    screen_init();
     display_tvOutSet();
 #ifdef SOUND_USE_AIC23
     aic23_setOutputVolume(vol+27,AIC23_CHANNEL_BOTH);

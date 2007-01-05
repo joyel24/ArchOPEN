@@ -46,8 +46,13 @@ bool overclocking=false;
 int armFrequency=0;
 int dspFrequency=0;
 
+#ifdef SCREEN_USE_RESIZE
+bool useResize=true;
+#endif
+
 int tvOut=0;
 
+char * framebuf;
 
 void clk_overclock(bool en){
 #ifdef GMINI_OVERCLOCKING
@@ -298,7 +303,7 @@ void display_tvOutSet(){
         default:
         case 0: // Off
             mode=VIDENC_MODE_LCD;
-            x=NES_LCD_X;
+            x=NES_LCD_X + useResize?0:(NES_LCD_W-256);
             y=NES_LCD_Y;
             w=NES_LCD_W;
             h=NES_LCD_H;
@@ -355,8 +360,10 @@ void display_tvOutSet(){
 
     gfx_planeSetPos(VID1,screen_initialX+x,screen_initialY+y);
 #ifdef SCREEN_USE_RESIZE
-    gfx_planeSetSize(VID1,w,h,32);
-    resize_init(w,h);
+    if(useResize) {
+        gfx_planeSetSize(VID1,w,h,32);
+        resize_init(w,h);
+    }
 #endif
 
     videnc_setup(mode,false);
@@ -365,7 +372,6 @@ void display_tvOutSet(){
 
 void display_init(){
     int i;
-    char * framebuf;
 
     vblankNum=0;
     irq_changeHandler(IRQ_OSD,osd_interrupt);
@@ -393,12 +399,8 @@ void display_init(){
 #ifdef SCREEN_USE_RESIZE
     framebuf=malloc(320*256*4);
     framebuf=(char*)(((unsigned int)framebuf+32)&0xffffffe0);
-    gfx_planeSetBufferOffset(VID1,framebuf);
-#else
-    gfx_planeSetBufferOffset(VID1,lj_curRenderingScreenPtr);
-    gfx_planeSetSize(VID1,NES_WIDTH,NES_PAL_HEIGHT,32);
 #endif
-
+    screen_init();
 #ifdef SCREEN_USE_DSP
     // set dsp video output
     dsp_write32(&dspCom->outBufAddr,(uint32)lj_curRenderingScreenPtr);
@@ -406,6 +408,21 @@ void display_init(){
 
     display_tvOutSet();
 };
+
+void screen_init() {
+#ifdef SCREEN_USE_RESIZE
+    if(useResize) {
+        gfx_planeSetBufferOffset(VID1,framebuf);
+    }
+    else {
+        gfx_planeSetBufferOffset(VID1,lj_curRenderingScreenPtr);
+        gfx_planeSetSize(VID1,NES_WIDTH,NES_PAL_HEIGHT,32);
+    }
+#else
+    gfx_planeSetBufferOffset(VID1,lj_curRenderingScreenPtr);
+    gfx_planeSetSize(VID1,NES_WIDTH,NES_PAL_HEIGHT,32);
+#endif
+}
 
 void emu_loadRom(){
     Load_ROM(CurrentROMFile);
@@ -462,7 +479,9 @@ __IRAM_CODE void emu_handleVideoBuffer(){
 
 #else
  #ifdef SCREEN_USE_RESIZE
-    resize_execute();
+    if(useResize) {
+        resize_execute();
+    }
  #endif
 #endif
 }
