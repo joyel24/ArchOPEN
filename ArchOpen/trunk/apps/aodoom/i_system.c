@@ -119,7 +119,7 @@ int numoverflows=0;
 int prevtime=0;
 int  I_GetTime (void)
 {
-#ifndef PMA                 //if 1
+#if 1
   int time;
   time=TMR_GET_CNT(TMR1);
 
@@ -140,7 +140,7 @@ int  I_GetTime (void)
 //
 void I_Init (void)
 {
-#ifndef PMA                //if 1
+#if 1
   // init the timer
   TMR_SET_MODE(TMR_MODE_FREERUN,TMR1);
   TMR_SET_SCAL(753,TMR1);

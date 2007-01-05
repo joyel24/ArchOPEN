@@ -26,4 +26,8 @@ void arch_osd_init(void)
 
  	outw(0x12,VIDENC_BASE+0x2C); // LCD VSync
 	outw(0x4001,VIDENC_BASE);    // NTSC ( It's in PAL when we leave Linux... )
+	
+	outw(0x07FF,0x30890);
+        outw(0x01FF,0x30892);        // Enable all modules
+	outw(0x1FFF,0x30894);
 }

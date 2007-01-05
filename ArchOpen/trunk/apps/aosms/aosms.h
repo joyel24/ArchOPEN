@@ -108,7 +108,7 @@
     #define SMS_WIDTH_DELTA       0
     #define SMS_HEIGHT_DELTA      0
     #define LCD_SMS_X             0
-    #define LCD_SMS_Y             0
+    #define LCD_SMS_Y             4        //to hide the green line
     #define LCD_SMS_WIDTH_DELTA   0
     #define LCD_SMS_HEIGHT_DELTA  0
 #endif

@@ -96,9 +96,9 @@
     #define GMINI_OVERCLOCKING
 
    // #define SCREEN_USE_DSP
-    //#define SCREEN_USE_RESIZE
+   // #define SCREEN_USE_RESIZE
 
-    //#define SOUND_USE_DSP
+   // #define SOUND_USE_DSP
     //#define SOUND_USE_AIC23
     
     #define NES_BTN_UP      BTMASK_UP
@@ -114,10 +114,10 @@
     #define NES_BTN_HALT          BTMASK_OFF
     #define NES_BTN_START         BTMASK_F1
     #define NES_BTN_SELECT        BTMASK_F2
-    
-    #define NES_LCD_X 64
+
+    #define NES_LCD_X 0//64
     #define NES_LCD_Y 0
-    #define NES_LCD_W 256
+    #define NES_LCD_W 256//256
     #define NES_LCD_H 240
 
     
