@@ -197,17 +197,21 @@ void clk_overclock(bool en){
 #else
         clkc_setClockFrequency(CLK_ARM,ARMFreq*10000000+100000000);
 #endif
+        // wait a little for PPL to be in a sane state
+        mdelay(100);
     }else{
         // default params
 #if defined(AV3XX)
         (*(volatile unsigned short *)(0x30880))=0x8021;
 #else
         clkc_setClockParameters(CLK_ARM,15,2,2);
+        // wait a little for PPL to be in a sane state
+        mdelay(100);
         clkc_setClockParameters(CLK_ACCEL,15,2,1);
 #endif
+        // wait a little for PPL to be in a sane state
+        mdelay(100);
     }
-    // wait a little for PPL to be in a sane state
-    mdelay(100);
 #endif
 };
 

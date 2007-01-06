@@ -23,6 +23,8 @@
 
 #include <sys_def/evt.h>
 #include <sys_def/buttons.h>
+#include <driver/bat_power.h>
+#include <sys_def/int_timer.h>
 
 
 /* MediOS browser include */
@@ -144,6 +146,12 @@ int app_main(int argc,char** argv)
 
     int i;
     for(i=0;i<argc;i++) printf("%d:%s\n",i,argv[i]);
+
+    // disable LCD & halt timer
+    set_timer_status(LCD_TIMER,TIMER_MODE_BAT,MODE_DISABLE);
+    set_timer_status(LCD_TIMER,TIMER_MODE_DC,MODE_DISABLE);
+    set_timer_status(HALT_TIMER,TIMER_MODE_BAT,MODE_DISABLE);
+    set_timer_status(HALT_TIMER,TIMER_MODE_DC,MODE_DISABLE);
 
 #ifdef USE_MEDIOS_BROWSER
 	while(1)

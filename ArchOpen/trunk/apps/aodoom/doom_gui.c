@@ -40,18 +40,26 @@ void clk_overclock(){
         // dsp freq must be >= arm freq
         if(armFrequency*1000000>dspf){
             clkc_setClockFrequency(CLK_DSP,armFrequency*1000000);
-            mdelay(10);
+            // wait a little for PPL to be in a sane state
+            mdelay(100);
+            //mdelay(10);
         }
 
         clkc_setClockFrequency(CLK_ARM,armFrequency*1000000);
+        // wait a little for PPL to be in a sane state
+        mdelay(100);
     }else{
         // default params
         clkc_setClockParameters(CLK_ARM,15,2,2);
+        // wait a little for PPL to be in a sane state
+        mdelay(100);
         clkc_setClockParameters(CLK_ACCEL,15,2,1);
+        // wait a little for PPL to be in a sane state
+        mdelay(100);
         clkc_setClockParameters(CLK_DSP,9,1,2);
+        // wait a little for PPL to be in a sane state
+        mdelay(100);
     }
-    // wait a little for PPL to be in a sane state
-    mdelay(100);
 #ifdef SOUND_USE_DSP
     dspCom->armBusy=0;
 #endif

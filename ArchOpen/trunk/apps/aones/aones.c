@@ -62,8 +62,12 @@ void clk_overclock(bool en){
         // dsp freq must always be higher than arm freq or equal
         dspf=MAX(armFrequency,dspFrequency);
         clkc_setClockFrequency(CLK_DSP,dspf*1000000);
+        // wait a little for PPL to be in a sane state
+        mdelay(100);
 
         clkc_setClockFrequency(CLK_ARM,armFrequency*1000000);
+        // wait a little for PPL to be in a sane state
+        mdelay(100);
     }else{
 #ifdef GMINI402
         //HACK: underclock DSP to 81Mhz, and ARM to 99Mhz, fixes some hangs
@@ -73,12 +77,16 @@ void clk_overclock(bool en){
 #else
         // default params
         clkc_setClockParameters(CLK_ARM,15,2,2);
+        // wait a little for PPL to be in a sane state
+        mdelay(100);
         clkc_setClockParameters(CLK_ACCEL,15,2,1);
+        // wait a little for PPL to be in a sane state
+        mdelay(100);
         clkc_setClockParameters(CLK_DSP,9,1,2);
+        // wait a little for PPL to be in a sane state
+        mdelay(100);
 #endif
     }
-    // wait a little for PPL to be in a sane state
-    mdelay(100);
 #endif
 };
 
