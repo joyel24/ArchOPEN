@@ -90,6 +90,7 @@ void          (*drawVLine)        (unsigned int color, int x, int y, int height,
 
 /* general functions */
 void  gfx_init                 (void);
+void  gfx_show                 (void);
 void  gfx_initComponent        (int vplane,struct graphicsBuffer * buff,unsigned int offset);
 void  gfx_restoreComponent     (int vplane,struct graphicsBuffer * buff);
 void  gfx_restoreAllComponents (void);

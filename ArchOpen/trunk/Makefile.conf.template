@@ -22,7 +22,7 @@ HAVE_DVR = %CONFIGURE_HAVE_DVR%
 HAVE_CONSOLE = %CONFIGURE_HAVE_CONSOLE%
 CHIP_TYPE = %CONFIGURE_CHIP_TYPE%
 HAVE_DBUG = %CONFIGURE_HAVE_DBUG%
-
+SPLASH_TYPE = %CONFIGURE_SPLASH_TYPE%
 #
 # Makefile core
 #
@@ -38,14 +38,16 @@ GCCFLAGS += -mcpu=arm7tdmi
 endif
 
 GCCFLAGS += -D$(TARGET_DEVICE) -D$(CHIP_TYPE) -I$(MEDIOS_SRC_PATH)/medios/include -I$(MEDIOS_SRC_PATH)/include --pipe
-ASFLAGS  += --defsym $(TARGET_DEVICE)=1 --defsym $(CHIP_TYPE)=1 -I$(MEDIOS_SRC_PATH)/include
+
+ASFLAGS  += --defsym $(SPLASH_TYPE)=1 --defsym $(TARGET_DEVICE)=1 --defsym $(CHIP_TYPE)=1
+ASFLAGS  +=-I$(MEDIOS_SRC_PATH)/include
 
 LDFLAGS =  -L/usr/local/toolchain_arm_nofpu/arm-linux-uclibc/lib/ -lfloat -lm -lgcc
 
 BUILD_DIR = $(MEDIOS_SRC_PATH)/medios/build
 
-ifeq ($(HAVE_CONSOLE),1)
-	GCCFLAGS += -DHAVE_CONSOLE
+ifeq ($(BOOT_WITH_CONSOLE),1)
+	GCCFLAGS += -DBOOT_WITH_CONSOLE
 endif
 
 ifeq ($(HAVE_DBUG),1)

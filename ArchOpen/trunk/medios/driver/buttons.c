@@ -17,9 +17,8 @@
 #include <kernel/evt.h>
 #include <kernel/timer.h>
 
-#ifdef HAVE_CONSOLE
+#include <gui/screens.h>
 #include <kernel/console.h>
-#endif
 
 #include <init/exit.h>
 
@@ -112,24 +111,9 @@ void btn_processPress(int val)
             nb_pressed[btn]=0;   /* reset nb_pressed */
             mx_press[btn] = current_repeatParam->init_delay;
             press_step[btn] = 0;
-            /*if(btn==BTN_OFF)
-                nb_off_press=0;   */ /* if off btn released -> reset nb_off_press */
         }
         else            /* the btn i is pressed */
         {    
-            
-            /*if(btn==BTN_OFF)  */  /* OFF btn pressed => check if we have to halt */
-            /*{
-                nb_off_press++;
-                if(nb_off_press>MAX_OFF)
-                {
-                    printk("[OFF button] => halt\n");
-                    halt_device();                    
-                }
-            }*/
-            
-            //printk("btn %d pressed\n",btn);
-            
             if(nb_pressed[btn]==0)
             {
                 if(!inHold)
@@ -155,62 +139,32 @@ void btn_processPress(int val)
                             press_step[btn] = 0;
                             mx_press[btn] = current_repeatParam->init_delay;
                     }
-#if 0
-                    if(!lcd_enabled())
+
+                    if(con_screenIsVisible())
                     {
-                        /* the lcd is off => turn on and discard the event */
-                        lcd_keyPress();
-                        break;
+                        if(!con_handleBtn(btn))
+                        {                            
+                            /* other keys : post the event */
+                            evt.evt=btn+1;
+                            evt.evt_class=BTN_CLASS;
+                            evt.data=(void*)mx_press[btn];
+                            evt_send(&evt);
+                        }
                     }
                     else
-                        lcd_launchTimer(); /* postpone the lcd timer */
-                    halt_launchTimer(); /* postpone the poweroff timer */
-#endif
-
-#ifdef HAVE_CONSOLE
-                    if(!con_screenIsVisible())
                     {
                       if (val&BTMASK_F1 && btn+1==BTN_ON)
                       {
-                        con_screenSwitch();
-                        nb_pressed[btn] = mx_press[btn];
-                        return;
+                            screens_show(SCREEN_CONSOLE);
+                            nb_pressed[btn] = mx_press[btn];
+                            return;
                       }
-#endif                     
                       // post the event
                       evt.evt=btn+1;
                       evt.evt_class=BTN_CLASS;
                       evt.data=(void*)mx_press[btn];
                       evt_send(&evt);
-#ifdef HAVE_CONSOLE
                     }
-                    else
-                    {
-                        switch(btn+1)
-                        {
-                            case BTN_ON:
-                                con_screenSwitch();
-                                break;
-                            case BTN_OFF:
-                                con_clear();
-                                break;
-                            case BTN_UP:
-                                con_screenScroll(-1);
-                                break;
-                            case BTN_DOWN:
-                                con_screenScroll(1);
-                                break;
-                            default:
-                             /* other keys : post the event */
-                                evt.evt=btn+1;
-                                evt.evt_class=BTN_CLASS;
-                                evt.data=(void*)mx_press[btn];
-                                evt_send(&evt);
-                        }
-                    }
-#endif
-
-                   //printk("BTN %d pressed\n",btn);
                 }
                 else
                 {

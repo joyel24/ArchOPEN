@@ -81,12 +81,13 @@ CONFIGURE_HAVE_EXT_MODULE=-1
 CONFIGURE_HAVE_MAS_SOUND=-1
 CONFIGURE_HAVE_AIC23_SOUND=-1
 CONFIGURE_HAVE_EVT=-1
-CONFIGURE_HAVE_CONSOLE=-1
+CONFIGURE_BOOT_WITH_CONSOLE=-1
 CONFIGURE_HAVE_DBUG=-1
 
 if [ "$1" == "-d" ]; then
 CONFIGURE_TARGET_DEVICE="$2"
 echo "Using default value for target $2"
+HAS_DEFAULT=1
 else
 # check if the file this script generates exists so we don't overwrite something
 if [ -f "./Makefile.conf" ]
@@ -108,6 +109,7 @@ if [ -f "./Makefile.conf" ]
 	else
 		HAVE_CONFIG_FILE=0
 fi
+HAS_DEFAULT=-1
 fi
 
 # this is the first configuration question, AV3XX, GMINI4XX, AV1XX or JBMM
@@ -118,6 +120,11 @@ fi
 
 TARGET_OK=0
 
+if [ "$1" != "-d" ]; then
+CONFIG_QUERY_YN $HAS_DEFAULT "Use default config?" "y"
+HAS_DEFAULT=$?
+fi
+
 if [ $CONFIGURE_TARGET_DEVICE == "1" ]; then
 	        CONFIGURE_TARGET_DEVICE="AV3XX"
             CONFIGURE_HAVE_MAS_SOUND="1"
@@ -126,12 +133,13 @@ if [ $CONFIGURE_TARGET_DEVICE == "1" ]; then
             CONFIGURE_HAVE_DBUG="1"
 	        TARGET_OK=1
             CONFIGURE_FM_REMOTE_VERSION="v1"
-            if [ "$1" == "-d" ]; then
+            CONFIGURE_SPLASH_TYPE="SPLASH_320x240"
+            if [ $HAS_DEFAULT == "1" ]; then
             CONFIGURE_CHK_BAT_POWER="1"
             CONFIGURE_CHK_USB_FW="1"
             CONFIGURE_HAVE_EXT_MODULE="0"
             CONFIGURE_HAVE_EVT="1"
-            CONFIGURE_HAVE_CONSOLE="1"
+            CONFIGURE_BOOT_WITH_CONSOLE="0"
             fi
 fi
 
@@ -143,12 +151,13 @@ if [ $CONFIGURE_TARGET_DEVICE == "2" ]; then
             CONFIGURE_CHIP_TYPE="DM270"
 	        TARGET_OK=1
             CONFIGURE_FM_REMOTE_VERSION="v2"
-            if [ "$1" == "-d" ]; then
+            CONFIGURE_SPLASH_TYPE="SPLASH_220x176"
+            if [ $HAS_DEFAULT == "1" ]; then
             CONFIGURE_HAVE_DBUG="0"
             CONFIGURE_CHK_BAT_POWER="1"
             CONFIGURE_CHK_USB_FW="1"
             CONFIGURE_HAVE_EVT="1"
-            CONFIGURE_HAVE_CONSOLE="1"
+            CONFIGURE_BOOT_WITH_CONSOLE="0"
             fi
 fi
 
@@ -160,12 +169,14 @@ if [ $CONFIGURE_TARGET_DEVICE == "3" ]; then
             CONFIGURE_HAVE_DBUG="1"
 	        TARGET_OK=1
             CONFIGURE_FM_REMOTE_VERSION="v1"
-            if [ "$1" == "-d" ]; then
+            CONFIGURE_BOOT_WITH_CONSOLE="1"
+            CONFIGURE_SPLASH_TYPE="NONE"
+            if [ $HAS_DEFAULT == "1" ]; then
             CONFIGURE_CHK_BAT_POWER="1"
             CONFIGURE_CHK_USB_FW="1"
             CONFIGURE_HAVE_EXT_MODULE="0"
             CONFIGURE_HAVE_EVT="1"
-            CONFIGURE_HAVE_CONSOLE="1"
+            CONFIGURE_BOOT_WITH_CONSOLE="0"
             fi
 fi
 
@@ -174,16 +185,16 @@ if [ $CONFIGURE_TARGET_DEVICE == "4" ]; then
 	        CONFIGURE_HAVE_MAS_SOUND="0"
             CONFIGURE_HAVE_AIC23_SOUND="0"
             CONFIGURE_CHIP_TYPE="DSC21"
-            CONFIGURE_HAVE_CONSOLE="0"
             CONFIGURE_HAVE_DBUG="1"
+            CONFIGURE_BOOT_WITH_CONSOLE="1"
 	        TARGET_OK=1
             CONFIGURE_FM_REMOTE_VERSION="v1"
-            if [ "$1" == "-d" ]; then
+            CONFIGURE_SPLASH_TYPE="NONE"
+            if [ $HAS_DEFAULT == "1" ]; then
             CONFIGURE_CHK_BAT_POWER="1"
             CONFIGURE_CHK_USB_FW="1"
             CONFIGURE_HAVE_EXT_MODULE="0"
             CONFIGURE_HAVE_EVT="1"
-            CONFIGURE_HAVE_CONSOLE="1"
             fi
 fi
 
@@ -195,12 +206,13 @@ if [ $CONFIGURE_TARGET_DEVICE == "5" ]; then
             CONFIGURE_CHIP_TYPE="DM320"
 	        TARGET_OK=1
             CONFIGURE_FM_REMOTE_VERSION="v2"
-            if [ "$1" == "-d" ]; then
+            CONFIGURE_SPLASH_TYPE="SPLASH_220x176"
+            if [ $HAS_DEFAULT == "1" ]; then
             CONFIGURE_HAVE_DBUG="0"
             CONFIGURE_CHK_BAT_POWER="1"
             CONFIGURE_CHK_USB_FW="1"
             CONFIGURE_HAVE_EVT="1"
-            CONFIGURE_HAVE_CONSOLE="1"
+            CONFIGURE_BOOT_WITH_CONSOLE="0"
             fi
 fi
 
@@ -212,12 +224,13 @@ if [ $CONFIGURE_TARGET_DEVICE == "6" ]; then
             CONFIGURE_CHIP_TYPE="DM270"
 	        TARGET_OK=1
             CONFIGURE_FM_REMOTE_VERSION="v2"
-            if [ "$1" == "-d" ]; then
+            CONFIGURE_SPLASH_TYPE="SPLASH_320x240"
+            if [ $HAS_DEFAULT == "1" ]; then
             CONFIGURE_HAVE_DBUG="0"
             CONFIGURE_CHK_BAT_POWER="1"
             CONFIGURE_CHK_USB_FW="1"
             CONFIGURE_HAVE_EVT="1"
-            CONFIGURE_HAVE_CONSOLE="1"
+            CONFIGURE_BOOT_WITH_CONSOLE="0"
             fi
 fi
 
@@ -230,12 +243,13 @@ if [ $CONFIGURE_TARGET_DEVICE == "7" ]; then
             CONFIGURE_CHIP_TYPE="DM270"
 	        TARGET_OK=1
             CONFIGURE_FM_REMOTE_VERSION="v2"
-            if [ "$1" == "-d" ]; then
+            CONFIGURE_SPLASH_TYPE="SPLASH_320x240"
+            if [ $HAS_DEFAULT == "1" ]; then
             CONFIGURE_HAVE_DBUG="0"
             CONFIGURE_CHK_BAT_POWER="1"
             CONFIGURE_CHK_USB_FW="1"
             CONFIGURE_HAVE_EVT="1"
-            CONFIGURE_HAVE_CONSOLE="1"
+            CONFIGURE_BOOT_WITH_CONSOLE="0"
             fi
 fi
 
@@ -266,8 +280,8 @@ CONFIGURE_HAVE_EXT_MODULE=$?
 CONFIG_QUERY_YN $CONFIGURE_HAVE_EVT "HAVE_EVT?" "y"
 CONFIGURE_HAVE_EVT=$?
 
-CONFIG_QUERY_YN $CONFIGURE_HAVE_CONSOLE "HAVE_CONSOLE?" "y"
-CONFIGURE_HAVE_CONSOLE=$?
+CONFIG_QUERY_YN $CONFIGURE_BOOT_WITH_CONSOLE "BOOT WITH CONSOLE?" "n"
+CONFIGURE_BOOT_WITH_CONSOLE=$?
 
 echo "-----------------------------------------"
 
@@ -283,9 +297,10 @@ cat ./Makefile.conf.template | sed > ./Makefile.conf \
  -e "s,%CONFIGURE_HAVE_AIC23_SOUND%,${CONFIGURE_HAVE_AIC23_SOUND},g" \
  -e "s,%CONFIGURE_HAVE_EVT%,${CONFIGURE_HAVE_EVT},g" \
  -e "s,%CONFIGURE_HAVE_DVR%,${CONFIGURE_HAVE_DVR},g" \
- -e "s,%CONFIGURE_HAVE_CONSOLE%,${CONFIGURE_HAVE_CONSOLE},g" \
+ -e "s,%CONFIGURE_BOOT_WITH_CONSOLE%,${CONFIGURE_BOOT_WITH_CONSOLE},g" \
  -e "s,%CONFIGURE_CHIP_TYPE%,${CONFIGURE_CHIP_TYPE},g" \
  -e "s,%CONFIGURE_FM_REMOTE_VERSION%,${CONFIGURE_FM_REMOTE_VERSION},g" \
+ -e "s,%CONFIGURE_SPLASH_TYPE%,${CONFIGURE_SPLASH_TYPE},g" \
  -e "s,%CONFIGURE_HAVE_DBUG%,${CONFIGURE_HAVE_DBUG},g"
 
 #did everything work?

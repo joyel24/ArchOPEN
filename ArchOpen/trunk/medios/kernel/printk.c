@@ -20,9 +20,8 @@
 #include <driver/hardware.h>
 #include <driver/lcd.h>
 
-#ifdef HAVE_CONSOLE    
 #include <kernel/console.h>
-#endif
+
 //int vsnprintf (char * buf, size_t size, const char * fmt, va_list args);
 static char debugmembuf[255];
 
@@ -36,9 +35,7 @@ void printk(char *fmt, ...)
     va_end(ap);
     if(printk_on_uart)
         uart_outString(debugmembuf,DEBUG_UART);
-#ifdef HAVE_CONSOLE
     con_write(debugmembuf,COLOR_LIGHT_GREEN);
-#endif
 }
 
 int printf(__const char * fmt, ...)
@@ -50,9 +47,7 @@ int printf(__const char * fmt, ...)
     va_end(ap);
     if(printk_on_uart)
         uart_outString(debugmembuf,DEBUG_UART);
-#ifdef HAVE_CONSOLE
     con_write(debugmembuf,COLOR_WHITE);
-#endif
     return res;
 }
 
@@ -62,9 +57,7 @@ int vprintf(__const char * fmt, va_list args)
     res = vsnprintf(debugmembuf, sizeof(debugmembuf), fmt, args);
     if(printk_on_uart)
         uart_outString(debugmembuf,DEBUG_UART);
-#ifdef HAVE_CONSOLE
     con_write(debugmembuf,COLOR_WHITE);
-#endif
     return res;
 }
 
@@ -108,12 +101,6 @@ void print_data(char * data,int length)
     printk("\n");
 }
 
-void printk_init(void)
-{
-    printk_on_uart = 0;
-    printk_uartEnable();
-}
-
 void printk_uartEnable(void)
 {
     uart_need(DEBUG_UART);
@@ -124,4 +111,10 @@ void printk_uartEnable(void)
 void printk_uartDisable(void)
 {
     printk_on_uart = 0;
+}
+
+void printk_init(void)
+{
+    printk_on_uart = 0;
+    printk_uartEnable();
 }

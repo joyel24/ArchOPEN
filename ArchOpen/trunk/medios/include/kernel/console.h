@@ -29,7 +29,11 @@
 
 void con_clear();
 void con_screenUpdate();
-void con_screenSwitch(void);
+
+int con_handleBtn(int btn);
+
+void con_screenShow(void);
+
 bool con_screenIsVisible(void);
 void con_screenScroll(int lines);
 void con_write(char * text, char color);

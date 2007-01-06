@@ -59,6 +59,8 @@
 #include <gfx/graphics.h>
 
 #include <gui/shell.h>
+#include <gui/splash.h>
+#include <gui/screens.h>
 
 #ifdef BUILD_LIB
 extern int app_main(int argc, char * argv[]);
@@ -67,51 +69,30 @@ extern int app_main(int argc, char * argv[]);
 unsigned int _svc_IniStack = IRAM_SIZE;
 unsigned int _sys_IniStack = IRAM_SIZE-SVC_STACK_SIZE;
 
-void print_boot_info(void)
+void kernel_thread(void)
 {
+#ifdef BUILD_LIB
+    char * stdalone="STDALONE";
+#endif
+  
+    printk("[SYS thread] starting\n");
+    
+    /* boot info */
     printk("SP: %08x\n",get_sp());
     irq_print();
     tmr_print();
     thread_ps();
+
+#ifdef BUILD_LIB
+    app_main(1,&stdalone);
+    reload_firmware();
+#endif
+
+    shell_main();
+
+    printk("[SYS thread] error: back to main()\n");
+    for(;;);
 }
-
-void kernel_thread(void);
-
-void test_fct(void)
-{
-    int evtHand;
-    int evt;
-
-
-    int stop = 0;
-    
-
-       
-    evtHand=evt_getHandler(BTN_CLASS);
-    
-    while(!stop)
-    {
-        evt = evt_getStatus(evtHand);
-               
-        if(evt==NO_EVENT)
-            continue;
-            
-        switch(evt)
-        {
-            case BTN_F1:
-                FM_enable();              
-                break;
-            case BTN_F2:
-                FM_disable();              
-                break;
-            case BTN_OFF:
-                stop=1;
-                break;
-        }
-    }
-    
-}
-
 
 void kernel_start (void)
 {
@@ -125,12 +106,18 @@ void kernel_start (void)
     /* malloc of max space in SDRAM */
     mem_init((void*)MALLOC_START,MALLOC_SIZE);
     
+    screens_init();
+    
     gfx_init();
-
-#ifdef HAVE_CONSOLE
     con_init();
-    con_screenSwitch();
+    splash_init();
+    
+#ifdef BOOT_WITH_CONSOLE
+    screens_show(SCREEN_CONSOLE);
+#else
+    screens_show(SCREEN_SPLASH);
 #endif
+
     /* print banner on uart */
     printk("MediOS %d.%d - kernel loading\n\n",VER_MAJOR,VER_MINOR);
 
@@ -201,25 +188,5 @@ void kernel_start (void)
 
     /* Err */
     printk("[init] error: back to main(), SYS thread not started\n");
-    for(;;);
-}
-
-void kernel_thread(void)
-{
-#ifdef BUILD_LIB
-    char * stdalone="STDALONE";
-#endif
-  
-    printk("[SYS thread] starting\n");
-    print_boot_info();
-
-#ifdef BUILD_LIB
-    app_main(1,&stdalone);
-    reload_firmware();
-#endif
-
-    shell_main();
-
-    printk("[SYS thread] error: back to main()\n");
     for(;;);
 }

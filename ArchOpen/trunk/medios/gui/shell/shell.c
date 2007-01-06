@@ -25,6 +25,7 @@
 #include <gfx/graphics.h>
 
 #include <gui/shell.h>
+#include <gui/screens.h>
 #include <gui/icons.h>
 #include <gui/msgBox.h>
 #include <gui/file_browser.h>
@@ -296,6 +297,8 @@ void shell_main(){
         // initial paint
         shell_restore();
 
+        screens_show(SCREEN_GFX);
+        
         // main loop (never returns)
         shell_loop();
 

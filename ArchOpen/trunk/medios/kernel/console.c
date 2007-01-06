@@ -13,6 +13,7 @@
 #include <lib/string.h>
 #include <sys_def/ctype.h>
 #include <sys_def/colordef.h>
+#include <sys_def/evt.h>
 
 #include <kernel/console.h>
 #include <kernel/kernel.h>
@@ -25,6 +26,8 @@
 
 #include <gfx/graphics.h>
 #include <gfx/kfont.h>
+
+#include <gui/screens.h>
 
 #define CON_RING_BUFFER(pos) (con_buffer[(pos)%CON_BUFFER_SIZE])
 #define CON_RING_COLORBUFFER(pos) (con_colorBuffer[(pos)%CON_BUFFER_SIZE])
@@ -41,7 +44,7 @@ char * con_gfxBuffer;
 struct graphicsBuffer con_gfxStruct = {
     offset             : 0,
     state              : OSD_BMAP_1_CFG,
-    enable             : 0,
+    enable             : 1,
     width              : SCREEN_WIDTH,
     real_width         : SCREEN_REAL_WIDTH,
     height             : SCREEN_HEIGHT,
@@ -52,6 +55,11 @@ struct graphicsBuffer con_gfxStruct = {
 };
 
 int con_paletteSave[256][3];
+
+struct screen_data console_screenData = {
+    show:con_screenShow,
+    palette:(int (*)[])con_paletteSave
+};
 
 char con_buffer[CON_BUFFER_SIZE];
 char con_colorBuffer[CON_BUFFER_SIZE];
@@ -211,7 +219,21 @@ void con_screenUpdate(){
   con_lastUpdateScreenEnd=con_screenEnd;
 }
 
-void con_screenSwitch(){
+void con_screenShow(void)
+{
+    osd_setComponentConfig(OSD_VIDEO1,  0);
+    osd_setComponentConfig(OSD_VIDEO2,  0);
+    osd_setComponentConfig(OSD_BITMAP1, 0);
+    osd_setComponentConfig(OSD_BITMAP2, 0);
+    osd_setComponentConfig(OSD_CURSOR1, 0);
+    osd_setComponentConfig(OSD_CURSOR2, 0);
+    gfx_restoreComponent(BMAP1,&con_gfxStruct);
+    con_screenVisible=true;
+    con_screenUpdate();
+}
+
+void con_screenSwitch()
+{
   con_screenVisible=!con_screenVisible;
 
   if (con_screenVisible){
@@ -234,6 +256,30 @@ void con_screenSwitch(){
   }
 
   con_screenUpdate();
+}
+
+int con_handleBtn(int btn)
+{
+    switch(btn+1)
+    {
+        case BTN_ON:
+            con_screenVisible=false;            
+            screens_show(screens_main());
+            break;
+        case BTN_OFF:
+            con_clear();
+            break;
+        case BTN_UP:
+            con_screenScroll(-1);
+            break;
+        case BTN_DOWN:
+            con_screenScroll(1);
+            break;
+        default:
+            /* other keys : post the event */
+            return 0;
+    }
+    return 1;
 }
 
 bool con_screenIsVisible(void){
@@ -301,11 +347,15 @@ void con_init(){
 
   // init struct
   con_gfxStruct.offset=(unsigned int)con_gfxBuffer;
-  con_gfxStruct.enable=true;
-
+  
+  osd_setEntirePalette(gui_pal,256,true);
+  osd_savePalette(con_paletteSave,256);
+  
   con_numLines=(SCREEN_HEIGHT-CON_MARGIN_Y)/CON_FONT->height;
   con_numCols=(SCREEN_REAL_WIDTH-CON_MARGIN_X)/CON_FONT->width;
 
   con_screenVisible=false;
   con_clear();
+  
+  screens_add(&console_screenData,SCREEN_CONSOLE);
 }
