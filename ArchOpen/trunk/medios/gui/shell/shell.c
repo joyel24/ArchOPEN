@@ -274,7 +274,9 @@ void shell_restore(){
 }
 
 void shell_main(){
+    int cur_screen=screens_current();
     gfx_openGraphics();
+    screens_show(cur_screen);
     gfx_clearScreen(COLOR_WHITE);
 
     icon_init();

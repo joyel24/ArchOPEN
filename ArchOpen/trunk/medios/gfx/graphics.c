@@ -371,7 +371,7 @@ void gfx_openGraphics(void)
     //osd_setComponentConfig(OSD_BITMAP1,buffers[BMAP1]->state|OSD_COMPONENT_ENABLE(buffers_comp[BMAP1]));
     
     screens_mainSet(SCREEN_GFX);
-    
+    screens_show(SCREEN_GFX);
     
     //osd_setEntirePalette(gui_pal,256,true);
     //printk("BMAP1 @%x\n",buffers[BMAP1]->offset);
@@ -382,7 +382,7 @@ void gfx_openGraphics(void)
 void gfx_closeGraphics(void)
 {
     screens_mainSet(SCREEN_SPLASH);
-    screens_show(SCREEN_SPLASH);
+    //screens_show(SCREEN_SPLASH);
 }
 
 void gfx_setPlane(int vplane)
