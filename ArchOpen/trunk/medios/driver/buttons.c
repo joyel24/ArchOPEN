@@ -16,9 +16,9 @@
 #include <kernel/kernel.h>
 #include <kernel/evt.h>
 #include <kernel/timer.h>
-
-#include <gui/screens.h>
 #include <kernel/console.h>
+
+#include <gfx/screens.h>
 
 #include <init/exit.h>
 

@@ -27,6 +27,7 @@
 #include <driver/gio.h>
 #include <driver/cpld.h>
 #include <driver/fm_remote.h>
+#include <driver/ata.h>
 
 struct cmd_line_s cmd_tab[] = {
     {
@@ -148,6 +149,12 @@ struct cmd_line_s cmd_tab[] = {
         help_str   : "Write VAL to cpld port N: cpldWrite N VAL",
         cmd_action : do_cpldWrite,
         nb_args    : 2
+    },
+    {
+        cmd        : "hdSleep",
+        help_str   : "Put HDD in sleep mode",
+        cmd_action : do_hdSleep,
+        nb_args    : 0
     },
     /* this has to be the last entry */
     {
@@ -389,3 +396,7 @@ void do_cpldWrite (unsigned char ** params)
     printk("wrote %x in cpld_%d\n",val,portNum);    
 }
 
+void do_hdSleep (unsigned char ** params)
+{
+    ata_stopHD(ATA_FORCE_STOP);
+}

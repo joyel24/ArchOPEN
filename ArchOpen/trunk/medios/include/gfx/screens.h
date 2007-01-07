@@ -1,5 +1,5 @@
 /*
-*   include/gui/screens.h
+*   include/gfx/screens.h
 *
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)

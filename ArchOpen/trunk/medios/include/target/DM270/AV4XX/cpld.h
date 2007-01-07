@@ -50,7 +50,6 @@ or 0xD to enable HP */
 
 /* PORT 3*/
 
-
 #define CPLD_SPKR              0x1
 
 /* unused */

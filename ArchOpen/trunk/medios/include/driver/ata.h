@@ -22,7 +22,7 @@
 #define IDE_CMD_READ_SECTORS              0x20
 #define IDE_CMD_WRITE_SECTORS             0x30
 #define IDE_CMD_IDENTIFY                  0xec
-#define IDE_CMD_SLEEP                     0xe0
+#define IDE_CMD_SLEEP                     0xe6
 
 #define IDE_STATUS_BSY                    0x80
 #define IDE_STATUS_RDY                    0x40

@@ -57,10 +57,11 @@
 #endif
 
 #include <gfx/graphics.h>
+#include <gfx/screens.h>
 
 #include <gui/shell.h>
 #include <gui/splash.h>
-#include <gui/screens.h>
+
 
 #ifdef BUILD_LIB
 extern int app_main(int argc, char * argv[]);
@@ -180,7 +181,13 @@ void kernel_start (void)
         for(;;);
     }
 //    sound_init();
-
+#ifdef HAVE_MAS_SOUND
+   mas_init();
+#endif
+#ifdef HAVE_AIC23_SOUND
+   aic23_init();
+#endif
+    
     printk("[init] ------------ drivers done\n");
     
     /*Load kernel thread to enable irq*/

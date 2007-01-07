@@ -1,6 +1,6 @@
 include $(MEDIOS_SRC_PATH)/Makefile.conf
 
-SRC = graphics_32.c graphics.c resize.c
+SRC = graphics_32.c graphics.c resize.c screens.c
 
 SUBDIRS = fonts
 

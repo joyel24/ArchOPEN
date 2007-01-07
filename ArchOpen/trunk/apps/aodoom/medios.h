@@ -26,6 +26,7 @@
     #include <driver/bat_power.h>
     #include <driver/videnc.h>
     #include <driver/lcd.h>
+    #include <driver/speaker.h>
 
     #include <fs/stdfs.h>
 

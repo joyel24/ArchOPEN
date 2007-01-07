@@ -138,13 +138,16 @@ void gui_init(){
     mih->chooser->itemCount=3;
     mih->chooser->index=0;
     menu->addItem(menu,mih);
-#if defined(AV4XX) //|| defined(PMA)
-    mic=widgetMenuCheckbox_create();
-    mic->caption="Int Speacker";
-    mic->cfgStored=false;
-    mic->checkbox->caption="Enabled";
-    menu->addItem(menu,mic);
-#endif    
+    
+    if(speaker_available())
+    {
+        mic=widgetMenuCheckbox_create();
+        mic->caption="Int Speacker";
+        mic->cfgStored=false;
+        mic->checkbox->checked=speaker_state()?1:0;
+        menu->addItem(menu,mic);
+    }    
+    
     mi=widgetMenuItem_create();
     mi->caption="Overclocking:";
     mi->foreColor=GUI_TITLE_COLOR;
@@ -259,18 +262,19 @@ void gui_applySettings(){
     overclocking=menu->getCheckbox(menu,menu->indexFromCaption(menu,"Enable OC"))->checked;
     armFrequency=menu->getTrackbar(menu,menu->indexFromCaption(menu,"CPU frequency(Mhz)"))->value;
     
-#if defined(AV4XX) //|| defined(PMA)
-    if(menu->getCheckbox(menu,menu->indexFromCaption(menu,"Int Speacker"))->checked)
+    if(speaker_available())
     {
-        printk("Enable spkr\n");
-        SPCKR_ON();
+        if(menu->getCheckbox(menu,menu->indexFromCaption(menu,"Int Speacker"))->checked)
+        {
+            printk("Enable spkr\n");
+            speaker_enable(1);
+        }
+        else
+        {
+            printk("Disable spkr\n");
+            speaker_enable(0);
+        }
     }
-    else
-    {
-        printk("Disable spkr\n");
-        SPCKR_OFF();
-    }
-#endif
 
     lcd_setBrightness(bl);
 

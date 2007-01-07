@@ -27,7 +27,7 @@
 #include <gfx/graphics.h>
 #include <gfx/kfont.h>
 
-#include <gui/screens.h>
+#include <gfx/screens.h>
 
 #define CON_RING_BUFFER(pos) (con_buffer[(pos)%CON_BUFFER_SIZE])
 #define CON_RING_COLORBUFFER(pos) (con_colorBuffer[(pos)%CON_BUFFER_SIZE])

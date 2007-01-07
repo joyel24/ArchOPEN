@@ -124,6 +124,7 @@ int            # mkdir      # const char *name, int mode
 #k_inc#gfx/graphics.h
 #api_inc#sys_def/graphics.h
 void   # gfx_openGraphics          # void
+void   # gfx_initGraphics          # void
 void   # gfx_closeGraphics         # void
 void   # gfx_setPlane              # int vplane
 int    # gfx_getPlane              # void
@@ -287,3 +288,9 @@ void       # cfg_addDummyLine # CFG_DATA * data, char * text
 bool       # cfg_deleteItem   # CFG_DATA * data, char * name
 
 void       # cfg_printItems   # CFG_DATA * data
+
+#k_inc#driver/speaker.h
+
+void       # speaker_enable    # int enable
+int        # speaker_state     # void
+int        # speaker_available # void

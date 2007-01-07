@@ -23,9 +23,9 @@
 #include <fs/cfg_file.h>
 
 #include <gfx/graphics.h>
+#include <gfx/screens.h>
 
 #include <gui/shell.h>
-#include <gui/screens.h>
 #include <gui/icons.h>
 #include <gui/msgBox.h>
 #include <gui/file_browser.h>
@@ -273,10 +273,10 @@ void shell_restore(){
     evt_send(&evt);
 }
 
-void shell_main(){
-    int cur_screen=screens_current();
-    gfx_openGraphics();
-    screens_show(cur_screen);
+void shell_main()
+{
+    
+    gfx_initGraphics();
     gfx_clearScreen(COLOR_WHITE);
 
     icon_init();

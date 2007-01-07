@@ -18,9 +18,9 @@
 #include <driver/osd.h>
 
 #include <gfx/graphics.h>
+#include <gfx/screens.h>
 
 #include <gui/splash.h>
-#include <gui/screens.h>
 
 extern struct graphics_operations g32ops;
 

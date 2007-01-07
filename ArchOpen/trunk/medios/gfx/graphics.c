@@ -20,7 +20,6 @@
 #include <kernel/swi.h>
 
 #include <kernel/console.h>
-#include <gui/screens.h>
 
 #include <driver/lcd.h>
 #include <driver/osd.h>
@@ -28,7 +27,7 @@
 #include <gfx/graphics.h>
 #include <gfx/gui_pal.h>
 #include <gfx/kfont.h>
-
+#include <gfx/screens.h>
 
 #define STRING_MAXSIZE 200
 
@@ -162,7 +161,7 @@ int gfx_paletteSave[256][3];
 
 struct screen_data gfx_screenData = {
     show:gfx_show,
-    palette:gfx_paletteSave
+    palette:(int (*)[])gfx_paletteSave
 };
 
 int     current_font=0;
@@ -347,19 +346,14 @@ void gfx_show(void)
 
 void gfx_openGraphics(void)
 {
-    printk("INI gfx\n");
-    
-    /* hidding bmap1 */
-    
+    gfx_initGraphics();
+    screens_show(SCREEN_GFX);
+}
+
+void gfx_initGraphics(void)
+{
+    printk("INI gfx\n");        
     init_buffer_data();
-    
-    /*osd_setComponentConfig(OSD_VIDEO1,  0);
-    osd_setComponentConfig(OSD_VIDEO2,  0);
-    osd_setComponentConfig(OSD_BITMAP1, 0);
-    osd_setComponentConfig(OSD_BITMAP2, 0);
-    osd_setComponentConfig(OSD_CURSOR1, 0);
-    osd_setComponentConfig(OSD_CURSOR2, 0);*/
-    
     /*setting up planes */
     gfx_initComponent(BMAP1,&BITMAP_1,(unsigned int)&screen_BMAP1);
     gfx_initComponent(BMAP2,&BITMAP_2,(unsigned int)&screen_BMAP2);
@@ -368,16 +362,9 @@ void gfx_openGraphics(void)
     current_plane=BMAP1;
     current_font=0;
     buffers[BMAP1]->enable=1;
-    //osd_setComponentConfig(OSD_BITMAP1,buffers[BMAP1]->state|OSD_COMPONENT_ENABLE(buffers_comp[BMAP1]));
     
     screens_mainSet(SCREEN_GFX);
-    screens_show(SCREEN_GFX);
-    
-    //osd_setEntirePalette(gui_pal,256,true);
-    //printk("BMAP1 @%x\n",buffers[BMAP1]->offset);
 }
-
-
 
 void gfx_closeGraphics(void)
 {

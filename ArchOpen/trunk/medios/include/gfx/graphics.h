@@ -95,6 +95,7 @@ void  gfx_initComponent        (int vplane,struct graphicsBuffer * buff,unsigned
 void  gfx_restoreComponent     (int vplane,struct graphicsBuffer * buff);
 void  gfx_restoreAllComponents (void);
 void  gfx_openGraphics         (void);
+void  gfx_initGraphics         (void);
 void  gfx_closeGraphics        (void);
 void  gfx_setPlane             (int vplane);
 int   gfx_getPlane             (void);

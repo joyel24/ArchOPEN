@@ -27,11 +27,16 @@ void arch_ata_resetHD(void)
 
 void arch_ata_powerUpHD(void)
 {
+    if((cpld_read(CPLD1)&0x3)==0x3)
+        return;
     CPLD_SET_PORT1(CPLD_HD_POWER); /* powering up HD */
+    CPLD_SET_PORT1(CPLD_HD_RESET);
+    mdelay(10);
 }
 
 void arch_ata_powerDownHD(void)
 {
+    CPLD_CLEAR_PORT1(CPLD_HD_RESET);
     CPLD_CLEAR_PORT1(CPLD_HD_POWER);
 }
 
@@ -44,7 +49,7 @@ void arch_ata_selectCF(void)
 }
 
 void arch_ata_init(void)
-{
+{  
   arch_ata_powerUpHD();
   arch_ata_resetHD();
 }

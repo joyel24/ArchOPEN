@@ -45,7 +45,9 @@ void do_gioGetState (unsigned char ** params);
 void do_diskInfo (unsigned char ** params);
 void do_cpldRead (unsigned char ** params);
 void do_cpldWrite (unsigned char ** params);
+void do_hdSleep (unsigned char ** params);
 
+/* cmd line internal functions */
 void init_cmd_line(void);
 void cmd_line_enable(void);
 void cmd_line_disable(void);

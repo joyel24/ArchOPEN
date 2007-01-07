@@ -1,5 +1,5 @@
 /*
-*   kernel/gui/screens.c
+*   kernel/gfx/screens.c
 *
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -17,10 +17,9 @@
 #include <driver/osd.h>
 
 #include <gfx/graphics.h>
+#include <gfx/screens.h>
 
 #include <gui/splash.h>
-
-#include <gui/screens.h>
 
 int current_screen;
 int main_screen;
