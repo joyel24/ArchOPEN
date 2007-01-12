@@ -190,14 +190,14 @@ static const char *opt2_menu[] = {
 };
 
 void clk_overclock(bool en){
-#if defined(PMA) || defined(GMINI402) || defined(GMINI4XX) || defined(AV3XX)
+#if defined(GMINI402) || defined(GMINI4XX) || defined(AV3XX) //|| defined(PMA)
     if(en && ARMFreq){
 #if defined(AV3XX)
         (*(volatile unsigned short *)(0x30880))=0x8080 + (ARMFreq<<4);
 #else
         clkc_setClockFrequency(CLK_ARM,ARMFreq*10000000+100000000);
 #endif
-        // wait a little for PPL to be in a sane state
+        // wait a little for PLL to be in a sane state
         mdelay(100);
     }else{
         // default params
@@ -205,11 +205,11 @@ void clk_overclock(bool en){
         (*(volatile unsigned short *)(0x30880))=0x8021;
 #else
         clkc_setClockParameters(CLK_ARM,15,2,2);
-        // wait a little for PPL to be in a sane state
+        // wait a little for PLL to be in a sane state
         mdelay(100);
         clkc_setClockParameters(CLK_ACCEL,15,2,1);
 #endif
-        // wait a little for PPL to be in a sane state
+        // wait a little for PLL to be in a sane state
         mdelay(100);
     }
 #endif

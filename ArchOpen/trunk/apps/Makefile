@@ -3,7 +3,7 @@ export MEDIOS_SRC_PATH = $(dir $(MEDIOS_SRC_PATH_TMP))
 
 include $(MEDIOS_SRC_PATH)/Makefile.conf
 
-SUBDIRS = aones aoboy bluecube aodoom aosms
+SUBDIRS = aones aoboy bluecube aodoom aosms pacman
 
 MED_LIST = $(patsubst %.c,%.med,$(wildcard *.c))
 
@@ -14,7 +14,7 @@ LDFLAGS = $(MEDIOS_SRC_PATH)/lib/*.o -L$(MEDIOS_SRC_PATH)/lib -lmedios --emit-re
 $(LIBS):
 	@make -C $(MEDIOS_SRC_PATH) --no-print-directory medios_lib
 
-all_med: bluecube
+all_med: bluecube pacman
 	@for p in $(MED_LIST); do \
 		make $$p; \
 	done

@@ -63,18 +63,17 @@ void clk_overclock(bool en){
 #ifdef ENABLE_OVERCLOCKING
     if(en && overclocking){
         clkc_setClockFrequency(CLK_ARM,armFrequency*1000000);
-        // wait a little for PPL to be in a sane state
+        // wait a little for PLL to be in a sane state
         mdelay(100);
     }else{
         // default params
         clkc_setClockParameters(CLK_ARM,15,2,2);
-        // wait a little for PPL to be in a sane state
+        // wait a little for PLL to be in a sane state
         mdelay(100);
         clkc_setClockParameters(CLK_ACCEL,15,2,1);
-        // wait a little for PPL to be in a sane state
+        // wait a little for PLL to be in a sane state
         mdelay(100);
     }
-
 #endif
 };
 

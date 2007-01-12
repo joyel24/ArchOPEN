@@ -25,7 +25,7 @@ extern void display_tvOutSet();
 
 void clk_overclock(){
 // AV400 seems to have problems with o/c
-#if defined(GMINI402) || defined(GMINI4XX) || defined(PMA)
+#if defined(GMINI402) || defined(GMINI4XX) //|| defined(PMA)
     int dspf;
 
     // mute sound during clock changes, fixes some crashes
