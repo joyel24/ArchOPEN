@@ -27,10 +27,10 @@
 
 #define SCREEN_LCD_SHIFT_X                175
 #define SCREEN_LCD_SHIFT_Y                18
-#define SCREEN_PAL_SHIFT_X                141
-#define SCREEN_PAL_SHIFT_Y                4
-#define SCREEN_NTSC_SHIFT_X               130
-#define SCREEN_NTSC_SHIFT_Y               10
+#define SCREEN_PAL_SHIFT_X                146
+#define SCREEN_PAL_SHIFT_Y                27
+#define SCREEN_NTSC_SHIFT_X               132
+#define SCREEN_NTSC_SHIFT_Y               21
 
 #define LCD_WIDTH SCREEN_REAL_WIDTH
 #define LCD_HEIGHT SCREEN_HEIGHT

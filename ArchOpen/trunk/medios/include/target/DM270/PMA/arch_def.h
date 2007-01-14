@@ -47,5 +47,6 @@
 #define OMAP_HD_USB2_ENABLE_REQUEST       0x9
 #define OMAP_HD_USB2_DISABLE_REQUEST      0x10
 #define OMAP_COPY_FW_REQUEST              0x11
+#define OMAP_HD_INIT_REQUEST              0x12
 
 #endif  /* __HARDWARE_H */

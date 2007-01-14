@@ -21,8 +21,8 @@
 
 void arch_ata_resetHD(void)
 {
-     outb(OMAP_HD_POWER_UP_REQUEST,OMAP_REQUEST_BASE);
-     while(inb(OMAP_REQUEST_BASE));
+    // outb(OMAP_HD_POWER_UP_REQUEST,OMAP_REQUEST_BASE);
+    // while(inb(OMAP_REQUEST_BASE));
      outb(OMAP_HD_RESET_REQUEST,OMAP_REQUEST_BASE);
      while(inb(OMAP_REQUEST_BASE));
   //   mdelay(2000);
@@ -30,15 +30,15 @@ void arch_ata_resetHD(void)
 
 void arch_ata_powerUpHD(void)
 {
-   //  outb(OMAP_HD_POWER_UP_REQUEST,OMAP_REQUEST_BASE);
-   //  while(inb(OMAP_REQUEST_BASE));
+     outb(OMAP_HD_POWER_UP_REQUEST,OMAP_REQUEST_BASE);
+     while(inb(OMAP_REQUEST_BASE));
      //printk("Power UP done!\n");
 }
 
 void arch_ata_powerDownHD(void)
 {
- //    outb(OMAP_HD_POWER_DOWN_REQUEST,OMAP_REQUEST_BASE);
- //    while(inb(OMAP_REQUEST_BASE));
+     outb(OMAP_HD_POWER_DOWN_REQUEST,OMAP_REQUEST_BASE);
+     while(inb(OMAP_REQUEST_BASE));
 }
 
 void arch_ata_selectHD(void)
@@ -51,6 +51,8 @@ void arch_ata_selectCF(void)
 
 void arch_ata_init(void)
 {
+  outb(OMAP_HD_INIT_REQUEST,OMAP_REQUEST_BASE);
+  while(inb(OMAP_REQUEST_BASE));
   arch_ata_powerUpHD();
   arch_ata_resetHD();
 }
