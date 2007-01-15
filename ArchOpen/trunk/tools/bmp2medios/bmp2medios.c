@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../../include/kernel/gui_pal.h"
+#include "../../medios/include/gfx/gui_pal.h"
 
 #pragma pack(1)
 

@@ -37,13 +37,20 @@
 #include <fs/disk.h>
 
 #include <driver/wdt.h>
+
+#ifdef HAVE_MAS_SOUND
+#include <driver/mas.h>
+#endif
+#ifdef HAVE_AIC23_SOUND
 #include <driver/aic23.h>
+#endif
 #include <driver/hardware.h>
 #include <driver/uart.h>
 #include <driver/cpld.h>
 #include <driver/rtc.h>
 #include <driver/usb_fw.h>
-#include <driver/bat_power.h>
+#include <driver/batDc.h>
+#include <driver/energy.h>
 #include <driver/buttons.h>
 #include <driver/ata.h>
 #include <driver/fm_remote.h>
@@ -156,9 +163,10 @@ void kernel_start (void)
     evt_init();
 #endif
     btn_init();
-#ifdef CHK_BAT_POWER
-    init_power();
-#endif
+
+    energy_init();
+    batDc_init();
+
 #ifndef PMA
     init_rtc();
 #endif
@@ -180,6 +188,9 @@ void kernel_start (void)
         printk("[init] ------ Halting\n");
         for(;;);
     }
+    
+    energy_loadPref();
+    
 //    sound_init();
 #ifdef HAVE_MAS_SOUND
    mas_init();

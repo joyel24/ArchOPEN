@@ -26,11 +26,13 @@ MED_RET_T # rtc_setTime # struct med_tm * newTime
 void # udelay  # unsigned long usecs
 void # mdelay  # unsigned long msecs
 
-#k_inc#driver/bat_power.h
+#k_inc#driver/energy.h
 void # set_timer_status  # int timer_type, int power_mode, int status
 void # set_timer_delay   # int timer_type, int power_mode, int delay
 int  # get_timer_status  # int timer_type, int power_mode
 int  # get_timer_delay   # int timer_type, int power_mode
+
+#k_inc#driver/batDc.h
 int  # DC_isConnected    # void
 int  # batLevel          # void
 

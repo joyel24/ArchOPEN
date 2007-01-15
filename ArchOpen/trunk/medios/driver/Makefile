@@ -1,6 +1,6 @@
 include $(MEDIOS_SRC_PATH)/Makefile.conf
 
-SRC =  ata.c cpld.c i2c.c rtc.c buttons.c usb_fw.c bat_power.c clkc.c cache.c lcd.c \
+SRC =  ata.c cpld.c i2c.c rtc.c buttons.c usb_fw.c batDc.c energy.c clkc.c cache.c lcd.c \
     fm_remote.c uart.c wdt.c dsp.c videnc.c speaker.c
 
 ifeq ("$(TARGET_DEVICE)","AV3XX")

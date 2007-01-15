@@ -25,6 +25,8 @@ bool lcd_enabled();
 void lcd_setBrightness(int br);
 int lcd_getBrightness();
 
+void lcd_keyPress(void);
+
 void arch_lcd_init();
 void arch_lcd_enable();
 void arch_lcd_disable();

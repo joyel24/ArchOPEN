@@ -41,6 +41,7 @@ static bool intCmd_doBrowser(char * param);
 static bool intCmd_doReloadFirmware(char * param);
 static bool intCmd_doUsbMode(char * param);
 static bool intCmd_doTimeSetting(char * param);
+static bool intCmd_doEnergySetting(char * param);
 
 typedef struct{
     char * command;
@@ -63,6 +64,10 @@ INTERNAL_COMMAND intCmd_commands[] = {
     {
         command:  "set_time",
         function: intCmd_doTimeSetting
+    },
+    {
+        command:  "set_energy",
+        function: intCmd_doEnergySetting
     },
     /* should always be the last entry */
     {
@@ -195,4 +200,12 @@ static bool intCmd_doTimeSetting(char * param)
 {
     clock_setting();
     return true;
+}
+
+#include <gui/settings_energy.h>
+
+static bool intCmd_doEnergySetting(char * param)
+{
+    energy_setting();
+    return true;   
 }

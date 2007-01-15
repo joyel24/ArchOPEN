@@ -23,7 +23,7 @@
 
 #include <sys_def/evt.h>
 #include <sys_def/buttons.h>
-#include <driver/bat_power.h>
+#include <driver/energy.h>
 #include <sys_def/int_timer.h>
 
 

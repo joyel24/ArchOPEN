@@ -26,6 +26,13 @@ void arch_lcd_enable(){
         GIO_DIRECTION(GIO_LCD_BL_AV4100,GIO_OUT);
         GIO_SET(GIO_LCD_BL_AV4100);
     }
+    else
+    {
+        GIO_SET(GIO_LCD_BL_2);
+        GIO_SET(GIO_LCD_BL_1);
+        GIO_DIRECTION(GIO_LCD_BL_2,GIO_OUT);
+        GIO_DIRECTION(GIO_LCD_BL_1,GIO_OUT);
+    }
 }
 
 void arch_lcd_disable(){
@@ -33,6 +40,13 @@ void arch_lcd_disable(){
     {
         GIO_DIRECTION(GIO_LCD_BL_AV4100,GIO_OUT);
         GIO_CLEAR(GIO_LCD_BL_AV4100);
+    }
+    else
+    {
+        GIO_CLEAR(GIO_LCD_BL_1);
+        GIO_CLEAR(GIO_LCD_BL_2);
+        GIO_DIRECTION(GIO_LCD_BL_1,GIO_OUT);
+        GIO_DIRECTION(GIO_LCD_BL_2,GIO_OUT);
     }
 }
 

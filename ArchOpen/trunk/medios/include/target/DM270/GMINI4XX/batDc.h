@@ -1,5 +1,5 @@
 /*
-*   include/kernel/target/arch_AV1XX/bat_power.h
+*   include/kernel/target/arch_GMINI4XX.bat_power.h
 *
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -10,24 +10,22 @@
 * KIND, either express of implied.
 */
 
-#ifndef __ARCH_BAT_POWER_H
-#define __ARCH_BAT_POWER_H
+#ifndef __ARCH_BAT_DC_H
+#define __ARCH_BAT_DC_H
 
 #include <kernel/io.h>
 
-#include <driver/mas.h>
+#include <driver/gio.h>
+
 
 /** power state **/
 
-#define POWER_STATE                       0x30a24
-#define POWER_CONNECTED                   ((inw(POWER_STATE) >> 0x5)&0x1)
+#define POWER_STATE                       0
+#define POWER_CONNECTED                   (GIO_IS_SET(GIO_POWER_CONNECTED))
 
 /** Bat level **/
 
-#ifdef HAVE_MAS_SOUND
-#define GET_BAT_LEVEL (mas_readBat())
-#else
-#define GET_BAT_LEVEL 8
-#endif
+#define GET_BAT_LEVEL                     0
+
 
 #endif

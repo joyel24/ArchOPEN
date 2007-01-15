@@ -22,16 +22,23 @@
 #define GIO_I2C_CLOCK         0x09
 #define GIO_I2C_DATA          0x08
 
+#define GIO_WDT               0x05
 
 #define GIO_POWER_CONNECTED   0x03
 #define GIO_USB_CONNECTED     0x0b
 #define GIO_CF_CONNECTED      0x07
 
+#define GIO_BAT_METER_INT     0x0D
+#define GIO_BAT_METER_REG0    0x0A
+#define GIO_BAT_METER_REG1    0x10
 
 #define GIO_SPDIF     0xff
 #define GIO_VID_OUT   0x12
 
 #define GIO_IR        0xff
+
+#define GIO_LCD_BL_1 0x14
+#define GIO_LCD_BL_2 0x4
 
 #define GIO_LCD_BL_AV4100 0x1e
 

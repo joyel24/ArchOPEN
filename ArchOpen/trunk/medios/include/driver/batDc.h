@@ -1,5 +1,5 @@
 /*
-*   include/kernel/target/arch_AV1XX/bat_power.h
+*   include/kernel/batDc.h
 *
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -10,21 +10,23 @@
 * KIND, either express of implied.
 */
 
-#ifndef __ARCH_BAT_POWER_H
-#define __ARCH_BAT_POWER_H
+#ifndef __BAT_DC_H
+#define __BAT_DC_H
 
-#include <kernel/io.h>
+#include <target/chip/arch/batDc.h>
 
-#include <driver/mas.h>
+int DC_isConnected(void);
+int batLevel(void);
 
-/** power state **/
+extern int kpwrState;
+void process_DC_change(void);
 
-#define POWER_STATE                       0x30a24
-#define POWER_CONNECTED                   ((inw(POWER_STATE) >> 0x5)&0x1)
+void DC_chkAction(void);
 
-/** Bat level **/
+int  getPowerMode(void);
 
-#define GET_BAT_LEVEL (mas_readBat())
+void chk_DC_connector(void);
 
+void batDc_init(void);
 
 #endif

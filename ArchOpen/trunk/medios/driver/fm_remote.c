@@ -19,7 +19,7 @@
 
 #include <driver/fm_remote.h>
 #include <driver/buttons.h>
-#include <driver/bat_power.h>
+#include <driver/energy.h>
 #include <driver/uart.h>
 #include <driver/lcd.h>
 

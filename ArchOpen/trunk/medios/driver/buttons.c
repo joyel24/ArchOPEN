@@ -25,7 +25,7 @@
 #include <driver/hardware.h>
 #include <driver/cpld.h>
 #include <driver/gio.h>
-#include <driver/bat_power.h>
+#include <driver/energy.h>
 #include <driver/lcd.h>
 #include <driver/fm_remote.h>
 #include <driver/buttons.h>
@@ -78,17 +78,16 @@ __IRAM_CODE void btn_chkPress(void)
         
     if(btn_state!=0x0)
     {
+        halt_launchTimer();
         if(!lcd_enabled())
         {
             lcd_keyPress();
-            halt_launchTimer();
         }
         else
         {
             lcd_launchTimer();
             need_clean=1;
             btn_processPress(btn_state);
-            halt_launchTimer();
         }
     }
     else if(need_clean)

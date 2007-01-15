@@ -10,7 +10,7 @@
 * KIND, either express of implied.
 *
 * Part of this code is from Rockbox project
-* Copyright (C) 2002 by Björn Stenberg
+* Copyright (C) 2002 by Bjï¿½n Stenberg
 *
 */
 
@@ -23,7 +23,6 @@
 #include <kernel/timer.h>
 #include <kernel/kernel.h>
 
-#include <driver/bat_power.h>
 #include <driver/ata.h>
 #ifdef HAVE_EXT_MODULE
 #include <driver/cf_module.h>
@@ -235,7 +234,7 @@ struct hd_info_s * disk_readInfo(int disk,int just_print)
     dd_findEnd(disk_info->model,40);
     disk_info->multi_sector = sector[47] & 0xff ;
     disk_info->partition_list=NULL;
-    
+        
     printk("[DISK] reading %s info\n     %s\n     %s|%s\n     %d sectors per ata request\n",
                 disk_name[disk],
                 disk_info->model,
@@ -246,6 +245,8 @@ struct hd_info_s * disk_readInfo(int disk,int just_print)
     if(ata_rwData(disk,0,sector,1,ATA_DO_READ,ATA_WITH_DMA)<0) /* read 1 sector at LBA 0 */
         goto main_exit;
 
+    
+    //print_data(sector,512);
         
     /* check that the boot sector is initialized */
     if ( (sector[510] != 0x55) ||

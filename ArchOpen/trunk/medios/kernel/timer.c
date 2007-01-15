@@ -18,17 +18,6 @@
 #include <kernel/kernel.h>
 #include <kernel/thread.h>
 
-#include <init/exit.h>
-
-#include <driver/hardware.h>
-#include <driver/buttons.h>
-#include <driver/bat_power.h>
-#include <driver/usb_fw.h>
-#include <driver/ext_module.h>
-#include <driver/fm_remote.h>
-#include <driver/bat_power.h>
-#include <driver/ata.h>
-
 unsigned long tick __IRAM_DATA;
 
 struct tmr_s * tmr_head __IRAM_DATA;

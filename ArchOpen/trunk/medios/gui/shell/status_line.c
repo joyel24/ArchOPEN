@@ -19,8 +19,8 @@
 #include <kernel/evt.h>
 
 #include <driver/rtc.h>
-#include <driver/bat_power.h>
 #include <driver/usb_fw.h>
+#include <driver/batDc.h>
 #ifdef HAVE_EXT_MODULE
 #include <driver/cf_module.h>
 #endif
@@ -28,15 +28,13 @@
 #include <gfx/graphics.h>
 
 #include <gui/icons.h>
+
+int date_format;
+int time_format;
+
 #include <gui/status_line.h>
 
-
-
-#define FORMAT_MMDDYYYY    0
-#define FORMAT_DDMMYYYY    1
-
-#define FORMAT_12          0
-#define FORMAT_24          1
+#include <fs/cfg_file.h>
 
 BITMAP * st_fwExtIcon;
 BITMAP * st_cfIcon;
@@ -55,11 +53,8 @@ int color = 0;
 int level = 0;
 int chargeProgress = 0;
 
-int date_format=FORMAT_DDMMYYYY;
-int time_format=FORMAT_24;
-
 #define HOUR(HH)       (time_format==FORMAT_12?(HH<=12?HH:(HH-12)):HH)
-#define AMPM_ADD(HH)   time_format==FORMAT_12?HH<=12?"A":"P":""
+#define AMPM_ADD(HH)   time_format==FORMAT_12?HH<=12?"AM":"PM":""
 #define DATE1(DD,MM)   (date_format==FORMAT_DDMMYYYY?DD:MM)
 #define DATE2(DD,MM)   (date_format==FORMAT_DDMMYYYY?MM:DD)
 
@@ -245,7 +240,6 @@ void statusLine_handleEvent(int evt)
             break;
         case EVT_PWR_IN:
         case EVT_PWR_OUT:
-#warning we could use here and for usb / FW ... the data of the evt
             pwrState=POWER_CONNECTED;
             batteryRefresh = 0;
             drawStatus();
@@ -272,6 +266,7 @@ void statusLine_handleEvent(int evt)
 
 void statusLine_init(void)
 {
+    CFG_DATA * cfg;
     /* get icons */
     st_fwExtIcon=&icon_get("fwExtIcon")->bmap_data;
     st_cfIcon=&icon_get("cfIcon")->bmap_data;
@@ -282,6 +277,33 @@ void statusLine_init(void)
     pwrState=POWER_CONNECTED;
     usbState=kusbIsConnected();
     fwExtState=kFWIsConnected();
+    
+    /* read cfg */
+    cfg=cfg_readFile("/medios/medios.cfg");
+    
+    if(!cfg)
+    {
+        printk("Can't open cfg file\n");        
+        time_format=FORMAT_24;
+        date_format=FORMAT_DDMMYYYY;
+        cfg=cfg_newFile();
+        if(!cfg)
+        {
+            printk("Can't create new cfg file\n");
+            return;
+        }
+        cfg_writeInt(cfg,"is12H",time_format);
+        cfg_writeInt(cfg,"isMMDD",date_format);
+        cfg_writeFile(cfg,"/medios/medios.cfg");
+    }
+    else
+    {
+        time_format=cfg_readInt(cfg,"is12H");    
+        date_format=cfg_readInt(cfg,"isMMDDYYYY");
+    }
+    
+    cfg_clear(cfg);
+    
 #ifdef HAVE_EXT_MODULE
     cfState=CF_IS_CONNECTED;
 #else

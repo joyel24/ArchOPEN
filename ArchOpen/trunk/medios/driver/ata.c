@@ -21,7 +21,7 @@
 #include <kernel/irq.h>
 
 #include <driver/hardware.h>
-#include <driver/bat_power.h>
+#include <driver/energy.h>
 #include <driver/cpld.h>
 #include <driver/ata.h>
 #include <driver/dma.h>
@@ -45,11 +45,6 @@ int ata_stopping = 0;
 struct tmr_s ataStop_tmr;
 
 int cur_disk = HD_DISK;
-
-#ifndef CHK_BAT_POWER
-#define hd_launchTimer()
-int hd_sleep_state=0;
-#endif
 
 #define CALC_BASE(ADDR)     (((unsigned int)(ADDR))-SDRAM_START)
 
@@ -256,9 +251,9 @@ void ata_stopHD(int mode)
 void ata_stopHDEnd(void)
 {
     ata_powerDownHD();
-#ifdef CHK_BAT_POWER
+
     tmr_stop(&hd_timer);
-#endif
+
     hd_sleep_state=1;
     ata_stopping = 0;
     printk("[ide sleep] end\n");

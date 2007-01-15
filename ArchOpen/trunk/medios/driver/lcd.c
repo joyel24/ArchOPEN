@@ -11,6 +11,8 @@
 */
 
 #include <driver/lcd.h>
+#include <driver/fm_remote.h>
+#include <driver/energy.h>
 
 int lcd_brightness;
 bool lcd_state;
@@ -47,4 +49,12 @@ void lcd_setBrightness(int br){
 
 int lcd_getBrightness(){
     return lcd_brightness;
+}
+
+void lcd_keyPress(void)
+{
+    lcd_enable();
+    if(FM_is_connected())
+        FM_lightsON();
+    lcd_launchTimer();
 }

@@ -348,6 +348,7 @@ void gfx_openGraphics(void)
 {
     gfx_initGraphics();
     screens_show(SCREEN_GFX);
+    
 }
 
 void gfx_initGraphics(void)
@@ -362,6 +363,8 @@ void gfx_initGraphics(void)
     current_plane=BMAP1;
     current_font=0;
     buffers[BMAP1]->enable=1;
+    
+    osd_setEntirePalette(gui_pal,256,true);
     
     screens_mainSet(SCREEN_GFX);
 }

@@ -23,7 +23,7 @@
     #include <driver/dsp.h>
     #include <driver/aic23.h>
     #include <driver/clkc.h>
-    #include <driver/bat_power.h>
+    #include <driver/energy.h>
     #include <driver/videnc.h>
     #include <driver/lcd.h>
     #include <driver/speaker.h>

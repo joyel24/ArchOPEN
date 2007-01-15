@@ -32,6 +32,7 @@
 #include <gui/status_line.h>
 #include <gui/shellmenu.h>
 #include <gui/internal_commands.h>
+#include <gui/settings_energy.h>
 
 typedef struct SHELL_HANDLER_STRUCT * SHELL_HANDLER;
 
@@ -158,6 +159,7 @@ static bool shell_executeMed(char * medfile,char * param){
 
     //prepare return to shell
     gfx_openGraphics();
+    
 
     return retval;
 }
@@ -289,7 +291,7 @@ void shell_main()
     if(!shell_parseHandlers(SHELL_HANDLERS_FILE)){
         printk("[shell] error reading handlers file\n");
     }
-
+    
     // init shell menu
     if (shellMenu_init()){
 

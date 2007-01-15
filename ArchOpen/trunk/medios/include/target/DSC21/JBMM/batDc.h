@@ -1,5 +1,5 @@
 /*
-*   include/int_timer.h
+*   include/kernel/target/arch_AV1XX/batDc.h
 *
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -10,20 +10,21 @@
 * KIND, either express of implied.
 */
 
-#ifndef __INT_TIMER_H
-#define __INT_TIMER_H
+#ifndef __ARCH_BAT_DC_H
+#define __ARCH_BAT_DC_H
 
-#define TIMER_MODE_BAT        0
-#define TIMER_MODE_DC         1
+#include <kernel/io.h>
 
-#define LCD_TIMER             0
-#define HD_TIMER              1
-#define HALT_TIMER            2
+#include <driver/mas.h>
 
-#define MODE_ENABLE           1
-#define MODE_DISABLE          0
+/** power state **/
 
-#define TIMER_DELAY_VAL       1
-#define TIMER_STATUS_VAL      0
+#define POWER_STATE                       0x30a24
+#define POWER_CONNECTED                   ((inw(POWER_STATE) >> 0x5)&0x1)
+
+/** Bat level **/
+
+
+#define GET_BAT_LEVEL (mas_readBat())
 
 #endif

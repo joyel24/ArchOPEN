@@ -24,7 +24,11 @@
 #include <gui/chooser.h>
 #include <gui/icons.h>
 
+#include <gui/status_line.h>
+#include <gui/settings_time.h>
+
 #include <driver/rtc.h>
+#include <driver/lcd.h>
 
 #include <fs/cfg_file.h>
 
@@ -32,8 +36,10 @@
 #define TIME_DATE_GUIFONT RADONWIDE
 
 int isPm=0;
-int PmPos;
+int PmPos_x;
+int PmPos_y;
 int curH;
+int stop_clk_set=0;
 SPINBOX time[3];
 SPINBOX date[3];
 
@@ -46,7 +52,7 @@ void checkbox_12_24_onChange(CHECKBOX t)
 {
     if(t->checked)
     {
-        /*12h*/
+        /*we want 12h*/
         curH=time[0]->getValue(time[0]);
         if(curH==0)
             curH=24;
@@ -62,19 +68,20 @@ void checkbox_12_24_onChange(CHECKBOX t)
         }
         time[0]->setParam(time[0],1,12,1,2);
         time[0]->paint(time[0]);
+        gfx_putS(time[0]->foreColor,time[0]->backColor,PmPos_x,PmPos_y+2,isPm?"PM":"AM");
     }
     else
     {
-        /*24h*/
+        /*we want 24h*/
         int H,W;
+        time[0]->setParam(time[0],0,23,1,2);
         if(isPm)
-        {           
-            time[0]->setParam(time[0],0,23,1,2);
+        {         
             time[0]->setValue(time[0],time[0]->getValue(time[0])+12);            
             time[0]->paint(time[0]);
         }
         gfx_getStringSize("AM",&W,&H);
-        gfx_fillRect(time[0]->backColor,PmPos,80+2,W,H);
+        gfx_fillRect(time[0]->backColor,PmPos_x,PmPos_y+2,W,H);
     }
 }
 
@@ -86,39 +93,27 @@ void hour_onChange(SPINBOX t)
         if((newH == 12 && curH == 1)|| (newH == 1 && curH == 12))
             isPm=isPm?0:1;
         curH=newH;
-        gfx_putS(time[1]->foreColor,time[1]->backColor,PmPos,80+2,isPm?"PM":"AM");
+        gfx_putS(time[1]->foreColor,time[1]->backColor,PmPos_x,PmPos_y+2,isPm?"PM":"AM");
     }
 }
 
 void chooser_date_onChange(CHOOSER t)
 {
-    if(t->index==1)
-    {
-        /* MM/DD/YYYY */
-        int x= date[1]->x;
-        int y= date[1]->y;
-        date[1]->x=date[0]->x;
-        date[1]->y=date[0]->y;
-        date[0]->x=x;
-        date[0]->y=y;
-        date[0]->paint(date[0]);
-        date[1]->paint(date[1]);
-    }
-    else
-    {
-        /* DD/MM/YYYY */
-        int x= date[1]->x;
-        int y= date[1]->y;
-        date[1]->x=date[0]->x;
-        date[1]->y=date[0]->y;
-        date[0]->x=x;
-        date[0]->y=y;
-        date[0]->paint(date[0]);
-        date[1]->paint(date[1]);
-    }
+    int day=t->index==1?date[0]->value:date[1]->value;
+    int month=t->index==1?date[1]->value:date[0]->value;
+            
+    date[0]->setParam(date[0],1,t->index==1?12:31,1,2);
+    date[0]->value=t->index==1?month:day;
+    
+    date[1]->setParam(date[1],1,t->index==1?31:12,1,2);
+    date[1]->value=t->index==1?day:month;
+        
+    date[0]->paint(date[0]);
+    date[1]->paint(date[1]);
+    
 }
 
-void okBtn_click(BUTTON b)
+void okBtnClk_click(BUTTON b)
 {
     struct med_tm now;
     CFG_DATA * cfg;
@@ -136,6 +131,7 @@ void okBtn_click(BUTTON b)
         now.tm_mon=date[1]->value;
     }
     now.tm_year=date[2]->value;
+    
     rtc_setTime(&now);
     
     /* saving to cfg file */
@@ -150,53 +146,58 @@ void okBtn_click(BUTTON b)
             return;
         }
     }
-    
-    cfg_writeInt(cfg,"is12H",hourFormat->checked?1:0);
-    cfg_writeInt(cfg,"isMMDD",dateFormat->index==1?1:0);
-    
+    time_format=hourFormat->checked?1:0;
+    cfg_writeInt(cfg,"is12H",time_format);
+    date_format=dateFormat->index==1?1:0;
+    cfg_writeInt(cfg,"isMMDD",date_format);
+    cfg_printItems(cfg);
     cfg_writeFile(cfg,"/medios/medios.cfg");
-    
+    cfg_clear(cfg);
+    stop_clk_set=1;
 }   
 
-void resetBtn_click(BUTTON b)
+void resetBtnClk_click(BUTTON b)
 {
     struct med_tm now;
     rtc_getTime(&now);
     time[0]->value=now.tm_hour;
+    time[0]->setParam(time[0],time_format==FORMAT_24?0:1,time_format==FORMAT_24?23:12,1,2);
     time[1]->value=now.tm_min;
     time[2]->value=now.tm_sec;
-    if(dateFormat->index==1) /* MM/DD/YYYY */
-    {
-        date[1]->value=now.tm_mday;
-        date[0]->value=now.tm_mon;
-    }
-    else
-    {
-        date[0]->value=now.tm_mday;
-        date[1]->value=now.tm_mon;
-    }
+    dateFormat->index=date_format==FORMAT_MMDDYYYY?1:0;
+    hourFormat->checked=time_format;
+    
+    date[0]->setValue(date[0],date_format==FORMAT_DDMMYYYY?now.tm_mday:now.tm_mon);
+    date[0]->setParam(date[0],1,date_format==FORMAT_DDMMYYYY?31:12,1,2);
+    date[1]->setValue(date[1],date_format==FORMAT_DDMMYYYY?now.tm_mon:now.tm_mday);
+    date[1]->setParam(date[1],1,date_format==FORMAT_DDMMYYYY?31:12,1,2);            
+    
     date[2]->value=now.tm_year;
     menuList->paint(menuList);
 }
+
+#define ICON_X 10
+#define ICON_Y 10
 
 void clock_setting(void)
 {
     struct med_tm now;
     ICON logo;
-    CFG_DATA * cfg;
+    //CFG_DATA * cfg;
     
     char * dateFormStr[2]={"DD/MM/YYYY","MM/DD/YYYY"};
     
     BUTTON mib;
             
-    FONT f=fnt_fontFromId(TIME_DATE_GUIFONT);
+    //FONT f=fnt_fontFromId(TIME_DATE_GUIFONT);
     
     int evtHandle;
     int event;
     int sepH,sepW,w,h;
-    int is12H,isMMDD;
     
-    int x=100,y=50;
+    int minX,lineH,x,y,maxW;
+    
+    stop_clk_set=0;
     
     rtc_getTime(&now);
     
@@ -205,31 +206,37 @@ void clock_setting(void)
    
     if(now.tm_hour>12)
         isPm=1;
-    
-    cfg=cfg_readFile("/medios/medios.cfg");
-    
-    if(!cfg)
-    {
-        printk("Can't open cfg file\n");        
-        is12H=0;
-        isMMDD=0;
-    }
-    else
-    {
-        is12H=cfg_readInt(cfg,"is12H");    
-        isMMDD=cfg_readInt(cfg,"isMMDDYYYY");
-    }
-    
-    printk("get: %d %d\n",is12H,isMMDD);
-            
+        
     gfx_clearScreen(COLOR_WHITE);
-    gfx_fontSet(TIME_DATE_GUIFONT);
+    
            
     evtHandle = evt_getHandler(BTN_CLASS|GUI_CLASS);
     
-       
-    logo=icon_load("clock_icon.ico");
-    gfx_drawBitmap(&logo->bmap_data,10,10);
+    logo=icon_get("clock_icon");
+    if(!logo)
+        icon_load("clock_icon.ico");
+    gfx_drawBitmap(&logo->bmap_data,ICON_X,ICON_Y);
+    
+    minX = ICON_X + logo->bmap_data.width;
+    
+    gfx_drawLine(COLOR_BLUE,minX+3,5,minX+3,LCD_HEIGHT-5);
+    
+    gfx_getStringSize("MM/DD/YYYY",&maxW,&lineH);
+    minX+=5;   
+    
+    gfx_fontSet(STD8X13);
+    gfx_getStringSize("Clock settings",&w,&h);
+    gfx_putS(COLOR_DARK_GREY,COLOR_WHITE,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,"Clock settings");
+    
+    gfx_fontSet(TIME_DATE_GUIFONT);
+    minX=(LCD_WIDTH-minX-(maxW+29))/2+minX;
+    lineH=(lineH+4)*2;
+    printk("minX = %d, lineH = %d\n",minX,lineH);
+    
+    x=minX;
+    y=ICON_Y+(LCD_HEIGHT-(5*lineH))/2;
+    
+    
     
     // menuList
     menuList=widgetList_create();
@@ -239,9 +246,9 @@ void clock_setting(void)
     
     time[0]=spinbox_create();
     time[0]->setFont(time[0],TIME_DATE_GUIFONT);
-    time[0]->setParam(time[0],0,23,1,2);
+    time[0]->setParam(time[0],time_format==FORMAT_24?0:1,time_format==FORMAT_24?23:12,1,2);
     time[0]->setPos(time[0],x,y);
-    time[0]->setValue(time[0],now.tm_hour);
+    time[0]->setValue(time[0],time_format==FORMAT_24?now.tm_hour:isPm?now.tm_hour-12:now.tm_hour);
     time[0]->onChange=(SPINBOX_CHANGEEVENT)hour_onChange;
     menuList->addWidget(menuList,time[0]);    
         
@@ -269,17 +276,20 @@ void clock_setting(void)
     time[2]->setValue(time[2],now.tm_sec);
     menuList->addWidget(menuList,time[2]);  
     
-    PmPos=x+time[2]->width+6;       
+    PmPos_x=x+time[2]->width+6;       
+    PmPos_y=y;
+            
+    if(time_format==FORMAT_12) gfx_putS(time[0]->foreColor,time[0]->backColor,PmPos_x,PmPos_y+2,isPm?"PM":"AM");
     
-    y += 2*time[2]->height;
-    x= 100;
+    y += lineH;
+    x= minX;
     gfx_getStringSize("/",&sepW,&sepH);
     
     date[0]=spinbox_create();
     date[0]->setFont(date[0],TIME_DATE_GUIFONT);
-    date[0]->setParam(date[0],1,31,1,2);
+    date[0]->setParam(date[0],1,date_format==FORMAT_DDMMYYYY?31:12,1,2);
     date[0]->setPos(date[0],x,y);
-    date[0]->setValue(date[0],now.tm_mday);
+    date[0]->setValue(date[0],date_format==FORMAT_DDMMYYYY?now.tm_mday:now.tm_mon);
     menuList->addWidget(menuList,date[0]);    
         
     x+=date[0]->width+2;
@@ -288,9 +298,9 @@ void clock_setting(void)
         
     date[1]=spinbox_create();
     date[1]->setFont(date[1],TIME_DATE_GUIFONT);
-    date[1]->setParam(date[1],1,12,1,2);
+    date[1]->setParam(date[1],1,date_format==FORMAT_DDMMYYYY?31:12,1,2);
     date[1]->setPos(date[1],x,y);
-    date[1]->setValue(date[1],now.tm_mon);
+    date[1]->setValue(date[1],date_format==FORMAT_DDMMYYYY?now.tm_mon:now.tm_mday);
     menuList->addWidget(menuList,date[1]);    
     
     x+=date[1]->width+2;
@@ -304,24 +314,24 @@ void clock_setting(void)
     date[2]->setValue(date[2],now.tm_year);
     menuList->addWidget(menuList,date[2]);    
     
-    y += 2*time[2]->height;
-    x= 100;
+    y += lineH;
+    x= minX;
     
     hourFormat=checkbox_create();
     hourFormat->caption="12h format";
     hourFormat->font=TIME_DATE_GUIFONT;
     hourFormat->setRect(hourFormat,x,y,8,8);
     hourFormat->onChange=(CHECKBOX_CHANGEEVENT)checkbox_12_24_onChange;
-    hourFormat->checked=is12H;
+    hourFormat->checked=time_format==FORMAT_12?1:0;
     menuList->addWidget(menuList,hourFormat);
     
-    y += 2*time[2]->height;
-    x= 100;
+    y += lineH;
+    x= minX;
     
     dateFormat=chooser_create();
     dateFormat->items=dateFormStr;
     dateFormat->itemCount=2;
-    dateFormat->index=isMMDD?1:0;
+    dateFormat->index=date_format?1:0;
     dateFormat->font=TIME_DATE_GUIFONT;
     gfx_getStringSize(dateFormStr[0],&w,&h);
     dateFormat->setRect(dateFormat,x,y,w+29,h+1);    
@@ -332,8 +342,8 @@ void clock_setting(void)
     dateFormat->orientation=WIDGET_ORIENTATION_VERT;
     menuList->addWidget(menuList,dateFormat);
     
-    y += 2*MAX(0,f->height)+4;
-    x= 100+4;
+    y += lineH;
+    x= minX+4;
     
     gfx_getStringSize("OK",&sepW,&sepH);
     
@@ -341,7 +351,7 @@ void clock_setting(void)
     mib->caption="OK"; 
     mib->font=TIME_DATE_GUIFONT;
     mib->setRect(mib,x,y,sepW+2,sepH+2);
-    mib->onClick=(BUTTON_CLICKEVENT)okBtn_click;
+    mib->onClick=(BUTTON_CLICKEVENT)okBtnClk_click;
     menuList->addWidget(menuList,mib);
         
     gfx_getStringSize("RESET",&sepW,&sepH);
@@ -351,7 +361,7 @@ void clock_setting(void)
     mib->caption="Reset"; 
     mib->font=TIME_DATE_GUIFONT;
     mib->setRect(mib,x,y,sepW+2,sepH+2);
-    mib->onClick=(BUTTON_CLICKEVENT)resetBtn_click;
+    mib->onClick=(BUTTON_CLICKEVENT)resetBtnClk_click;
     menuList->addWidget(menuList,mib);
     
     // intial paint
@@ -373,5 +383,6 @@ void clock_setting(void)
                 menuList->handleEvent(menuList,event);
                 break;
         }
-    }while(event!=BTN_OFF);    
+    }while(event!=BTN_OFF && !stop_clk_set);    
+    menuList->destroy(menuList);
 }

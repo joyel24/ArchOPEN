@@ -1,5 +1,5 @@
 /*
-*   include/kernel/target/arch_AV3XX.bat_power.h
+*   include/kernel/target/arch_AV4XX/batDC.h
 *
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -10,20 +10,23 @@
 * KIND, either express of implied.
 */
 
-#ifndef __ARCH_BAT_POWER_H
-#define __ARCH_BAT_POWER_H
+#ifndef __ARCH_BAT_DC_H
+#define __ARCH_BAT_DC_H
 
 #include <kernel/io.h>
 
+#include <driver/gio.h>
+#include <driver/cpld.h>
 #include <driver/tsc2003.h>
+
 
 /** power state **/
 
-#define POWER_STATE                       0x30a24
-#define POWER_CONNECTED                   ((inw(POWER_STATE) >> 0x5)&0x1)
+#define POWER_STATE                       0
+#define POWER_CONNECTED                   (GIO_IS_SET(GIO_POWER_CONNECTED))
 
 /** Bat level **/
+#define GET_BAT_LEVEL                     (CPLD_VER==0x5?0:tsc2003getVal(CMD_BAT0|INTERNAL_ON))
 
-#define GET_BAT_LEVEL (tsc2003getVal(CMD_BAT0|INTERNAL_ON))
 
 #endif
