@@ -25,6 +25,12 @@
 /** Bat level **/
 
 
+#ifdef HAVE_MAS_SOUND
 #define GET_BAT_LEVEL (mas_readBat())
+#else
+#define GET_BAT_LEVEL 8
+#endif
+
+
 
 #endif
