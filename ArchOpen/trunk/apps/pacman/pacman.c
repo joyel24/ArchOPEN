@@ -8,6 +8,8 @@
 #include "levels_320x240.h"
 #include "levels_224x176.h"
 
+#define TICK_INTERVAL  750
+
 struct OBJECT{
     int x;
     int y;
@@ -43,9 +45,10 @@ char (*levelmap)[15][20] = levelmap_320x240;
 int app_main(int argc, char * * argv)
 {
     int i,j,c;
-    int total=0,totalsv=0,count=0,countb=0,life=3,score=0,bonusx=0,bonusy=0,start[5][2],x_ori,y_ori,delay=10000,nbLev=10;
+    int total=0,totalsv=0,count=0,countb=0,life=3,score=0,bonusx=0,bonusy=0,start[5][2],x_ori,y_ori,nbLev=NB_LEVEL_320x240;//,delay=3333;
     char buf[14];
     unsigned long * splash = splash_320x240_data;
+    int prevTick;
 
 
     gfx_openGraphics();
@@ -57,11 +60,11 @@ int app_main(int argc, char * * argv)
 
    // gfx_planeGetSize(BMAP1,,&depth);
     getResolution(&screen_x,&screen_y);
-    if(screen_x != 320 || screen_y != 240) {          //Gmini or not Gmini...?
+    if(screen_x != 321 || screen_y != 240) {          //Gmini or not Gmini...?
       screen_x=224;
       screen_y=176;
       splash = splash_224x176_data;
-      nbLev=7;
+      nbLev=NB_LEVEL_224x176;
       levelmap = levelmap_224x176;
     }
 
@@ -163,6 +166,7 @@ startb:
 
     gfx_planeShow(BMAP1);
     start:
+
     gfx_setPlane(BMAP1);
     gfx_clearScreen(COLOR_BLACK);
     gfx_putS(0x2F,0x01, 18, screen_y-14, "Score:");
@@ -171,6 +175,10 @@ startb:
     gfx_putS(0x2F,0x01, 66, screen_y-14, buf);
     sprintf(buf,"%d",level);
     gfx_putS(0x2F,0x01, 66/*236*/, /*screen_y-14*/1, buf);
+    
+   // gfx_putS(0x2F,0x01, 100 /*188*/, /*screen_y-14*/1, "Speed:");
+   // sprintf(buf,"%d",delay);
+   // gfx_putS(0x2F,0x01, 148, 1, buf);
 
     pac.x=start[0][0]*16;
     pac.y=start[0][1]*16;
@@ -217,6 +225,8 @@ startb:
     Show("Ready?");
 
     while(1) {
+        prevTick=tmr_getMicroTick();
+
         c = btn_readState();
         if((!pac.direction && !total) || ((c & 0x10) && (c & 0x40))) {
             for(i=0;i<4;i++) {
@@ -230,6 +240,8 @@ startb:
             goto startb;
         }
         if(c & 0x2000) {End(); return 0;}
+       // else if(c & 0x10) {if(delay >10) delay-=10;}
+       // else if(c & 0x20) delay+=10;
         else {
             if(c & 0x8 && levelmap[level-1][pac.y/16][pac.x/16+1]!=1 && !pac.direction) {pac.direction=3; pac.last_dir=pac.direction; pac.loop=16;}
             else if(c & 0x4 && levelmap[level-1][pac.y/16][pac.x/16-1]!=1 && !pac.direction) {pac.direction=1; pac.last_dir=pac.direction; pac.loop=16;}
@@ -354,7 +366,9 @@ startb:
         if(countb>0) {countb--; if(countb<=0) {levelmap[level-1][bonusy][bonusx]=0;PutIcon16B(bonusx*16,bonusy*16,107,0);}}
         if(count>0) {count--; if(count<=0) {ghost[0].vuln=0; ghost[1].vuln=0; ghost[2].vuln=0; ghost[3].vuln=0; levelmap[level-1][start[4][1]][start[4][0]]=114; PutIcon16B(16*start[4][0],16*start[4][1],107,0);}}
 
-        for(i=0;i<delay;i++) /* Nothing */ ;
+      //  for(i=0;i<delay;i++) /* Nothing */ ;
+
+      while((tmr_getMicroTick()-prevTick)<TICK_INTERVAL);
 
     }
 }
