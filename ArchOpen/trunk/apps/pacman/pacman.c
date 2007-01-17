@@ -8,7 +8,7 @@
 #include "levels_320x240.h"
 #include "levels_224x176.h"
 
-#define TICK_INTERVAL  750
+#define TICK_INTERVAL  3333//750
 
 struct OBJECT{
     int x;
@@ -60,7 +60,7 @@ int app_main(int argc, char * * argv)
 
    // gfx_planeGetSize(BMAP1,,&depth);
     getResolution(&screen_x,&screen_y);
-    if(screen_x != 321 || screen_y != 240) {          //Gmini or not Gmini...?
+    if(screen_x != 320 || screen_y != 240) {          //Gmini or not Gmini...?
       screen_x=224;
       screen_y=176;
       splash = splash_224x176_data;
