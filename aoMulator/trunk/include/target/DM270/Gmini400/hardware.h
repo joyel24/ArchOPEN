@@ -43,7 +43,7 @@
 
 //#define HAS_VID0
 #define HAS_LCD
-#define HAS_UART_XWIN
+//#define HAS_UART_XWIN
 
 /************************************************************ initial state */
 

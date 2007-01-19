@@ -1,5 +1,5 @@
 /*
-*   main.cpp
+*   i2c_aic.cpp
 *
 *   AV3XX emulator
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -10,19 +10,37 @@
 * KIND, either express of implied.
 */
 
-#include <HW/i2c_gpio.h>
-#include <HW/mas.h>
-#include <HW/HW_gpio.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-#include <HW/i2c_RTC.h>
+#include <time.h>
+
+#include <emu.h>
+
 #include <HW/i2c_aic.h>
 
-#include <HW/mas.h>
-
-extern i2c_master * i2c;
-
-void arch_init_main(void)
+i2c_aic::i2c_aic(void):i2c_device(0x36,"AIC")
 {
-    i2c->register_i2c((i2c_device *)new i2c_RTC());
-    i2c->register_i2c((i2c_device *)new i2c_aic());
+    
+}
+
+int i2c_aic::read(void)
+{
+    
+    return 0;
+}
+
+void i2c_aic::write(int val)
+{
+    
+}
+
+void i2c_aic::start(int direction)
+{
+
+}
+
+void i2c_aic::stop(void)
+{
+    
 }

@@ -117,6 +117,7 @@ void HW_dma::write(uint32_t addr,uint32_t val,int size)
                             mem->hw_ata->write_buffer(data,data_size);
                             //mem->hw_ata->setStatus(IDE_STATUS_RDY);
                         }
+                        run_status=1;
                         DEBUG_HW(DMA_HW_DEBUG,"done");
                         break;
                     case DMA_ATA_TO_SDRAM:

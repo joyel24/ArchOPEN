@@ -102,6 +102,7 @@ int mode_tab[7] = { 0x0, 0xF, 0x3, 0x7, 0xB, 0x2, 0x1};
 #define CALC_PC(X) X
 #endif
 
+#define isNeg(VAL)   (((VAL)>>31)&0x1)
 
 #define INT_DEBUG_HEAD   {printf("@%08x:%08x|%s%s%s%s%s|%s| ",CALC_PC(old_PC),instruction, \
             N_FLAG?"N":" ",Z_FLAG?"Z":" ",C_FLAG?"C":" ",V_FLAG?"V":" ",Q_FLAG?"Q":" ", \

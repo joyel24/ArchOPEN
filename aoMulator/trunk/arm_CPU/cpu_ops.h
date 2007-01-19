@@ -1,4 +1,4 @@
-#define isNeg(VAL)   (((VAL)>>31)&0x1)
+
 
 void ARM_NegZero(uint32_t result)
 {

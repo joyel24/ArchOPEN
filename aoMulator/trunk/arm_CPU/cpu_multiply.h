@@ -1,3 +1,4 @@
+
 void arm_Mul(int condCode,uint32_t instruction)
 {
     if(!checkCondition(condCode))
@@ -38,40 +39,90 @@ void arm_Mul(int condCode,uint32_t instruction)
     }
     else                                       // multiply long
     {
+        uint64_t value;
+        
         bit_U=(instruction>>22) & 0x1;
         RdHi=(instruction>>16) &0xF;
         RdLo=(instruction>>12) &0xF;
+        
+        DEBUG("%sM%sL%s %s, %s, %s, %s\n",bit_U?"S":"U",bit_A?"LA":"UL",bit_S?"S":"",RR(RdLo),RR(RdHi),RR(Rm),RR(Rs));
 
-        uint64_t value;
-
-        DEBUG("%sM%sL%s ",bit_U?"S":"U",bit_A?"LA":"UL",bit_S?"S":"");
-
-        if (bit_U)
+        if (!bit_U)
         {
             value = (uint64_t)GET_REG(Rm) * (uint64_t)GET_REG(Rs);
-
+            
             if(bit_A) // accumulate
             {
                 value += (((uint64_t)REG(RdHi))<<32) | ((uint64_t)REG(RdLo));
             }
+            
+            REG(RdHi) = (uint32_t)(value >> 32);
+            REG(RdLo) = (uint32_t)(value & 0x00000000FFFFFFFF);
+
+            if(bit_S)
+            {
+                SET_N(((valHi >> 31) & 0x1) == 1);
+                SET_Z((valHi == 0 && valLo == 0));
+            }
+            
         }
         else
         {
-            value = (uint64_t)((sint64_t)GET_REG(Rm) * (sint64_t)GET_REG(Rs));
+            int v1=GET_REG(Rm);
+            int v2=GET_REG(Rs);
+            int v3=0xFFFFFFFF;
+            int s1=1,s2=1;
+            int a,b,c,d,x,y;
+            
+            if(v1&0x80000000) {v1=~v1+1;s1=-1;}
+            if(v2&0x80000000) {v2=~v2+1;s2=-1;}
+            
+            a=(v1>>16)&0xFFFF;
+            b=v1&0xFFFF;
+            c=(v2>>16)&0xFFFF;
+            d=v2&0xFFFF;
+            
+            v1 = b * d;                   /* BD */
+            x = a * d + c * b;            /* AD + CB */
+            y = ((v1 >> 16) & 0xffff) + x;
 
+            v1 = (v1 & 0xffff) | ((y & 0xffff) << 16);
+            v2 = (y >> 16) & 0xffff;
+
+            v2 += a * c;                  /* AC */
+            
+            if(s1*s2<0) { v1=(~v1+1)&0xFFFFFFFF; v2=~v2; if(v1==0) v2++;};
+            
+            value = 0xFFFFFFFF + 5;
+            
             if(bit_A) // accumulate
             {
-                value = (uint64_t)(((sint64_t)value) + (sint64_t)(((uint64_t)REG(RdHi))<<32) | ((uint64_t)REG(RdLo)));
+                v3=REG(RdLo);
+                x=v1+v3;
+                if ((isNeg(v1) && isNeg(v1)) ||
+                     (isNeg(v1) && !isNeg(x)) ||
+                     (isNeg(v2) && !isNeg(x)))
+                    y=1;
+                else
+                    y=0;
+                v1=x;
+                v2=v2+REG(RdHi)+1;
+                printf("AA\n");
+            }
+            
+            REG(RdHi) = v2;
+            REG(RdLo) = v1;
+            
+            if(bit_S)
+            {
+                SET_N(((v2 >> 31) & 0x1) == 1);
+                SET_Z((v2 == 0 && v1 == 0));
             }
         }
 
-        REG(RdHi) = (uint32_t)(value >> 32);
-        REG(RdLo) = (uint32_t)(value & 0x00000000FFFFFFFF);
-
-        if(bit_S)
-        {
-                SET_N(((valHi >> 31) & 0x1) == 1);
-                SET_Z((valHi == 0 && valLo == 0));
-        }
+        
+        
+        
+        
     }
 }

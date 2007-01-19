@@ -36,7 +36,7 @@ HW_cpld::HW_cpld(void):HW_access(CPLD_START,CPLD_END,"CPLD")
     cpld_module_type = 0xF; /* no modules */
     cpld_val[0] = 0x7;
     cpld_val[1] = 0;
-    cpld_val[2] = 0x3;
+    cpld_val[2] = 0x0;
     cpld_val[3] = 0;
     fw_connected = 1;
     hdd_on =0;

@@ -49,7 +49,7 @@ void i2c_gpio::init_i2c_gpio(int num,i2c_master * master)
 
 bool i2c_gpio::is_set(void)
 {
-    //DEBUG_HW(I2C1_HW_DEBUG,"GPIO%x reading state: %s\n",gpio_num,state?"SET":"CLR");
+    DEBUG_HW(I2C1_HW_DEBUG,"GPIO%x reading state: %s\n",gpio_num,state?"SET":"CLR");
     return state;
 }
 
@@ -69,12 +69,13 @@ void i2c_gpio::clear_gpio(void)
     DEBUG_HW(I2C1_HW_DEBUG,"I2C %s LO (old = %s)\n",name,state?"HI":"LO");
     master->i2c_state_has_changed();
     old_state = new_state;*/
+    DEBUG_HW(I2C1_HW_DEBUG,"I2C %s LO (old = %s)\n",name,state?"HI":"LO");
 }
 
 void i2c_gpio::gpio_dir_chg(int dir)
 {
-    /*DEBUG_HW(I2C1_HW_DEBUG,"I2C GPIO Chg dir of %s to %s (cur state: %s\n",name,dir?"input":"output",state?"HI":"LO");
-    if(dir && !state)
+    DEBUG_HW(I2C1_HW_DEBUG,"I2C GPIO Chg dir of %s to %s (cur state: %s\n",name,dir?"input":"output",state?"HI":"LO");
+    /*if(dir && !state)
     {
         DEBUG_HW(I2C1_HW_DEBUG,"I2C %s HI (old = %s)\n",name,state?"HI":"LO");
         old_state = state;
