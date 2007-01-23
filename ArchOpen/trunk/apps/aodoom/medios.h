@@ -55,9 +55,9 @@
 #define stderr -1
 #define stdout -2
 
-#define ROOTFOLDER "/doom/"
+#define ROOTFOLDER "/aoDoom/"
 
-#define CFG_FILE_PATH "/doom/doom.cfg"
+#define CFG_FILE_PATH "/aoDoom/doom.cfg"
 
 #ifdef DM320
 #undef __IRAM_CODE
