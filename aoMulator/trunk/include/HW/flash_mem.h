@@ -16,7 +16,13 @@
 #include <emu.h>
 #include <core/HW_mem.h>
 
-#define NO_CMD 0
+#define FLASH_NO_CMD       0
+#define FLASH_UKN_CMD      1
+#define FLASH_ID_ENTRY     2
+#define FLASH_ERASE_STEP_1 3
+#define FLASH_ERASE_STEP_2 4
+#define FLASH_WRITE        5
+
 
 class flash_MEM : public HW_mem {
     public:
@@ -28,7 +34,8 @@ class flash_MEM : public HW_mem {
 
     private:
         int curCmd;
-
+        int step;
+        uint32_t flash_stdRead(uint32_t addr,int size);
        
 };
 

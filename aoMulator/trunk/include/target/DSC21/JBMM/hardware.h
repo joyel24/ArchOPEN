@@ -185,8 +185,9 @@
 #define DMA_START   TI_REG_START+0xb80
 #define DMA_END     TI_REG_START+0xb90
 
-#define DMA_SDRAM_TO_ATA  0x1
-#define DMA_ATA_TO_SDRAM  0x0
+#define DMA_SDRAM         0x0
+#define DMA_ATA           0x1
+#define DMA_CF            0x1
 
 #define DMA_SRC_HI  DMA_START+0x8
 #define DMA_SRC_LO  DMA_START+0x6
@@ -209,16 +210,16 @@
 #define IDE_BASE    0x04000000
 #define IDE_END     0x04000FFF
 
-#define IDE_DATA                          (IDE_BASE+0x800)
-#define IDE_ERROR                         (IDE_BASE+0x900)
-#define IDE_NSECTOR                       (IDE_BASE+0xa00)
-#define IDE_SECTOR                        (IDE_BASE+0xb00)
-#define IDE_LCYL                          (IDE_BASE+0xc00)
-#define IDE_HCYL                          (IDE_BASE+0xd00)
-#define IDE_SELECT                        (IDE_BASE+0xe00)
-#define IDE_CONTROL                       (IDE_BASE+0xe80)
-#define IDE_STATUS                        (IDE_BASE+0xf00)
-#define IDE_COMMAND                       (IDE_BASE+0xf00)
+#define IDE_DATA                          (0x800)
+#define IDE_ERROR                         (0x900)
+#define IDE_NSECTOR                       (0xa00)
+#define IDE_SECTOR                        (0xb00)
+#define IDE_LCYL                          (0xc00)
+#define IDE_HCYL                          (0xd00)
+#define IDE_SELECT                        (0xe00)
+#define IDE_CONTROL                       (0xe80)
+#define IDE_STATUS                        (0xf00)
+#define IDE_COMMAND                       (0xf00)
 
 /********************** CPLD     ****************************************/
 #define CPLD_START       0x02000000

@@ -27,7 +27,7 @@ class HW_dma : public HW_access {
         uint32_t read(uint32_t addr,int size);
         void write(uint32_t addr,uint32_t val,int size);
 
-        void init_ata_xfer(char * data,int data_ptr,int data_size);
+        void init_ata_xfer(char * data,int data_ptr,int data_size,HW_ata * HD);
         void nxtStep(void);
 
     private:
@@ -42,6 +42,7 @@ class HW_dma : public HW_access {
         char * data;
         int data_ptr;
         int data_size;
+        HW_ata * HD;
 
         mem_space * mem;
 };

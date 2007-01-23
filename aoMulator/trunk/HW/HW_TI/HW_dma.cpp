@@ -100,11 +100,14 @@ void HW_dma::write(uint32_t addr,uint32_t val,int size)
             DEBUG_HW(DMA_HW_DEBUG,"DMA - write - START - (endian=%x)",dma_endian);
             if(val & 0x1)
             {
+                int src=(device_sel & 0xF0)>>4;
+                int dest=device_sel&0xF;
                 DEBUG_HW(DMA_HW_DEBUG," - xfer from %x to %x, size = %x, dir : %s->%s ... ",dma_src,dma_dst,dma_size,
-                    (device_sel==DMA_SDRAM_TO_ATA)?"SDRAM":"ATA",(device_sel==DMA_SDRAM_TO_ATA)?"ATA":"SDRAM");
-                switch(device_sel)
+                        src==DMA_SDRAM?"SDRAM":src==DMA_ATA?"ATA":"CF",
+                        dest==DMA_SDRAM?"SDRAM":dest==DMA_ATA?"ATA":"CF");
+                switch(src)
                 {
-                    case DMA_SDRAM_TO_ATA:
+                    case DMA_SDRAM:
                         /*if(dma_src>SDRAM_START)
                             dma_src-=SDRAM_START;*/
                         for (int i = 0; i < dma_size; i++)
@@ -114,13 +117,14 @@ void HW_dma::write(uint32_t addr,uint32_t val,int size)
                         if(data_ptr>=data_size)
                         {
                             DEBUG_HW(DMA_HW_DEBUG," (finale) \n");
-                            mem->hw_ata->write_buffer(data,data_size);
+                            HD->write_buffer(data,data_size);
                             //mem->hw_ata->setStatus(IDE_STATUS_RDY);
                         }
                         run_status=1;
                         DEBUG_HW(DMA_HW_DEBUG,"done");
                         break;
-                    case DMA_ATA_TO_SDRAM:
+                    case DMA_ATA:
+                    case DMA_CF:
                         /*if(dma_dst>SDRAM_START)
                             dma_dst-=SDRAM_START;*/
                         DEBUG_HW(DMA_HW_DEBUG,"real dest = %x , src val (%x/%x) %02x%02x%02x%02x  ",
@@ -161,7 +165,7 @@ void HW_dma::nxtStep(void)
         {
             run_status=0;
             if(data_ptr>=data_size)
-                mem->hw_ata->setStatus(IDE_STATUS_RDY);
+                HD->setStatus(IDE_STATUS_RDY);
             nbWait=0;
             mem->hw_TI->HW_irq->do_INT(INT_DMA);
             DEBUG_HW(DMA_HW_DEBUG,"Stop DMA\n");
@@ -169,9 +173,10 @@ void HW_dma::nxtStep(void)
     }
 }
 
-void HW_dma::init_ata_xfer(char * data,int data_ptr,int data_size)
+void HW_dma::init_ata_xfer(char * data,int data_ptr,int data_size,HW_ata * HD)
 {
     this->data = data;
     this->data_ptr = data_ptr;
     this->data_size = data_size;
+    this->HD = HD;
 }

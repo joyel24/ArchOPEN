@@ -47,16 +47,14 @@
 
 /************************************************************ initial state */
 
-#ifndef homebrew
+
 #define START_ADDR        SDRAM_START //original
-#else
-#define START_ADDR        0xC10000  //gmini400 homebrew;
-#endif
 
 #define STACK_INIT        (IRAM_END - 0x4)
 #define RESET_INIT_VAL    0xEA03FFFE
 #define INIT_MODE         M_SVC
 
+#define HAS_CF
 /* Special init for this arch: enable monitor command line mode */
 #define ARCH_INIT   \
 {                   \
@@ -214,8 +212,9 @@
 #define DMA_START   TI_REG_START+0xa38
 #define DMA_END     TI_REG_START+0xa48
 
-#define DMA_SDRAM_TO_ATA  0x53
-#define DMA_ATA_TO_SDRAM  0x35
+#define DMA_SDRAM         0x5
+#define DMA_ATA           0x3
+#define DMA_CF            0x4
 
 #define DMA_SRC_HI  DMA_START+0x0
 #define DMA_SRC_LO  DMA_START+0x2
@@ -232,16 +231,19 @@
 #define IDE_BASE    0x05100000
 #define IDE_END     0x05100100
 
-#define IDE_DATA                          (IDE_BASE+0x20)
-#define IDE_ERROR                         (IDE_BASE+0x22)
-#define IDE_NSECTOR                       (IDE_BASE+0x24)
-#define IDE_SECTOR                        (IDE_BASE+0x26)
-#define IDE_LCYL                          (IDE_BASE+0x28)
-#define IDE_HCYL                          (IDE_BASE+0x2a)
-#define IDE_SELECT                        (IDE_BASE+0x2c)
-#define IDE_CONTROL                       (IDE_BASE+0x1c)
-#define IDE_STATUS                        (IDE_BASE+0x2e)
-#define IDE_COMMAND                       (IDE_BASE+0x2e)
+#define CF_BASE     0x06900000
+#define CF_END      0x06900100
+
+#define IDE_DATA                          (0x20)
+#define IDE_ERROR                         (0x22)
+#define IDE_NSECTOR                       (0x24)
+#define IDE_SECTOR                        (0x26)
+#define IDE_LCYL                          (0x28)
+#define IDE_HCYL                          (0x2a)
+#define IDE_SELECT                        (0x2c)
+#define IDE_CONTROL                       (0x1c)
+#define IDE_STATUS                        (0x2e)
+#define IDE_COMMAND                       (0x2e)
 
 /********************** CPLD     ****************************************/
 #define CPLD_START       0x02000000

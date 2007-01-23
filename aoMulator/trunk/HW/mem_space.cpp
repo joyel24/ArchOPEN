@@ -57,9 +57,13 @@ mem_space::mem_space(char * flash,char * sdram):HW_node(0x0,0xFFFFFFFF,16,"AVMEM
     add_item(hw_TI);
 
     printf("Adding ATA\n");
-    hw_ata = new HW_ata(hw_TI);
+    hw_ata = new HW_ata(hw_TI,IDE_BASE,IDE_END,"HD.bin","HD");
     add_item(hw_ata);
-
+#ifdef HAS_CF
+    printf("Adding CF\n");
+    hw_ata = new HW_ata(hw_TI,CF_BASE,CF_END,"CF.bin","CF");
+    add_item(hw_ata);
+#endif
 /*
 #ifdef HAS_HW_30A24
     hw_cpld->set30A24(hw_TI->hw_30a24);

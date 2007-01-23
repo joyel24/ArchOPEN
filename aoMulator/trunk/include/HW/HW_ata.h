@@ -43,7 +43,7 @@ class HW_TI;
 
 class HW_ata:public HW_access {
     public:
-        HW_ata(HW_TI * hw_ti);
+        HW_ata(HW_TI * hw_ti,uint32_t start,uint32_t end,char * fname,char * name);
         ~HW_ata();
 
         uint32_t read(uint32_t addr,int size);
