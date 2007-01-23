@@ -88,7 +88,7 @@
 
 #if defined(PMA)
 
-   // #define ENABLE_OVERCLOCKING
+    #define ENABLE_OVERCLOCKING
 
     #define SMS_BTN_1             BTMASK_BTN1
     #define SMS_BTN_2             BTMASK_ON

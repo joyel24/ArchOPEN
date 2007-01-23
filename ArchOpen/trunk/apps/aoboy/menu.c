@@ -190,7 +190,7 @@ static const char *opt2_menu[] = {
 };
 
 void clk_overclock(bool en){
-#if defined(GMINI402) || defined(GMINI4XX) || defined(AV3XX) //|| defined(PMA)
+#if defined(GMINI402) || defined(GMINI4XX) || defined(AV3XX) || defined(PMA)
     if(en && ARMFreq){
 #if defined(AV3XX)
         (*(volatile unsigned short *)(0x30880))=0x8080 + (ARMFreq<<4);
@@ -314,8 +314,6 @@ static void build_slot_path(char *buf, size_t bufsiz, size_t slot_id) {
 static bool do_file(char *path/*, char *desc*/, bool is_load) {
   int fd; //, file_mode;
 
-  // don't overclock during hdd access
-  clk_overclock(false);
   /* load/save state */
   if (is_load) {
     fd = open(path, O_RDONLY );
@@ -347,8 +345,6 @@ static bool do_file(char *path/*, char *desc*/, bool is_load) {
 
   /* close file descriptor */
   close(fd);
-
-  clk_overclock(true);
 
   /* return true (for success) */
   return true;
@@ -385,9 +381,6 @@ static void slot_info(char *info_buf, size_t info_bufsiz, size_t slot_id) {
   /* get slot file path */
   build_slot_path(buf, 256, slot_id);
 
-  // don't overclock during hdd access
-  clk_overclock(false);
-
   /* attempt to open slot */
   if ((fd = open(buf, O_RDONLY)) >= 0) {
     snprintf(info_buf, info_bufsiz, "%2d. State Saved", slot_id + 1);
@@ -397,7 +390,6 @@ static void slot_info(char *info_buf, size_t info_bufsiz, size_t slot_id) {
     snprintf(info_buf, info_bufsiz, "%2d. Empty", slot_id + 1);
     free(buf);
   }
-  clk_overclock(true);
 }
 
 /*
@@ -407,6 +399,9 @@ static void do_slot_menu(bool is_load) {
   int i, mi, ret, num_items;
   bool done = false;
   char *title;
+
+  // don't overclock during hdd access
+  clk_overclock(false);
 
   /* set defaults */
   ret = 0; /* return value */
@@ -438,6 +433,7 @@ static void do_slot_menu(bool is_load) {
       printf("Couldn't save state file.");
     }
   }
+  clk_overclock(true);
 }
 
 static void do_opt_menu(void) {
