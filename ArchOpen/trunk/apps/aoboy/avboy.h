@@ -43,5 +43,9 @@ void cleanup();
 void refresh_1(byte *dest, byte *src, byte *pal, int cnt);
 void refresh_1_2x(byte *dest, byte *src, byte *pal, int cnt);
 
+/* directory ROM save slots belong in */
+#define STATE_DIR "/aoboy/states"
+#define ROM_DIR   "/aoboy/roms/"
+#define AOBOY_DIR "/aoboy/"
 
 #define DIE(fmt, arg...) {printf(fmt,## arg); while(1) /*nothing*/;}

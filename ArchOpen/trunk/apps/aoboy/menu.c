@@ -92,9 +92,6 @@ static void do_opt_menu(void);
 static void do_opt2_menu(void);
 static void munge_name(char *buf, size_t bufsiz);
 
-/* directory ROM save slots belong in */
-#define STATE_DIR "/aoboy/states"
-
 #define MENU_CANCEL (-1)
 static int do_menu(char *title, char **items, size_t num_items, int sel_item);
 
@@ -897,11 +894,11 @@ void browser(char * rom) {
 items = malloc(MAX_PATH*6);
 list = malloc(MAX_PATH);
 
-romd=opendir("/aoboy/roms");
-if(romd) printf("Dir /aoboy/roms/ opened!\n");
+romd=opendir(ROM_DIR);
+if(romd) printf("Dir %s opened!\n",ROM_DIR);
 else {
-  mkdir("/aoboy/roms",0);
-  if(romd) printf("Dir /aoboy/roms/ created and opened!\n");
+  mkdir(ROM_DIR,0);
+  if(romd) printf("Dir %s created and opened!\n",ROM_DIR);
   else printf("Dir error!\n");
 }
 
@@ -985,7 +982,7 @@ while(!done) {
   }
 
   rom[0]='\0';
-  strcat(rom,"/AOBOY/ROMS/");
+  strcat(rom,ROM_DIR);
   strcat(rom,list[curr_item+pos]);
   strcat(rom,"\0");
   closedir(romd);

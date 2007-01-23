@@ -97,7 +97,7 @@ static char *rtcfile;
 static char *saveprefix;
 
 static char *savename;
-static char *savedir = "/aoboy/states";
+static char *savedir = STATE_DIR;
 
 static int saveslot;
 

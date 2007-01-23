@@ -153,9 +153,9 @@ int app_main(int argc,char** argv)
     set_timer_status(HALT_TIMER,TIMER_MODE_BAT,MODE_DISABLE);
     set_timer_status(HALT_TIMER,TIMER_MODE_DC,MODE_DISABLE);
     
-    mkdir("/aoboy/",-1);
-    mkdir("/aoboy/roms/",-1);
-    mkdir("/aoboy/states/",-1);
+    mkdir(AOBOY_DIR,-1);
+    mkdir(ROM_DIR,-1);
+    mkdir(STATE_DIR,-1);
 
 #ifdef USE_MEDIOS_BROWSER
 	while(1)
@@ -216,7 +216,7 @@ int app_main(int argc,char** argv)
     pcm_init();
     
     rom = (char *)malloc(MAX_PATH);
-    
+
     printf("argc = %d, argv = %x\n",argc,argv);
 
     if(argc<2) browser(rom);
