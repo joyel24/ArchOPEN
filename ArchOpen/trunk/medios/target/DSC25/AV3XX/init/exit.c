@@ -23,6 +23,8 @@
 #include <driver/hardware.h>
 #include <driver/lcd.h>
 
+#include <fs/disk.h>
+
 #include <gfx/graphics.h>
 
 void reset_device(void);
@@ -30,7 +32,7 @@ void reset_device(void);
 void arch_reload_firmware(void)
 {
     printk("about to reboot\n");
-    ata_sofReset();
+    ata_softReset(HD_DISK);
     ata_stopHD(ATA_FORCE_STOP); /* we need to call halt_hd later to unmount all partitions */
     reset_device();
 }

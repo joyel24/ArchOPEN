@@ -79,6 +79,7 @@ int nbSecBtw(struct med_tm * d1,struct med_tm * d2)
         return res;
 }
 #endif
+
 int getDayOfWeek(int day,int month,int year)
 {
     int result;

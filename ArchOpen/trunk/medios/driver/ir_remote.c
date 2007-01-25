@@ -20,7 +20,8 @@
 
 #include <driver/gio.h>
 #include <driver/ir_remote.h>
-#include <driver/bat_power.h>
+#include <driver/energy.h>
+#include <driver/lcd.h>
 
 int state=0;
 int dataPos=0; // current pos in data
