@@ -60,8 +60,9 @@
 #ifdef HAVE_EXT_MODULE
 #include <driver/ext_module.h>
 #include <driver/dvr_module.h>
-#include <driver/cf_module.h>
 #endif
+
+#include <driver/cf.h>
 
 #include <gfx/graphics.h>
 #include <gfx/screens.h>
@@ -179,8 +180,12 @@ void kernel_start (void)
 #ifdef HAVE_EXT_MODULE
     init_ext_module();
     init_dvr_module();
-    cf_initModule();
 #endif
+
+#ifdef HAVE_CF
+    cf_init();
+#endif
+
     ata_init();
     vfs_init();
     if(disk_init()!=MED_OK)

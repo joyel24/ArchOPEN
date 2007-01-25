@@ -13,6 +13,10 @@ endif
 
 ifeq ($(HAVE_EXT_MODULE),1)
 	SRC += ext_module.c dvr_module.c ir_remote.c cf_module.c
+else
+ifeq ($(HAVE_CF),1)
+	SRC += cf.c
+endif
 endif
 
 ifeq ($(HAVE_MAS_SOUND),1)

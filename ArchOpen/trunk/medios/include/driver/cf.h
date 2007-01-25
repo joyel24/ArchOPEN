@@ -1,5 +1,5 @@
 /*
-*   include/kernel/cf_module.h
+*   include/kernel/cf.h
 *
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -11,13 +11,22 @@
 */
 
 
-#ifndef __CF_MODULE_H
-#define __CF_MODULE_H
+#ifndef __CF_H
+#define __CF_H
 
+#ifdef HAVE_EXT_MODULE
 #include <driver/ext_module.h>
+#else
+#ifdef HAVE_CF
+#include <target/chip/arch/cf.h>
+#endif
+#endif
 
-void cf_initModule(void);
+#ifndef CF_IS_CONNECTED
+#define CF_IS_CONNECTED 0
+#endif
 
-#define CF_IS_CONNECTED (get_connected_module()==AV_MODULE_CFC?1:0)
+void cf_init(void);
+
 
 #endif

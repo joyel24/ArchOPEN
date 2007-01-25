@@ -10,7 +10,7 @@
 * KIND, either express of implied.
 *
 * Part of this code is from Rockbox project
-* Copyright (C) 2002 by Björn Stenberg
+* Copyright (C) 2002 by Bjï¿½n Stenberg
 */
 
 
@@ -31,11 +31,7 @@
 #define FLUSH         1
 #define NOFLUSH       0
 
-#ifdef HAVE_EXT_MODULE
 #define NB_DISK      2
-#else
-#define NB_DISK      1
-#endif
 
 struct partition_info {
     int start;

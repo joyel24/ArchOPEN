@@ -46,6 +46,8 @@ void do_diskInfo (unsigned char ** params);
 void do_cpldRead (unsigned char ** params);
 void do_cpldWrite (unsigned char ** params);
 void do_hdSleep (unsigned char ** params);
+void do_mount (unsigned char ** params);
+void do_umount (unsigned char ** params);
 
 /* cmd line internal functions */
 void init_cmd_line(void);

@@ -1,0 +1,10 @@
+
+cd ~/archopen_src/build/trunk
+chmod 777 configure
+for i in 1 2 3 4 5 6 7; do
+./configure -d $i
+done 
+mv gmini402.conf g402.conf
+mv gmini4xx.conf g4xx.conf
+rm Makefile.conf
+mv *.conf ../

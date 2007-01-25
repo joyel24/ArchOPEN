@@ -16,21 +16,21 @@
 #include <kernel/evt.h>
 
 #include <driver/ext_module.h>
-#include <driver/cf_module.h>
+#include <driver/cf.h>
 
 #include <fs/disk.h>
 
-struct evt_t cf_evt;
+struct evt_t cf_module_evt;
 
 void cf_connected(void)
 {
     /* mounting */
     disk_add(CF_DISK);
     /* send evt */
-    cf_evt.evt=EVT_CF_IN;
-    cf_evt.evt_class=CONNECT_CLASS;
-    cf_evt.data=0;
-    evt_send(&cf_evt);
+    cf_module_evt.evt=EVT_CF_IN;
+    cf_module_evt.evt_class=CONNECT_CLASS;
+    cf_module_evt.data=0;
+    evt_send(&cf_module_evt);
 }
 
 void cf_disconnected(void)
@@ -38,10 +38,10 @@ void cf_disconnected(void)
     /* umounting */
     disk_rm(CF_DISK);
     /* send evt */
-    cf_evt.evt=EVT_CF_OUT;
-    cf_evt.evt_class=CONNECT_CLASS;
-    cf_evt.data=0;
-    evt_send(&cf_evt);
+    cf_module_evt.evt=EVT_CF_OUT;
+    cf_module_evt.evt_class=CONNECT_CLASS;
+    cf_module_evt.data=0;
+    evt_send(&cf_module_evt);
 }
 
 struct module_actions cf_module_actions = {
@@ -49,7 +49,7 @@ struct module_actions cf_module_actions = {
     do_disconnection:cf_disconnected
 };
 
-void cf_initModule(void)
+void cf_init(void)
 {
     if(!ext_module_register_action(&cf_module_actions,AV_MODULE_CFC))
     {

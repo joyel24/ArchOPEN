@@ -24,9 +24,7 @@
 #include <kernel/kernel.h>
 
 #include <driver/ata.h>
-#ifdef HAVE_EXT_MODULE
-#include <driver/cf_module.h>
-#endif
+#include <driver/cf.h>
 
 #include <fs/vfs.h>
 #include <fs/fat.h>
@@ -169,25 +167,24 @@ MED_RET_T disk_addAll(void)
         printk("[Disk-addAll] Error: can't add main HD\n");
         return -MED_ERROR;
     }    
-#ifdef HAVE_EXT_MODULE    
+
     if(CF_IS_CONNECTED)
     {
         disk_add(CF_DISK);
         /* no error returned */
     }
-#endif    
+  
     return MED_OK;
 }
 
 MED_RET_T disk_rmAll(void)
 {
-#ifdef HAVE_EXT_MODULE    
     if(CF_IS_CONNECTED)
     {
         if(disk_rm(CF_DISK)!=MED_OK)
             return -MED_ERROR;
     }
-#endif
+
     return disk_rm(HD_DISK);
 }
 

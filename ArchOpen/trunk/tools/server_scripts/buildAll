@@ -17,6 +17,8 @@ echo "Cpy SRC folder"
 cd ~/archopen_src
 cp -Rf ArchOpen/trunk build/
 
+mkConfig
+
 for arch in $mediOS_arch; do
 buildMediOS $arch ${phpReportPath}${phpReportFile} ${savPath}
 done
@@ -27,6 +29,8 @@ buildMediosApps ${phpReportPath}${phpReportFile} ${savPath}
 
 echo "removing SRC folder"
 rm -Rf ~/archopen_src/build/trunk
+echo "removing config files"
+rm -Rf ~/archopen_src/build/*.conf
 
 echo "?>" >> ${phpReportPath}${phpReportFile}
 

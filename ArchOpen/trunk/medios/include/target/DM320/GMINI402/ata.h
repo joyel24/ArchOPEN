@@ -15,7 +15,8 @@
 
 #define NO_DMA
 
-#define DMA_ATA            0x3
+#define DMA_ATA_HD         0x3
+#define DMA_ATA_CF         0x3
 
 #define DMA_ATA_ADDRESS    0x800000a0
 

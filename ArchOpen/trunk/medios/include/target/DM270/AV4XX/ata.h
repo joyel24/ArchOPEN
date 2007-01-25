@@ -13,7 +13,8 @@
 #ifndef __ATA_ARCH_H
 #define __ATA_ARCH_H
 
-#define DMA_ATA            0x3
+#define DMA_ATA_HD         0x3
+#define DMA_ATA_CF         0x4
 
 #define DMA_ATA_ADDRESS    0x10000020
 

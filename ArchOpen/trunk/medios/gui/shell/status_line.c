@@ -21,9 +21,8 @@
 #include <driver/rtc.h>
 #include <driver/usb_fw.h>
 #include <driver/batDc.h>
-#ifdef HAVE_EXT_MODULE
-#include <driver/cf_module.h>
-#endif
+#include <driver/cf.h>
+#include <driver/fm_remote.h>
 
 #include <gfx/graphics.h>
 
@@ -135,20 +134,19 @@ void drawBat(void)
     gfx_fillRect(COLOR_BLACK,lineData.bat_x+23,lineData.bat_y+2,3,6);
     gfx_fillRect(lineData.bg_color,lineData.bat_x+1,lineData.bat_y+1,21,8);
     gfx_fillRect(color,lineData.bat_x+1,lineData.bat_y+1,level,8);
-#if 0
-    if(fmIsConnected()) /* show bat status on FM remote */
+
+    if(FM_is_connected()) /* show bat status on FM remote */
     {
         if(level<7)
-            fmSetBat(1);
+            FM_setIcon(FM_BAT,1);
         else if(level<14)
-            fmSetBat(2);
+            FM_setIcon(FM_BAT,2);
         else if(level<20)
-            fmSetBat(3);
+            FM_setIcon(FM_BAT,3);
         else
-            fmSetBat(4);
+            FM_setIcon(FM_BAT,4);
             
     }
-#endif
 }
 
 void drawStatus(void)
@@ -162,13 +160,10 @@ void drawStatus(void)
     
     if(fwExtState)
         gfx_drawBitmap(st_fwExtIcon, lineData.module_x, lineData.module_y);
-    /*else
-        fillRect(lineData.bg_color,242,4,15,6);*/
-        
+       
     if(cfState)
         gfx_drawBitmap(st_cfIcon, lineData.module_x, lineData.module_y);
-    /*else
-        fillRect(lineData.bg_color,242,4,15,6);*/
+    
     if(!cfState && !fwExtState)
         gfx_fillRect(lineData.bg_color,lineData.module_x,lineData.module_y,15,6);
     
@@ -254,13 +249,11 @@ void statusLine_handleEvent(int evt)
             fwExtState=kFWIsConnected();
             drawStatus();
             break;
-#ifdef HAVE_EXT_MODULE
         case EVT_CF_IN:
         case EVT_CF_OUT:
             cfState=CF_IS_CONNECTED;
             drawStatus();
             break;    
-#endif
     }
 }
 
@@ -302,11 +295,8 @@ void statusLine_init(void)
         date_format=cfg_readInt(cfg,"isMMDDYYYY");
     }
     
-    cfg_clear(cfg);
-    
-#ifdef HAVE_EXT_MODULE
+    cfg_clear(cfg);    
+
     cfState=CF_IS_CONNECTED;
-#else
-    cfState=0;
-#endif
+
 }

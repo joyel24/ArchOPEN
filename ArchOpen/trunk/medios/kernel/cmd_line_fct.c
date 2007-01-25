@@ -155,6 +155,18 @@ struct cmd_line_s cmd_tab[] = {
         help_str   : "Put HDD in sleep mode",
         cmd_action : do_hdSleep,
         nb_args    : 0
+    },    
+    {
+        cmd        : "mount",
+        help_str   : "mount DRIVE : mount all partitions of the drive",
+        cmd_action : do_mount,
+        nb_args    : 1
+    },    
+    {
+        cmd        : "umount",
+        help_str   : "umount DRIVE : umount all partitions of the drive",
+        cmd_action : do_umount,
+        nb_args    : 1
     },
     /* this has to be the last entry */
     {
@@ -399,4 +411,22 @@ void do_cpldWrite (unsigned char ** params)
 void do_hdSleep (unsigned char ** params)
 {
     ata_stopHD(ATA_FORCE_STOP);
+}
+
+void do_mount (unsigned char ** params)
+{
+    int drive=atoi (params[0]);
+    if(drive==HD_DISK || drive==CF_DISK)
+    {
+          disk_add(drive); 
+    }
+}
+
+void do_umount (unsigned char ** params)
+{
+    int drive=atoi (params[0]);
+    if(drive==HD_DISK || drive==CF_DISK)
+    {
+        disk_rm(drive); 
+    }
 }

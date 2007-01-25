@@ -110,7 +110,7 @@ ICON icon_load(char * filename)
     {
         if(!strcmp(ptr->name,name))
         {
-            printk("[icon_load] there is already an icon with that name\n");
+            //printk("[icon_load] there is already an icon with that name\n");
             kfree(name);        
             goto out;
         }
@@ -151,7 +151,8 @@ ICON icon_load(char * filename)
     
     len=ptr->bmap_data.width*ptr->bmap_data.height;
     
-    printk("[icon_load] loading icon %s from %s size (%d,%d)\n",ptr->name,tmpF,ptr->bmap_data.width,ptr->bmap_data.height);
+    /*printk("[icon_load] loading icon %s from %s size (%d,%d)\n",ptr->name,
+        tmpF,ptr->bmap_data.width,ptr->bmap_data.height);*/
     
     /* read icon data */
     /*for(i=0;i<ptr->bmap_data.width*ptr->bmap_data.height;i++)
@@ -210,18 +211,18 @@ err1:
 ICON icon_add(char * name,unsigned char * data,int w,int h)
 {
     ICON ptr;
-    printk("addIcon %s ",name);
+    //printk("addIcon %s ",name);
     /* check if an icon with the same name is not already present */
     
     for(ptr=icon_list_head;ptr!=NULL;ptr=ptr->nxt)
     {
         if(!strcmp(ptr->name,name))
         {
-            printk("[icon_load] there is already an icon with that name\n");
+            //printk("[icon_load] there is already an icon with that name\n");
             goto out;
         }
     }
-    printk("- not defined ");
+    //printk("- not defined ");
     /* create new icon struct*/
     ptr=(ICON)kmalloc(sizeof(struct icon_elem));
     if(!ptr)
@@ -229,7 +230,7 @@ ICON icon_add(char * name,unsigned char * data,int w,int h)
         printk("[icon_load] not enough memory for icon structure\n");
         goto err1;
     }
-    printk("- allocated ");
+    //printk("- allocated ");
     ptr->name=name;
     ptr->data=data;
     ptr->bmap_data.data=(unsigned int)ptr->data;
@@ -241,7 +242,7 @@ ICON icon_add(char * name,unsigned char * data,int w,int h)
     /* insert new icon in list */
     ptr->nxt=icon_list_head;
     icon_list_head=ptr;
-    printk("- init\n");
+    //printk("- init\n");
 out:
     return ptr;
 
@@ -252,16 +253,14 @@ err1:
 ICON icon_get(char * name)
 {
     ICON ptr;
-    printk("Icon %s asked ",name);
     for(ptr=icon_list_head;ptr!=NULL;ptr=ptr->nxt)
     {
         if(!strcmp(ptr->name,name))
         {
-            printk("and found 0x%08x\n",(unsigned int)ptr);
             return ptr;
         }
     }
-    printk("not found\n");
+    printk("Icon %s not found\n",name);
     return NULL;
 }
 

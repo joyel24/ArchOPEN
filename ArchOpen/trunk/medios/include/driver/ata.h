@@ -47,6 +47,8 @@
 
 #define SECTOR_SIZE      512
 
+#define DMA_ATA                           (cur_disk==HD_DISK?DMA_ATA_HD:DMA_ATA_CF)
+
 #define IDE_DATA                          (cur_disk==HD_DISK?HD_DATA:CF_DATA)
 #define IDE_ERROR                         (cur_disk==HD_DISK?HD_ERROR:CF_ERROR)
 #define IDE_NSECTOR                       (cur_disk==HD_DISK?HD_NSECTOR:CF_NSECTOR)
@@ -70,7 +72,7 @@ void ata_powerDownHD      (void);
 void ata_stopHD           (int mode);  /* mode should be: ATA_FORCE_STOP or ATA_DELAY_STOP */
 void ata_stopHDEnd        (void);
 int  ata_sleep            (void);
-void ata_sofReset         (void);
+void ata_softReset        (int disk);
 
 void ata_selectHD         (void);
 void ata_selectCF         (void);

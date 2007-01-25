@@ -29,6 +29,7 @@
 #include <fs/disk.h>
 
 //#define USE_DMA
+//#define NO_DMA
 
 int ata_sectorBuffer[SECTOR_SIZE];
 
@@ -79,6 +80,7 @@ int ata_rwData(int disk,unsigned int lba,void * data,int count,int cmd,int use_d
 
     /* select the right disk */
     ATA_SELECT_DISK(disk);
+        
     /* wait drive ready */
     if(ata_waitForReady()<0)
         return -1;
@@ -113,6 +115,8 @@ int ata_rwData(int disk,unsigned int lba,void * data,int count,int cmd,int use_d
     use_dma=ATA_NO_DMA;
 #endif
 
+if(use_dma==ATA_NO_DMA)
+    printk("No DMA\n");
 
     if(((unsigned int)(data) < SDRAM_START) && use_dma==ATA_WITH_DMA)
     {
@@ -259,8 +263,14 @@ void ata_stopHDEnd(void)
     printk("[ide sleep] end\n");
 }
 
-void ata_sofReset(void)
+void ata_softReset(int disk)
 {
+    if(disk==HD_DISK)
+        ata_selectHD();
+    else
+        ata_selectCF();
+    outb(0xe,IDE_CONTROL);
+    mdelay(5);
     outb(0xa,IDE_CONTROL);
 #ifdef PMA
     outb(OMAP_HD_CMD_REQUEST,OMAP_REQUEST_BASE);

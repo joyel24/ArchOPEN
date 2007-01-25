@@ -55,7 +55,7 @@ void setUsbFw(int state)
             if(k_usb_fw==1)
             {
                USB_disable();
-                printk("[USB/FW] USB disable\n");
+               printk("[USB/FW] USB disable\n");
             }
             else if(k_usb_fw==2)
             {
