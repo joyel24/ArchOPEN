@@ -55,6 +55,9 @@ void clkc_setClockParameters(int clock,int m,int n,int div){
 
     outw((((m-1)<<CLKC_PLL_M_SHIFT)&CLKC_PLL_M_MASK) | (((n-1)<<CLKC_PLL_N_SHIFT)&CLKC_PLL_N_MASK),addr);
     
+    // wait a little for PLL to be in a sane state
+    mdelay(100);
+    
     // Canceling the Bypass state
     outw(tmp,CLKC_BYPASS);
 }
