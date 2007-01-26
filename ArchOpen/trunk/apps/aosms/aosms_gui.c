@@ -421,7 +421,7 @@ void gui_welcomeScreen(){
     gfx_putS(COLOR_BLACK,COLOR_WHITE,0,sh-10,     "Press a key to continue...");
 #endif
 
-#if defined(GMINI402) || defined(GMINI4XX) || defined(PMA)
+#if defined(GMINI402) || defined(GMINI4XX)
     unsigned long *ip,*op;
     int i;
 

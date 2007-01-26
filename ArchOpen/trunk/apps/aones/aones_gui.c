@@ -378,7 +378,7 @@ bool gui_browse(){
 }
 
 void gui_welcomeScreen(){
-
+#if defined(GMINI4XX) || defined(GMINI402)
 #if 0
     int y=0;
 
@@ -426,6 +426,7 @@ void gui_welcomeScreen(){
     while(!btn_readState());
 
     gfx_planeHide(VID2);
+#endif
 }
 
 bool gui_confirmQuit(){
