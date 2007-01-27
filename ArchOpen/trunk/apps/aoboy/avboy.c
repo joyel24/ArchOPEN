@@ -118,8 +118,8 @@ int bt_UP = BTMASK_UP;
 int bt_DOWN = BTMASK_DOWN;
 int bt_LEFT = BTMASK_LEFT;
 int bt_RIGHT = BTMASK_RIGHT;
-int bt_A = BTMASK_ON;
-int bt_B = BTMASK_BTN1;
+int bt_A = BTMASK_BTN1;
+int bt_B = BTMASK_ON;
 int bt_START = BTMASK_F2;
 int bt_SELECT = BTMASK_F3;
 int bt_MENU = BTMASK_F1;
@@ -152,7 +152,7 @@ int app_main(int argc,char** argv)
     set_timer_status(LCD_TIMER,TIMER_MODE_DC,MODE_DISABLE);
     set_timer_status(HALT_TIMER,TIMER_MODE_BAT,MODE_DISABLE);
     set_timer_status(HALT_TIMER,TIMER_MODE_DC,MODE_DISABLE);
-    
+
     mkdir(AOBOY_DIR,-1);
     mkdir(ROM_DIR,-1);
     mkdir(STATE_DIR,-1);
@@ -304,6 +304,7 @@ int doevents(void)
         if(pressed & bt_MENU) {if (do_user_menu() == USER_MENU_QUIT)
         {
             cleanup();
+            printf("Good Bye!\n");
 #ifdef STDALONE
             reload_firmware();
 #endif

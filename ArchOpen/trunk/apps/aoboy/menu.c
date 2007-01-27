@@ -676,8 +676,8 @@ static void do_opt2_menu(void) {
               bt_DOWN = BTMASK_DOWN;
               bt_LEFT = BTMASK_LEFT;
               bt_RIGHT = BTMASK_RIGHT;
-              bt_A = BTMASK_ON;
-              bt_B = BTMASK_BTN1;
+              bt_A = BTMASK_BTN1;
+              bt_B = BTMASK_ON;
               bt_START = BTMASK_F2;
               bt_SELECT = BTMASK_F3;
               bt_MENU = BTMASK_F1;

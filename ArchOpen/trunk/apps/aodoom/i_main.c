@@ -140,7 +140,7 @@ int app_main(){
     set_timer_status(HALT_TIMER,TIMER_MODE_DC,MODE_DISABLE);
 
     // create dir if it doesn't exist
-    mkdir("/doom",-1);
+    mkdir("/aoDoom",-1);
 
     gfx_openGraphics();
     gfx_clearScreen(COLOR_WHITE);
@@ -154,7 +154,7 @@ int app_main(){
 
     gui_welcomeScreen();
 
-    if (browser_simpleBrowse("/doom",wadname)!=MED_OK) app_exit(true);
+    if (browser_simpleBrowse("/aoDoom",wadname)!=MED_OK) app_exit(true);
     strlwr(wadname);
 
     if(!IsPWAD(wadname)){
@@ -168,7 +168,7 @@ int app_main(){
 
         gui_PWADScreen();
 
-        if (browser_simpleBrowse("/doom",wadname)!=MED_OK) app_exit(true);
+        if (browser_simpleBrowse("/aoDoom",wadname)!=MED_OK) app_exit(true);
         strlwr(wadname);
 
         modifiedgame = true;
