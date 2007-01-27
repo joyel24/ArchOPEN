@@ -2,7 +2,12 @@
 #include "aones.h"
 #include "aones_gui.h"
 #include "unes.h"
+
+#if defined(PMA) || defined(AV400)
+#include "intro_320x240.h"
+#else
 #include "intro_gmini4.h"
+#endif
 
 int gui_eventHandler=0;
 bool gui_wantExit=false;
@@ -378,7 +383,6 @@ bool gui_browse(){
 }
 
 void gui_welcomeScreen(){
-#if defined(GMINI4XX) || defined(GMINI402)
 #if 0
     int y=0;
 
@@ -410,6 +414,17 @@ void gui_welcomeScreen(){
     gfx_planeHide(VID1);
     gfx_planeHide(BMAP1);
     gfx_setPlane(VID2);
+
+#if defined(PMA) || defined(AV400)
+    gfx_planeSetSize(VID2,320,240,32);
+
+    ip=intro_320x240_data;
+    op=gfx_planeGetBufferOffset(VID2);
+    for(i=0;i<intro_320x240_X*intro_320x240_Y;++i){
+        *(op++)=(*ip)|((*ip>>8)<<24);
+        ip++;
+    }
+#else
     gfx_planeSetSize(VID2,220,176,32);   // Gmini size, the welcome screen will be clear for all arch
 
     ip=intro_gmini4_data;
@@ -418,6 +433,7 @@ void gui_welcomeScreen(){
         *(op++)=(*ip)|((*ip>>8)<<24);
         ip++;
     }
+#endif
 
     gfx_planeShow(VID2);
 #endif
@@ -426,7 +442,7 @@ void gui_welcomeScreen(){
     while(!btn_readState());
 
     gfx_planeHide(VID2);
-#endif
+
 }
 
 bool gui_confirmQuit(){

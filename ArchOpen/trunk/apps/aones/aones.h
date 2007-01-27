@@ -79,9 +79,9 @@
     #define NES_BTN_B       BTMASK_ON
     #define NES_BTN_MOD_AB  0x0
     
-    #define NES_BTN_INGAME_MENU   BTMASK_F2
-    #define NES_BTN_HALT          BTMASK_F3
-    #define NES_BTN_START         BTMASK_F1
+    #define NES_BTN_INGAME_MENU   BTMASK_F1
+    #define NES_BTN_HALT          BTMASK_F2
+    #define NES_BTN_START         BTMASK_F3
     #define NES_BTN_SELECT        BTMASK_OFF
     
     #define NES_LCD_X 0
@@ -110,10 +110,10 @@
     #define NES_BTN_B       BTMASK_ON
     #define NES_BTN_MOD_AB  0x0
 
-    #define NES_BTN_INGAME_MENU   BTMASK_F3
-    #define NES_BTN_HALT          BTMASK_OFF
-    #define NES_BTN_START         BTMASK_F1
-    #define NES_BTN_SELECT        BTMASK_F2
+    #define NES_BTN_INGAME_MENU   BTMASK_F1
+    #define NES_BTN_HALT          BTMASK_F2
+    #define NES_BTN_START         BTMASK_F3
+    #define NES_BTN_SELECT        BTMASK_OFF
 
     #define NES_LCD_X 0//64
     #define NES_LCD_Y 0
