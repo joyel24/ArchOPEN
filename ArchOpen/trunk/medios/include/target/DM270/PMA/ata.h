@@ -23,6 +23,11 @@
 #define HD_BASE                          0x018BFFD0            // Virtual CPLD for ATA.
 #define CF_BASE                          0x018BFFD0
 
+#define ATA_OUTB(DATA,REG)               {outb(DATA,REG);}
+#define ATA_INB(REG)                     (inb(REG))
+#define ATA_OUTW(DATA,REG)               {outw(DATA,REG);}
+#define ATA_INW(REG)                     (inw(REG)) 
+
 #define HD_DATA                          (HD_BASE+0x00)
 #define HD_ERROR                         (HD_BASE+0x04)
 #define HD_NSECTOR                       (HD_BASE+0x08)

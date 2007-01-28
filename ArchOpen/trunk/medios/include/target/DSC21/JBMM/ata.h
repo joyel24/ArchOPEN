@@ -21,6 +21,11 @@
 #define HD_BASE                          0x04000000
 #define CF_BASE                          0x04000000
 
+#define ATA_OUTB(DATA,REG)               {outb(DATA,REG);}
+#define ATA_INB(REG)                     (inb(REG))
+#define ATA_OUTW(DATA,REG)               {outw(DATA,REG);}
+#define ATA_INW(REG)                     (inw(REG)) 
+
 #define HD_DATA                          (HD_BASE+0x800)
 #define HD_ERROR                         (HD_BASE+0x900)
 #define HD_NSECTOR                       (HD_BASE+0xa00)

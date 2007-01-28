@@ -23,16 +23,21 @@
 #define HD_BASE                          0x50000000
 #define CF_BASE                          0x50000000
 
-#define HD_DATA                          (HD_BASE+0xa0)
-#define HD_ERROR                         (HD_BASE+0xa2)
+#define ATA_OUTB(DATA,REG)               {outb(DATA,REG);}
+#define ATA_INB(REG)                     (inb((REG)|0x80))
+#define ATA_OUTW(DATA,REG)               {outw(DATA,REG);}
+#define ATA_INW(REG)                     (inw((REG)|0x80))      
+
+#define HD_DATA                          (HD_BASE+0x20)
+#define HD_ERROR                         (HD_BASE+0x22)
 #define HD_NSECTOR                       (HD_BASE+0x24)
 #define HD_SECTOR                        (HD_BASE+0x26)
 #define HD_LCYL                          (HD_BASE+0x28)
 #define HD_HCYL                          (HD_BASE+0x2a)
 #define HD_SELECT                        (HD_BASE+0x2c)
-#define HD_CONTROL                       (HD_BASE+0x9c)
-#define HD_ALTSTATUS                     (HD_BASE+0x9c)
-#define HD_STATUS                        (HD_BASE+0xae)
+#define HD_CONTROL                       (HD_BASE+0x1c)
+#define HD_ALTSTATUS                     (HD_BASE+0x1c)
+#define HD_STATUS                        (HD_BASE+0x2e)
 #define HD_COMMAND                       (HD_BASE+0x2e)
 
 #define CF_DATA                          (CF_BASE+0xa0)

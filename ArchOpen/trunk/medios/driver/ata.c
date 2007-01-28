@@ -88,8 +88,8 @@ int ata_rwData(int disk,unsigned int lba,void * data,int count,int cmd,int use_d
     switch(cmd)
     {
         case ATA_DO_IDENT:
-            outb(0,IDE_SELECT); /* send ident. cmd */
-            outb(IDE_CMD_IDENTIFY,IDE_COMMAND);
+            ATA_OUTB(0,IDE_SELECT); /* send ident. cmd */
+            ATA_OUTB(IDE_CMD_IDENTIFY,IDE_COMMAND);
             /*ata_cmd->count=1;
             ata_cmd->xfer_dir=ATA_DO_READ;
             ata_cmd->use_dma=ATA_WITH_DMA;*/
@@ -97,20 +97,19 @@ int ata_rwData(int disk,unsigned int lba,void * data,int count,int cmd,int use_d
 
         case ATA_DO_READ:
         case ATA_DO_WRITE:
-            outb(lba,IDE_SECTOR);
-            outb(lba>>8,IDE_LCYL);
-            outb(lba>>16,IDE_HCYL);
-            outb((lba>>24) | IDE_SEL_LBA,IDE_SELECT);
-            outb(count,IDE_NSECTOR);
-            outb(av_cmd_array[cmd],IDE_COMMAND);
+            ATA_OUTB(lba,IDE_SECTOR);
+            ATA_OUTB(lba>>8,IDE_LCYL);
+            ATA_OUTB(lba>>16,IDE_HCYL);
+            ATA_OUTB((lba>>24) | IDE_SEL_LBA,IDE_SELECT);
+            ATA_OUTB(count,IDE_NSECTOR);
+            ATA_OUTB(av_cmd_array[cmd],IDE_COMMAND);
             break;
     }
 #ifdef PMA
     outb(OMAP_HD_CMD_REQUEST,OMAP_REQUEST_BASE);
     while(inb(OMAP_REQUEST_BASE));
 #endif
-    //outb(av_cmd_array[ata_cmd->xfer_dir],IDE_COMMAND);
-
+   
 #ifdef NO_DMA
     use_dma=ATA_NO_DMA;
 #endif
@@ -174,18 +173,14 @@ if(use_dma==ATA_NO_DMA)
                     outb(OMAP_HD_READ_REQUEST,OMAP_REQUEST_BASE);
                     while(inb(OMAP_REQUEST_BASE));
 #endif
-                    outw(inw(IDE_DATA),buffer+j);
+                    outw(ATA_INW(IDE_DATA),buffer+j);
                 }
             }
             else
             {
                 for(j=0;j<SECTOR_SIZE;j+=2)
                 {
-#ifdef GMINI402
-                    outw(inw(buffer+j),0x50000020);
-#else
-                    outw(inw(buffer+j),IDE_DATA);
-#endif
+                    ATA_OUTW(inw(buffer+j),IDE_DATA);
 #ifdef PMA
                     outb(OMAP_HD_WRITE_REQUEST,OMAP_REQUEST_BASE);
                     while(inb(OMAP_REQUEST_BASE));
@@ -212,8 +207,8 @@ int ata_sleep(void)
 {
     if(ata_waitForReady()<0)
         return -1;
-    outb(0,IDE_SELECT);
-    outb(IDE_CMD_SLEEP,IDE_COMMAND);
+    ATA_OUTB(0,IDE_SELECT);
+    ATA_OUTB(IDE_CMD_SLEEP,IDE_COMMAND);
 #ifdef PMA
     outb(OMAP_HD_CMD_REQUEST,OMAP_REQUEST_BASE);
     while(inb(OMAP_REQUEST_BASE));
@@ -269,9 +264,9 @@ void ata_softReset(int disk)
         ata_selectHD();
     else
         ata_selectCF();
-    outb(0xe,IDE_CONTROL);
+    ATA_OUTB(0xe,IDE_CONTROL);
     mdelay(5);
-    outb(0xa,IDE_CONTROL);
+    ATA_OUTB(0xa,IDE_CONTROL);
 #ifdef PMA
     outb(OMAP_HD_CMD_REQUEST,OMAP_REQUEST_BASE);
     while(inb(OMAP_REQUEST_BASE));
@@ -288,7 +283,7 @@ int ata_waitForXfer(void)
         outb(OMAP_HD_ALTS_ERR_REQUEST,OMAP_REQUEST_BASE);
         while(inb(OMAP_REQUEST_BASE));
 #endif
-        val=inb(IDE_ALTSTATUS);
+        val=ATA_INB(IDE_ALTSTATUS);
         if((val & IDE_STATUS_BSY)==0 && (val & IDE_STATUS_DRQ)!=0)
             return 0;
     }
@@ -307,7 +302,7 @@ int ata_waitForReady(void)
         outb(OMAP_HD_ALTS_ERR_REQUEST,OMAP_REQUEST_BASE);
         while(inb(OMAP_REQUEST_BASE));
 #endif
-        val=inb(IDE_ALTSTATUS);
+        val=ATA_INB(IDE_ALTSTATUS);
         if((val & IDE_STATUS_BSY)==0 && (val & IDE_STATUS_RDY)!=0)
             return 0;
     }
@@ -322,7 +317,7 @@ int ata_status(void)
     outb(OMAP_HD_ALTS_ERR_REQUEST,OMAP_REQUEST_BASE);
     while(inb(OMAP_REQUEST_BASE));
 #endif
-    return inb(IDE_ALTSTATUS);
+    return ATA_INB(IDE_ALTSTATUS);
 }
 
 void ata_resetHD(void)
