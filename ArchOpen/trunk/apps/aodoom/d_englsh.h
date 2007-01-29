@@ -37,7 +37,11 @@
 //	M_Menu.C
 //
 #define PRESSKEY 	"press a key."
+#if defined(PMA) || defined(AV400)
+#define PRESSYN 	"F2=yes off=no."
+#else
 #define PRESSYN 	"cross=yes off=no."
+#endif
 #define QUITMSG	"are you sure you want to\nquit this great game?"
 #define LOADNET 	"you can't do load while in a net game!\n\n"PRESSKEY
 #define QLOADNET	"you can't quickload during a netgame!\n\n"PRESSKEY
@@ -63,7 +67,11 @@
 #define NETEND	"you can't end a netgame!\n\n"PRESSKEY
 #define ENDGAME	"are you sure you want to end the game?\n\n"PRESSYN
 
+#if defined(PMA) || defined(AV400)
+#define DOSY		"(press F2 to quit)"
+#else
 #define DOSY		"(press cross to quit)"
+#endif
 
 #define DETAILHI	"High detail"
 #define DETAILLO	"Low detail"
