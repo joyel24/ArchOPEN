@@ -2,7 +2,6 @@
 <body>
 
 <?
-//include('phpReport_20060827.log');
 $today=time();
 $nb_days=10;
 /* creating table of date + including files and mark presence*/
@@ -30,7 +29,7 @@ for($i=0;$i<$nb_days;$i++)
       <td>Date</td>
 <?
 
-$arch_list=array("jbmm","av1xx","av3xx","g4xx","g402","av4xx","pma","apps");
+$arch_list=array("jbmm","av1xx","av3xx","g4xx","g402","av4xx","pma","av5xx","apps");
 $arch_name=array("jbmm"=>"Jbmm","av1xx"=>"Av 1xx","av3xx"=>"Av 3xx","g4xx"=>"Gmini 4XX","g402"=>"Gmini 402","av4xx"=>"Av 4xx","pma"=>"PMA","av5xx"=>"Ax 5xx","apps"=>"Med Applications");
 $nb_arch=count($arch_list);
 
@@ -59,15 +58,7 @@ for($j=0;$j<$nb_days;$j++)
                     else
                             $bgcolor="cyan";
                     echo "<td bgcolor='".$bgcolor."'>\n";
-                   /* if($arch_list[$i]=="g402")
-                    {
-                            echo "<a href='".$arch_list[$i]."_medios_".$cur_date.".zip'>Bin</a>&nbsp;&nbsp;\n";
-                            echo "<a href='cc_".$arch_list[$i]."_medios_".$cur_date.".zip'>cc Bin</a>\n";
-                    }
-                    else
-                    {*/
-                            echo "<a href='builds/".$arch_list[$i]."_medios_".$cur_date.".zip'>Bin</a>\n";
-                    //}
+                    echo "<a href='builds/".$arch_list[$i]."_medios_".$cur_date.".zip'>Bin</a>\n";
                     
                     if($arch_list[$i]=="apps")
                     {

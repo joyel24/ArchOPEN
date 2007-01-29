@@ -40,6 +40,7 @@
 #define OSD_BMAP_1_CFG      0x68
 #define OSD_BMAP_2_CFG      0x68
 #define OSD_VID_1_CFG       0xF0
+#define OSD_SPLASH_CFG      0xF0
 #define OSD_VID_2_CFG       0
 #define OSD_CUR_1_CFG       0
 #define OSD_CUR_2_CFG       0

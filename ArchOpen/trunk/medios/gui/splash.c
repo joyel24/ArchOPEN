@@ -26,7 +26,7 @@ extern struct graphics_operations g32ops;
 
 struct graphicsBuffer splash_gfxStruct = {
     offset             : 0,
-    state              : OSD_VIDEO_ZX1,
+    state              : OSD_SPLASH_CFG,
     enable             : 1,
     width              : SCREEN_WIDTH/2,
     real_width         : SCREEN_REAL_WIDTH,

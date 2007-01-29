@@ -21,7 +21,11 @@ splash_img:
 .ifdef SPLASH_220x176
 .incbin "splash_220x176.img"
 .else
-.space 320*240*4
+.ifdef SPLASH_480x272
+.incbin "splash_480x272.img"
+.else
+.space 480*272*4
+.endif
 .endif
 .endif
 

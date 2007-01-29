@@ -37,6 +37,7 @@
                 | OSD_BITMAP_8BIT | COLOR_TRSP << OSD_BITMAP_A_SHIFT
 #define OSD_BMAP_2_CFG      OSD_BITMAP_RAMCLUT \
                 | OSD_BITMAP_8BIT | OSD_BITMAP_0TRANS | COLOR_TRSP << OSD_BITMAP_A_SHIFT
+#define OSD_SPLASH_CFG      0
 #define OSD_VID_1_CFG       0
 #define OSD_VID_2_CFG       0
 #define OSD_CUR_1_CFG       0
