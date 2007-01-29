@@ -8,7 +8,7 @@
 #include "levels_320x240.h"
 #include "levels_224x176.h"
 
-#define TICK_INTERVAL  3333//750
+#define TICK_INTERVAL  1000//3333
 
 struct OBJECT{
     int x;

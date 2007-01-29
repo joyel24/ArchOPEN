@@ -282,7 +282,11 @@ void gui_init(){
     mit->cfgStored=true;
     mit->cfgName="cpu_frequency";
     mit->trackbar->minimum=50;
+#if defined(PMA)
+    mit->trackbar->maximum=135;
+#else
     mit->trackbar->maximum=200;
+#endif
     mit->trackbar->value=clkc_getClockFrequency(CLK_ARM)/1000000;
     advancedMenu->addItem(advancedMenu,mit);
 
@@ -432,7 +436,7 @@ void gui_welcomeScreen(){
     gfx_planeHide(VID1);
     gfx_planeHide(BMAP1);
     gfx_setPlane(VID2);
-    
+
 #if defined(PMA) || defined(AV400)
     gfx_planeSetSize(VID2,320,240,32);
 
@@ -465,11 +469,7 @@ void gui_welcomeScreen(){
 bool gui_confirmQuit(){
     int bt;
 
-#if defined(PMA) || defined(AV400)
-    gui_showText("Really quit? (F2=yes, any other=no)");
-#else
     gui_showText("Really quit? (OFF=yes, any other=no)");
-#endif
 
     while(btn_readState());
     while(!(bt=btn_readState()));

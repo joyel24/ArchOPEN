@@ -690,7 +690,7 @@ static void do_opt2_menu(void) {
 #endif
       case OM2_ITEM_OCA:
 #if defined(PMA)
-        if(ARMFreq<4)          // I don't want to destroy my PMA since there's no WTD!
+        if(ARMFreq<3)          // I don't want to destroy my PMA since there's no WTD!
 #endif
            ARMFreq++;
         snprintf((char *)opt2_menu[OM2_ITEM_OCA], 17, "Overclock ARM  %1d", ARMFreq);
@@ -910,6 +910,11 @@ else {
      nb++;
      list = realloc(list,MAX_PATH*(nb+1));
      }
+  }
+
+  if(!nb) {
+    *rom=0;
+    return;
   }
 
   gfx_fillRect(0xaf,11,9,140,128);

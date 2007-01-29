@@ -167,7 +167,11 @@ void gui_init(){
     mit->cfgStored=true;
     mit->cfgName="cpu_frequency";
     mit->trackbar->minimum=50;
+#if defined(PMA)
+    mit->trackbar->maximum=135;
+#else
     mit->trackbar->maximum=200;
+#endif
     mit->trackbar->value=clkc_getClockFrequency(CLK_ARM)/1000000;
     menu->addItem(menu,mit);
 

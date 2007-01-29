@@ -25,14 +25,13 @@
 #include <sys_def/buttons.h>
 #include <driver/energy.h>
 #include <sys_def/int_timer.h>
-
+#include <sys_def/colordef.h>
 
 /* MediOS browser include */
 #ifdef USE_MEDIOS_BROWSER
 #include <gui/file_browser.h>
 #include <kernel/osd.h>
 #include <sys_def/font.h>
-#include <sys_def/colordef.h>
 #endif
 
 /* avboy include */
@@ -206,10 +205,11 @@ int app_main(int argc,char** argv)
     gfx_openGraphics();
     OSD_BITMAP1_ADDRESS = (int)gfx_planeGetBufferOffset(BMAP1);
     gfx_planeSetSize(BMAP1,160,144,8);
-		gfx_planeSetPos(BMAP1,(LCD_WIDTH-OSD_BITMAP1_WIDTH) + X_OFFSET,(LCD_HEIGHT-OSD_BITMAP1_HEIGHT)/2 + Y_OFFSET);
+    gfx_planeSetPos(BMAP1,(LCD_WIDTH-OSD_BITMAP1_WIDTH) + X_OFFSET,(LCD_HEIGHT-OSD_BITMAP1_HEIGHT)/2 + Y_OFFSET);
     
     gfx_fillRect(0x00,0,0,160,144);
-
+    gfx_setPlane(BMAP1);
+    gfx_planeShow(BMAP1);
     gfx_fontSet(10);   
     
     vid_init();
@@ -221,7 +221,17 @@ int app_main(int argc,char** argv)
 
     if(argc<2) browser(rom);
     else strcpy(rom,argv[1]);
-    
+
+    if(!(*rom)) {
+      gfx_planeSetSize(BMAP1,320,240,8);
+      gfx_planeSetPos(BMAP1,X_OFFSET,Y_OFFSET);
+      gfx_clearScreen(COLOR_WHITE);
+      gfx_putS(COLOR_BLACK,COLOR_WHITE,0,0, "No ROMs in /aoBoy/roms!");
+      gfx_putS(COLOR_BLACK,COLOR_WHITE,0,20,"Press a key to quit...");
+      while(btn_readState());
+      while(!btn_readState());
+      return 0;           // No roms in the roms folder...
+    }
     //browser(rom);
     printf("Rom name : %s (%x,%x)\n",rom,rom,rom+MAX_PATH);
 

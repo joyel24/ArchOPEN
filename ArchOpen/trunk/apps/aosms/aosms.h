@@ -93,8 +93,8 @@
     #define SMS_BTN_1             BTMASK_BTN1
     #define SMS_BTN_2             BTMASK_ON
     #define SMS_BTN_MOD_12        0
-    #define SMS_BTN_INGAME_MENU   BTMASK_F3
-    #define SMS_BTN_START         BTMASK_F1
+    #define SMS_BTN_INGAME_MENU   BTMASK_F1
+    #define SMS_BTN_START         BTMASK_F3
     #define SMS_BTN_RESET         BTMASK_F2
     #define SMS_BTN_QUIT          BTMASK_OFF
 
