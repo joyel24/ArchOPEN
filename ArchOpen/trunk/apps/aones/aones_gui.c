@@ -447,7 +447,7 @@ void gui_welcomeScreen(){
 
 bool gui_confirmQuit(){
     int bt;
-    
+
 #if defined(PMA) || defined(AV400)
     gui_showText("Really quit? (F2=yes, any other=no)");
 #else
