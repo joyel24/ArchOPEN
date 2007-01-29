@@ -113,10 +113,7 @@ int ata_rwData(int disk,unsigned int lba,void * data,int count,int cmd,int use_d
 #ifdef NO_DMA
     use_dma=ATA_NO_DMA;
 #endif
-#ifndef PMA
-if(use_dma==ATA_NO_DMA)
-    printk("No DMA\n");
-#endif
+
     if(((unsigned int)(data) < SDRAM_START) && use_dma==ATA_WITH_DMA)
     {
         //printk("Destination buffer not in SDRAM => no DMA\n");

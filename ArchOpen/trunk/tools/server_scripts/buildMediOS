@@ -21,7 +21,7 @@ else
 if [ "$arch" == "g4xx" ]; then
 ext="wav"
 else
-if [ "$arch" == "g402" ] || [ "$arch" == "av4xx" ]; then
+if [ "$arch" == "g402" ] || [ "$arch" == "av4xx" ] || [ "$arch" == "av5xx" ]; then
 ext="avi"
 else
 echo "Error unsupported arch: $arch"

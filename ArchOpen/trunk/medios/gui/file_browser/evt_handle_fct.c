@@ -165,7 +165,7 @@ MED_RET_T browserEvt(struct browser_data * bdata)
                     }
                 }
                 break;
-#if defined(GMINI4XX) || defined(GMINI402)
+#if defined(GMINI4XX) || defined(GMINI402) || defined(AV5XX)
             case BTN_1:
 #endif
             case BTN_RIGHT:
@@ -216,7 +216,7 @@ MED_RET_T browserEvt(struct browser_data * bdata)
                     }
                 }
                 break;
-#if defined(GMINI4XX) || defined(GMINI402)
+#if defined(GMINI4XX) || defined(GMINI402) || defined(AV5XX)
             case BTN_2:
 #endif
             case BTN_LEFT:

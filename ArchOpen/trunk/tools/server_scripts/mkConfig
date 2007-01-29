@@ -1,7 +1,7 @@
 
 cd ~/archopen_src/build/trunk
 chmod 777 configure
-for i in 1 2 3 4 5 6 7; do
+for i in 1 2 3 4 5 6 7 8; do
 ./configure -d $i
 done 
 mv gmini402.conf g402.conf

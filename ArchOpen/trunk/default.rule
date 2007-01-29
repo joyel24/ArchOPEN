@@ -101,8 +101,16 @@ ifeq ("$(TARGET_DEVICE)","AV4XX")
 #	@dd if=$< of=$@ bs=801792 seek=1 conv=notrunc 2> /dev/null
 	@dd if=$< of=$@ bs=4004864 seek=1 conv=notrunc 2> /dev/null
 else
+ifeq ("$(TARGET_DEVICE)","AV5XX")        
+%.avi: %.bin
+	@make -C tools/bin2exploit/ -s av500fw1312avi.tpl
+	@echo "[$@]"
+	@cp tools/bin2exploit/av500fw1312avi.tpl $@
+	@dd if=$< of=$@ bs=3307520 seek=1 conv=notrunc 2> /dev/null
+else
 %.avi:
 	@echo "END"
+endif
 endif
 endif
 

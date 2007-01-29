@@ -49,6 +49,12 @@
     #define WIDGET_BACK_BTN BTN_OFF
 #endif
 
+#ifdef AV5XX
+    #define WIDGET_ACTION_BTN BTN_ON
+    #define WIDGET_BACK_BTN BTN_OFF
+#endif
+
+
 #ifndef WIDGET_ACTION_BTN
     #error Unknown arch!
 #endif

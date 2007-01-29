@@ -31,7 +31,7 @@ for($i=0;$i<$nb_days;$i++)
 <?
 
 $arch_list=array("jbmm","av1xx","av3xx","g4xx","g402","av4xx","pma","apps");
-$arch_name=array("jbmm"=>"Jbmm","av1xx"=>"Av 1xx","av3xx"=>"Av 3xx","g4xx"=>"Gmini 4XX","g402"=>"Gmini 402","av4xx"=>"Av 4xx","pma"=>"PMA","apps"=>"Med Applications");
+$arch_name=array("jbmm"=>"Jbmm","av1xx"=>"Av 1xx","av3xx"=>"Av 3xx","g4xx"=>"Gmini 4XX","g402"=>"Gmini 402","av4xx"=>"Av 4xx","pma"=>"PMA","av5xx"=>"Ax 5xx","apps"=>"Med Applications");
 $nb_arch=count($arch_list);
 
 for($i=0;$i<$nb_arch;$i++)

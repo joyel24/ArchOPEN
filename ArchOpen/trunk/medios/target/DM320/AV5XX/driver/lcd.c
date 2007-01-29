@@ -1,5 +1,5 @@
 /*
-*   include/sys_def/arch.h
+*   kernel/target/arch_AV5XX/lcd.c
 *
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -8,19 +8,23 @@
 * See the file COPYING in the source tree root for full license agreement.
 * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 * KIND, either express of implied.
-*
-*
 */
 
-#ifndef __SYS_DEF_ARCH_H
-#define __SYS_DEF_ARCH_H
+#include <kernel/io.h>
 
-#define AV3XX_ARCH      0
-#define GMINI4XX_ARCH   1
-#define AV1XX_ARCH      2
-#define JBMM_ARCH       3
-#define GMINI402_ARCH   4
-#define AV4XX_ARCH      5
-#define PMA_ARCH        6
-#define AV5XX_ARCH      7
-#endif
+#include <driver/lcd.h>
+#include <driver/clkc.h>
+
+void arch_lcd_init(){
+}
+
+void arch_lcd_enable(){
+}
+
+void arch_lcd_disable(){
+}
+
+void arch_lcd_setBrigthness(int br){
+    outw(br*0xffff/100,CLKC_PWM0_HIGH);
+}
+

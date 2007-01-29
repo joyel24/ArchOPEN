@@ -1,5 +1,5 @@
 /*
-*   include/sys_def/arch.h
+*   kernel/target/arch_GMINI4XX/osd.c
 *
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -8,19 +8,19 @@
 * See the file COPYING in the source tree root for full license agreement.
 * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 * KIND, either express of implied.
-*
-*
 */
 
-#ifndef __SYS_DEF_ARCH_H
-#define __SYS_DEF_ARCH_H
+#include <sys_def/stddef.h>
 
-#define AV3XX_ARCH      0
-#define GMINI4XX_ARCH   1
-#define AV1XX_ARCH      2
-#define JBMM_ARCH       3
-#define GMINI402_ARCH   4
-#define AV4XX_ARCH      5
-#define PMA_ARCH        6
-#define AV5XX_ARCH      7
-#endif
+#include <kernel/io.h>
+
+#include <driver/osd.h>
+#include <driver/lcd.h>
+#include <driver/videnc.h>
+
+void arch_osd_init(void)
+{
+	osd_setMainShift(SCREEN_LCD_SHIFT_X, SCREEN_LCD_SHIFT_Y);
+
+	outw(0x10,VIDENC_BASE+0x14); // LCD VSync
+}
