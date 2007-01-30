@@ -257,7 +257,9 @@ label: op(b); break;
 
 void cpu_reset(void)
 {
-	cpu.speed = 0;
+    memset(&cpu, 0, sizeof(cpu));
+	
+    cpu.speed = 0;
 	cpu.halt = 0;
 	cpu.div = 0;
 	cpu.tim = 0;
