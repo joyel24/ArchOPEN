@@ -17,10 +17,10 @@ void  # free     # void *buf
 unsigned int # tmr_getTick   # void
 unsigned int # tmr_getMicroTick   # void
 
-#k_inc#driver/rtc.h
+#k_inc#driver/time.h
 #api_inc#sys_def/time.h
-MED_RET_T # rtc_getTime # struct med_tm * valTime
-MED_RET_T # rtc_setTime # struct med_tm * newTime
+MED_RET_T # time_get # struct med_tm * valTime
+MED_RET_T # time_set # struct med_tm * newTime
 
 #k_inc#kernel/delay.h
 void # udelay  # unsigned long usecs

@@ -18,7 +18,7 @@
 #include <kernel/version.h>
 #include <kernel/evt.h>
 
-#include <driver/rtc.h>
+#include <driver/time.h>
 #include <driver/usb_fw.h>
 #include <driver/batDc.h>
 #include <driver/cf.h>
@@ -67,7 +67,7 @@ void drawTime(void)
     char timeSt[50];
     struct med_tm  date_time;
 
-    if(rtc_getTime(&date_time)==MED_OK)
+    if(time_get(&date_time)==MED_OK)
     {
         if(lineData.has_date)
             sprintf(timeSt,"%02d:%02d%s %02d/%02d/%04d",HOUR(date_time.tm_hour),date_time.tm_min,

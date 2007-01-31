@@ -44,10 +44,11 @@
 #ifdef HAVE_AIC23_SOUND
 #include <driver/aic23.h>
 #endif
+
 #include <driver/hardware.h>
 #include <driver/uart.h>
 #include <driver/cpld.h>
-#include <driver/rtc.h>
+#include <driver/time.h>
 #include <driver/usb_fw.h>
 #include <driver/batDc.h>
 #include <driver/energy.h>
@@ -78,6 +79,20 @@ extern int app_main(int argc, char * argv[]);
 unsigned int _svc_IniStack = IRAM_SIZE;
 unsigned int _sys_IniStack = IRAM_SIZE-SVC_STACK_SIZE;
 
+void tst_dump(void)
+{
+    int fd=open("/flash.bin",O_RDWR|O_CREAT);
+    int nb;
+    if(fd<0)
+    {
+        printk("Error opening file\n");
+        return;
+    }
+    nb=write(fd,(void*)(0x100000),0x200000);
+    printk("wrote: %x\n",nb);
+    close(fd);
+}
+
 void kernel_thread(void)
 {
 #ifdef BUILD_LIB
@@ -96,6 +111,8 @@ void kernel_thread(void)
     app_main(1,&stdalone);
     reload_firmware();
 #endif
+
+    //tst_dump();
 
     shell_main();
 
@@ -168,9 +185,8 @@ void kernel_start (void)
     energy_init();
     batDc_init();
 
-#ifndef PMA
-    init_rtc();
-#endif
+    time_init();
+    
 #ifdef CHK_USB_FW
     init_usb_fw();
 #endif

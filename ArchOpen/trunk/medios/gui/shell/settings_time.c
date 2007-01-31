@@ -27,7 +27,7 @@
 #include <gui/status_line.h>
 #include <gui/settings_time.h>
 
-#include <driver/rtc.h>
+#include <driver/time.h>
 #include <driver/lcd.h>
 
 #include <fs/cfg_file.h>
@@ -132,7 +132,11 @@ void okBtnClk_click(BUTTON b)
     }
     now.tm_year=date[2]->value;
     
-    rtc_setTime(&now);
+    if(time_set(&now)!=MED_OK)
+    {
+        msgBox_info("Write not supported");
+        mdelay(1000);
+    }
     
     /* saving to cfg file */
     cfg=cfg_readFile("/medios/medios.cfg");
@@ -150,7 +154,7 @@ void okBtnClk_click(BUTTON b)
     cfg_writeInt(cfg,"is12H",time_format);
     date_format=dateFormat->index==1?1:0;
     cfg_writeInt(cfg,"isMMDD",date_format);
-    cfg_printItems(cfg);
+    //cfg_printItems(cfg);
     cfg_writeFile(cfg,"/medios/medios.cfg");
     cfg_clear(cfg);
     stop_clk_set=1;
@@ -159,7 +163,7 @@ void okBtnClk_click(BUTTON b)
 void resetBtnClk_click(BUTTON b)
 {
     struct med_tm now;
-    rtc_getTime(&now);
+    time_get(&now);
     time[0]->value=now.tm_hour;
     time[0]->setParam(time[0],time_format==FORMAT_24?0:1,time_format==FORMAT_24?23:12,1,2);
     time[1]->value=now.tm_min;
@@ -199,10 +203,10 @@ void clock_setting(void)
     
     stop_clk_set=0;
     
-    rtc_getTime(&now);
-    
-    printk("Cur time: %02d:%02d:%02d %02d/%02d/%04d\n",now.tm_hour,now.tm_min,now.tm_sec,
-        now.tm_mday,now.tm_mon,now.tm_year);
+    time_get(&now);
+    printk("Cur time: ");
+    time_print(&now);
+    printk("\n");
    
     if(now.tm_hour>12)
         isPm=1;

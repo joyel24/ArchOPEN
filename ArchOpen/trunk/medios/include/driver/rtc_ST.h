@@ -35,7 +35,7 @@
 #define RTC_MK_Y(ini,new)        (new & 0xFF)
 
 
-MED_RET_T init_rtc(void);
+MED_RET_T rtc_init(void);
 int getDayOfWeek(int day,int month,int year);
 MED_RET_T rtc_getTime(struct med_tm * valTime);
 MED_RET_T rtc_setTime(struct med_tm * newTime);
