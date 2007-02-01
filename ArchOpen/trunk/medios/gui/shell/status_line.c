@@ -221,8 +221,7 @@ void statusLine_handleEvent(int evt)
             drawGui();
             break;
         case EVT_TIMER:
-#warning tick timer
-            //drawTime();
+            drawTime();
             if(batteryRefresh == 0)
                 drawBat();
             if(batteryRefresh < batteryRefreshValue)
