@@ -48,6 +48,10 @@ void do_cpldWrite (unsigned char ** params);
 void do_hdSleep (unsigned char ** params);
 void do_mount (unsigned char ** params);
 void do_umount (unsigned char ** params);
+#ifdef HAVE_ST_RTC
+void do_rtcGet (unsigned char ** params);
+void do_rtcSet (unsigned char ** params);
+#endif
 
 /* cmd line internal functions */
 void init_cmd_line(void);

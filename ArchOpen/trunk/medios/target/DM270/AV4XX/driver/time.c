@@ -32,7 +32,7 @@ MED_RET_T time_archGet(struct med_tm * val_time)
 
 MED_RET_T time_archSet(struct med_tm * new_time)
 {
-   /* struct med_tm tmp_time;
+    struct med_tm tmp_time;
     struct med_tm mod_time;
     memcpy(&mod_time,new_time,sizeof(struct med_tm));
     
@@ -53,7 +53,8 @@ MED_RET_T time_archSet(struct med_tm * new_time)
     printk("New rtc: ");
     time_print(&mod_time);
     printk("\n");
-    rtc_setTime(&mod_time);*/
+    
+    //rtc_setTime(&mod_time);
     return -MED_ERROR;
 }
 

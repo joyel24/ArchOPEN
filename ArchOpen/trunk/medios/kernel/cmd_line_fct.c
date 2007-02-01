@@ -168,6 +168,20 @@ struct cmd_line_s cmd_tab[] = {
         cmd_action : do_umount,
         nb_args    : 1
     },
+#ifdef HAVE_ST_RTC
+    {
+        cmd        : "rtcGet",
+        help_str   : "rtcGet : print current time and date",
+        cmd_action : do_rtcGet,
+        nb_args    : 0
+    },
+    {
+        cmd        : "rtcSet",
+        help_str   : "rtcSet hh mm ss dd mm yy : set rtc time",
+        cmd_action : do_rtcSet,
+        nb_args    : 6
+    },
+#endif
     /* this has to be the last entry */
     {
         cmd        : NULL,
@@ -430,3 +444,38 @@ void do_umount (unsigned char ** params)
         disk_rm(drive); 
     }
 }
+
+#ifdef HAVE_ST_RTC
+#include <driver/rtc_ST.h>
+#include <driver/time.h>
+
+void do_rtcGet (unsigned char ** params)
+{
+    struct med_tm valTime;
+    if(rtc_getTime(&valTime) == MED_OK)
+    {
+        time_print(&valTime); 
+        printk("\n");
+    }
+    else
+        printk("Can't retrieve time/date from rtc\n");
+}
+
+void do_rtcSet (unsigned char ** params)
+{
+    struct med_tm valTime;
+    valTime.tm_hour=atoi (params[0]);
+    valTime.tm_min=atoi (params[1]);
+    valTime.tm_sec=atoi (params[2]);
+    valTime.tm_mday=atoi (params[3]);
+    valTime.tm_mon=atoi (params[4]);
+    valTime.tm_year=atoi (params[5]);
+    valTime.tm_wday=time_getDayOfWeek(valTime.tm_mday,valTime.tm_mon,valTime.tm_year);
+    if(rtc_setTime(&valTime) == MED_OK)
+    {
+        printk("Time/date send to rtc\n");
+    }
+    else
+        printk("Can't send time/date to rtc\n");
+}
+#endif

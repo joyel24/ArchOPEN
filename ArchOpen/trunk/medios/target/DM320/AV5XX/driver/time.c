@@ -40,6 +40,6 @@ MED_RET_T time_archInit(void)
     if(ret_val != MED_OK)
         return -ret_val;
     
-    offset=inl(0x2ff04);
+    offset=inl(0x12ff04);
     return MED_OK;
 }

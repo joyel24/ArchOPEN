@@ -63,6 +63,10 @@ else
 	HAVE_DVR = 0    
 endif
 
+ifeq ($(HAVE_ST_RTC),1)
+	GCCFLAGS += -DHAVE_ST_RTC
+endif
+
 ifeq ($(HAVE_CF),1)
 	GCCFLAGS += -DHAVE_CF
 endif
