@@ -47,38 +47,22 @@ int arch_btn_readHardware(void){
     P1 =  (~inw(BUTTON_PORT0))&0xF;
     for(i=0;i<16;++i); // delay
     P2  = (~inw(BUTTON_PORT1))&0xF;
+    for(i=0;i<16;++i); // delay
     P3  = (~inw(BUTTON_PORT2))&0xF;
-    
-    
+   
+
     dir=fn=bt=on_off=0;
-        /*  U      |     D    |       L       |     R   */
+
     dir=P1;
-       /*  F1           |   F2          |    F3 */
-   fn=P2&0x7;
-   bt=(P3&0x1) | ((P3>>1)&0x2) | ((P2>>1)&0x4);
-    
+    fn=P2&0x7;
+    bt=(P3&0x3) | ((P2>>1)&0x4);
 
     /* ON, OFF keys */
 
     if(!GIO_IS_SET(GIO_ON_BTN))  on_off |= 0x1;
     if(!GIO_IS_SET(GIO_OFF_BTN)) on_off |= 0x2;
 
-    /* screen switch key */
-//    if(!GIO_IS_SET(GIO_SCR_SWITCH1_BTN))
-//    {
-//        bt |= 0x1;
-//        //printk("B1\n");
-//    }
-    
-//    if(!GIO_IS_SET(GIO_SCR_SWITCH2_BTN))
-//    {
-//        bt |= 0x2;
-//        // print don't know yet which key this might be
-//        printk("B2\n");
-//    }
-    
     val = (dir|(fn<<4)|(bt<<8)|(on_off<<12))&0xFFFF;
-    
-// printf("%d\n",inw(BUTTON_PORT0));
-    return val;   
+
+    return val;
 }
