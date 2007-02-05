@@ -223,7 +223,7 @@ int app_main(int argc,char** argv)
     else strcpy(rom,argv[1]);
 
     if(!(*rom)) {
-      gfx_planeSetSize(BMAP1,320,240,8);
+      gfx_planeSetSize(BMAP1,LCD_WIDTH,LCD_HEIGHT,8);
       gfx_planeSetPos(BMAP1,X_OFFSET,Y_OFFSET);
       gfx_clearScreen(COLOR_WHITE);
       gfx_putS(COLOR_BLACK,COLOR_WHITE,0,0, "No ROMs in /aoBoy/roms!");
