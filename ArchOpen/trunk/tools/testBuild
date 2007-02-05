@@ -1,0 +1,12 @@
+
+for i in 1 2 3 4 5 6 7 8; do
+./configure -d $i |grep Configuring
+make clean 2>&1 |cat > /dev/null
+make 2>&1 | cat > make.out
+cError=`grep -c "error:" make.out`
+cWarn=`grep -c "warning:" make.out`
+cDevWarn=`grep -c "warning: #warning" make.out`
+cWarn=$(($cWarn-$cDevWarn))
+echo "$i : $cError errors, $cWarn warnings, $cDevWarn dev warnings"
+echo " "
+done

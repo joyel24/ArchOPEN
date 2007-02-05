@@ -46,10 +46,11 @@ int # FW_isConnected  # void
 
 #k_inc#kernel/evt.h
 #api_inc#sys_def/evt.h
-int       # evt_getHandler     # unsigned int mask
-MED_RET_T # evt_freeHandler    # int num_evt_pipe
-int       # evt_getStatus      # int num_evt_pipe
-MED_RET_T # evt_getFullStatus  # int num_evt_pipe, struct evt_t * evt
+int          # evt_getHandler     # unsigned int mask
+MED_RET_T    # evt_freeHandler    # int num_evt_pipe
+int          # evt_getStatus      # int num_evt_pipe
+MED_RET_T    # evt_getFullStatus  # int num_evt_pipe, struct evt_t * evt
+const char * # getBtnName         # int btn
 
 #k_inc#driver/buttons.h
 #api_inc#sys_def/buttons.h
@@ -262,6 +263,11 @@ ICON   # icon_load                 # char * filename
 ICON   # icon_add                  # char * name,unsigned char * data,int w,int h
 ICON   # icon_get                  # char * name
 
+#k_inc#gui/msgBox.h
+#api_inc#gui_user/msgBox.h
+
+int    # msgBox_show    # unsigned char* caption, unsigned char* msg, int type, int icon,int evt_hanlder
+void   # msgBox_info    # unsigned char* msg
 
 #api_inc#sys_def/cfg_file.h
 #k_inc#fs/cfg_file.h

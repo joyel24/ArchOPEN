@@ -22,6 +22,7 @@
 #include <kernel/evt.h>
 
 #include <driver/hardware.h>
+#include <driver/buttons.h>
 
 struct evt_pipes evt_pipe_tab[NB_EVT_PIPES];
 struct tmr_s evt_timer;
@@ -144,4 +145,9 @@ void evt_init(void)
     tmr_start(&evt_timer);
 
     printk("[init] evt\n");
+}
+
+const char * getBtnName(int btn)
+{
+    return btn_name[btn-1];
 }

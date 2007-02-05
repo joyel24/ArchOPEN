@@ -33,7 +33,7 @@
 
 #define NB_BUTTONS                  0x10
 
-
+extern const char * btn_name [NB_BUTTONS];
 
 void btn_processPress(int val);
 void btn_init(void);

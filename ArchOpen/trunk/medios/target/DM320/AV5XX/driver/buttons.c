@@ -39,6 +39,24 @@ BTMASK_OFF,      /*BTN_OFF*/
 0
 };
 
+const char * btn_name [] =
+{
+    "UP",
+    "DOWN",
+    "LEFT",
+    "RIGHT",
+    "F1",
+    "F2",
+    "F3",
+    " ",
+    "B1",
+    "B2",
+    "LCD_SWITCH",
+    " ",
+    "ON",
+    "OFF"
+};
+
 int arch_btn_readHardware(void){
     int i,val;
     int dir,fn,bt,on_off;

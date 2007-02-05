@@ -12,6 +12,7 @@
 
 #include <kernel/kernel.h>
 #include <kernel/evt.h>
+#include <kernel/delay.h>
 
 #include <gfx/kfont.h>
 
@@ -23,7 +24,7 @@
 #include <gui/checkbox.h>
 #include <gui/chooser.h>
 #include <gui/icons.h>
-
+#include <gui/msgBox.h>
 #include <gui/status_line.h>
 #include <gui/settings_time.h>
 
