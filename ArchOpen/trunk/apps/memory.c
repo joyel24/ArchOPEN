@@ -63,15 +63,16 @@ int width;
 #define CUR_SIZE(W,H) {W=matrixSizeTab[matrixSize][0]; H=matrixSizeTab[matrixSize][1];}
 
 char * size_str[] = {
+    "8x8",
     "8x7",
     "6x6",
     "6x5",
     "4x4",
 };
 
-#define NB_SIZE 4
+#define NB_SIZE 5
 
-int matrixSizeTab[4][2] = {{8,7},{6,6},{6,5},{4,4}};
+int matrixSizeTab[NB_SIZE][2] = {{8,7},{8,7},{6,6},{6,5},{4,4}};
 
 /* the field */
 tile field[MAX_HEIGHT][MAX_WIDTH];

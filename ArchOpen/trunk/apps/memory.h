@@ -13,7 +13,7 @@
 */
 
 #define MAX_WIDTH 8
-#define MAX_HEIGHT 7
+#define MAX_HEIGHT 8
 
 struct memory_s {
 /*config*/
@@ -31,7 +31,7 @@ struct memory_s {
 
 /* conf instance */
 struct memory_s default_conf = {
-    0,
+    1,
     BTN_OFF,BTN_ON,
     BTN_LEFT,BTN_RIGHT,BTN_UP,BTN_DOWN,
     BTN_F1,BTN_F3
@@ -39,14 +39,22 @@ struct memory_s default_conf = {
 
 /* Gmini 4/402 conf*/
 struct memory_s gmini_conf = {
-    2,
+    3,
     BTN_OFF,BTN_ON,
     BTN_LEFT,BTN_RIGHT,BTN_UP,BTN_DOWN,
     BTN_F1,BTN_F3
 };
 
-/* Av4, Av5 conf */
+/* Av4, PMA conf */
 struct memory_s av_gen2_conf = {
+    1,
+    BTN_OFF,BTN_F1,
+    BTN_LEFT,BTN_RIGHT,BTN_UP,BTN_DOWN,
+    BTN_ON,BTN_F3
+};
+
+/* Av5 conf */
+struct memory_s av_gen3_conf = {
     0,
     BTN_OFF,BTN_F1,
     BTN_LEFT,BTN_RIGHT,BTN_UP,BTN_DOWN,
@@ -66,7 +74,7 @@ struct memory_entry conf_tab[] = {
     {GMINI402_ARCH, &gmini_conf},
     {AV4XX_ARCH,    &av_gen2_conf},
     {PMA_ARCH,      &av_gen2_conf},
-    {AV5XX_ARCH,    &av_gen2_conf},
+    {AV5XX_ARCH,    &av_gen3_conf},
     {-1,            NULL}
 };
 

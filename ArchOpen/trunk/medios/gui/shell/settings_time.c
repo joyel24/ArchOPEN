@@ -181,8 +181,8 @@ void resetBtnClk_click(BUTTON b)
     menuList->paint(menuList);
 }
 
-#define ICON_X 10
-#define ICON_Y 10
+#define ICON_X 5
+#define ICON_Y 5
 
 void clock_setting(void)
 {
@@ -225,18 +225,19 @@ void clock_setting(void)
     minX = ICON_X + logo->bmap_data.width;
     
     gfx_drawLine(COLOR_BLUE,minX+3,5,minX+3,LCD_HEIGHT-5);
-    
+    gfx_fontSet(TIME_DATE_GUIFONT);
     gfx_getStringSize("MM/DD/YYYY",&maxW,&lineH);
-    minX+=5;   
+    minX+=3;   
     
     gfx_fontSet(STD8X13);
     gfx_getStringSize("Clock settings",&w,&h);
     gfx_putS(COLOR_DARK_GREY,COLOR_WHITE,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,"Clock settings");
     
     gfx_fontSet(TIME_DATE_GUIFONT);
-    minX=(LCD_WIDTH-minX-(maxW+29))/2+minX;
-    lineH=(lineH+4)*2;
-    printk("minX = %d, lineH = %d\n",minX,lineH);
+    minX=(LCD_WIDTH-minX-(maxW+24))/2+minX;
+    lineH=(lineH+10);
+    printk("minX = %d(LCD=%d,max=%d,min=%d), lineH = %d\n",minX,LCD_WIDTH,maxW+24,
+           ICON_X + logo->bmap_data.width+3,lineH);
     
     x=minX;
     y=ICON_Y+(LCD_HEIGHT-(5*lineH))/2;
