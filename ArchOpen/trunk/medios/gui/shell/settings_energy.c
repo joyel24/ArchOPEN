@@ -33,8 +33,8 @@
 
 WIDGETLIST menuList;  
 
-#define ICON_X 10
-#define ICON_Y 10
+#define ICON_X 5
+#define ICON_Y 5
 
 CHOOSER chooser_list[6];
 
@@ -149,9 +149,10 @@ void energy_setting(void)
     
     minX = ICON_X + logo->bmap_data.width;
         
+    
     gfx_drawLine(COLOR_ORANGE,minX+3,5,minX+3,LCD_HEIGHT-5);
         
-    minX+=5; 
+    minX+=3; 
        
     gfx_fontSet(STD8X13);
     gfx_getStringSize("Energy Settings",&w,&h);
@@ -202,7 +203,7 @@ void energy_setting(void)
             menuList->addWidget(menuList,chooser_list[i+j*3]);
             y+=lineH;
         }
-        y+=lineH;
+        //y+=lineH;
     }
         
     
