@@ -44,7 +44,7 @@ void cache_invalidateRange(int mode, void * start,int size){
     startMVA=(unsigned int)start & 0xffffffe0;
     endMVA=((unsigned int)start+size)& 0xffffffe0;
 
-    for(i=startMVA;i<=endMVA;++i){
+    for(i=startMVA;i<=endMVA;i+=32){
         CACHE_INVALIDATE_ADDRESS(mode,i);
     }
 }
