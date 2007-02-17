@@ -34,9 +34,9 @@ void cf_Chk(void)
         if(state)
         {
             /* mounting */
-            CF_ARCH_PLUG_INIT
-            ata_softReset(CF_DISK);
-            disk_add(CF_DISK);
+            //CF_ARCH_PLUG_INIT
+            //ata_softReset(CF_DISK);
+            //disk_add(CF_DISK);
             /* send evt */    
             cf_evt.evt=EVT_CF_IN;
             cf_evt.evt_class=CONNECT_CLASS;
@@ -47,8 +47,8 @@ void cf_Chk(void)
         else
         {
             /* umounting */
-            disk_rm(CF_DISK);            
-            CF_ARCH_UNPLUG_INIT
+            //disk_rm(CF_DISK);            
+            //CF_ARCH_UNPLUG_INIT
             cf_evt.evt=EVT_CF_OUT;
             cf_evt.evt_class=CONNECT_CLASS;
             cf_evt.data=0;

@@ -14,7 +14,9 @@
 #ifndef __ARCH_CF_H
 #define __ARCH_CF_H
 
-#define CF_IS_CONNECTED 0
+#include <driver/cpld.h>
+
+#define CF_IS_CONNECTED ((cpld_read(CPLD3)&0x3)==0)
 #define CF_ARCH_PLUG_INIT   {}
 
 #define CF_ARCH_UNPLUG_INIT {}

@@ -46,9 +46,9 @@ struct hd_info_s {
 	char serial[21];
 	char firmware[9];
 	char model [41];
-        unsigned long size;
-        int multi_sector;
-        struct partition_info * partition_list;
+    unsigned long size;
+    int multi_sector;
+    struct partition_info * partition_list;
 };
 
 extern struct hd_info_s * disk_info[NB_DISK];

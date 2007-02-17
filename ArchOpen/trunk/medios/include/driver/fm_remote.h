@@ -16,7 +16,7 @@
 
 #include <driver/uart.h>
 
-#define MAX_PING      3
+#define MAX_PING      2
 #define MAX_NON_GET   5
 #define NB_KEY        8
 

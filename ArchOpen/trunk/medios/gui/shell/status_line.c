@@ -85,6 +85,8 @@ void drawTime(void)
     }
 
 }
+int first_plug_dc;
+int old_level;
 
 void drawBat(void)
 {
@@ -137,16 +139,32 @@ void drawBat(void)
 
     if(FM_is_connected()) /* show bat status on FM remote */
     {
-        if(level<7)
-            FM_setIcon(FM_BAT,1);
-        else if(level<14)
-            FM_setIcon(FM_BAT,2);
-        else if(level<20)
-            FM_setIcon(FM_BAT,3);
+        if(!pwrState)
+        {
+            first_plug_dc=1;
+            if(level!=old_level)
+            {
+                old_level=level;                
+                if(level<7)
+                    FM_setIcon(FM_BAT,1);
+                else if(level<14)
+                    FM_setIcon(FM_BAT,2);
+                else if(level<20)
+                    FM_setIcon(FM_BAT,3);
+                else
+                    FM_setIcon(FM_BAT,4);
+            }
+        }
         else
-            FM_setIcon(FM_BAT,4);
-            
+        {
+            if(first_plug_dc)
+            {
+                FM_setIcon(FM_BAT,0);
+                first_plug_dc=0;
+            }
+        }
     }
+
 }
 
 void drawStatus(void)
@@ -266,6 +284,9 @@ void statusLine_init(void)
     pwrState=POWER_CONNECTED;
     usbState=kusbIsConnected();
     fwExtState=kFWIsConnected();
+    
+    first_plug_dc = 0;
+    old_level = -1;
     
     /* read cfg */
     cfg=cfg_readFile("/medios/medios.cfg");

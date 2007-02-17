@@ -16,6 +16,7 @@
 #include <kernel/evt.h>
 #include <kernel/timer.h>
 #include <kernel/cmd_line.h>
+#include <kernel/delay.h>
 
 #include <driver/fm_remote.h>
 #include <driver/buttons.h>
@@ -58,7 +59,7 @@ int vol_state_array[]={0x0000,0x0004,0x0006,0x0007,0x0807,0x0C07,0x0D07};
 
 int key_evt_array[NB_KEY][2] = {
     { BTN_FM_REC   , 0x20 }, /* REC */
-    { -1           , 0x80 }, /* HOLD */
+    { -1           , 0x80 }, /* HOLD => no event*/
     { BTN_FM_MP3FM , 0x10 }, /* MP3_FM */
     { BTN_UP       , 0x08 }, /* UP */
     { BTN_DOWN     , 0x40 }, /* DOWN */
@@ -76,16 +77,21 @@ int keepTmr;
 
 char cmd=0;
 int fm_index;
+int nb_chk;
+int nbGetV;
 
+/***************************************
+* Manages button press
+****************************************/ 
 void processKey(int key)
 {
     int i;
     
-    /* special process for HOLD key */    
+    /* special process for HOLD key when no event is associated with it
+        => changing only the inHold variable */    
     if(key & 0x80 && key_evt_array[1][0]==-1)
     {
-        inHold=~inHold;
-        
+        inHold=~inHold;        
         printk("[FM key] hold %s\n",inHold?"enable":"disable");
         return;
     }
@@ -113,40 +119,9 @@ void processKey(int key)
     
 }
 
-void test_icons(void)
-{
-    static int count=0;
-    static int icon_num=0;
-    count++;
-    if(count > 20)
-    {
-        count=0;
-        bat_state++;
-        if(bat_state==5)
-            bat_state=0;
-        vol_state++;
-        if(vol_state==7)
-            vol_state=0;
-        
-        if(icon_num==0)
-        {
-            FMClearIcon(0x4,icons);
-        }
-        else
-        {
-            FMClearIcon(icon_num-1,icons);
-        }
-            
-        FMSetIcon(icon_num,icons);
-        icon_num++;
-        if(icon_num==5)
-            icon_num=0;
-        FM_do_setIcon();
-    }    
-}
-
-
-
+/***************************************
+* Turn off backlight & button light
+****************************************/
 void FM_lightsOFF(void)
 {
     if(lights_OnOff==1)
@@ -158,6 +133,9 @@ void FM_lightsOFF(void)
     }
 }
 
+/***************************************
+* Turn on backlight & button light
+****************************************/
 void FM_lightsON(void)
 {
     if(lights_OnOff==0)
@@ -168,11 +146,18 @@ void FM_lightsON(void)
     }
 }
 
+/***************************************
+* Returns backlight & button light state
+****************************************/
 int FM_lightsState(void)
 {
     return lights_OnOff;
 }
 
+/***************************************
+* Change state of backlight and button light
+* => use macro instead of this function
+****************************************/
 void FM_setLight(int type,int direction)
 {
     if(direction)
@@ -189,12 +174,20 @@ void FM_setLight(int type,int direction)
         FM_do_setLight();
 }
 
+/***************************************
+* Send light info to FM remote
+* P cmd
+****************************************/
 void FM_do_setLight(void)
 {
     uart_out('P',FM_REMOTE_UART);
     uart_out(light_state&0xFF,FM_REMOTE_UART);
 }
 
+/***************************************
+* Get state of backlight and button light
+* => use macro instead of this function
+****************************************/
 int FM_getLight(int type)
 {
     return ((light_state & (0x1 << type)) != 0);
@@ -226,7 +219,6 @@ void FM_put_iniTxt(void)
 
 void FM_putText(char * str)
 {
-    //printk("[FM] get normal txt:%s\n",str);
     FM_savText(str,NORMAL_TXT);
     if(cur_txt==NORMAL_TXT)
         FM_do_putText();
@@ -234,7 +226,6 @@ void FM_putText(char * str)
 
 void FM_putTmpText(char * str,int iter)
 {
-    printk("[FM] get tmp txt:%s (iter=%d)\n",str,iter);
     #warning need something for tmp txt and scroll
     FM_savText(str,TMP_TXT);
     tmp_iter=iter;
@@ -504,48 +495,52 @@ void fm_remote_INT(int irq_num,struct pt_regs * reg)
     {
         if(FM_connected)
         {
+            /* in connected state */
             switch(c)
             {        
                 case 'V':
-                    cmd=3;
+                    /* received a pong => reset nbPingSet*/
                     fm_index=0;
+                    nbPingSend=0;
+                    cmd=0;
                     break;
                 case 'K':
+                    /* button press => cmd 1*/
                     cmd=1;
                     fm_index=0;
                     break;
                 case 'R':
+                    /* radio => cmd 2*/
                     cmd=2;
                     fm_index=0;
                     break;
                 default:
                     switch(cmd)
                     {
-                        case 1:                            
+                        /* if cmd was set, we are now managing
+                         the data/parameter of the cmd*/
+                        case 1:   
+                            /* button press */                         
                             if(c!=0)
-                            {
-                                //printk("[fm remote] get key : %x\n",c);
                                 processKey(c);
-                            }
                             cmd=0;
                             break;
                         case 2:
-                            radio_param[fm_index++]=c;
+                            /* radio data */
+                            radio_param[fm_index++]=c; /* storing the data*/
                             if(fm_index==5)
                             {
+                                /* we get the 5 char of data*/
                                 printk("[FM Remote] get radio cmd: %x%x%x%x%x\n",radio_param[0],radio_param[1]
                                     ,radio_param[2],radio_param[3],radio_param[4]);
                                 cmd=0;
                             }
                             break;
-                        case 3: /* get pong */
-                            nbPingSend=0;
-                            cmd=0;
-                            break;
                         default:
-                            if(c!=0)
-                            {
-                                printk("UNK char : %x\n",c);
+                            /*no cmd set*/
+                            if(c!=0 && c!=0x3)
+                            { /* printing UKN char, char 0x3 is send at the end of cmd */
+                                printk("NO cmd - UNK char : %x\n",c);
                             }
                             cmd=0;
                             break;
@@ -555,18 +550,25 @@ void fm_remote_INT(int irq_num,struct pt_regs * reg)
         }
         else
         {
+            /* not in connected state
+            and we've received a char*/
+            if(fmRemote_tmr.trigger!=1)
+            {
+                /*ping/pong timer not runing
+                => launch it and init some var*/
+                nbGetV=0;
+                nbPingSend=0;
+                tmr_start(&fmRemote_tmr);
+            }
             switch(c)
             {
                 case 'V':
-                    cmd=0;
-                    fm_index=0;
-                    FM_connected=1;
-                    nbPingSend=0;
-                    inHold=0;
-                    FM_do_ini_call();
-                    printk("[FM Remote] connected\n");
-                    break;
+                    FM_connected=0;
+                    /* we've received a pong
+                    => inc nbGetV & set nbPingSend=0*/
+                    nbGetV++; 
                 default:
+                    /* nothing to do*/
                     break;
             }
         }
@@ -577,11 +579,17 @@ void fmRemote_chk(void)
 {
     if(FM_connected)
     {
+        /* manage TMP txt: if tmp txt is set,
+        show/hide the txt every time the fction is
+        called, tmp_iter is used to measure the time,
+        the tmp txt is shown*/
         if(cur_txt==TMP_TXT)
         { 
             tmp_iter--;
             if(tmp_iter<0)
             {
+                /* we have shown tmp txt enough time,
+                put back the saved txt*/
                 cur_txt=NORMAL_TXT;
                 FM_do_putText();
             }
@@ -599,16 +607,61 @@ void fmRemote_chk(void)
                 }
             }            
         }
-        nbPingSend++;
-        if(nbPingSend>MAX_PING)
+    }
+    
+    /* timer is running at a higher freq to manage
+    tmp text, we need to send/check ping/pong only 
+    every N times this fction is called*/ 
+    if(nb_chk>4)
+    {
+        nb_chk=0;
+        if(FM_connected)
         {
-            FM_connected=0;
-            nbPingSend=0;
-            inHold=0;
-            printk("[FM Remote] disconnected\n");
+            nbPingSend++;
+            if(nbPingSend>MAX_PING)
+            {
+                /* we didn't get pong answer */
+                FM_connected=0;
+                nbPingSend=0;
+                inHold=0;
+                nbGetV=0;
+                if(fmRemote_tmr.trigger==1)
+                    tmr_stop(&fmRemote_tmr);
+                printk("[FM Remote] disconnected\n");
+            }
         }
-     }
-     uart_out('v',FM_REMOTE_UART);
+        else
+        {
+            /*not connected yet */
+            if(nbGetV>1)
+            {
+                /* we received enough pong (V)
+                => initial call, going to connected state*/
+                cmd=0;
+                fm_index=0;
+                FM_connected=1;
+                nbPingSend=0;
+                inHold=0;   
+                nbGetV=0;
+                FM_do_ini_call();   
+                printk("[FM Remote] connected\n");
+            }
+            nbPingSend++;
+            if(nbPingSend>2)
+            {
+                /*we've received a least 1 char from remote,
+                but not enough pong (V)
+                => stop sending ping (v) until next char*/ 
+                nbPingSend=0;
+                if(fmRemote_tmr.trigger==1)
+                    tmr_stop(&fmRemote_tmr);
+                nbGetV=0;
+            }
+        }
+        uart_out('v',FM_REMOTE_UART);
+    }
+    else
+        nb_chk++;
 }
 
 void FM_enable(void)
@@ -626,14 +679,16 @@ void FM_enable(void)
     /* initiale state */
     
     FM_connected=0;
-    
+    nbGetV=0;
+    nb_chk=0;
     irq_changeHandler(UART_IRQ_NUM(FM_REMOTE_UART),fm_remote_INT);
     /* clear uart buffer in */
     while(uart_in(&c,FM_REMOTE_UART)) /*nothing*/;
-    irq_enable(UART_IRQ_NUM(FM_REMOTE_UART));
     
-    /* launch fm remote tmr */
-    tmr_start(&fmRemote_tmr);
+    /*trying to see if remote is already here*/
+    uart_out('v',FM_REMOTE_UART);
+    mdelay(5);
+    irq_enable(UART_IRQ_NUM(FM_REMOTE_UART));
 }
 
 void FM_disable(void)
@@ -670,4 +725,40 @@ void FM_init(void)
     FM_put_iniTxt();    
     contrast=0x00;
     printk("[init] fm remote\n");
+}
+
+
+/***************************************
+* Test function to show in loop all icons
+****************************************/
+void test_icons(void)
+{
+    static int count=0;
+    static int icon_num=0;
+    count++;
+    if(count > 20)
+    {
+        count=0;
+        bat_state++;
+        if(bat_state==5)
+            bat_state=0;
+        vol_state++;
+        if(vol_state==7)
+            vol_state=0;
+        
+        if(icon_num==0)
+        {
+            FMClearIcon(0x4,icons);
+        }
+        else
+        {
+            FMClearIcon(icon_num-1,icons);
+        }
+            
+        FMSetIcon(icon_num,icons);
+        icon_num++;
+        if(icon_num==5)
+            icon_num=0;
+        FM_do_setIcon();
+    }    
 }
