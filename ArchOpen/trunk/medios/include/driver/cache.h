@@ -27,6 +27,7 @@
 void cache_clean();
 void cache_enable(int mode, bool enable);
 void cache_invalidate(int mode);
+void cache_invalidateRange(int mode, void * start,int size);
 bool cache_enabled(int mode);
 
 #endif

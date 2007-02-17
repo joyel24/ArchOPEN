@@ -38,6 +38,17 @@ void cache_invalidate(int mode){
     CACHE_INVALIDATE(mode);
 }
 
+void cache_invalidateRange(int mode, void * start,int size){
+    int startMVA,endMVA,i;
+
+    startMVA=(unsigned int)start & 0xffffffe0;
+    endMVA=((unsigned int)start+size)& 0xffffffe0;
+
+    for(i=startMVA;i<=endMVA;++i){
+        CACHE_INVALIDATE_ADDRESS(mode,i);
+    }
+}
+
 bool cache_enabled(int mode){
     int status;
 

@@ -15,8 +15,6 @@
 
 #define DMA_BASE           0x30b80
 
-#define DMA_SET_DEV(src,dest) {if(src==1) outw(1,DMA_DEV_SEL); else outw(0,DMA_DEV_SEL);}
-
 #define DMA_SRC_HI         (DMA_BASE+0x08)
 #define DMA_SRC_LO         (DMA_BASE+0x06)
 #define DMA_DEST_HI        (DMA_BASE+0x0C)
@@ -27,5 +25,7 @@
 #define DMA_STATE          (DMA_BASE+0x0E)
 
 #define DMA_SDRAM          0x1
+
+#define DMA_ADDR_FIXED     0x04000000
 
 #endif

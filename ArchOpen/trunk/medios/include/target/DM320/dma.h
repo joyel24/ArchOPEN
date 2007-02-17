@@ -15,14 +15,20 @@
 
 #define DMA_BASE           0x30a54
 
-#define DMA_SRC_HI         (DMA_BASE+0x00)
-#define DMA_SRC_LO         (DMA_BASE+0x02)
-#define DMA_DEST_HI        (DMA_BASE+0x04)
-#define DMA_DEST_LO        (DMA_BASE+0x06)
+#define DMA_AHB_HI         (DMA_BASE+0x00)
+#define DMA_AHB_LO         (DMA_BASE+0x02)
+#define DMA_MTC_HI         (DMA_BASE+0x04)
+#define DMA_MTC_LO         (DMA_BASE+0x06)
 #define DMA_SIZE           (DMA_BASE+0x08)
 #define DMA_DEV_SEL        (DMA_BASE+0x0A)
-#define DMA_START          (DMA_BASE+0x0C)
-#define DMA_STATE          (DMA_BASE+0x0C)
+#define DMA_CONTROL        (DMA_BASE+0x0C)
+
+#define DMA_CTL_AHB2MTC    0
+#define DMA_CTL_MTC2AHB    2
+
+#define DMA_CTL_START      1
+
+#define DMA_ADDR_FIXED     0x80000000
 
 #define DMA_SDRAM          0x5
 

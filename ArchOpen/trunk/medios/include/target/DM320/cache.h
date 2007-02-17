@@ -92,6 +92,19 @@
     }                                                      \
 }
 
+#define CACHE_INVALIDATE_ADDRESS(mode,address) {           \
+    if(mode&CACHE_CODE){                                   \
+        asm("                              \n\
+            mcr p15,0,%0,c7,c5,1           \n\
+        "::"r" (address));                                 \
+    }                                                      \
+    if(mode&CACHE_DATA){                                   \
+        asm("                              \n\
+            mcr p15,0,%0,c7,c14,1          \n\
+        "::"r" (address));                                 \
+    }                                                      \
+}
+
 #define CACHE_STATUS(status) {                             \
     asm("                              \n\
         mrc p15,0,%0,c1,c0,0           \n\

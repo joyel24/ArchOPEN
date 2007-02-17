@@ -22,6 +22,8 @@ void  mem_addPool  (void *buffer, unsigned int len);
 void* malloc       (unsigned int size);
 void* kmalloc      (unsigned int size);
 
+void * calloc      (unsigned int nmemb,unsigned int size);
+
 void* realloc      (void *buffer, unsigned int newsize);
 void* krealloc     (void *buffer, unsigned int newsize);
 

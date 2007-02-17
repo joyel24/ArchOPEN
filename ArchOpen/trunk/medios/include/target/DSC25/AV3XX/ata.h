@@ -16,7 +16,8 @@
 #define DMA_ATA_HD         0x1
 #define DMA_ATA_CF         0x1
 
-#define DMA_ATA_ADDRESS    0x10400000
+#define DMA_ATA_READ_ADDRESS             0x400000
+#define DMA_ATA_WRITE_ADDRESS            0x400000
 
 #define HD_BASE                          0x02400000
 #define CF_BASE                          0x02400000

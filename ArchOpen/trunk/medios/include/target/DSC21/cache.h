@@ -23,6 +23,7 @@
 #define CACHE_DISABLE(mode) {}
 #define CACHE_ENABLE(mode) {}
 #define CACHE_INVALIDATE(mode) {}
+#define CACHE_INVALIDATE_ADDRESS(mode,address) {}
 #define CACHE_STATUS(status) {status=0;}
 
 #endif

@@ -25,10 +25,10 @@
 #include <driver/cpld.h>
 #include <driver/ata.h>
 #include <driver/dma.h>
+#include <driver/cache.h>
 
 #include <fs/disk.h>
 
-//#define USE_DMA
 //#define NO_DMA
 
 int ata_sectorBuffer[SECTOR_SIZE];
@@ -46,8 +46,6 @@ int ata_stopping = 0;
 struct tmr_s ataStop_tmr;
 
 int cur_disk = HD_DISK;
-
-#define CALC_BASE(ADDR)     (((unsigned int)(ADDR))-SDRAM_START)
 
 #define ATA_SELECT_DISK(DISK)   ({ \
     if(DISK==HD_DISK)         \
@@ -130,13 +128,14 @@ int ata_rwData(int disk,unsigned int lba,void * data,int count,int cmd,int use_d
             return 0;
         if(use_dma==ATA_WITH_DMA)
         {
-            if( DMA_RUNNING )
+
+            if(dma_pending())
             {
                 printk("Error dma is still running\n");
                 return -1;
             }
 
-            if((unsigned int)(data) < SDRAM_START)
+            if((unsigned int)(buffer) < SDRAM_START)
             {
                 printk("Error buffer not in SDRAM\n");
                 return -2;
@@ -144,21 +143,25 @@ int ata_rwData(int disk,unsigned int lba,void * data,int count,int cmd,int use_d
 
             if(cmd == ATA_DO_READ || cmd == ATA_DO_IDENT)
             {
-                DMA_SET_SRC(DMA_ATA_ADDRESS);
-                DMA_SET_DEST((CALC_BASE(buffer)));
-                DMA_SET_SIZE(SECTOR_SIZE);
-                DMA_SET_DEV(DMA_ATA,DMA_SDRAM)
+                dma_setup((void *)DMA_ATA_READ_ADDRESS,0,DMA_ATA,true,
+                          buffer,SDRAM_START,DMA_SDRAM,false,
+                          SECTOR_SIZE);
             }
             else
             {
-                DMA_SET_SRC((CALC_BASE(buffer)));
-                DMA_SET_DEST(DMA_ATA_ADDRESS);
-                DMA_SET_SIZE(SECTOR_SIZE);
-                DMA_SET_DEV(DMA_SDRAM,DMA_ATA)
+                dma_setup(buffer,SDRAM_START,DMA_SDRAM,false,
+                          (void *)DMA_ATA_WRITE_ADDRESS,0,DMA_ATA,true,
+                          SECTOR_SIZE);
             }
-            DMA_START_TRANSFER;
 
-            while(DMA_RUNNING) /*nothing*/;
+#ifdef DM320
+            cache_invalidateRange(CACHE_DATA,buffer,SECTOR_SIZE);
+#endif
+
+            dma_start();
+
+            while(dma_pending()) /*nothing*/;
+
         }
         else
         {

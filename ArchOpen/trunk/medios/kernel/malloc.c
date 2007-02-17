@@ -30,6 +30,19 @@ struct bhead *  first_free;
 
 unsigned int totalloc = 0;
 
+void * calloc(unsigned int nmemb,unsigned int size)
+{
+    void * res;
+    
+    res=malloc(nmemb*size);
+
+    if(res!=NULL){
+        memset(res,0,nmemb*size);
+    }
+
+    return res;
+}
+
 /*  malloc  --  Allocate a buffer.  */
 
 void * malloc(unsigned int  size)

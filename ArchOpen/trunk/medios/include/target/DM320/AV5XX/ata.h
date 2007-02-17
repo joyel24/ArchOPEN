@@ -18,7 +18,8 @@
 #define DMA_ATA_HD         0x3
 #define DMA_ATA_CF         0x3
 
-#define DMA_ATA_ADDRESS    0x800000a0
+#define DMA_ATA_READ_ADDRESS             0xa0
+#define DMA_ATA_WRITE_ADDRESS            0x20
 
 #define HD_BASE                          0x50000000
 #define CF_BASE                          0x50000000

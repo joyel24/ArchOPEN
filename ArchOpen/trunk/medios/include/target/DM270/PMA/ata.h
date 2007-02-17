@@ -18,7 +18,8 @@
 #define DMA_ATA_HD         0x3
 #define DMA_ATA_CF         0x3
 
-#define DMA_ATA_ADDRESS    0x10000020
+#define DMA_ATA_READ_ADDRESS             0x20
+#define DMA_ATA_WRITE_ADDRESS            0x20
 
 #define HD_BASE                          0x018BFFD0            // Virtual CPLD for ATA.
 #define CF_BASE                          0x018BFFD0

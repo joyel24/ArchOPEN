@@ -26,4 +26,6 @@
 
 #define DMA_SDRAM          0x5
 
+#define DMA_ADDR_FIXED     0x10000000
+
 #endif

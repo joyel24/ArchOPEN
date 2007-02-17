@@ -50,6 +50,8 @@
     }                                                                          \
 }
 
+#define CACHE_INVALIDATE_ADDRESS(mode,address) {}
+
 #define CACHE_STATUS(status) {                                                 \
     status=inw(CACHE_SETUP);                                                   \
 }
