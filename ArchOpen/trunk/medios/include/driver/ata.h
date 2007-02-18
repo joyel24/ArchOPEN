@@ -14,6 +14,7 @@
 #define __ATA_H
 
 #include <kernel/irq.h>
+#include <kernel/thread.h>
 
 #include <driver/hardware.h>
 
@@ -21,6 +22,9 @@
 
 #define IDE_CMD_READ_SECTORS              0x20
 #define IDE_CMD_WRITE_SECTORS             0x30
+#define IDE_CMD_READ_MULTIPLE_SECTORS     0xc4
+#define IDE_CMD_WRITE_MULTIPLE_SECTORS    0xc5
+#define IDE_SET_MULTIPLE_MODE             0xc6
 #define IDE_CMD_IDENTIFY                  0xec
 #define IDE_CMD_SLEEP                     0xe6
 
@@ -61,7 +65,18 @@
 #define IDE_COMMAND                       (cur_disk==HD_DISK?HD_COMMAND:CF_COMMAND)
 #define IDE_ALTSTATUS                     (cur_disk==HD_DISK?HD_ALTSTATUS:CF_ALTSTATUS)
 
-int  ata_rwData           (int disk,unsigned int lba,void * data,int count,int xfer_dir,int use_dma);
+struct ata_cmd {
+    int disk;
+    unsigned int lba;
+    void * data;
+    int count;
+    int cmd;
+    int use_dma;
+    THREAD_INFO * cur_thread;
+    int * ret_val;
+};
+
+int  ata_rwData           (int disk,unsigned int lba,void * data,int count,int cmd,int use_dma);
 
 int  ata_waitForXfer      (void);
 int  ata_waitForReady     (void);

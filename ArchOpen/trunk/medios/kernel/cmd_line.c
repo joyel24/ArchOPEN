@@ -49,8 +49,8 @@ int cmd_line_init_ok;
 
 void cmd_line_INT(int irq_num,struct pt_regs * regs)
 {
-    if(!cmdLineThread->enable)
-        cmdLineThread->enable=1;    
+    if(cmdLineThread->state!=THREAD_STATE_ENABLE)
+        cmdLineThread->state=THREAD_STATE_ENABLE;    
 }
 
 void cmd_line_thread(void)
@@ -232,7 +232,7 @@ void init_cmd_line(void)
     cur_cmd[0]='\0';
 
     
-    pid=thread_startFct(&cmdLineThread,cmd_line_thread,"cmd line",THREAD_DISABLE_STATE,PRIO_HIGH);
+    pid=thread_startFct(&cmdLineThread,cmd_line_thread,"cmd line",THREAD_STATE_DISABLE,PRIO_HIGH);
     
     if(pid<0)
     {

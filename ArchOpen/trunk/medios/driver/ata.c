@@ -19,6 +19,7 @@
 #include <kernel/delay.h>
 #include <kernel/timer.h>
 #include <kernel/irq.h>
+#include <kernel/pipes.h>
 
 #include <driver/hardware.h>
 #include <driver/energy.h>
@@ -33,19 +34,16 @@
 
 int ata_sectorBuffer[SECTOR_SIZE];
 
-int av_cmd_array[]= {
-    IDE_CMD_READ_SECTORS,
-    IDE_CMD_WRITE_SECTORS
-};
-
 extern int hd_sleep_state;
 
 extern struct tmr_s hd_timer;
 
 int ata_stopping = 0;
+THREAD_INFO * ata_thread;
 struct tmr_s ataStop_tmr;
 
 int cur_disk = HD_DISK;
+struct pipe cmd_list;
 
 #define ATA_SELECT_DISK(DISK)   ({ \
     if(DISK==HD_DISK)         \
@@ -64,143 +62,264 @@ int cur_disk = HD_DISK;
 
 int ata_rwData(int disk,unsigned int lba,void * data,int count,int cmd,int use_dma)
 {
-    int i,j;
-    bool unaligned=((unsigned long)data)&0x03;
-    void * buffer=data;
-
-    //printk("RW (cmd=%d) disk %d, lba=%x,bufer @%x, nb=%x\n",cmd,disk,lba,data,count);
+    struct ata_cmd new_cmd;
+    int ret_val;
+    new_cmd.disk=disk;
+    new_cmd.lba=lba;
+    new_cmd.data=data;
+    new_cmd.count=count;
+    new_cmd.cmd=cmd;
+    new_cmd.use_dma=use_dma;
+    new_cmd.cur_thread=threadCurrent;
+    new_cmd.ret_val=&ret_val;
     
-    /* use a temporary buffer for unaligned read or writes */
-    if (unaligned)
+    if(ata_thread->state==THREAD_STATE_DISABLE)
     {
-        buffer=ata_sectorBuffer;
+        __cli();
+        pipeWrite(&cmd_list,&new_cmd,sizeof(struct ata_cmd));
+        threadCurrent->state=THREAD_BLOCKED_BY_ATA;
+        ata_thread->state=THREAD_STATE_ENABLE;
+#warning need something better to force launching ata_thread        
+        //ata_thread->idleCnt=100;
+        __sti();
+        yield();        
     }
+    else
+    {
+        __cli();
+        pipeWrite(&cmd_list,&new_cmd,sizeof(struct ata_cmd));
+        threadCurrent->state=THREAD_BLOCKED_BY_ATA;
+        __sti();
+        yield();    
+    }
+    return ret_val;
+}
 
-    /* select the right disk */
-    ATA_SELECT_DISK(disk);
+void ata_rwThread(void)
+{
+    int i,j;
+    bool unaligned;
+    void * buffer;
+    int xfer_size;
+    int use_multiple;
+    int block_size;
+    int ret_val;
+    struct ata_cmd cur_cmd;
+    
+    printk("Starting ata thread\n");
+    
+    while(1)
+    {
+        while(cmd_list.nIN==cmd_list.nOUT)
+        {
+            __cli();
+            threadCurrent->state=THREAD_STATE_DISABLE;
+            __sti();
+            yield();
+        }
+       
+        __cli();
+        pipeRead(&cmd_list,&cur_cmd,sizeof(struct ata_cmd));
+        __sti();
         
-    /* wait drive ready */
-    if(ata_waitForReady()<0)
-        return -1;
-    /* send read/write cmd */
-    switch(cmd)
-    {
-        case ATA_DO_IDENT:
-            ATA_OUTB(0,IDE_SELECT); /* send ident. cmd */
-            ATA_OUTB(IDE_CMD_IDENTIFY,IDE_COMMAND);
-            /*ata_cmd->count=1;
-            ata_cmd->xfer_dir=ATA_DO_READ;
-            ata_cmd->use_dma=ATA_WITH_DMA;*/
-            break;
-
-        case ATA_DO_READ:
-        case ATA_DO_WRITE:
-            ATA_OUTB(lba,IDE_SECTOR);
-            ATA_OUTB(lba>>8,IDE_LCYL);
-            ATA_OUTB(lba>>16,IDE_HCYL);
-            ATA_OUTB((lba>>24) | IDE_SEL_LBA,IDE_SELECT);
-            ATA_OUTB(count,IDE_NSECTOR);
-            ATA_OUTB(av_cmd_array[cmd],IDE_COMMAND);
-            break;
-    }
-#ifdef PMA
-    outb(OMAP_HD_CMD_REQUEST,OMAP_REQUEST_BASE);
-    while(inb(OMAP_REQUEST_BASE));
-#endif
-   
-#ifdef NO_DMA
-    use_dma=ATA_NO_DMA;
-#endif
-
-    if(((unsigned int)(data) < SDRAM_START) && use_dma==ATA_WITH_DMA)
-    {
-        //printk("Destination buffer not in SDRAM => no DMA\n");
-        use_dma=ATA_NO_DMA;
-    }
-    for(i=0;i<count;i++)
-    {
+        /*printk("RW (cmd=%d) disk %d, lba=%x,bufer @%x, nb=%x thread=%d\n",cur_cmd.cmd,cur_cmd.disk,
+               cur_cmd.lba,cur_cmd.data,cur_cmd.count,cur_cmd.cur_thread->pid);*/
+        
+        block_size=SECTOR_SIZE;
+        unaligned=((unsigned long)cur_cmd.data)&0x03;
+        buffer=cur_cmd.data;
+        xfer_size=cur_cmd.count;
+        use_multiple=0;
+        
+        /* use a temporary buffer for unaligned read or writes */
         if (unaligned)
         {
-            /* copy data to the temp buffer if unaligned and we're writing*/
-            if(cmd == ATA_DO_WRITE) memcpy(buffer,data+i*SECTOR_SIZE,SECTOR_SIZE);
+            buffer=ata_sectorBuffer;
         }
-        if(ata_waitForXfer()<0)
-            return 0;
-        if(use_dma==ATA_WITH_DMA)
+    
+        if(!unaligned && cur_cmd.cmd==ATA_DO_READ)
         {
-
-            if(dma_pending())
+            use_multiple=1;
+        }
+            
+        /* select the right disk */
+        ATA_SELECT_DISK(cur_cmd.disk);
+            
+        /* wait drive ready */
+        if(ata_waitForReady()<0)
+        {
+            ret_val=-1;
+            goto end;
+        }
+        /* send read/write cmd */
+        switch(cur_cmd.cmd)
+        {
+            case ATA_DO_IDENT:
+                ATA_OUTB(0,IDE_SELECT); /* send ident. cmd */
+                ATA_OUTB(IDE_CMD_IDENTIFY,IDE_COMMAND);
+                block_size=SECTOR_SIZE;
+                break;
+    
+            case ATA_DO_READ:
+                /* change multiple mode setting*/
+                if(use_multiple)
+                {
+                    ATA_OUTB(disk_info[cur_cmd.disk]->multi_sector,IDE_NSECTOR);
+                    ATA_OUTB(IDE_SET_MULTIPLE_MODE,IDE_COMMAND);
+                    ATA_OUTB(0,IDE_SELECT);
+                    if(ata_waitForReady()<0)
+                    {
+                        ret_val=-1;
+                        goto end;
+                    }
+                }
+                ATA_OUTB(cur_cmd.lba,IDE_SECTOR);
+                ATA_OUTB(cur_cmd.lba>>8,IDE_LCYL);
+                ATA_OUTB(cur_cmd.lba>>16,IDE_HCYL);
+                ATA_OUTB((cur_cmd.lba>>24) | IDE_SEL_LBA,IDE_SELECT);
+                ATA_OUTB(cur_cmd.count,IDE_NSECTOR);
+                if(!use_multiple)
+                {
+                    block_size=SECTOR_SIZE;
+                    ATA_OUTB(IDE_CMD_READ_SECTORS,IDE_COMMAND);
+                }
+                else
+                {
+                    block_size=disk_info[cur_cmd.disk]->multi_sector*SECTOR_SIZE;
+                    ATA_OUTB(IDE_CMD_READ_MULTIPLE_SECTORS,IDE_COMMAND);
+                }
+                break;
+            case ATA_DO_WRITE:
+                ATA_OUTB(cur_cmd.lba,IDE_SECTOR);
+                ATA_OUTB(cur_cmd.lba>>8,IDE_LCYL);
+                ATA_OUTB(cur_cmd.lba>>16,IDE_HCYL);
+                ATA_OUTB((cur_cmd.lba>>24) | IDE_SEL_LBA,IDE_SELECT);
+                ATA_OUTB(cur_cmd.count,IDE_NSECTOR);
+                ATA_OUTB(IDE_CMD_WRITE_SECTORS,IDE_COMMAND);
+                block_size=SECTOR_SIZE;
+                break;
+        }
+        
+    #ifdef PMA
+        outb(OMAP_HD_CMD_REQUEST,OMAP_REQUEST_BASE);
+        while(inb(OMAP_REQUEST_BASE));
+    #endif
+    
+    #ifdef NO_DMA
+    cur_cmd.use_dma=ATA_NO_DMA;
+    #endif
+    
+    if(((unsigned int)(cur_cmd.data) < SDRAM_START) && cur_cmd.use_dma==ATA_WITH_DMA)
+        {
+            cur_cmd.use_dma=ATA_NO_DMA;
+        }
+        
+        i=0;
+        while(i<cur_cmd.count)
+        {
+            if (unaligned)
             {
-                printk("Error dma is still running\n");
-                return -1;
+                /* copy data to the temp buffer if unaligned and we're writing*/
+                if(cur_cmd.cmd == ATA_DO_WRITE) memcpy(buffer,cur_cmd.data+i*SECTOR_SIZE,SECTOR_SIZE);
             }
-
-            if((unsigned int)(buffer) < SDRAM_START)
+            if(ata_waitForXfer()<0)
             {
-                printk("Error buffer not in SDRAM\n");
-                return -2;
+                ret_val=0;
+                goto end;
             }
-
-            if(cmd == ATA_DO_READ || cmd == ATA_DO_IDENT)
+            if(use_multiple && xfer_size<disk_info[cur_cmd.disk]->multi_sector)
+                block_size=xfer_size*SECTOR_SIZE;
+            if(cur_cmd.use_dma==ATA_WITH_DMA)
             {
-                dma_setup((void *)DMA_ATA_READ_ADDRESS,0,DMA_ATA,true,
-                          buffer,SDRAM_START,DMA_SDRAM,false,
-                          SECTOR_SIZE);
+    
+                if(dma_pending())
+                {
+                    printk("Error dma is still running\n");
+                    ret_val=-1;
+                    goto end;
+                }
+    
+                if((unsigned int)(buffer) < SDRAM_START)
+                {
+                    printk("Error buffer not in SDRAM\n");
+                    ret_val=-2;
+                    goto end;
+                }
+    
+                if(cur_cmd.cmd == ATA_DO_READ || cur_cmd.cmd == ATA_DO_IDENT)
+                {
+                    dma_setup((void *)DMA_ATA_READ_ADDRESS,0,DMA_ATA,true,
+                            buffer,SDRAM_START,DMA_SDRAM,false,
+                            block_size);
+                }
+                else
+                {
+                    dma_setup(buffer,SDRAM_START,DMA_SDRAM,false,
+                            (void *)DMA_ATA_WRITE_ADDRESS,0,DMA_ATA,true,
+                            block_size);
+                }
+                
+                
+    
+    #ifdef DM320
+                cache_invalidateRange(CACHE_DATA,buffer,SECTOR_SIZE);
+    #endif
+    
+                dma_start();
+                /* ata can't work without irq */
+                __cli();
+                threadCurrent->state=THREAD_BLOCKED_BY_DMA;
+                __sti();
+                yield();
             }
             else
             {
-                dma_setup(buffer,SDRAM_START,DMA_SDRAM,false,
-                          (void *)DMA_ATA_WRITE_ADDRESS,0,DMA_ATA,true,
-                          SECTOR_SIZE);
-            }
-
-#ifdef DM320
-            cache_invalidateRange(CACHE_DATA,buffer,SECTOR_SIZE);
-#endif
-
-            dma_start();
-
-            while(dma_pending()) /*nothing*/;
-
-        }
-        else
-        {
-            if(cmd == ATA_DO_READ || cmd == ATA_DO_IDENT)
-            {
-                for(j=0;j<SECTOR_SIZE;j+=2)
+                if(cur_cmd.cmd == ATA_DO_READ || cur_cmd.cmd == ATA_DO_IDENT)
                 {
-#ifdef PMA
-                    outb(OMAP_HD_READ_REQUEST,OMAP_REQUEST_BASE);
-                    while(inb(OMAP_REQUEST_BASE));
-#endif
-                    outw(ATA_INW(IDE_DATA),buffer+j);
+                    for(j=0;j<block_size;j+=2)
+                    {
+    #ifdef PMA
+                        outb(OMAP_HD_READ_REQUEST,OMAP_REQUEST_BASE);
+                        while(inb(OMAP_REQUEST_BASE));
+    #endif
+                        outw(ATA_INW(IDE_DATA),buffer+j);
+                    }
                 }
+                else
+                {
+                    for(j=0;j<block_size;j+=2)
+                    {
+                        ATA_OUTW(inw(buffer+j),IDE_DATA);
+    #ifdef PMA
+                        outb(OMAP_HD_WRITE_REQUEST,OMAP_REQUEST_BASE);
+                        while(inb(OMAP_REQUEST_BASE));
+    #endif
+                    }
+                }
+            }
+    
+            
+            
+            if (unaligned)
+            {
+                /* copy temp data to the actual buffer if unaligned and we're reading*/
+                if(cur_cmd.cmd == ATA_DO_READ || cur_cmd.cmd == ATA_DO_IDENT) 
+                    memcpy(cur_cmd.data+i*SECTOR_SIZE,buffer,SECTOR_SIZE);
             }
             else
             {
-                for(j=0;j<SECTOR_SIZE;j+=2)
-                {
-                    ATA_OUTW(inw(buffer+j),IDE_DATA);
-#ifdef PMA
-                    outb(OMAP_HD_WRITE_REQUEST,OMAP_REQUEST_BASE);
-                    while(inb(OMAP_REQUEST_BASE));
-#endif
-                }
+                /* else increment buffer pos */
+                buffer+=block_size;
             }
+            i+=disk_info[cur_cmd.disk]->multi_sector;
+            if(i>cur_cmd.count) i=cur_cmd.count;
+            xfer_size-=disk_info[cur_cmd.disk]->multi_sector;
         }
-
-        if (unaligned)
-        {
-            /* copy temp data to the actual buffer if unaligned and we're reading*/
-            if(cmd == ATA_DO_READ || cmd == ATA_DO_IDENT) memcpy(data+i*SECTOR_SIZE,buffer,SECTOR_SIZE);
-        }
-        else
-        {
-            /* else increment buffer pos */
-            buffer+=SECTOR_SIZE;
-        }
+        ret_val=0;
+end:
+        *(cur_cmd.ret_val)=ret_val;
+        cur_cmd.cur_thread->state=THREAD_STATE_ENABLE;
     }
-    return 0;
 }
 
 int ata_sleep(void)
@@ -373,11 +492,16 @@ void ata_init(void)
     ata_stopping = 0;
     cur_disk = HD_DISK;
 
+    cmd_list.nIN=cmd_list.nOUT=0;
+    
+    thread_startFct(&ata_thread,ata_rwThread,"ATA rw",THREAD_STATE_ENABLE,PRIO_HIGH);
+    
     tmr_setup(&ataStop_tmr,"ata Stop");
     ataStop_tmr.action   = ata_stopTmrFct;
     ataStop_tmr.freeRun  = 1;
     ataStop_tmr.stdDelay = 1; /* 1 tick delay */
-
+    irq_enable(IRQ_IDE);
+    
     ata_reset();
     printk("[ATA init] done\n");
 }
@@ -389,6 +513,10 @@ void ata_reset(void)
 
 void ide_intAction(int irq,struct pt_regs * regs)
 {
-    //arch_ide_intAction(irq,regs);
+    if(ata_thread->state==THREAD_BLOCKED_BY_DMA)
+    {
+        ata_thread->state=THREAD_STATE_ENABLE;
+        threadCurrent=ata_thread;
+    }
 }
 

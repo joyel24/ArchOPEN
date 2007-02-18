@@ -28,6 +28,7 @@ MED_RET_T time_archGet(struct med_tm * val_time)
     MED_RET_T ret_val=rtc_getTime(val_time);
     if(ret_val != MED_OK)
         return -ret_val;
+    val_time->tm_year+=4;
     time_rtc2time_Offset(val_time,offset);
     return MED_OK;
 }
@@ -40,6 +41,7 @@ MED_RET_T time_archSet(struct med_tm * new_time)
     memcpy(&mod_time,new_time,sizeof(struct med_tm));
     
     MED_RET_T ret_val=rtc_getTime(&tmp_time);
+    
     if(ret_val != MED_OK)
         printk("Can't get cur rtc time\n");
     printk("RTC time: ");
@@ -53,6 +55,7 @@ MED_RET_T time_archSet(struct med_tm * new_time)
     printk("\n");
     
     time_time2rtc_Offset(&mod_time,offset);
+    mod_time.tm_year-=4;
     printk("New rtc: ");
     time_print(&mod_time);
     printk("\n");

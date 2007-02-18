@@ -16,13 +16,12 @@
 #include <kernel/kernel.h>
 #include <kernel/malloc.h>
 #include <kernel/irq.h>
-
 #include <kernel/thread.h>
 #include <kernel/swi.h>
-
 #include <kernel/malloc.h>
 
 #include <driver/hardware.h>
+#include <driver/ata.h>
 
 #define SYS_STACK_TOP ((void*)IRAM_SIZE-SVC_STACK_SIZE)
 #define SYS_STACK_BTM ((void*)((char*)&_iram_end + 0x10))
@@ -74,8 +73,8 @@ MED_RET_T thread_init(void(*fct)(void))
 
     threadSysStack=sysThread;
 
-    sysThread->enable=1;
-
+    sysThread->state=THREAD_STATE_ENABLE;
+    
     retval=thread_create(&idleThread,(void*)thread_idleFct,(void*)thread_exit,NULL,NULL,0x100,THREAD_USE_OTHER_STACK,
         NULL,PRIO_HIGH,"IDLE",(unsigned long)NULL,(unsigned long)NULL);
     if(retval<0)
@@ -87,7 +86,7 @@ MED_RET_T thread_init(void(*fct)(void))
         printk("Idle thread created with pid %d\n",retval);
 
     /* idleThread is disable*/
-    idleThread->enable=0;
+    idleThread->state=THREAD_STATE_ENABLE;
 
     return MED_OK;
 }
@@ -115,8 +114,8 @@ void thread_startMed(void * entry_fct,void * code_malloc,void * iram_top,char * 
         kfree(code_malloc);
     }
     __cli();
-    sysThread->enable=0;
-    med_thread->enable=1;
+    sysThread->state=THREAD_STATE_DISABLE;
+    med_thread->state=THREAD_STATE_ENABLE;
     yield();
     __sti();
 }
@@ -135,7 +134,7 @@ int thread_startFct(THREAD_INFO ** ret_thread,void * entry_fct,char * name,int e
     printk("Fct thread created with pid %d\n",pid);
     if(ret_thread)
         *ret_thread=fct_thread;
-    fct_thread->enable=enable;
+    fct_thread->state=enable==THREAD_STATE_ENABLE?THREAD_STATE_ENABLE:THREAD_STATE_DISABLE;
     return pid;
 }
 
@@ -209,7 +208,7 @@ int thread_create(THREAD_INFO ** ret_thread,void * entry_fct,void * exit_fct,
     newThread->name[THREAD_NAME_SIZE-1]=0;
 /* flag / data */
     newThread->pid=pid++;
-    newThread->enable = 0;
+    newThread->state = THREAD_STATE_DISABLE;
     newThread->codeMalloc=code_malloc;
 /* stack */
     newThread->stackSize=stack_size;
@@ -297,7 +296,7 @@ MED_RET_T thread_remove(THREAD_INFO * thread)
         thread->nxt=NULL;
         thread->prev=NULL;
         threadCurrent=idleThread;
-        idleThread->enable=1;
+        idleThread->state=THREAD_STATE_ENABLE;
     }
     else
     {
@@ -371,7 +370,7 @@ int thread_doKill(THREAD_INFO * thread)
     if(thread->codeMalloc)
     {
         kfree(thread->codeMalloc);
-        sysThread->enable=1; /* be sure to enable KERNEL thread */
+        sysThread->state=THREAD_STATE_ENABLE; /* be sure to enable KERNEL thread */
         threadSysStack = NULL;
     }
     kfree(thread);
@@ -399,8 +398,13 @@ MED_RET_T thread_enable(int pid)
         printk("Can't find thread %d\n",pid);
         return -MED_ENOENT;
     }
+    if(ptr->state!=THREAD_STATE_DISABLE)
+    {
+        printk("Thread %d is not disable (%x)\n",pid,ptr->state);
+        return -MED_ENOENT;
+    }
     __cli();
-    ptr->enable=1;
+    ptr->state=THREAD_STATE_ENABLE;
     __sti();
     return MED_OK;
 }
@@ -416,8 +420,13 @@ MED_RET_T thread_disable(int pid)
         printk("Can't find thread %d\n",pid);
         return -MED_ENOENT;
     }
+    if(ptr->state!=THREAD_STATE_ENABLE)
+    {
+        printk("Thread %d is not enable (%x)\n",pid,ptr->state);
+        return -MED_ENOENT;
+    }
     __cli();
-    ptr->enable=0;
+    ptr->state=THREAD_STATE_DISABLE;
     __sti();
     return MED_OK;
 }
@@ -458,8 +467,9 @@ __IRAM_CODE void thread_nxt(void)
     int topScore=0;
     THREAD_INFO * topThread=NULL;
     int has_top=0;
+    int finished=0;
 
-    idleThread->enable=0;
+    idleThread->state=THREAD_STATE_DISABLE;
 
     if(threadCurrent==NULL)
     {
@@ -483,31 +493,33 @@ RQ: idleThread never considered as it is always disable here
 ******************************************/
     do
     {
-        if(ptr->enable)
+        switch(ptr->state)
         {
-            if(!has_top)
-            {
-                has_top=1;
-                topScore=COMPUTE_SCORE(ptr);
-                topThread=ptr;
-            }
-            else
-            {
-                if(topScore<=COMPUTE_SCORE(ptr))
+            case THREAD_STATE_ENABLE:
+                if(!has_top)
                 {
+                    has_top=1;
                     topScore=COMPUTE_SCORE(ptr);
                     topThread=ptr;
                 }
-            }
-            ptr->idleCnt++;
+                else
+                {
+                    if(topScore<=COMPUTE_SCORE(ptr))
+                    {
+                        topScore=COMPUTE_SCORE(ptr);
+                        topThread=ptr;
+                    }
+                }
+                ptr->idleCnt++;
+                break;
         }
         ptr=ptr->nxt;
-    } while(ptr != threadCurrent);
+    } while(ptr != threadCurrent && !finished);
 
     if(!has_top)   /* no thread found */
     {
         threadCurrent = idleThread;
-        idleThread->enable=1;
+        idleThread->state=THREAD_STATE_ENABLE;
         idleThread->tickCnt++;
     }
     else
@@ -692,8 +704,8 @@ void thread_ps(void)
         printk("Thread list:\n");
         do
         {
-            printk("%s - pid %d - %s - Tick cnt %d\n",ptr->name!=NULL?ptr->name:"NO Name",ptr->pid,
-            ptr->enable?"enable":"disable",ptr->tickCnt);
+            printk("%s - pid %d - %s (state=%x) - Tick cnt %d\n",ptr->name!=NULL?ptr->name:"NO Name",ptr->pid,
+                   ptr->state==THREAD_STATE_ENABLE?"enable":"disable",ptr->state,ptr->tickCnt);
             ptr=ptr->nxt;
         } while(ptr!=threadCurrent);
     }
@@ -740,7 +752,8 @@ void thread_printInfo(THREAD_INFO * thread)
 {
     if(thread)
     {
-        printk("Pid: %d : %s is %s\n",thread->pid,thread->name,thread->enable?"Enable":"Disable");
+        printk("Pid: %d : %s is %s (state %x)\n",thread->pid,thread->name,
+               thread->state==THREAD_STATE_ENABLE?"enable":"disable",thread->state);
         printk("Tick cnt=%d,\n",thread->tickCnt);
         if(thread->useSysStack)
         {

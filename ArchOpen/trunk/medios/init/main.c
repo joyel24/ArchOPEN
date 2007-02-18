@@ -79,19 +79,87 @@ extern int app_main(int argc, char * argv[]);
 unsigned int _svc_IniStack = IRAM_SIZE;
 unsigned int _sys_IniStack = IRAM_SIZE-SVC_STACK_SIZE;
 
-void tst_dump(void)
+#if 0
+void tst_1(void)
 {
-    int fd=open("/flash.bin",O_RDWR|O_CREAT);
-    int nb;
+    int fd=open("/test1.bin",O_RDWR);
+    int ok=1;
+    int nb=0;
+    char buffer[512];
+    printk("Thread 1 file open\n");
     if(fd<0)
     {
         printk("Error opening file\n");
         return;
     }
-    nb=write(fd,(void*)(0x100000),0x200000);
-    printk("wrote: %x\n",nb);
+    while(ok)
+    {
+        nb=read(fd,buffer,0x200);
+        printk("Thread 1 read: %d\n",nb);
+        if(nb!=0x200) ok=0;
+    }
     close(fd);
+    printk("Thread 1 file closed\n");
 }
+
+void tst_2(void)
+{
+    int fd=open("/test2.bin",O_RDWR);
+    int ok=1;
+    int nb=0;
+    char buffer[512];
+    printk("Thread 2 file open\n");
+    if(fd<0)
+    {
+        printk("Error opening file\n");
+        return;
+    }
+    while(ok)
+    {
+        nb=read(fd,buffer,0x200);
+        printk("Thread 2 read: %d\n",nb);
+        if(nb!=0x200) ok=0;
+    }
+    close(fd);
+    printk("Thread 2 file closed\n");
+}
+
+void tst_3(void)
+{
+    int fd=open("/test3.bin",O_RDWR);
+    int ok=1;
+    int nb=0;
+    char buffer[512];
+    printk("Thread 3 file open\n");
+    if(fd<0)
+    {
+        printk("Error opening file\n");
+        return;
+    }
+    while(ok)
+    {
+        nb=read(fd,buffer,0x200);
+        printk("Thread 3 read: %d\n",nb);
+        if(nb!=0x200) ok=0;
+    }
+    close(fd);
+    printk("Thread 3 file closed\n");
+}
+
+void tst_fct(void)
+{
+    THREAD_INFO *th1,*th2,*th3;
+    int pid1,pid2,pid3;
+    pid1=thread_startFct(&th1,tst_1,"Test1",THREAD_STATE_DISABLE,PRIO_MED);
+    pid2=thread_startFct(&th2,tst_2,"Test2",THREAD_STATE_DISABLE,PRIO_MED);
+    pid3=thread_startFct(&th3,tst_3,"Test3",THREAD_STATE_DISABLE,PRIO_MED);
+    thread_ps();
+    thread_enable(pid1);
+    thread_enable(pid2);
+    thread_enable(pid3);
+    while(1) /*nothing*/;
+}
+#endif
 
 void kernel_thread(void)
 {
@@ -100,6 +168,14 @@ void kernel_thread(void)
 #endif
   
     printk("[SYS thread] starting\n");
+    
+    if(disk_init()!=MED_OK)
+    {
+        printk("[init] ------ Halting\n");
+        for(;;);
+    }
+    
+    energy_loadPref();
     
     /* boot info */
     printk("SP: %08x\n",get_sp());
@@ -112,8 +188,7 @@ void kernel_thread(void)
     reload_firmware();
 #endif
 
-    //tst_dump();
-
+    //FM_enable();
     shell_main();
 
     printk("[SYS thread] error: back to main()\n");
@@ -204,14 +279,7 @@ void kernel_start (void)
 
     ata_init();
     vfs_init();
-    if(disk_init()!=MED_OK)
-    {
-        printk("[init] ------ Halting\n");
-        for(;;);
-    }
-    
-    energy_loadPref();
-    
+        
 //    sound_init();
 #ifdef HAVE_MAS_SOUND
    mas_init();

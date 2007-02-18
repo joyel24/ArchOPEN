@@ -87,6 +87,8 @@ void processKey(int key)
 {
     int i;
     
+    printk("key press: %x\n",key);
+    
     /* special process for HOLD key when no event is associated with it
         => changing only the inHold variable */    
     if(key & 0x80 && key_evt_array[1][0]==-1)
@@ -612,7 +614,7 @@ void fmRemote_chk(void)
     /* timer is running at a higher freq to manage
     tmp text, we need to send/check ping/pong only 
     every N times this fction is called*/ 
-    if(nb_chk>4)
+    if(nb_chk>2)
     {
         nb_chk=0;
         if(FM_connected)

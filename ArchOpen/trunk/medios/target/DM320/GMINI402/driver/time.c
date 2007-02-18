@@ -24,6 +24,7 @@ MED_RET_T time_archGet(struct med_tm * val_time)
     MED_RET_T ret_val=rtc_getTime(val_time);
     if(ret_val != MED_OK)
         return -ret_val;
+    val_time->tm_year+=5;
     time_rtc2time_Offset(val_time,offset);
     return MED_OK;
 }

@@ -201,13 +201,11 @@ void time_calcOffset(struct med_tm * val_time,int offset_val)
 
 void time_time2rtc_Offset(struct med_tm * val_time,int offset_val)
 {
-    time_calcOffset(val_time,-offset_val);
-    val_time->tm_year-=4;
+    time_calcOffset(val_time,-offset_val);    
 }
 
 void time_rtc2time_Offset(struct med_tm * val_time,int offset_val)
-{
-    val_time->tm_year+=4;
+{    
     time_calcOffset(val_time,offset_val);
 }
 

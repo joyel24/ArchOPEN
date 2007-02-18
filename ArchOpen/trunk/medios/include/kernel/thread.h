@@ -22,8 +22,13 @@
 #define THREAD_NO_FORCE  0
 #define THREAD_FORCE     1
 
-#define THREAD_DISABLE_STATE  0
-#define THREAD_ENABLE_STATE   1
+#define THREAD_STATE_ENABLE      0
+#define THREAD_STATE_DISABLE     1
+#define THREAD_BLOCKED_BY_ATA      2
+#define THREAD_BLOCKED_BY_DMA      3
+
+/*#define THREAD_DISABLE_STATE  0
+#define THREAD_ENABLE_STATE   1*/
 
 #define THREAD_USE_SYS_STACK   1
 #define THREAD_USE_OTHER_STACK 0
@@ -42,12 +47,12 @@
 #define COMPUTE_SCORE(THREAD_PTR) (THREAD_PTR->idleCnt-THREAD_PTR->priority)
 
 /* basic function accessed from thread */
-#define THREAD_DISABLE() {if(threadCurrent) { __cli(); threadCurrent->enable=0; __sti(); }}
-#define THREAD_ENABLE()  {if(threadCurrent) { __cli(); threadCurrent->enable=1; __sti(); }}
+#define THREAD_DISABLE() {if(threadCurrent) { __cli(); threadCurrent->state=THREAD_STATE_DISABLE; __sti(); }}
+#define THREAD_ENABLE()  {if(threadCurrent) { __cli(); threadCurrent->state=THREAD_STATE_ENABLE; __sti(); }}
 #define THREAD_PAUSE() {\
     if(threadCurrent) {\
         __cli(); \
-        threadCurrent->enable=0; \
+        threadCurrent->state=THREAD_STATE_DISABLE; \
         __sti(); \
         yield(); \
     }\
@@ -83,7 +88,7 @@ typedef struct thread_info {
     int priority;
 
     /* flags */
-    int enable;
+    int state;
     int useSysStack;
 
     /* linkage */

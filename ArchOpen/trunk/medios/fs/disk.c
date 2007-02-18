@@ -229,14 +229,16 @@ struct hd_info_s * disk_readInfo(int disk,int just_print)
     strncpy(disk_info->model, &sector[54], 40);
     dd_swapChar(disk_info->model,40);
     dd_findEnd(disk_info->model,40);
-    disk_info->multi_sector = sector[47] & 0xff ;
+    disk_info->multi_sector = sector[94] & 0xff ;
     disk_info->partition_list=NULL;
+    
         
     printk("[DISK] reading %s info\n     %s\n     %s|%s\n     %d sectors per ata request\n",
                 disk_name[disk],
                 disk_info->model,
                 disk_info->firmware,disk_info->serial,disk_info->multi_sector);
                 
+    //print_data(sector,512);
     
     /* Read MBR */
     if(ata_rwData(disk,0,sector,1,ATA_DO_READ,ATA_WITH_DMA)<0) /* read 1 sector at LBA 0 */
