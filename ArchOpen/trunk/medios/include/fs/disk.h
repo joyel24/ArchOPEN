@@ -48,6 +48,7 @@ struct hd_info_s {
 	char model [41];
     unsigned long size;
     int multi_sector;
+    int has_multi_sector;
     struct partition_info * partition_list;
 };
 

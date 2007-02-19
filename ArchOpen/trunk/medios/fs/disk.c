@@ -229,14 +229,15 @@ struct hd_info_s * disk_readInfo(int disk,int just_print)
     strncpy(disk_info->model, &sector[54], 40);
     dd_swapChar(disk_info->model,40);
     dd_findEnd(disk_info->model,40);
-    disk_info->multi_sector = sector[94] & 0xff ;
+    disk_info->multi_sector = sector[94] & 0x7f ;
     disk_info->partition_list=NULL;
-    
+    disk_info->has_multi_sector=(sector[94] & 0x80)==1?1:0;
         
-    printk("[DISK] reading %s info\n     %s\n     %s|%s\n     %d sectors per ata request\n",
+    printk("[DISK] reading %s info\n     %s\n     %s|%s\n     %d sectors per ata request (%s)\n",
                 disk_name[disk],
                 disk_info->model,
-                disk_info->firmware,disk_info->serial,disk_info->multi_sector);
+                disk_info->firmware,disk_info->serial,disk_info->multi_sector,
+                disk_info->has_multi_sector?"Valid":"Not Valid");
                 
     //print_data(sector,512);
     

@@ -123,13 +123,12 @@ void thread_loadContext(void);
 
 void thread_nxt(void);
 
-
-
 MED_RET_T thread_enable(int pid);
 MED_RET_T thread_disable(int pid);
 MED_RET_T thread_nice(THREAD_INFO * ptr,int prio);
 
 unsigned long yield(void);
+unsigned long yieldTo(THREAD_INFO * nxtThread);
 
 void thread_startMed(void * entry_fct,void * code_malloc,void * iram_top,char * name,int argc,char ** argv);
 int thread_startFct(THREAD_INFO ** ret_thread,void * entry_fct,char * name,int enable,int prio);

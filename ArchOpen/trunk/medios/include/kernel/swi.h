@@ -31,7 +31,7 @@ struct user_fct_t {
 #define nYIELD          0x0
 #define nAPI_INIAPI     0x1
 #define nTHREAD_NXT     0x2
-
+#define nYIELD_TO       0x3
 
     
 #endif

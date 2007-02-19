@@ -63,6 +63,7 @@ struct pipe cmd_list;
 int ata_rwData(int disk,unsigned int lba,void * data,int count,int cmd,int use_dma)
 {
     struct ata_cmd new_cmd;
+    struct ata_cmd * ptr;
     int ret_val;
     new_cmd.disk=disk;
     new_cmd.lba=lba;
@@ -73,21 +74,21 @@ int ata_rwData(int disk,unsigned int lba,void * data,int count,int cmd,int use_d
     new_cmd.cur_thread=threadCurrent;
     new_cmd.ret_val=&ret_val;
     
+    ptr=&new_cmd;
+    
     if(ata_thread->state==THREAD_STATE_DISABLE)
     {
         __cli();
-        pipeWrite(&cmd_list,&new_cmd,sizeof(struct ata_cmd));
+        pipeWrite(&cmd_list,&ptr,4);
         threadCurrent->state=THREAD_BLOCKED_BY_ATA;
         ata_thread->state=THREAD_STATE_ENABLE;
-#warning need something better to force launching ata_thread        
-        //ata_thread->idleCnt=100;
         __sti();
-        yield();        
+        yieldTo(ata_thread);        
     }
     else
     {
         __cli();
-        pipeWrite(&cmd_list,&new_cmd,sizeof(struct ata_cmd));
+        pipeWrite(&cmd_list,&ptr,4);
         threadCurrent->state=THREAD_BLOCKED_BY_ATA;
         __sti();
         yield();    
@@ -104,7 +105,8 @@ void ata_rwThread(void)
     int use_multiple;
     int block_size;
     int ret_val;
-    struct ata_cmd cur_cmd;
+    int nbSector;
+    struct ata_cmd * cur_cmd;
     
     printk("Starting ata thread\n");
     
@@ -119,17 +121,18 @@ void ata_rwThread(void)
         }
        
         __cli();
-        pipeRead(&cmd_list,&cur_cmd,sizeof(struct ata_cmd));
+        pipeRead(&cmd_list,&cur_cmd,4);
         __sti();
         
-        /*printk("RW (cmd=%d) disk %d, lba=%x,bufer @%x, nb=%x thread=%d\n",cur_cmd.cmd,cur_cmd.disk,
-               cur_cmd.lba,cur_cmd.data,cur_cmd.count,cur_cmd.cur_thread->pid);*/
+        /*printk("RW (cmd=%d) disk %d, lba=%x,bufer @%x, nb=%x thread=%d\n",cur_cmd->cmd,cur_cmd->disk,
+               cur_cmd->lba,cur_cmd->data,cur_cmd->count,cur_cmd->cur_thread->pid);*/
         
         block_size=SECTOR_SIZE;
-        unaligned=((unsigned long)cur_cmd.data)&0x03;
-        buffer=cur_cmd.data;
-        xfer_size=cur_cmd.count;
+        unaligned=((unsigned long)cur_cmd->data)&0x03;
+        buffer=cur_cmd->data;
+        xfer_size=cur_cmd->count;
         use_multiple=0;
+        nbSector=1;
         
         /* use a temporary buffer for unaligned read or writes */
         if (unaligned)
@@ -137,13 +140,14 @@ void ata_rwThread(void)
             buffer=ata_sectorBuffer;
         }
     
-        if(!unaligned && cur_cmd.cmd==ATA_DO_READ)
+        if(/*disk_info[cur_cmd->disk]->has_multi_sector &&*/ !unaligned && cur_cmd->cmd==ATA_DO_READ)
         {
             use_multiple=1;
+            nbSector=disk_info[cur_cmd->disk]->multi_sector;
         }
             
         /* select the right disk */
-        ATA_SELECT_DISK(cur_cmd.disk);
+        ATA_SELECT_DISK(cur_cmd->disk);
             
         /* wait drive ready */
         if(ata_waitForReady()<0)
@@ -151,20 +155,23 @@ void ata_rwThread(void)
             ret_val=-1;
             goto end;
         }
+        
+        block_size=nbSector*SECTOR_SIZE;
+        
         /* send read/write cmd */
-        switch(cur_cmd.cmd)
+        switch(cur_cmd->cmd)
         {
             case ATA_DO_IDENT:
                 ATA_OUTB(0,IDE_SELECT); /* send ident. cmd */
                 ATA_OUTB(IDE_CMD_IDENTIFY,IDE_COMMAND);
-                block_size=SECTOR_SIZE;
                 break;
     
             case ATA_DO_READ:
                 /* change multiple mode setting*/
+#if 0
                 if(use_multiple)
                 {
-                    ATA_OUTB(disk_info[cur_cmd.disk]->multi_sector,IDE_NSECTOR);
+                    ATA_OUTB(nbSector,IDE_NSECTOR);
                     ATA_OUTB(IDE_SET_MULTIPLE_MODE,IDE_COMMAND);
                     ATA_OUTB(0,IDE_SELECT);
                     if(ata_waitForReady()<0)
@@ -173,30 +180,28 @@ void ata_rwThread(void)
                         goto end;
                     }
                 }
-                ATA_OUTB(cur_cmd.lba,IDE_SECTOR);
-                ATA_OUTB(cur_cmd.lba>>8,IDE_LCYL);
-                ATA_OUTB(cur_cmd.lba>>16,IDE_HCYL);
-                ATA_OUTB((cur_cmd.lba>>24) | IDE_SEL_LBA,IDE_SELECT);
-                ATA_OUTB(cur_cmd.count,IDE_NSECTOR);
+#endif
+                ATA_OUTB(cur_cmd->lba,IDE_SECTOR);
+                ATA_OUTB(cur_cmd->lba>>8,IDE_LCYL);
+                ATA_OUTB(cur_cmd->lba>>16,IDE_HCYL);
+                ATA_OUTB((cur_cmd->lba>>24) | IDE_SEL_LBA,IDE_SELECT);
+                ATA_OUTB(cur_cmd->count,IDE_NSECTOR);
                 if(!use_multiple)
                 {
-                    block_size=SECTOR_SIZE;
                     ATA_OUTB(IDE_CMD_READ_SECTORS,IDE_COMMAND);
                 }
                 else
                 {
-                    block_size=disk_info[cur_cmd.disk]->multi_sector*SECTOR_SIZE;
                     ATA_OUTB(IDE_CMD_READ_MULTIPLE_SECTORS,IDE_COMMAND);
                 }
                 break;
             case ATA_DO_WRITE:
-                ATA_OUTB(cur_cmd.lba,IDE_SECTOR);
-                ATA_OUTB(cur_cmd.lba>>8,IDE_LCYL);
-                ATA_OUTB(cur_cmd.lba>>16,IDE_HCYL);
-                ATA_OUTB((cur_cmd.lba>>24) | IDE_SEL_LBA,IDE_SELECT);
-                ATA_OUTB(cur_cmd.count,IDE_NSECTOR);
+                ATA_OUTB(cur_cmd->lba,IDE_SECTOR);
+                ATA_OUTB(cur_cmd->lba>>8,IDE_LCYL);
+                ATA_OUTB(cur_cmd->lba>>16,IDE_HCYL);
+                ATA_OUTB((cur_cmd->lba>>24) | IDE_SEL_LBA,IDE_SELECT);
+                ATA_OUTB(cur_cmd->count,IDE_NSECTOR);
                 ATA_OUTB(IDE_CMD_WRITE_SECTORS,IDE_COMMAND);
-                block_size=SECTOR_SIZE;
                 break;
         }
         
@@ -206,30 +211,30 @@ void ata_rwThread(void)
     #endif
     
     #ifdef NO_DMA
-    cur_cmd.use_dma=ATA_NO_DMA;
+    cur_cmd->use_dma=ATA_NO_DMA;
     #endif
     
-    if(((unsigned int)(cur_cmd.data) < SDRAM_START) && cur_cmd.use_dma==ATA_WITH_DMA)
+    if(((unsigned int)(cur_cmd->data) < SDRAM_START) && cur_cmd->use_dma==ATA_WITH_DMA)
         {
-            cur_cmd.use_dma=ATA_NO_DMA;
+            cur_cmd->use_dma=ATA_NO_DMA;
         }
         
         i=0;
-        while(i<cur_cmd.count)
+        while(i<cur_cmd->count)
         {
             if (unaligned)
             {
                 /* copy data to the temp buffer if unaligned and we're writing*/
-                if(cur_cmd.cmd == ATA_DO_WRITE) memcpy(buffer,cur_cmd.data+i*SECTOR_SIZE,SECTOR_SIZE);
+                if(cur_cmd->cmd == ATA_DO_WRITE) memcpy(buffer,cur_cmd->data+i*SECTOR_SIZE,SECTOR_SIZE);
             }
             if(ata_waitForXfer()<0)
             {
                 ret_val=0;
                 goto end;
             }
-            if(use_multiple && xfer_size<disk_info[cur_cmd.disk]->multi_sector)
+            if(use_multiple && xfer_size<nbSector)
                 block_size=xfer_size*SECTOR_SIZE;
-            if(cur_cmd.use_dma==ATA_WITH_DMA)
+            if(cur_cmd->use_dma==ATA_WITH_DMA)
             {
     
                 if(dma_pending())
@@ -246,7 +251,7 @@ void ata_rwThread(void)
                     goto end;
                 }
     
-                if(cur_cmd.cmd == ATA_DO_READ || cur_cmd.cmd == ATA_DO_IDENT)
+                if(cur_cmd->cmd == ATA_DO_READ || cur_cmd->cmd == ATA_DO_IDENT)
                 {
                     dma_setup((void *)DMA_ATA_READ_ADDRESS,0,DMA_ATA,true,
                             buffer,SDRAM_START,DMA_SDRAM,false,
@@ -262,7 +267,7 @@ void ata_rwThread(void)
                 
     
     #ifdef DM320
-                cache_invalidateRange(CACHE_DATA,buffer,SECTOR_SIZE);
+    cache_invalidateRange(CACHE_DATA,buffer,block_size);
     #endif
     
                 dma_start();
@@ -274,7 +279,7 @@ void ata_rwThread(void)
             }
             else
             {
-                if(cur_cmd.cmd == ATA_DO_READ || cur_cmd.cmd == ATA_DO_IDENT)
+                if(cur_cmd->cmd == ATA_DO_READ || cur_cmd->cmd == ATA_DO_IDENT)
                 {
                     for(j=0;j<block_size;j+=2)
                     {
@@ -303,22 +308,22 @@ void ata_rwThread(void)
             if (unaligned)
             {
                 /* copy temp data to the actual buffer if unaligned and we're reading*/
-                if(cur_cmd.cmd == ATA_DO_READ || cur_cmd.cmd == ATA_DO_IDENT) 
-                    memcpy(cur_cmd.data+i*SECTOR_SIZE,buffer,SECTOR_SIZE);
+                if(cur_cmd->cmd == ATA_DO_READ || cur_cmd->cmd == ATA_DO_IDENT) 
+                    memcpy(cur_cmd->data+i*SECTOR_SIZE,buffer,SECTOR_SIZE);
             }
             else
             {
                 /* else increment buffer pos */
                 buffer+=block_size;
             }
-            i+=disk_info[cur_cmd.disk]->multi_sector;
-            if(i>cur_cmd.count) i=cur_cmd.count;
-            xfer_size-=disk_info[cur_cmd.disk]->multi_sector;
+            i+=nbSector;
+            if(i>cur_cmd->count) i=cur_cmd->count;
+            xfer_size-=nbSector;
         }
         ret_val=0;
 end:
-        *(cur_cmd.ret_val)=ret_val;
-        cur_cmd.cur_thread->state=THREAD_STATE_ENABLE;
+        *(cur_cmd->ret_val)=ret_val;
+        cur_cmd->cur_thread->state=THREAD_STATE_ENABLE;
     }
 }
 

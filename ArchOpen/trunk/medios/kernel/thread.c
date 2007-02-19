@@ -458,6 +458,11 @@ unsigned long yield(void)
     swi_call(nYIELD);
 }
 
+unsigned long yieldTo(THREAD_INFO * nxtThread)
+{
+    swi_call(nYIELD_TO);
+}
+
 /***********************************
 * Choose the next thread to run
 ***********************************/

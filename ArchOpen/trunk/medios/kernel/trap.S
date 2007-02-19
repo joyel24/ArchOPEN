@@ -23,9 +23,10 @@ __trap_undef_ptr:  .word do_trap_undef
 
 @.align	5
 .global trap_swi
-trap_swi:  
-    stmdb  sp!, {r0-r3}
+trap_swi:
+    stmdb  sp!, {r0-r4}
     @ Determine SWI code : R3 = swi code
+    mov    r4, r0
     ldr    r3,[lr,#-4]
     bic    r3,r3,#0xff000000    
     mrs    r2, spsr              @ save thread CPSR
@@ -38,21 +39,25 @@ trap_swi:
     ldr    r0, threadCurrent
     add    r0, r0, #68
     stmdb  r0!, {r1}             @ PC
-    stmdb  r0!, {r4-r12,sp,lr}   @ other regs    
+    stmdb  r0!, {r5-r12,sp,lr}   @ other regs    
     @ switching to SVC mode with FIQ
     msr    cpsr_c, #0x93    
     @ store remaining regs: R0, R1 and CPSR   
-    mov    r4, r2
+    mov    r7, r2
     mov    r5, r0                @ saving ptr on reg struct 
     mov    r6, r3                @ saving swi code
-    ldmia  sp!, {r0-r3}    
-    stmdb  r5!, {r0-r3}
-    stmdb  r5!, {r4}    
-    mov    r3,r6
+    mov    r8, r4
+    ldmia  sp!, {r0-r4}    
+    stmdb  r5!, {r0-r4}
+    stmdb  r5!, {r7}    
+    mov    r3, r6
+    mov    r0, r8
 
     @// Check for "yield" command...
     cmp r3, #0
     beq yielding
+    cmp r3, #3
+    beq yielding_to
 .ifdef DSC21
     ldr r5, __trap_swi_ptr
     mov lr, pc
@@ -76,8 +81,11 @@ trap_swi:
 yielding:    
     bl     thread_nxt
     b      thread_loadContext
-   
-
+yielding_to:
+    ldr    r1, =threadCurrent
+    str    r0, [r1]
+    b      thread_loadContext
+            
 __trap_swi_ptr:  .word swi_handler
 
 @.align	5
