@@ -64,7 +64,7 @@
 #define IRQ_UART1            13
 
 // badly named and/or should not be there
-#define IRQ_IDE              15  // ide
+#define IRQ_IDE              17  // ide
 #define IRQ_BTN_ON           18  // GIO0
 #define IRQ_MAS_DATA         22  // GIO4
 #define IRQ_IR               24  // GIO6
