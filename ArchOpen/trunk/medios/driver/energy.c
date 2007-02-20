@@ -144,6 +144,12 @@ void hd_launchTimer(void)
     }
 }
 
+void hd_stopTimer(void)
+{
+    if(hd_timer.trigger)
+        tmr_stop(&hd_timer);
+}
+
 /*******************************************************
 * Timer action
 ********************************************************/

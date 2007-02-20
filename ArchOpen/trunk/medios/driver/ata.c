@@ -140,7 +140,7 @@ void ata_rwThread(void)
             buffer=ata_sectorBuffer;
         }
     
-        if(/*disk_info[cur_cmd->disk]->has_multi_sector &&*/ !unaligned && cur_cmd->cmd==ATA_DO_READ)
+        if(disk_info[cur_cmd->disk]->has_multi_sector && !unaligned && cur_cmd->cmd==ATA_DO_READ)
         {
             use_multiple=1;
             nbSector=disk_info[cur_cmd->disk]->multi_sector;

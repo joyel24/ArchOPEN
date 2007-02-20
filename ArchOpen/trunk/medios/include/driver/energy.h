@@ -29,6 +29,8 @@ void lcd_launchTimer(void);
 void halt_launchTimer(void);
 void hd_launchTimer(void);
 
+void hd_stopTimer(void);
+
 void energy_chgMode(int power_mode);
 
 void energy_loadPref(void);

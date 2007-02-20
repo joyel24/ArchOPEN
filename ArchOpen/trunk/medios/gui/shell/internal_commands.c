@@ -157,6 +157,7 @@ static bool intCmd_doUsbMode(char * param){
             }
             
             enableUsbFw();
+            
             usbMode=1;
             mdelay(10);
             msgBox_show("MediOS - USB mode","Press F3 or unplug cable to exit",MSGBOX_TYPE_INFO,
@@ -177,9 +178,11 @@ static bool intCmd_doUsbMode(char * param){
             disableUsbFw();
             usbMode=0;
 
+            ata_powerDownHD();
             ata_reset();
             vfs_init();
-            disk_addAll();
+            disk_addAll();            
+            
 
 #warning we should reload menu.cfg or other menu related files
         }

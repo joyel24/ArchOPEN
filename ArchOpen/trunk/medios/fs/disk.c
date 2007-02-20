@@ -231,13 +231,13 @@ struct hd_info_s * disk_readInfo(int disk,int just_print)
     dd_findEnd(disk_info->model,40);
     disk_info->multi_sector = sector[94] & 0x7f ;
     disk_info->partition_list=NULL;
-    disk_info->has_multi_sector=(sector[94] & 0x80)==1?1:0;
-        
-    printk("[DISK] reading %s info\n     %s\n     %s|%s\n     %d sectors per ata request (%s)\n",
+    disk_info->has_multi_sector=(sector[119] & 0x1);
+    
+    printk("[DISK] reading %s info\n     %s\n     %s|%s\n     %d sectors per ata request (%s-%d)\n",
                 disk_name[disk],
                 disk_info->model,
                 disk_info->firmware,disk_info->serial,disk_info->multi_sector,
-                disk_info->has_multi_sector?"Valid":"Not Valid");
+                disk_info->has_multi_sector?"Valid":"Not Valid",disk_info->has_multi_sector);
                 
     //print_data(sector,512);
     
