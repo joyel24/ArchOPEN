@@ -93,6 +93,7 @@ int ata_rwData(int disk,unsigned int lba,void * data,int count,int cmd,int use_d
         __sti();
         yield();    
     }
+    //printk("end: %d\n",ret_val);
     return ret_val;
 }
 
@@ -521,7 +522,9 @@ void ide_intAction(int irq,struct pt_regs * regs)
     if(ata_thread->state==THREAD_BLOCKED_BY_DMA)
     {
         ata_thread->state=THREAD_STATE_ENABLE;
-        threadCurrent=ata_thread;
+        threadCurrent=ata_thread;        
+        //printk("dma end\n");
+        
     }
 }
 

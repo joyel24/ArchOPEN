@@ -14,7 +14,7 @@
 #ifndef __IRQ_DM270_H
 #define __IRQ_DM270_H
 
-#define NR_IRQS              48
+#define NR_IRQS              39
 
 #define INTC_BASE                         0x00030500
 

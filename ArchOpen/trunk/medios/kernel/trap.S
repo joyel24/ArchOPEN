@@ -188,8 +188,8 @@ __irq_loop:
     ldrh   R2, [R2]
     orr    R4, R2, R3, LSL #16
     ldmia  R4, {R0-R3}
-    cmp    R3, #0
-    beq    __exit_irq_loop   @ if handler = 0 => no handler
+    cmp    R3, #-1
+    beq    __exit_irq_loop   @ if handler = -1 => no irq    
  .else
   .err
  .endif
@@ -199,6 +199,8 @@ __irq_loop:
 
     @ now ack the INT
     strh   R1, [R2]   
+    cmp    R3, #0
+    beq    __irq_loop   @ if handler = -1 => no irq
     mov    R1, r5            @ get reg stucture
     adr    LR, __irq_loop    
     mov    PC, R3            @ branch to handler 

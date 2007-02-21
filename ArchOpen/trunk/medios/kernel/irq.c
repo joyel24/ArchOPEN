@@ -74,7 +74,17 @@ extern int irq_tbl_ptr;
 void irq_init(void)
 {
     int i = 0;
+    struct irq_bloc_s * ptr=(struct irq_bloc_s *)irq_tbl_ptr;
+    
+    ptr[0].irq=0;
+    ptr[0].fct=-1;
+    
     arch_irq_init();
+   
+    for(i=0;i<NR_IRQS;i++)
+        irq_setHandler(i,0);
+
+    i=0;
     
     while(irq_table[i].irq!=-1)
     {
