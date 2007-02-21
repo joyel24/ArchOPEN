@@ -36,6 +36,9 @@ HW_IRQ::HW_IRQ(void):HW_access(IRQ_START,IRQ_END,"IRQ/FIQ")
         fsel[i]=0;
     }
 
+    for(int i=0;i<NB_INT;i++)
+        prio[i]=i;
+    
     entry[0]=0;
     entry[1]=0;
 
@@ -60,19 +63,29 @@ void HW_IRQ::do_INT(int num)
 
     calcEntry();
 
-    DEBUG_HW(IRQ_HW_DEBUG,"%s Doing %s num = %x (%d)\n",
+    DEBUG_HW(IRQ_HW_DEBUG,"%s Doing %s num = %x (%d)",
         name,type==FIQ?"FIQ":"IRQ",num,
         (type==FIQ?0:NB_FIQ)+REG_NUM(num)  );
     if(type==FIQ)
     {
         have_int_FIQ = true;
         if(chkFiqFlag())
+        {
+            DEBUG_HW(IRQ_HW_DEBUG,"with fiq handler");
             cur_irq_fct = cpu_do_fiq;
+        }
     }
     else
     {
         have_int_IRQ = true;
+        
         if(chkIrqFlag())
+        {
+            DEBUG_HW(IRQ_HW_DEBUG,"with irq handler");
             cur_irq_fct = cpu_do_irq;
+        }
+        /*if(num==15)
+            CHG_RUN_MODE(STEP)*/
     }
+    DEBUG_HW(IRQ_HW_DEBUG,"\n");
 }

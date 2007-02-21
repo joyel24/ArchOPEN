@@ -26,6 +26,7 @@ extern int disp_mode;
 extern uint32_t old_PC;
 void void_cmdline(void);
 extern void (*cmd_line_fct)(void);
+extern void cmd_line(void);
 
 #define CHG_RUN_MODE(MODE) {         \
     run_mode = MODE;                 \

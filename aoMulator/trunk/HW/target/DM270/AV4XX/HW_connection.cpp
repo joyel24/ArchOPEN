@@ -25,8 +25,8 @@ void HW_connection::arch_init()
 {
     usb_conn=new GIO_CONN(this,GIO_USB_CONNECTED,"GIO USB");
     mem->hw_TI->gpio->register_port(usb_conn);
-    cf_conn=new GIO_CONN(this,GIO_CF_CONNECTED,"GIO CF");
-    mem->hw_TI->gpio->register_port(cf_conn);
+/*    cf_conn=new GIO_CONN(this,GIO_CF_CONNECTED,"GIO CF");
+    mem->hw_TI->gpio->register_port(cf_conn);*/
     pw_conn=new GIO_CONN(this,GIO_POWER_CONNECTED,"GIO PW");
     mem->hw_TI->gpio->register_port(pw_conn);
 }

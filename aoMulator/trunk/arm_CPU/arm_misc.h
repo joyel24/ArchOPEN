@@ -115,10 +115,12 @@ void arm_MSR_MRS(int condCode,int instr_num,uint32_t instruction)
 }
 
 void arm_CoProcessor(int condCode,uint32_t instruction)
-{
+{    
+#ifdef COPRO_PAUSE
     INT_DEBUG_HEAD
     printf("coprocessor instruction: %08x\n",instruction);
     CHG_RUN_MODE(STEP)
+#endif
     //exit(0);
 }
 

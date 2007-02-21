@@ -113,6 +113,7 @@ void HW_cpld::write(uint32_t addr,uint32_t val,int size)
         case CPLD_START+CPLD_PORT_OFFSET+0x0:
             DEBUG_HW(CPLD_HW_DEBUG,"CPLD0 - write ata mode, size %x: %x\n",size,val);
             cpld_ata_mode = val;
+            cpld_val[0]=val;
             //cpld0_val = val;
             break;
         case CPLD_START+CPLD_PORT_OFFSET+0x2:

@@ -29,16 +29,13 @@ class HW_cpld:public HW_access {
         void write(uint32_t addr,uint32_t val,int size);
         void setModule(int module);
         void cpld_print_state(void);
-
+        void cpld_set_val(int argc,char ** argv);
 
     private:
 
          int cpld_ata_mode;
          int cpld_module_type;
-         int cpld0_val;
-         int cpld1_val;
-         int cpld2_val;
-         int cpld3_val;
+         int cpld_val[4];
 
          int fw_connected;
          int hdd_on;

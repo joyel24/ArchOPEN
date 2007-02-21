@@ -16,6 +16,7 @@
 #include <HW/HW_ata.h>
 
 #include <HW/HW_dma.h>
+#include <emu.h>
 
 HW_dma::HW_dma(mem_space * mem):HW_access(DMA_START,DMA_END,"DMA")
 {
@@ -165,10 +166,14 @@ void HW_dma::nxtStep(void)
         {
             run_status=0;
             if(data_ptr>=data_size)
+            {
+                DEBUG_HW(DMA_HW_DEBUG,"Set RDY\n");         
                 HD->setStatus(IDE_STATUS_RDY);
+            }
             nbWait=0;
             mem->hw_TI->HW_irq->do_INT(INT_DMA);
-            DEBUG_HW(DMA_HW_DEBUG,"Stop DMA\n");
+            //CHG_RUN_MODE(STEP)
+            DEBUG_HW(DMA_HW_DEBUG,"Stop DMA\n");            
         }
     }
 }

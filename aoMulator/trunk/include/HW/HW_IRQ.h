@@ -40,7 +40,7 @@ class HW_IRQ : public HW_access {
         int fsel[NB_IRQ];
         int enable[NB_IRQ];
         int eabase;
-        int prio[NB_IRQ];
+        int prio[NB_INT];
         int bloc_size;
         void calcEntry(void);
         int calc_id(void);

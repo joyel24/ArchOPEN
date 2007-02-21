@@ -27,6 +27,7 @@
 /*IRAM should be the same on all arch */
 
 
+//#define HAS_CF
 
 #define FLASH_START       0x0100000
 #define FLASH_END         0x0180000

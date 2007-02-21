@@ -19,6 +19,7 @@ GIO_CONN::GIO_CONN(HW_connection * hwConn,int num,char * name):gpio_port(num,nam
 {
     state = 0;  /* default => btn not pressed */
     this->hwConn=hwConn;
+    printf("Creating GIO connector %s on GIO%02x\n",name,num);
 }
 
 void GIO_CONN::set_gpio(void)
@@ -33,5 +34,6 @@ void GIO_CONN::clear_gpio(void)
 
 bool GIO_CONN::is_set(void)
 {
+    //printf("testing GIO %s => %d\n",name,this->hwConn->isConnected(gpio_num));
     return this->hwConn->isConnected(gpio_num);
 }

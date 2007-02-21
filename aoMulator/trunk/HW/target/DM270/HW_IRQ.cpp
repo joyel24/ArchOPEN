@@ -38,7 +38,7 @@ uint32_t HW_IRQ::read(uint32_t addr,int size)
         case INT_STATUS + IRQ_1:
         case INT_STATUS + FIQ_2:
         case INT_STATUS + IRQ_2:
-            num = (addr - INT_STATUS-(addr>=(INT_STATUS+IRQ_1)?2:0))/2;
+            num = (addr - INT_STATUS-(addr>=(INT_STATUS+IRQ_0)?2:0))/2;
             ret_val=status[num];
             status[num] &= 0xFFFF;
             DEBUG_HW(IRQ_HW_DEBUG,"%s read %s STATUS @0x%08x, size %x send %x\n",
@@ -209,13 +209,26 @@ void HW_IRQ::calcEntry(void)
         real_status[i] = (~status[i+IRQ_OFFSET])&enable[i];
     }
 
+   /* 
+    for(int i=0;i<NB_INT;i++)
+    {
+        if(real_status[REG_NUM(prio[i])]&(1<<REAL_NUM(prio[i])))
+        {
+            printf("%d:%d set\n",i,prio[i]);   
+        }
+    }
+    */
 
     for(int i=0;i<NB_INT;i++)
     {
         if(real_status[REG_NUM(prio[i])]&(1<<REAL_NUM(prio[i])))
         {
             entry[1] += (i+1)*size_conv[bloc_size];
+            //printf("selecting %d\n",i);
             break;
         }
     }
+    
+    /*if(entry[1]==eabase)
+        printf("nothing selected\n");*/
 }

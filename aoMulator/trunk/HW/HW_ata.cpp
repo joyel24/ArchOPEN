@@ -39,7 +39,7 @@ HW_ata::HW_ata(HW_TI * hw_ti,uint32_t start,uint32_t end,
     sector = 1;
     nsector = 1;  
     ata_cmd = 0;   
-    nb_block = 1;
+    nb_block = 0x10;
     
     ident_data = id_disk_src;
     part_data = part_table_src;
@@ -120,7 +120,6 @@ void HW_ata::write(uint32_t addr,uint32_t val,int size)
             switch(ata_cmd)
             {
                 case IDE_CMD_MULT_READ_SECTORS:
-                    nsector=nsector*nb_block;
                 case IDE_CMD_READ_SECTORS:                
                     lba = sector | (l_cyl << 8) | (h_cyl << 16);                    
                     DEBUG_HW(ATA_HW_DEBUG,"read sectors LBA:%x count=%x\n",lba,nsector==0?256:nsector);
