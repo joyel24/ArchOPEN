@@ -136,8 +136,8 @@ void ata_rwThread(void)
         pipeRead(&cmd_list,&cur_cmd,4);
         __sti();
 #endif        
-        printk("RW (cmd=%d) disk %d, lba=%x,bufer @%x, nb=%x thread=%d\n",cur_cmd->cmd,cur_cmd->disk,
-               cur_cmd->lba,cur_cmd->data,cur_cmd->count,cur_cmd->cur_thread->pid);
+        /*printk("RW (cmd=%d) disk %d, lba=%x,bufer @%x, nb=%x thread=%d\n",cur_cmd->cmd,cur_cmd->disk,
+               cur_cmd->lba,cur_cmd->data,cur_cmd->count,cur_cmd->cur_thread->pid);*/
         
         block_size=SECTOR_SIZE;
         unaligned=((unsigned long)cur_cmd->data)&0x03;

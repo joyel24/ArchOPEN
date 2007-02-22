@@ -14,7 +14,7 @@
 #ifndef __IRQ_DSC21_H
 #define __IRQ_DSC21_H
 
-#define NR_IRQS              32
+#define NR_IRQS              28
 
 #define INTC_BASE                         0x00030580
 
