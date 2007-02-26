@@ -15,27 +15,23 @@
 */
 
 #include <api.h>
+
 #include <sys_def/evt.h>
 #include <sys_def/stddef.h>
 #include <sys_def/colordef.h>
 #include <sys_def/font.h>
 
-#define PIECE_DIM 12
+/* color define */
+#define BG_COLOR            COLOR_WHITE
+#define TXT_B_COLOR         COLOR_RED
+#define TXT_NUM_COLOR       COLOR_BLUE
+#define FIELD_BG_COLOR      COLOR_GREY
+#define FIELD_FOUND_COLOR   COLOR_LIGHT_GREY
+#define CROSS_COLOR         COLOR_RED
+#define CURSOR_COLOR        COLOR_RED
+#define UI_TXT_COLOR        COLOR_GREEN
 
-void displayMineField(void);
-
-
-/***************************************
-*
-* Warning some coordinate are still hardcoded: for menu, and other texts
-*
-****************************************/
-
-
-int GameMode = 0;
-
-int tiles_left = 0;
-int g_changes = 0;
+#include "minesweeper.h"
 
 /* percentage of mines on minefield used durring generation */
 int p=22;
@@ -43,301 +39,55 @@ int p=22;
 /* the cursor coordinates */
 int x=0,y=0;
 
-/* define how numbers are displayed (that way we don't have to */
-/* worry about fonts) */
+/* the height and width of the field (nb of cells)*/
+int height,max_height,width,max_width;
 
-static unsigned char emptyField[PIECE_DIM][PIECE_DIM] =
-    { { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2} };
-
-static unsigned char oneField[PIECE_DIM][PIECE_DIM] =
-    { { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  9,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  9,  9,  9,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2} };
-
-static unsigned char twoField[PIECE_DIM][PIECE_DIM] =
-    { { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  9,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  7,  7,  9,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  9,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  9,  9,  9,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2} };
-
-static unsigned char threeField[PIECE_DIM][PIECE_DIM] =
-    { { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  9,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  9,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  9,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  9,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  9,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2} };
-
-static unsigned char fourField[PIECE_DIM][PIECE_DIM] =
-    { { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  9,  9,  9,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2} };
-
-static unsigned char fiveField[PIECE_DIM][PIECE_DIM] =
-    { { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  9,  9,  9,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  9,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  9,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  9,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2} };
-
-static unsigned char sixField[PIECE_DIM][PIECE_DIM] =
-    { { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  9,  9,  9,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  9,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  7,  7,  9,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  9,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2} };
-
-static unsigned char sevenField[PIECE_DIM][PIECE_DIM] =
-    { { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  9,  9,  9,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  9,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  9,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2} };
-
-static unsigned char eightField[PIECE_DIM][PIECE_DIM] =
-    { { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  9,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  7,  7,  9,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  9,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  9,  7,  7,  9,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  9,  9,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  2},
-      { 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2} };
-
-static BITMAP emptyB = {(unsigned int) emptyField, PIECE_DIM, PIECE_DIM, 0, 0};
-static BITMAP oneB   = {(unsigned int) oneField,   PIECE_DIM, PIECE_DIM, 0, 0};
-static BITMAP twoB   = {(unsigned int) twoField,   PIECE_DIM, PIECE_DIM, 0, 0};
-static BITMAP threeB = {(unsigned int) threeField, PIECE_DIM, PIECE_DIM, 0, 0};
-static BITMAP fourB  = {(unsigned int) fourField,  PIECE_DIM, PIECE_DIM, 0, 0};
-static BITMAP fiveB  = {(unsigned int) fiveField,  PIECE_DIM, PIECE_DIM, 0, 0};
-static BITMAP sixB   = {(unsigned int) sixField,   PIECE_DIM, PIECE_DIM, 0, 0};
-static BITMAP sevenB = {(unsigned int) sevenField, PIECE_DIM, PIECE_DIM, 0, 0};
-static BITMAP eightB = {(unsigned int) eightField, PIECE_DIM, PIECE_DIM, 0, 0};
-
-/* the tile struct
-if there is a mine, mine is true
-if tile is known by player, known is true
-if tile has a flag, flag is true
-neighbors is the total number of mines arround tile
-*/
-typedef struct tile_s {
-    unsigned char mine : 1;
-    unsigned char known : 1;
-    unsigned char flag : 1;
-    unsigned char neighbors : 4;
-} tile;
-
-/* the height and width of the field */
-/* could be variable if malloc worked in the API :) */
-int height;
-int width ;
-int arch;
 int screen_height;
 int screen_width;
-bool right_menu;
 
-#define MINE_FIELD(I,J) minefield[(I)*width+(J)]
-
-int settingParam = 0;
+int evt_handler;
 
 /* the minefield */
-tile * minefield;//[screen_height/PIECE_DIM][(screen_width-50)/PIECE_DIM];
+tile * minefield;
 
 /* total number of mines on the game */
 int mine_num = 0;
+int tiles_left = 0;
 
-void writeMinesINI()
+int fieldX=0,fieldY=0;
+int nb_left_txtY;
+
+#define MINE_FIELD(I,J) minefield[(I)*width+(J)]
+#define FIELD_X             fieldX
+#define FIELD_Y             fieldY
+#define NB_LEFT_TXT_Y       nb_left_txtY
+
+struct minesweeper_s * cur_conf;
+
+#define ACTION_EXIT         (cur_conf->action_exit)
+
+#define ACTION_UP           (cur_conf->action_up)
+#define ACTION_DOWN         (cur_conf->action_down)
+#define ACTION_RIGHT        (cur_conf->action_right)
+#define ACTION_LEFT         (cur_conf->action_left)
+
+#define ACTION_DISCOVER     (cur_conf->action_discover)
+#define ACTION_TOGGLE_FLAG  (cur_conf->action_toggleflag)
+#define ACTION_NEW_GAME     (cur_conf->action_newgame)
+#define ACTION_SETTINGS     (cur_conf->action_settings)
+
+void computeSizePos(void)
 {
-#warning need a cfg writer system
-#if 0
-    char tmp[250];
-
-    if(g_changes == 1)
-    {
-        openCfg("/mnt/avwm/plugins/minesweeper.ini",CFG_WRITE);
-
-        sprintf(tmp,"%d",p);
-        putCfg("mines",tmp);
-        newLine();
-        sprintf(tmp,"%d",height);
-        putCfg("heigth",tmp);
-        newLine();
-        sprintf(tmp,"%d",width);
-        putCfg("width",tmp);
-        newLine();
-
-        closeCfg();
-
-        g_changes = 0;
-    }
-#endif
-}
-
-void readMinesINI()
-{
-#warning need a cfg reader system
-#if 0
-    char item_buff[MAX_TOKEN+1];
-    char value_buff[MAX_TOKEN+1];
-    char *item=item_buff;
-    char *value=value_buff;
-
-    if(openCfg("/mnt/avwm/plugins/minesweeper.ini",CFG_READ)<0)
-        return;
-
-    while (1)
-    {
-        /* get next item/value couple, returns 0 if ther is no more item/value in the file */
-        if (!getCfg(item,value)) break;
-        /* now parse the item using strcmp */
-        if(!strcmp(item,"mines"))
-        {
-            p=atoi(value);
-        }
-        else if(!strcmp(item,"heigth"))
-        {
-            height=atoi(value);
-        }
-        else if(!strcmp(item,"width"))
-        {
-            width=atoi(value);
-        }
-        else
-            printf("unknown item type: %s on line %d\n",item,curLineNum());
-    }
-
-    closeCfg();
-#endif
-}
-
-void RefreshSettings()
-{
-    char tmp[10];
-    gfx_fillRect(COLOR_GREEN, 0, 20, 160,80); // clear
-
-    sprintf(tmp,"%d", p);
-
-    if(settingParam == 0)
-    {
-        sprintf(tmp,"%d", width);
-        gfx_putS(COLOR_RED, COLOR_GREEN, 5,30, "Width");
-        gfx_putS(COLOR_RED, COLOR_GREEN, 100,30, tmp);
-    }
-    else
-    {
-        sprintf(tmp,"%d", width);
-        gfx_putS(COLOR_BLACK, COLOR_GREEN, 5,30, "Width");
-        gfx_putS(COLOR_BLACK, COLOR_GREEN, 100,30, tmp);
-    }
-
-    if(settingParam == 1)
-    {
-        sprintf(tmp,"%d", height);
-        gfx_putS(COLOR_RED, COLOR_GREEN, 5,50, "Height");
-        gfx_putS(COLOR_RED, COLOR_GREEN, 100,50, tmp);
-    }
-    else
-    {
-        sprintf(tmp,"%d", height);
-        gfx_putS(COLOR_BLACK, COLOR_GREEN, 5,50, "Height");
-        gfx_putS(COLOR_BLACK, COLOR_GREEN, 100,50, tmp);
-    }
-
-    if(settingParam == 2)
-    {
-        sprintf(tmp,"%d", p);
-           gfx_putS(COLOR_RED, COLOR_GREEN, 5,70, "Mines[%]");
-        gfx_putS(COLOR_RED, COLOR_GREEN, 100,70, tmp);
-    }
-    else
-    {
-        sprintf(tmp,"%d", p);
-        gfx_putS(COLOR_BLACK, COLOR_GREEN, 5,70, "Mines[%]");
-        gfx_putS(COLOR_BLACK, COLOR_GREEN, 100,70, tmp);
-    }
-
-    g_changes = 1;
-}
-
-void init_settings_screen()
-{
-    gfx_putS(COLOR_BLACK, COLOR_GREEN, 5,5, "S E T T I N G S");
-
-    RefreshSettings();
+    int h;
+    gfx_getStringSize("M",0,&h);
+    nb_left_txtY=screen_height-h-1;
+    fieldX=(screen_width-width*PIECE_DIM)/2;
+    fieldY=(screen_height-h-2-height*PIECE_DIM)/2;
 }
 
 /* discovers the tile when player clears one of them */
 /* a chain reaction (of discovery) occurs if tile has no mines */
 /* as neighbors */
-void discover(int, int);
 void discover(int x, int y){
 
     if(x<0) return;
@@ -360,40 +110,11 @@ void discover(int x, int y){
     return;
 }
 
-/* init not mine related elements of the mine field */
-void minesweeper_init(void){
-    int i,j;
 
-    readMinesINI();
-
-    tiles_left=width*height;
-    mine_num = 0;
-
-    //time = GetTime();
-
-    srand(tmr_getTick());
-
-    if(right_menu){
-        gfx_putS(COLOR_BLACK, COLOR_GREEN, 271,17, "New game");
-        gfx_putS(COLOR_BLACK, COLOR_GREEN, 295,47, "Quit");
-        gfx_putS(COLOR_BLACK, COLOR_GREEN, 271,152, "Discover");
-        gfx_putS(COLOR_BLACK, COLOR_GREEN, 271,180, "Set Flag");
-        gfx_putS(COLOR_BLACK, COLOR_GREEN, 271,210, "Settings");
-    }else{
-        gfx_putS(COLOR_BLACK, COLOR_GREEN, screen_width-13*6,screen_height-9, "[F3] Settings");
-    }
-
-    for(i=0;i<height;i++){
-        for(j=0;j<width;j++){
-            MINE_FIELD(i,j).known = 0;
-            MINE_FIELD(i,j).flag = 0;
-        }
-    }
-}
 
 void printNumberOfMines(void)
 {
-    char tmp[20];
+     char tmp[20];
      int i=0;
      int j=0;
 
@@ -407,12 +128,8 @@ void printNumberOfMines(void)
         }
 
         sprintf(tmp,"%d Mines ", mine_num-tiles_left);
-        if(right_menu){
-            gfx_fillRect(COLOR_GREEN, 265,79, 54, 15);
-            gfx_putS(COLOR_WHITE, COLOR_GREEN, 266,80, tmp);
-        }else{
-            gfx_putS(COLOR_WHITE, COLOR_GREEN, 1,screen_height-9, tmp);
-        }
+        gfx_fillRect(BG_COLOR, 0,NB_LEFT_TXT_Y, screen_width, screen_height-NB_LEFT_TXT_Y);
+        gfx_putS(UI_TXT_COLOR, BG_COLOR, 1,NB_LEFT_TXT_Y, tmp);
      }
 }
 
@@ -421,11 +138,6 @@ void printNumberOfMines(void)
 /* if the tile has coordinates (x,y), then it can't be a mine */
 void minesweeper_putmines(int p, int x, int y){
     int i,j;
-/*
-     char tmp[10];
-        sprintf(tmp,"p: %ld", p);
-        gfx_putS(COLOR_WHITE, COLOR_GREEN, 266,110, tmp);
-*/
     for(i=0;i<height;i++){
         for(j=0;j<width;j++){
             if(rand()%100<p && !(y==i && x==j)){
@@ -466,9 +178,142 @@ void minesweeper_putmines(int p, int x, int y){
 void setCursor(int del)
 {
    if(del)
-       gfx_drawRect(COLOR_GREEN, x*PIECE_DIM, y*PIECE_DIM, PIECE_DIM, PIECE_DIM);
+       gfx_drawRect(BG_COLOR,
+                    FIELD_X+x*PIECE_DIM, FIELD_Y+y*PIECE_DIM,
+                    PIECE_DIM, PIECE_DIM);
     else
-       gfx_drawRect(COLOR_RED, x*PIECE_DIM, y*PIECE_DIM, PIECE_DIM, PIECE_DIM);
+       gfx_drawRect(CURSOR_COLOR,
+                    FIELD_X+x*PIECE_DIM, FIELD_Y+y*PIECE_DIM,
+                    PIECE_DIM, PIECE_DIM);
+}
+
+void settings_screen()
+{
+    int h,w2,w,event,y;
+    char tmp[50];
+    TRACKBAR trackWidth;
+    TRACKBAR trackHeight;
+    TRACKBAR trackPercent;
+    WIDGETLIST menuList;
+       
+    gfx_clearScreen(BG_COLOR); // clear
+    gfx_getStringSize("SETTINGS",&w,&h);
+    gfx_putS(UI_TXT_COLOR, BG_COLOR, (screen_width-w)/2, 5,  "SETTINGS");
+    gfx_drawLine(UI_TXT_COLOR,(screen_width-w)/2-1,5+h+1,(screen_width-w)/2+w+1,5+h+1);
+    
+    menuList=widgetList_create();
+    menuList->ownWidgets=true;
+    
+    y=5+h+2;
+
+    gfx_getStringSize("Width",&w,&h);
+    gfx_getStringSize("Height",&w2,&h);
+    w=MAX(w,w2);
+    gfx_getStringSize("Percent",&w2,&h);
+    w=MAX(w,w2);
+    
+    trackWidth=trackbar_create();
+
+    gfx_putS(UI_TXT_COLOR, BG_COLOR, 2,y, "Width");
+    //trackWidth->caption="Width";
+    trackWidth->maximum=max_width;
+    trackWidth->minimum=5;
+    trackWidth->value=width;
+    trackWidth->setRect(trackWidth,2+w+2,y,60,h+2);
+    menuList->addWidget(menuList,trackWidth);
+    y+=h+2;
+    
+    trackHeight=trackbar_create();
+    gfx_putS(UI_TXT_COLOR, BG_COLOR, 2,y, "Height");
+    trackHeight->maximum=max_height;
+    trackHeight->minimum=5;
+    trackHeight->value=height;
+    trackHeight->setRect(trackHeight,2+w+2,y,60,h+2);
+    menuList->addWidget(menuList,trackHeight);
+    y+=h+5;
+
+    trackPercent=trackbar_create();
+    gfx_putS(UI_TXT_COLOR, BG_COLOR, 2,y, "Percent");
+    trackPercent->maximum=100;
+    trackPercent->minimum=0;
+    trackPercent->value=p;
+    trackPercent->setRect(trackPercent,2+w+2,y,60,h+2);
+    menuList->addWidget(menuList,trackPercent);
+    y+=h+5;
+
+    gfx_getStringSize("M",&w,&h);
+    gfx_putS(UI_TXT_COLOR, BG_COLOR, 10,y, "Direction: Joystick");
+    y = y+h+2;
+    sprintf(tmp,"Toggle: %s",getBtnName(ACTION_TOGGLE_FLAG));
+    gfx_putS(UI_TXT_COLOR, BG_COLOR, 10,y, tmp);
+    y = y+h+2;
+    sprintf(tmp,"Discover: %s",getBtnName(ACTION_DISCOVER));
+    gfx_putS(UI_TXT_COLOR, BG_COLOR, 10,y, tmp);
+    y = y+h+2;
+    sprintf(tmp,"New game: %s",getBtnName(ACTION_NEW_GAME));
+    gfx_putS(UI_TXT_COLOR, BG_COLOR, 10,y,tmp );
+    y = y+h+2;
+    sprintf(tmp,"Exit: %s",getBtnName(ACTION_EXIT));
+    gfx_putS(UI_TXT_COLOR, BG_COLOR, 10,y, tmp);
+
+    menuList->setFocusedWidget(menuList,trackWidth);
+    menuList->paint(menuList);
+    
+    do{
+        event=evt_getStatus(evt_handler);
+        if (!event) continue; // no new events
+        switch(event)
+        {
+            case BTN_UP:
+                menuList->changeFocus(menuList,WLD_PREVIOUS);
+                break;
+            case BTN_DOWN:
+                menuList->changeFocus(menuList,WLD_NEXT);
+                break;
+            default:
+                menuList->handleEvent(menuList,event);
+                break;
+        }
+    }while(event!=BTN_OFF && event!=BTN_ON);
+    if(event==BTN_ON)
+    {
+        width=trackHeight->value;
+        height=trackHeight->value;
+        computeSizePos();
+        init_field();
+    }
+    gfx_clearScreen(BG_COLOR);
+    displayMineField();
+    setCursor(0);
+    
+}
+
+int winLoose_screen(char * msg)
+{
+    int evt;
+    int stop;
+    msgBox_info(msg);
+    while(1)
+    {
+        evt=evt_getStatus(evt_handler);
+        if(evt==NO_EVENT)
+            continue;
+        if(evt==BTN_OFF)
+        {
+            stop=1;
+            break;
+        }
+        if(evt==BTN_ON)
+        {
+            gfx_clearScreen(BG_COLOR);
+            init_field();
+            displayMineField();
+            setCursor(0);
+            stop=0;
+            break;
+        }
+    }
+    return stop;
 }
 
 void eventHandlerLoop(void)
@@ -476,243 +321,102 @@ void eventHandlerLoop(void)
     int i=0,j=0;
 	int stop=0;
 	int evt;
-	int evt_handler=evt_getHandler(BTN_CLASS);
     while(!stop)
     {
 		evt=evt_getStatus(evt_handler);
 		if(evt==NO_EVENT)
 			continue;
 
-		if(GameMode == 0)
-		{
-			switch (evt) {
-				case BTN_OFF:
-						/* get out of here */
-						stop=1;
-						break;
-	
-						/* move cursor left */
-					case BTN_LEFT:
-						setCursor(1);
-				   if(x-1 >= 0)
-						   x--;
-						else
-						   x = width-1;
-	
-						setCursor(0);
-						break;
-	
-						/* move cursor right */
-					case BTN_RIGHT:
-						setCursor(1);
-				   if(x+1 >= width)
-						   x = 0;
-						else
-						   x++;
-						setCursor(0);
-						break;
-	
-						/* move cursor down */
-					case BTN_DOWN:
-						setCursor(1);
-				   if(y+1 >= height)
-						   y = 0;
-						else
-						   y++;
-						setCursor(0);
-						break;
-	
-						/* move cursor up */
-					case BTN_UP:
-						setCursor(1);
-				   if(y-1 >= 0)
-						   y--;
-						else
-						   y = height-1;
-						setCursor(0);
-						break;
-	
-						/* discover a tile (and it's neighbors if .neighbors == 0) */
-					case BTN_1:
-#ifdef AV4XX
-                case BTN_ON:
-#endif
-#ifndef AV4XX
-                case BTN_F1:
-#endif
-                        // BTN_1=joypress on av3xx, bad button
-                        if(arch==AV3XX_ARCH && evt==BTN_1) break;
-
-						if(MINE_FIELD(y,x).flag) break;
-						/* we put the mines on the first "click" so that you don't */
-						/* lose on the first "click" */
-						if(tiles_left == width*height) minesweeper_putmines(p,x,y);
-						discover(x,y);
-						if(MINE_FIELD(y,x).mine)
-						{
-							GameMode = 1;
-							x=0;y=0;
-							gfx_clearScreen(COLOR_GREEN);
-							gfx_putS(COLOR_BLACK, COLOR_GREEN, (screen_width-9*6)/2,screen_height/2-5, "You lose!");
-							gfx_putS(COLOR_BLACK, COLOR_GREEN, 1,screen_height-9, "[ON] New game, [OFF] Quit");
-							break;
-						}
-						tiles_left = 0;
-						for(i=0;i<height;i++){
-							for(j=0;j<width;j++){
-									if(MINE_FIELD(i,j).known == 0) tiles_left++;
-							}
-						}
-						if(tiles_left == mine_num)
-						{
-							GameMode = 1;
-							x=0;y=0;
-							gfx_clearScreen(COLOR_GREEN);
-							gfx_putS(COLOR_BLACK, COLOR_GREEN, (screen_width-9*6)/2,screen_height/2-5, "You win!");
-							gfx_putS(COLOR_BLACK, COLOR_GREEN, 1,screen_height-9, "[ON] New game, [OFF] Quit");
-							break;
-						}
-
-						displayMineField();
-						setCursor(0);
-						break;
-
-						/* toggle flag under cursor */
-					case BTN_2:
-					case BTN_F2:
-						MINE_FIELD(y,x).flag = (MINE_FIELD(y,x).flag + 1)%2;
-						displayMineField();
-						break;
-
- // new game
-#ifdef AV4XX
-                case BTN_F1:
-#endif
-#ifndef AV4XX
-                case BTN_ON:
-#endif
-						gfx_clearScreen(COLOR_GREEN);
-						minesweeper_init();
-						displayMineField();
-						setCursor(0);
-						break;
-
-					case BTN_F3: // settings
-						gfx_clearScreen(COLOR_GREEN);
-						gfx_putS(COLOR_BLACK, COLOR_GREEN, 1,screen_height-9, "[OFF] Quit");
-						GameMode = 2;
-						init_settings_screen();
-						break;
-			}
-		}
-		else if(GameMode == 1)
-		{
-			switch (evt) {
-				case BTN_OFF:
-						/* get out of here */
-						stop=1;
-						break;
-	
-				case BTN_ON: // new game
-					gfx_clearScreen(COLOR_GREEN);
-					GameMode = 0;
-					x=0;y=0;
-					minesweeper_init();
-					displayMineField();
-					setCursor(0);
-					break;
-			}
-		}
-		else
-		{
-			switch (evt) {
-			   case BTN_UP:
-					if(settingParam == 0)
-					   settingParam = 2;
-					else
-					   settingParam--;
-	
-					RefreshSettings();
-				   break;
-	
-			   case BTN_DOWN:
-					if(settingParam == 2)
-					   settingParam = 0;
-					else
-					   settingParam++;
-	
-					RefreshSettings();
-				   break;
-	
-			   case BTN_LEFT:
-	
-					if(settingParam == 0)
-					{
-					   if(width > 10)
-						{
-					  width--;
-					  RefreshSettings();
-						}
-					}
-					else if(settingParam == 1)
-					{
-					   if(height > 10)
-						{
-					  height--;
-					  RefreshSettings();
-						}
-					}
-					else
-					{
-					   if(p > 0)
-						{
-						   p--;
-					  RefreshSettings();
-						}
-					}
-				   break;
-	
-			   case BTN_RIGHT:
-				   if(settingParam == 0)
-					{
-					   if(width < (screen_width-((right_menu)?50:0))/PIECE_DIM)
-						{
-					  width++;
-					  RefreshSettings();
-						}
-					}
-					else if(settingParam == 1)
-					{
-					   if(height < (screen_height-((right_menu)?0:8))/PIECE_DIM)
-						{
-					  height++;
-					  RefreshSettings();
-				   }
-					}
-					else
-					{
-					   if(p < 100)
-						{
-						   p++;
-					  RefreshSettings();
-						}
-					}
-				   break;
-	
-				case BTN_OFF:
-					writeMinesINI();
-					gfx_clearScreen(COLOR_GREEN);
-					GameMode = 0;
-					x=0;y=0;
-					minesweeper_init();
-					displayMineField();
-					setCursor(0);
-					break;
-			}
-	
-		}
+        if(evt==ACTION_EXIT)
+        {
+            /* get out of here */
+            stop=1;
+        }
+        else if(evt==ACTION_LEFT)
+        {
+            setCursor(1);
+            if(x-1 >= 0)
+                x--;
+            else
+                x = width-1;
+            setCursor(0);
+        }
+        else if(evt==ACTION_RIGHT)
+        {
+            setCursor(1);
+            if(x+1 >= width)
+                x = 0;
+            else
+                x++;
+            setCursor(0);
+        }
+        else if(evt==ACTION_DOWN)
+        {
+            setCursor(1);
+            if(y+1 >= height)
+                y = 0;
+            else
+                y++;
+            setCursor(0);
+        }
+        else if(evt==ACTION_UP)
+        {
+            setCursor(1);
+            if(y-1 >= 0)
+                y--;
+            else
+                y = height-1;
+            setCursor(0);
+        }
+        else if(evt==ACTION_DISCOVER)
+        {
+            /* do not discover on a flagged cell */
+            if(MINE_FIELD(y,x).flag) break;
+            /* we init the mines position on first discover
+            in order not to loose immediatly*/
+            if(tiles_left == width*height) minesweeper_putmines(p,x,y);
+            /* show blank */
+            discover(x,y);
+            if(MINE_FIELD(y,x).mine)
+            {
+                stop=winLoose_screen("!! You loose !!");
+            }
+            else
+            {
+                tiles_left = 0;
+                for(i=0;i<height;i++){
+                    for(j=0;j<width;j++){
+                            if(MINE_FIELD(i,j).known == 0) tiles_left++;
+                    }
+                }
+                if(tiles_left == mine_num)
+                {
+                    stop=winLoose_screen("!! You win !!");
+                }
+                else
+                {
+                    displayMineField();
+                    setCursor(0);
+                }
+            }
+        }
+        else if(evt==ACTION_TOGGLE_FLAG)
+        {
+            MINE_FIELD(y,x).flag = (MINE_FIELD(y,x).flag + 1)%2;
+            displayMineField();
+        }
+        else if(evt==ACTION_NEW_GAME)
+        {
+            gfx_clearScreen(BG_COLOR);
+            init_field();
+            displayMineField();
+            setCursor(0);
+        }
+        else if(evt==ACTION_SETTINGS)
+        {
+            settings_screen();
+        }
 	}
-	evt_freeHandler(evt_handler);
 }
 
 void displayMineField()
@@ -722,89 +426,106 @@ void displayMineField()
     //display the mine field
     for(i=0;i<height;i++)
     {
-            for(j=0;j<width;j++)
+        for(j=0;j<width;j++)
+        {
+            if(MINE_FIELD(i,j).known)
             {
-                if(MINE_FIELD(i,j).known)
+
+                if(MINE_FIELD(i,j).mine)
                 {
-                    if(MINE_FIELD(i,j).mine)
-                    {
-                      gfx_putS(COLOR_RED, COLOR_LIGHT_GREY, 5j*PIECE_DIM+1,i*PIECE_DIM+1,"b");
-                    }
-                    else if(MINE_FIELD(i,j).neighbors)
-                    {
-                            if(MINE_FIELD(i,j).neighbors == 0)
-                                gfx_drawBitmap (&emptyB, j*PIECE_DIM,i*PIECE_DIM);
-                            else if(MINE_FIELD(i,j).neighbors == 1)
-                                gfx_drawBitmap (&oneB, j*PIECE_DIM,i*PIECE_DIM);
-                            else if(MINE_FIELD(i,j).neighbors == 2)
-                                gfx_drawBitmap (&twoB, j*PIECE_DIM,i*PIECE_DIM);
-                            else if(MINE_FIELD(i,j).neighbors == 3)
-                                gfx_drawBitmap (&threeB, j*PIECE_DIM,i*PIECE_DIM);
-                            else if(MINE_FIELD(i,j).neighbors == 4)
-                                gfx_drawBitmap (&fourB, j*PIECE_DIM,i*PIECE_DIM);
-                            else if(MINE_FIELD(i,j).neighbors == 5)
-                                gfx_drawBitmap (&fiveB, j*PIECE_DIM,i*PIECE_DIM);
-                            else if(MINE_FIELD(i,j).neighbors == 6)
-                                gfx_drawBitmap (&sixB, j*PIECE_DIM,i*PIECE_DIM);
-                            else if(MINE_FIELD(i,j).neighbors == 7)
-                                gfx_drawBitmap (&sevenB, j*PIECE_DIM,i*PIECE_DIM);
-                            else if(MINE_FIELD(i,j).neighbors == 8)
-                                gfx_drawBitmap (&eightB, j*PIECE_DIM,i*PIECE_DIM);
-                    }
-                    else
-                    {
-                       gfx_fillRect(COLOR_GREY, j*PIECE_DIM+1,i*PIECE_DIM+1,PIECE_DIM-2,PIECE_DIM-2);
-                    }
-                }
-                else if(MINE_FIELD(i,j).flag)
-                {
-                    gfx_fillRect(COLOR_LIGHT_GREY, j*PIECE_DIM+1,i*PIECE_DIM+1,PIECE_DIM-2,PIECE_DIM-2);
-                    gfx_drawLine(COLOR_RED, j*PIECE_DIM+2,i*PIECE_DIM+2,j*PIECE_DIM+PIECE_DIM-2,i*PIECE_DIM+PIECE_DIM-2);
-                    gfx_drawLine(COLOR_RED, j*PIECE_DIM+2,i*PIECE_DIM+PIECE_DIM-2,j*PIECE_DIM+PIECE_DIM-2,i*PIECE_DIM+2);
+                    gfx_putS(TXT_B_COLOR, FIELD_BG_COLOR,
+                                FIELD_X+j*PIECE_DIM+1,FIELD_Y+i*PIECE_DIM+1,
+                                "b");
                 }
                 else
                 {
-                    gfx_fillRect(COLOR_LIGHT_GREY, j*PIECE_DIM+1,i*PIECE_DIM+1,PIECE_DIM-2,PIECE_DIM-2);
+                        gfx_drawBitmap (&num_bitmap[MINE_FIELD(i,j).neighbors],
+                                            FIELD_X+j*PIECE_DIM,FIELD_Y+i*PIECE_DIM);
                 }
             }
+            else if(MINE_FIELD(i,j).flag)
+            {
+                gfx_fillRect(FIELD_BG_COLOR,
+                                FIELD_X+j*PIECE_DIM+1,FIELD_Y+i*PIECE_DIM+1,
+                                PIECE_DIM-2,PIECE_DIM-2);
+                gfx_drawLine(CROSS_COLOR,
+                                FIELD_X+j*PIECE_DIM+2,FIELD_Y+i*PIECE_DIM+2,
+                                FIELD_X+j*PIECE_DIM+PIECE_DIM-2,FIELD_Y+i*PIECE_DIM+PIECE_DIM-2);
+                gfx_drawLine(CROSS_COLOR,
+                                FIELD_X+j*PIECE_DIM+2,FIELD_Y+i*PIECE_DIM+PIECE_DIM-2,
+                                FIELD_X+j*PIECE_DIM+PIECE_DIM-2,FIELD_Y+i*PIECE_DIM+2);
+            }
+            else
+            {
+                gfx_fillRect(FIELD_BG_COLOR,
+                                FIELD_X+j*PIECE_DIM+1,FIELD_Y+i*PIECE_DIM+1,
+                                PIECE_DIM-2,PIECE_DIM-2);
+            }
+        }
     }
-
    printNumberOfMines();
 }
 
-void arch_init(){
+void arch_init(void)
+{
+    int arch;
+    int i=0,h;
     arch=getArch();
-	getResolution(&screen_width,&screen_height);
-	
-    if(screen_width>=320){
-        height = screen_height/PIECE_DIM;
-    	width = (screen_width-50)/PIECE_DIM;
-        right_menu=true;
-    }else{
-        height = (screen_height-8)/PIECE_DIM;
-    	width = screen_width/PIECE_DIM;
-        right_menu=false;
+    while(conf_tab[i].conf!=NULL && conf_tab[i].arch!=arch) i++;
+    if(conf_tab[i].conf==NULL)
+    {
+        printf("Using default conf");
+        cur_conf=&default_conf;
     }
+    else
+    {
+        printf("Using conf for %d\n",arch);
+        cur_conf=conf_tab[i].conf;
+    }
+    
+	getResolution(&screen_width,&screen_height);
+    gfx_getStringSize("M",0,&h);
+    max_height = height = (screen_height-h-2)/PIECE_DIM;
+    max_width = width = screen_width/PIECE_DIM;
+    computeSizePos();
+}
 
+void init_field(void)
+{
+    int i,j;
+    tiles_left=width*height;
+    mine_num = 0;
+    srand(tmr_getTick());
+    for(i=0;i<height;i++)
+    {
+        for(j=0;j<width;j++)
+        {
+            MINE_FIELD(i,j).known = 0;
+            MINE_FIELD(i,j).flag = 0;
+        }
+    }
 }
 
 /* plugin entry point */
 void app_main(int argc,char * * argv)
 {
-    gfx_clearScreen(COLOR_GREEN);
-    /* end of plugin init */
-
-    /* use standard font */
+/* gfx init */
+    gfx_openGraphics();
+    gfx_clearScreen(BG_COLOR);
+/* use standard font */
     gfx_fontSet(STD6X9);
-
+/* getting arch config */
     arch_init();
-
+/* real init */
 	minefield = (tile*)malloc(sizeof(tile)*height*width);
-
-	minesweeper_init();
+    init_field();
+/* initial draw */    
     displayMineField();
     setCursor(0);
-
+/* evt loop */
+    evt_handler=evt_getHandler(BTN_CLASS);
 	eventHandlerLoop();
+/* some cleanup */
+    evt_freeHandler(evt_handler);
+    free(minefield);
 }
-
