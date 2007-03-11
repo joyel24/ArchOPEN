@@ -119,7 +119,9 @@ MED_RET_T vfs_mount(char * mount_path,int disk, int partition_num)
     mountPoint = (struct vfs_mountPoint *)kmalloc(sizeof(struct vfs_mountPoint));
     if(!mountPoint)
     {
-        #warning we should also clean root_node !!!
+        fat_unmount(root_node,0);
+        free(root_node->custom_data);
+        free(root_node);
         printk("[vfs_mount] malloc error creating mountPoint\n");
         return -MED_ENOMEM;
     }
@@ -237,8 +239,8 @@ MED_RET_T vfs_clearNodeTree(struct vfs_node * root)
         ptr = root->children;
         if(ptr->opened && ptr->dirty)
         {
+            fat_fileFlushCache(ptr);
             printk("[vfs_clearNodeTree] %s opened => NEED a SYNC fction\n",ptr->name.str);
-#warning need to sync file                
         }
         
         if(ptr->type == VFS_TYPE_DIR)

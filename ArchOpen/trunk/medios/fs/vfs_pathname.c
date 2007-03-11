@@ -146,8 +146,7 @@ int vfs_pathnameIsEq(struct vfs_pathname * p1,
 
   if (p1->length == 0)
     return 1;
-#warning we use FAT like cmp for now
-    return (0 == strncasecmp(p1->str, p2->str, p1->length));
+  return (0 == strncasecmp(p1->str, p2->str, p1->length));
 //  return (0 == memcmp(p1->str, p2->str, p1->length));
 }
 

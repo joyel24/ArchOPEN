@@ -28,5 +28,7 @@ typedef int MED_RET_T;
 #define MED_ENOTEMPTY       15 /* Not empty */
 #define MED_EISDIR          16 /* we should not be working on a dir */
 #define MED_EISFILE         17 /* we should not be working on a file */
+#define MED_ENOTOPEN        18 /* file/dir not open yet */
+#define MED_EOF             19 /* end of file */
 
 #endif

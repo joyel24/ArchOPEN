@@ -180,10 +180,8 @@ MED_RET_T fsync(int fdesc)
     if(FILE_WRITE(fd->flags))
     {
         /* flush sector cache */
-#warning need a global management of dirty flag
         if ( fd->dirty )
         {
-
             ret_val = fat_fileFlushCache(fd);
             if (ret_val != MED_OK)
                 return ret_val;

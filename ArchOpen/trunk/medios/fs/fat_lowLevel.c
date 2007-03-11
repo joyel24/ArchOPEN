@@ -21,6 +21,7 @@
 #include <kernel/kernel.h>
 
 #include <driver/ata.h>
+#include <driver/time.h>
 
 #include <fs/fat.h>
 #include <fs/vfs.h>
@@ -595,26 +596,28 @@ MED_RET_T fat_flushFat(struct bpb* fat_bpb)
     return MED_OK;
 }
 
-#warning work on rtc code
-
 void fat_time(unsigned short* date,unsigned short* time,unsigned short* tenth )
 {
-#ifdef HAVE_RTC
-    struct tm* tm = get_time();
-
-    if (date)
-        *date = ((tm->tm_year - 80) << 9) |
-            ((tm->tm_mon + 1) << 5) |
-            tm->tm_mday;
-
-    if (time)
-        *time = (tm->tm_hour << 11) |
-            (tm->tm_min << 5) |
-            (tm->tm_sec >> 1);
-
-    if (tenth)
-        *tenth = (tm->tm_sec & 1) * 100;
-#else
+#ifdef HAVE_TIME
+    struct med_tm tm ;
+    if(time_get(&tm)==MED_OK)
+    {
+        if (date)
+            *date = ((tm.tm_year - 80) << 9) |
+                ((tm.tm_mon + 1) << 5) |
+                tm.tm_mday;
+    
+        if (time)
+            *time = (tm.tm_hour << 11) |
+                (tm.tm_min << 5) |
+                (tm.tm_sec >> 1);
+    
+        if (tenth)
+            *tenth = (tm.tm_sec & 1) * 100;
+     }
+     else /* if get_time returned an error, lets do as if Time was not supported */
+#endif
+    {
     /* non-RTC version returns an increment from the supplied time, or a
      * fixed standard time/date if no time given as input */
     int next_day = false;
@@ -674,7 +677,7 @@ void fat_time(unsigned short* date,unsigned short* time,unsigned short* tenth )
     }
     if (tenth)
         *tenth = 0;
-#endif /* HAVE_RTC */
+    }
 }
 
 unsigned char fat_char2Dos(unsigned char c)

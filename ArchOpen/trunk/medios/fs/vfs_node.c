@@ -172,7 +172,6 @@ MED_RET_T vfs_nodeLookup(struct  vfs_pathname * path,
         }
         else if(vfs_pathnameIsStr("..",&current_component))
         {
-#warning if we go up, should we unref current and ref parent ?
             /* trying to reach upper level */
             if(current_node == root_mountPoint->root_node)
             {
@@ -320,86 +319,3 @@ MED_RET_T vfs_nodeClearDirty(struct vfs_node * node)
     LIST_DELETE_NAMED(node->mount_point->dirty_list,node,prev_dirty,next_dirty);
     return MED_OK;
 }
-
-
-
-#if 0
-
-
-
-MED_RET_T vfs_nodeUnRef(struct vfs_node * node)
-{
-    struct vfs_node * to_be_deleted=NULL;
-
-    /* let's build the list of node to be deleted */
-    while(node)
-    {
-        if(!(node->ref_cnt>0))
-        {
-            printk("[FATAL ERROR] in vfs_nodeUnRef cnt is not >0 : %d\n",node->ref_cnt);
-            return -MED_EBADDATA;
-        }
-        node->ref_cnt--;
-
-        if(node->ref_cnt>0)
-            break;  /* can't be deleted */
-
-        /* if node has a parent -> try to delete it */
-        if(node->parent)
-        {
-            struct vfs_node * parent = node->parent;
-            if(!(parent->ref_cnt>=1))
-            {
-                printk("[FATAL ERROR] in vfs_nodeRef, parent cnt is not >=1 : %d\n",parent->ref_cnt);
-                return -MED_EBADDATA;
-            }
-            LIST_DELETE_NAMED(parent->children,node,siblings_prev,siblings_next);
-        }
-        /* add node to list for deletion */
-        LIST_ADD_TAIL_NAMED(to_be_deleted,node,siblings_prev,siblings_next);
-        /* mode to parent */
-        node=node->parent;
-    }
-
-    /* now process to_be_deleted list */
-    while(!LIST_IS_EMPTY_NAMED(to_be_deleted,siblings_prev,siblings_next))
-    {
-        node = LIST_POP_HEAD_NAMED(to_be_deleted,siblings_prev,siblings_next);
-        if(node->dirty)
-            if(MED_OK != vfs_nodeSync(node))
-                printk("[FATAL ERROR] in vfs_nodeRef during node sync\n");
-        node->destructor(node);
-        free(node);
-    }
-
-    return MED_OK;
-
-}
-
-#warning need to link this to fs sync !!
-MED_RET_T vfs_nodeSync(struct vfs_node * node)
-{
-    int ret_val;
-
-    if(!node->dirty)
-        return MED_OK;
-
-    /* ask fs to sync */
-    ret_val = node->sync(node);
-    if(ret_val!=MED_OK)
-        return ret_val;
-
-    /* remove from fs dirty node list */
-    LIST_DELETE_NAMED(node->fs->dirty_nodes,node,prev_dirty,next_dirty);
-
-    node->dirty = 0;
-
-    return MED_OK;
-}
-
-
-
-
-
-
-#endif

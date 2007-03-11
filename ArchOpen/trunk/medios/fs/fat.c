@@ -491,7 +491,7 @@ MED_RET_T fat_updateShortEntry(struct vfs_node * file, int size, int attr)
     *sizeptr = SWAB32(size);
 
     {
-#ifdef HAVE_RTC
+#ifdef HAVE_TIME
         unsigned short time = 0;
         unsigned short date = 0;
 #else
@@ -1099,7 +1099,6 @@ MED_RET_T fat_fileOpen(struct vfs_node * opened_file)
     }
     else
         VFS_PRINT("Openning a dir -> nothing to do\n");
-#warning should we reload entry for both dir and file?
     return MED_OK;
 }
 

@@ -84,6 +84,7 @@ CONFIGURE_HAVE_EVT=-1
 CONFIGURE_BOOT_WITH_CONSOLE=-1
 CONFIGURE_HAVE_DBUG=-1
 CONFIGURE_HAVE_ST_RTC=-1
+CONFIGURE_HAVE_TIME=-1
 
 if [ "$1" == "-d" ]; then
 CONFIGURE_TARGET_DEVICE="$2"
@@ -139,6 +140,7 @@ if [ $CONFIGURE_TARGET_DEVICE == "1" ]; then
             CONFIGURE_SPLASH_TYPE="SPLASH_320x240"
             CONFIGURE_HAS_SPKR="0"
             CONFIGURE_HAVE_ST_RTC="1"
+            CONFIGURE_HAVE_TIME="1"
             if [ $HAS_DEFAULT == "1" ]; then
             CONFIGURE_CHK_USB_FW="1"
             CONFIGURE_HAVE_EVT="1"
@@ -158,6 +160,7 @@ if [ $CONFIGURE_TARGET_DEVICE == "2" ]; then
             CONFIGURE_SPLASH_TYPE="SPLASH_220x176"
             CONFIGURE_HAS_SPKR="0"
             CONFIGURE_HAVE_ST_RTC="1"
+            CONFIGURE_HAVE_TIME="1"
             if [ $HAS_DEFAULT == "1" ]; then
             CONFIGURE_HAVE_DBUG="0"
             CONFIGURE_CHK_USB_FW="1"
@@ -180,6 +183,7 @@ if [ $CONFIGURE_TARGET_DEVICE == "3" ]; then
             CONFIGURE_SPLASH_TYPE="NONE"
             CONFIGURE_HAS_SPKR="0"
             CONFIGURE_HAVE_ST_RTC="1"
+            CONFIGURE_HAVE_TIME="1"
             if [ $HAS_DEFAULT == "1" ]; then
             CONFIGURE_CHK_USB_FW="1"
             CONFIGURE_HAVE_EVT="1"
@@ -201,6 +205,7 @@ if [ $CONFIGURE_TARGET_DEVICE == "4" ]; then
             CONFIGURE_SPLASH_TYPE="NONE"
             CONFIGURE_HAS_SPKR="0"
             CONFIGURE_HAVE_ST_RTC="1"
+            CONFIGURE_HAVE_TIME="1"
             if [ $HAS_DEFAULT == "1" ]; then
             CONFIGURE_CHK_USB_FW="1"
             CONFIGURE_HAVE_EVT="1"
@@ -219,6 +224,7 @@ if [ $CONFIGURE_TARGET_DEVICE == "5" ]; then
             CONFIGURE_SPLASH_TYPE="SPLASH_220x176"
             CONFIGURE_HAS_SPKR="0"
             CONFIGURE_HAVE_ST_RTC="1"
+            CONFIGURE_HAVE_TIME="1"
             if [ $HAS_DEFAULT == "1" ]; then
             CONFIGURE_HAVE_DBUG="0"
             CONFIGURE_CHK_USB_FW="1"
@@ -239,6 +245,7 @@ if [ $CONFIGURE_TARGET_DEVICE == "6" ]; then
             CONFIGURE_SPLASH_TYPE="SPLASH_320x240"
             CONFIGURE_HAS_SPKR="1"
             CONFIGURE_HAVE_ST_RTC="1"
+            CONFIGURE_HAVE_TIME="1"
             if [ $HAS_DEFAULT == "1" ]; then
             CONFIGURE_HAVE_DBUG="0"
             CONFIGURE_CHK_USB_FW="1"
@@ -260,6 +267,7 @@ if [ $CONFIGURE_TARGET_DEVICE == "7" ]; then
             CONFIGURE_SPLASH_TYPE="SPLASH_320x240"
             CONFIGURE_HAS_SPKR="0"
             CONFIGURE_HAVE_ST_RTC="0"
+            CONFIGURE_HAVE_TIME="0"
             if [ $HAS_DEFAULT == "1" ]; then
             CONFIGURE_HAVE_DBUG="0"
             CONFIGURE_CHK_USB_FW="1"
@@ -279,6 +287,7 @@ if [ $CONFIGURE_TARGET_DEVICE == "8" ]; then
             CONFIGURE_FM_REMOTE_VERSION="v2"
             CONFIGURE_SPLASH_TYPE="SPLASH_480x272"
             CONFIGURE_HAS_SPKR="1"
+            CONFIGURE_HAVE_TIME="0"
             if [ $HAS_DEFAULT == "1" ]; then
             CONFIGURE_HAVE_DBUG="0"
             CONFIGURE_CHK_USB_FW="1"
@@ -331,6 +340,7 @@ cat ./Makefile.conf.template | sed > ./Makefile.conf \
  -e "s,%CONFIGURE_SPLASH_TYPE%,${CONFIGURE_SPLASH_TYPE},g" \
  -e "s,%CONFIGURE_HAS_SPKR%,${CONFIGURE_HAS_SPKR},g" \
  -e "s,%CONFIGURE_HAVE_CF%,${CONFIGURE_HAVE_CF},g" \
+ -e "s,%CONFIGURE_HAVE_TIME%,${CONFIGURE_HAVE_TIME},g" \
  -e "s,%CONFIGURE_HAVE_ST_RTC%,${CONFIGURE_HAVE_ST_RTC},g" \
  -e "s,%CONFIGURE_HAVE_DBUG%,${CONFIGURE_HAVE_DBUG},g"
 

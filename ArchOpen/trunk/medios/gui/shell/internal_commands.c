@@ -132,10 +132,10 @@ int usbMode=0;
 static bool intCmd_doUsbMode(char * param){
     if(usbMode)
     {
-        // in usb mode => disable usb
-        printk( "Warning should not be here\n");
+// in usb mode => disable usb
+        printk( "Warning starting USB mode, but we are already in this mode\n");
         return false;
-#warning need some processing to see what to do here
+// maybe we can do better: checking if usb cable is present, usb is enable ...
     }
     else
     {
