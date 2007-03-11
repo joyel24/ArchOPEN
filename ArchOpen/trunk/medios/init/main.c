@@ -161,6 +161,60 @@ void tst_fct(void)
 }
 #endif
 
+#if 0
+
+#include <fs/csv_file.h>
+
+struct testStruct {
+    char * st1;
+    int val1;
+    int val2;
+    char * st2;
+};
+
+void test_csv(void)
+{
+    printk("trying to close before start: get %d\n",-csv_end());
+    
+    if(csv_newFile("/test.csv")==MED_OK)
+    {
+        int ret_val;
+        int stop=0;
+        struct testStruct s1;
+        while(!stop)
+        {
+            ret_val=csv_readLine(&s1,"sdds",';');
+            //ret_val=csv_readLine(&s1,"sddA",';'); /*test with bad format string*/
+            //ret_val=csv_readLine(&s1,"sddss",';'); /*test with too much item in format string*/
+            switch(ret_val)
+            {
+                case MED_OK:
+                    printk("Everything is fine, found:\n");
+                    printk("%s\n%d\n%d\n%s\n",s1.st1,s1.val1,s1.val2,s1.st1);                    
+                    print_data((void*)&s1,sizeof(struct testStruct));
+                    break;
+                case -MED_EINVAL:
+                case -MED_EMOBJ:
+                    printk("Error\n");
+                    break;
+                case -MED_EOF:
+                    stop=1;
+                    printk("EOF\n");
+                    break;
+                default:
+                    printk("UKN return code: %d\n",ret_val);
+                    break;            
+            }
+        }
+    }
+    csv_end();
+    printk("end of test let's loop\n");
+    while(1) ;
+}
+
+
+#endif
+
 void kernel_thread(void)
 {
 #ifdef BUILD_LIB
@@ -187,7 +241,8 @@ void kernel_thread(void)
     app_main(1,&stdalone);
     reload_firmware();
 #endif
-
+    //tst_fct();
+    //test_csv();
     //FM_enable();
     shell_main();
 

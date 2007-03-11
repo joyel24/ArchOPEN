@@ -297,6 +297,12 @@ bool       # cfg_deleteItem   # CFG_DATA * data, char * name
 
 void       # cfg_printItems   # CFG_DATA * data
 
+#k_inc#fs/csv_file.h
+MED_RET_T  # csv_newFile      # char * filename
+MED_RET_T  # csv_end          # void
+MED_RET_T  # csv_line2Array   # int nbItem,char ** item_array,char sepChar
+MED_RET_T  # csv_readLine     # void * data,char * formatStr,char sepChar
+
 #k_inc#driver/speaker.h
 
 void       # speaker_enable    # int enable

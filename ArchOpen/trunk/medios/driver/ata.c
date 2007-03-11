@@ -67,6 +67,7 @@ int ata_rwData(int disk,unsigned int lba,void * data,int count,int cmd,int use_d
     struct ata_cmd new_cmd;
     struct ata_cmd * cur_cmd;
     MED_RET_T ret_val;
+    
 #ifdef ATA_NO_TASKLIST
     int i,j;
     bool unaligned;
@@ -76,6 +77,7 @@ int ata_rwData(int disk,unsigned int lba,void * data,int count,int cmd,int use_d
     int block_size;
     int nbSector;
 #endif
+
     new_cmd.disk=disk;
     new_cmd.lba=lba;
     new_cmd.data=data;
@@ -94,16 +96,16 @@ int ata_rwData(int disk,unsigned int lba,void * data,int count,int cmd,int use_d
         pipeWrite(&cmd_list,&cur_cmd,4);
         threadCurrent->state=THREAD_BLOCKED_BY_ATA;
         ata_thread->state=THREAD_STATE_ENABLE;
-        __sti();
-        yieldTo(ata_thread);        
+        yieldTo(ata_thread);
+        __sti();   
     }
     else
     {
         __cli();
         pipeWrite(&cmd_list,&cur_cmd,4);
         threadCurrent->state=THREAD_BLOCKED_BY_ATA;
+        yield(); 
         __sti();
-        yield();    
     }
     return ret_val;
 }
@@ -128,8 +130,8 @@ void ata_rwThread(void)
         {
             __cli();
             threadCurrent->state=THREAD_STATE_DISABLE;
-            __sti();
             yield();
+            __sti();
         }
        
         __cli();
@@ -224,11 +226,13 @@ void ata_rwThread(void)
                 /* copy data to the temp buffer if unaligned and we're writing*/
                 if(cur_cmd->cmd == ATA_DO_WRITE) memcpy(buffer,cur_cmd->data+i*SECTOR_SIZE,SECTOR_SIZE);
             }
+            
             if(ata_waitForXfer()<0)
             {
                 ret_val=0;
                 goto end;
             }
+            
             if(use_multiple && xfer_size<nbSector)
                 block_size=xfer_size*SECTOR_SIZE;
             if(cur_cmd->use_dma==ATA_WITH_DMA)
@@ -262,18 +266,20 @@ void ata_rwThread(void)
                 
                 
     
-    #ifdef DM320
+#ifdef DM320
     cache_invalidateRange(CACHE_DATA,buffer,block_size);
-    #endif
+#endif
     
-                dma_start();
+                
                 /* ata can't work without irq */
 #ifndef ATA_NO_TASKLIST
                 __cli();
+                dma_start();
                 threadCurrent->state=THREAD_BLOCKED_BY_DMA;
-                __sti();
                 yield();
+                __sti();
 #else
+                dma_start();
                 while(dma_pending()) /*nothing*/;
 #endif
             }
@@ -502,13 +508,16 @@ void ata_init(void)
     cur_disk = HD_DISK;
 
     cmd_list.nIN=cmd_list.nOUT=0;
+    
 #ifndef ATA_NO_TASKLIST    
     thread_startFct(&ata_thread,ata_rwThread,"ATA rw",THREAD_STATE_ENABLE,PRIO_HIGH);
-#endif    
+#endif
+
     tmr_setup(&ataStop_tmr,"ata Stop");
     ataStop_tmr.action   = ata_stopTmrFct;
     ataStop_tmr.freeRun  = 1;
     ataStop_tmr.stdDelay = 1; /* 1 tick delay */
+    
     irq_enable(IRQ_IDE);
     
     ata_reset();
@@ -525,9 +534,11 @@ void ide_intAction(int irq,struct pt_regs * regs)
     if(ata_thread->state==THREAD_BLOCKED_BY_DMA)
     {
         ata_thread->state=THREAD_STATE_ENABLE;
-        threadCurrent=ata_thread;        
-        //printk("dma end\n");
-        
+        threadCurrent=ata_thread; 
+    }
+    else
+    {
+        printk("DMA INT\n");
     }
 }
 
