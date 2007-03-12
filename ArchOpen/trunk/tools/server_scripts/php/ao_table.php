@@ -2,6 +2,7 @@
 <body>
 
 <?
+//include('phpReport_20060827.log');
 $today=time();
 $nb_days=10;
 /* creating table of date + including files and mark presence*/
@@ -19,10 +20,10 @@ for($i=0;$i<$nb_days;$i++)
 }
 
 ?>
-
-<H1>ArchOpen Daily Builds</h1>
-
+<center>
+<H1>ArchOpen Daily Builds</h1></center>
 <a href='/tiki-index.php'>back</a><p>
+<center>
 <table border="1">
   <tbody>
     <tr>
@@ -39,7 +40,12 @@ for($i=0;$i<$nb_arch;$i++)
 }
 ?>
 </tr>
+
 <?
+echo "<tr><td colspan=".($nb_arch+1).">";
+echo "<font size=+1><center><a href='/tiki-download_file.php?fileId=52'>Icons and other basic medios files</a></center></font>";
+echo "</td></tr>";
+
 for($j=0;$j<$nb_days;$j++)
 {
 	echo "<tr>\n";
@@ -58,7 +64,15 @@ for($j=0;$j<$nb_days;$j++)
                     else
                             $bgcolor="cyan";
                     echo "<td bgcolor='".$bgcolor."'>\n";
-                    echo "<a href='builds/".$arch_list[$i]."_medios_".$cur_date.".zip'>Bin</a>\n";
+                   /* if($arch_list[$i]=="g402")
+                    {
+                            echo "<a href='".$arch_list[$i]."_medios_".$cur_date.".zip'>Bin</a>&nbsp;&nbsp;\n";
+                            echo "<a href='cc_".$arch_list[$i]."_medios_".$cur_date.".zip'>cc Bin</a>\n";
+                    }
+                    else
+                    {*/
+                            echo "<a href='builds/".$arch_list[$i]."_medios_".$cur_date.".zip'>Bin</a>\n";
+                    //}
                     
                     if($arch_list[$i]=="apps")
                     {
@@ -90,6 +104,7 @@ for($j=0;$j<$nb_days;$j++)
 </tr>
 </tbody>
 </table>
+</center>
 <p><a href='/tiki-index.php'>back</a>
 </body>
 </html>
