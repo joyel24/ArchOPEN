@@ -181,7 +181,7 @@ int navigate_grid(bool *helper,bool *clear){
 
     sel2=false;
     first=true;
-    res=-1;
+    res=-2;
 
     do{
         evt=evt_getStatus(evt_handler);
@@ -242,7 +242,7 @@ int navigate_grid(bool *helper,bool *clear){
                     if(sel2){
                         sel2=false;
                     }else{
-                        res=0;
+                        res=-1;
                     }
                     break;
                 case BTN_F2:
@@ -277,7 +277,7 @@ int navigate_grid(bool *helper,bool *clear){
 
         draw_grid();
 
-    }while(res<0);
+    }while(res==-2);
 
     return res;
 }
@@ -374,8 +374,7 @@ void game_loop(){
 
     do{
         pos=navigate_grid(&helper,&clear);
-
-        if(pos>0){
+        if(pos>=0){
 
             if(clear){
 
@@ -392,7 +391,6 @@ void game_loop(){
             }else{
 
                 num=choose_number();
-
                 if(num>0){
                     if(helper){
                         int i;
@@ -423,7 +421,7 @@ void game_loop(){
                 }
             }
         }
-    }while(pos>0);
+    }while(pos>=0);
 }
 
 void menu_onClick(WIDGETMENU m, WIDGETMENU_ITEM mi){
@@ -987,7 +985,7 @@ bool generate()
     gfx_clearScreen(COLOR_WHITE);
 	gfx_fontSet(STD8X13);
 	gfx_putS(COLOR_BLACK,COLOR_WHITE,(screen_width-18*8)/2,screen_height/4-13/2,"Generating grid...");
-    gfx_drawRect(COLOR_BLACK,0,(screen_height-30)/2,screen_width,30);
+    gfx_drawRect(COLOR_BLACK,2,(screen_height-30)/2,screen_width-4,30);
 
 	for(i=0;i<81;i++)
 	{
@@ -1024,7 +1022,7 @@ bool generate()
 	while(count>difficulty)
 	{
     	//drawing advance
-        gfx_fillRect(COLOR_LIGHT_BLUE,1+screen_width*(81-count)/(81-difficulty),(screen_height-28)/2,screen_width/(81-difficulty)+1,28);
+        gfx_fillRect(COLOR_LIGHT_BLUE,3+(screen_width-5)*(81-count)/(81-difficulty),(screen_height-28)/2,(screen_width-5)/(81-difficulty)+1,28);
 
         //off pressing
         if(evt_getStatus(evt_handler)==BTN_OFF) return false;
