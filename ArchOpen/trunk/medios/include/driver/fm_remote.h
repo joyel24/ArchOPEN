@@ -136,6 +136,7 @@ void FM_init(void);
 void FM_verInit(void);
 void FM_enable(void);
 void FM_disable(void);
+int FM_getState(void);
 /************************************** end private functions */
 
 #endif

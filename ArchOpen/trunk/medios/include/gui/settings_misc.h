@@ -1,5 +1,5 @@
 /*
-* include/gui/settings_energy.h
+* include/gui/settings_misc.h
 *
 * MediOS project
 * Copyright (c) 2005 by Christophe THOMAS
@@ -11,9 +11,10 @@
 *
 */
 
-#ifndef __SETTINGS_ENERGY_H
-#define __SETTINGS_ENERGY_H
+#ifndef __SETTINGS_MISC_H
+#define __SETTINGS_MISC_H
 
-void energy_setting(void);
+void misc_setting(void);
+void misc_loadPref(void);
 
 #endif

@@ -70,7 +70,7 @@
 
 #include <gui/shell.h>
 #include <gui/splash.h>
-
+#include <gui/settings_misc.h>
 
 #ifdef BUILD_LIB
 extern int app_main(int argc, char * argv[]);
@@ -230,6 +230,7 @@ void kernel_thread(void)
     }
     
     energy_loadPref();
+    misc_loadPref();
     
     /* boot info */
     printk("SP: %08x\n",get_sp());
@@ -243,7 +244,6 @@ void kernel_thread(void)
 #endif
     //tst_fct();
     //test_csv();
-    //FM_enable();
     shell_main();
 
     printk("[SYS thread] error: back to main()\n");

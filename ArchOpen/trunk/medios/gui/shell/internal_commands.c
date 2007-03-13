@@ -42,6 +42,7 @@ static bool intCmd_doReloadFirmware(char * param);
 static bool intCmd_doUsbMode(char * param);
 static bool intCmd_doTimeSetting(char * param);
 static bool intCmd_doEnergySetting(char * param);
+static bool intCmd_doMiscSetting(char * param);
 
 typedef struct{
     char * command;
@@ -68,6 +69,10 @@ INTERNAL_COMMAND intCmd_commands[] = {
     {
         command:  "set_energy",
         function: intCmd_doEnergySetting
+    },
+    {
+        command:  "set_misc",
+        function: intCmd_doMiscSetting
     },
     /* should always be the last entry */
     {
@@ -183,7 +188,15 @@ static bool intCmd_doUsbMode(char * param){
             vfs_init();
             disk_addAll();            
             
-
+            /* reloading menu */
+#if 0
+            shellMenu_close();
+            if(!shellMenu_init())
+            {
+                msgBox_show("MediOS - USB mode","Can't reload Menu",MSGBOX_TYPE_OK,MSGBOX_ICON_EXCLAMATION,eh);
+                
+            }
+#endif
 #warning we should reload menu.cfg or other menu related files
         }
         else
@@ -210,5 +223,13 @@ static bool intCmd_doTimeSetting(char * param)
 static bool intCmd_doEnergySetting(char * param)
 {
     energy_setting();
+    return true;   
+}
+
+#include <gui/settings_misc.h>
+
+static bool intCmd_doMiscSetting(char * param)
+{
+    misc_setting();
     return true;   
 }

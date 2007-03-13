@@ -666,6 +666,8 @@ void fmRemote_chk(void)
         nb_chk++;
 }
 
+int fm_state;
+
 void FM_enable(void)
 {
     char c;
@@ -691,10 +693,12 @@ void FM_enable(void)
     uart_out('v',FM_REMOTE_UART);
     mdelay(5);
     irq_enable(UART_IRQ_NUM(FM_REMOTE_UART));
+    fm_state=1;
 }
 
 void FM_disable(void)
 {
+    fm_state=0;
     if(fmRemote_tmr.trigger==1)
         tmr_stop(&fmRemote_tmr);
     uart_restoreIrqHandler(UART_IRQ_NUM(FM_REMOTE_UART));
@@ -706,10 +710,15 @@ void FM_disable(void)
     }
 }
 
+int FM_getState(void)
+{
+    return fm_state;
+}
+
 void FM_init(void)
 {
     inHold=0;
-    
+    fm_state=0;
     fm_index=0;
     FM_connected=0;
     keepTmr = 0;

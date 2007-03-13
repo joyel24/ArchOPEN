@@ -348,7 +348,8 @@ void shellMenu_printItems(){
 bool shellMenu_init(){
     
     rootListView=false;
-
+    shellMenu_firstItem = NULL;
+    shellMenu_lastItem = NULL;
     // load icons
     shellMenu_folderIcon = icon_load(SHELL_FOLDER_ICON);
     shellMenu_backIcon = icon_load(SHELL_BACK_ICON);
@@ -393,4 +394,5 @@ void shellMenu_close(){
 
         free(prev);
     }
+    
 }

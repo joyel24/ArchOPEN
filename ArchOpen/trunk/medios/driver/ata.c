@@ -61,6 +61,7 @@ struct pipe cmd_list;
     })
 
 //#define ATA_NO_TASKLIST
+#define NO_MULTYSECT
 
 int ata_rwData(int disk,unsigned int lba,void * data,int count,int cmd,int use_dma)
 {
@@ -153,13 +154,13 @@ void ata_rwThread(void)
         {
             buffer=ata_sectorBuffer;
         }
-    
+#ifndef NO_MULTYSECT    
         if(disk_info[cur_cmd->disk]->has_multi_sector && !unaligned && cur_cmd->cmd==ATA_DO_READ)
         {
             use_multiple=1;
             nbSector=disk_info[cur_cmd->disk]->multi_sector;
         }
-            
+#endif            
         /* select the right disk */
         ATA_SELECT_DISK(cur_cmd->disk);
             
@@ -186,6 +187,7 @@ void ata_rwThread(void)
                 ATA_OUTB(cur_cmd->lba>>16,IDE_HCYL);
                 ATA_OUTB((cur_cmd->lba>>24) | IDE_SEL_LBA,IDE_SELECT);
                 ATA_OUTB(cur_cmd->count,IDE_NSECTOR);
+#ifndef NO_MULTYSECT 
                 if(!use_multiple)
                 {
                     ATA_OUTB(IDE_CMD_READ_SECTORS,IDE_COMMAND);
@@ -194,6 +196,9 @@ void ata_rwThread(void)
                 {
                     ATA_OUTB(IDE_CMD_READ_MULTIPLE_SECTORS,IDE_COMMAND);
                 }
+#else
+                ATA_OUTB(IDE_CMD_READ_SECTORS,IDE_COMMAND);
+#endif
                 break;
             case ATA_DO_WRITE:
                 ATA_OUTB(cur_cmd->lba,IDE_SECTOR);
@@ -232,9 +237,10 @@ void ata_rwThread(void)
                 ret_val=0;
                 goto end;
             }
-            
+#ifndef NO_MULTYSECT             
             if(use_multiple && xfer_size<nbSector)
                 block_size=xfer_size*SECTOR_SIZE;
+#endif
             if(cur_cmd->use_dma==ATA_WITH_DMA)
             {
                 if(dma_pending())
