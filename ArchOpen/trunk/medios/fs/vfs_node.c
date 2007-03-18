@@ -27,9 +27,6 @@ extern struct vfs_mountPoint * root_mountPoint;
 void vfs_nodePrintTree(struct vfs_node *node,int level)
 {
     struct vfs_node * ptr;
-
-    struct fat_entry * ptr_fat;
-
     int nb_children;
     LIST_FOREACH_NAMED(node->children,ptr,nb_children,
                 siblings_prev,siblings_next)
@@ -37,24 +34,27 @@ void vfs_nodePrintTree(struct vfs_node *node,int level)
         int i;
         for(i=0;i<level;i++)
             printk("  ");
-        printk("%s",ptr->name.str);
-        if(ptr->type==VFS_TYPE_DIR)
-        {
-            printk("/");
-        }
-
-        ptr_fat=(struct fat_entry *)ptr->custom_data;
-
-        printk("   (%d-%d)\n",ptr->ref_cnt,ptr_fat->dirEntryNum);
-
+        vfs_nodePrint(ptr);
         if(ptr->type==VFS_TYPE_DIR)
         {
             if(ptr->children)
                 vfs_nodePrintTree(ptr,level+1);
         }
-
-
     }
+}
+
+void vfs_nodePrint(struct vfs_node *node)
+{
+    struct fat_entry * ptr_fat;
+    printk("%s",node->name.str);
+    if(node->type==VFS_TYPE_DIR)
+    {
+        printk("/");
+    }
+
+    ptr_fat=(struct fat_entry *)node->custom_data;
+
+    printk("   (%d-%d)\n",node->ref_cnt,ptr_fat->dirEntryNum);
 }
 
 MED_RET_T vfs_nodeInitChild(struct vfs_mountPoint * mount_point,

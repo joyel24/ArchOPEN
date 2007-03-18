@@ -18,6 +18,7 @@
 #include <kernel/kernel.h>
 #include <kernel/malloc.h>
 #include <kernel/list.h>
+#include <kernel/thread.h>
 
 #include <fs/vfs.h>
 #include <fs/stdfs.h>
@@ -37,6 +38,11 @@ void vfs_init(void)
     
     /* init drivers */
     fat_init();
+    
+    /* init thread link */
+    THREAD_INIT_RES(struct vfs_node,vfs_fileClose,FILE_RESSOURCE,vfs_nodePrint);
+    THREAD_INIT_RES(struct vfs_node,vfs_dirClose,DIR_RESSOURCE,vfs_nodePrint);
+    
     printk("[VFS init] done\n");
 }
 

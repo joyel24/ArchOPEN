@@ -14,6 +14,11 @@
 
 void app_main(int argc,char * * argv)
 {
+    char path[MAX_PATH];
+    
+    fs_pwd(path);
+    printf("current path=%s\n",path);
+    
     gfx_clearScreen(COLOR_BLACK);
     
     gfx_putS(COLOR_BLUE,COLOR_BLACK,10,10,"Hello world");

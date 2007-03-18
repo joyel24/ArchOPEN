@@ -54,7 +54,7 @@ struct bhead {
 
 void mem_printItem (struct bhead * ptr);
 
-void internalFree(struct bhead * b);
+int internalFree(struct bhead * b);
 void * internalMalloc(unsigned int  requested_size,int isKernel);
 void * internalRealloc(void *buf,unsigned int size,int isKernel);
 

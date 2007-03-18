@@ -266,13 +266,13 @@ void kfree(void * buf)
     internalFree(b);
 }
 
-void internalFree(struct bhead * b)
+int internalFree(struct bhead * b)
 {
     struct bhead * b_prev;
     struct bhead * b_nxt;
     /* Buffer size must be negative, indicating that the buffer is allocated. */
     if (b->size >= 0)
-        return;
+        return 0;
 
     b->size = - b->size;
 
@@ -326,6 +326,7 @@ void internalFree(struct bhead * b)
             INSERT_FREE(b);
         }
     }
+    return 0;
 }
 
 /*  BPOOL  --  Add a region of memory to the buffer pool.  */

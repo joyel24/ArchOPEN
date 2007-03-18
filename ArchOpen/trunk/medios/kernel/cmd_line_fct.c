@@ -23,11 +23,17 @@
 #include <kernel/irq.h>
 #include <kernel/timer.h>
 #include <kernel/io.h>
+#include <kernel/list.h>
 
 #include <driver/gio.h>
 #include <driver/cpld.h>
 #include <driver/fm_remote.h>
 #include <driver/ata.h>
+
+#include <fs/stdfs.h>
+#include <fs/vfs.h>
+#include <fs/vfs_node.h>
+#include <fs/fat.h>
 
 struct cmd_line_s cmd_tab[] = {
     {
@@ -182,6 +188,30 @@ struct cmd_line_s cmd_tab[] = {
         nb_args    : 6
     },
 #endif
+    {
+        cmd        : "pwd",
+        help_str   : "pwd : show current path",
+        cmd_action : do_pwd,
+        nb_args    : 0
+    },
+    {
+        cmd        : "cd",
+        help_str   : "cd PATH: change path to PATH",
+        cmd_action : do_cd,
+        nb_args    : 1
+    },
+    {
+        cmd        : "ls",
+        help_str   : "ls: list current folder content",
+        cmd_action : do_ls,
+        nb_args    : 0
+    },
+    {
+        cmd        : "cat",
+        help_str   : "cat FILE_NAME: print FILE_NAME content",
+        cmd_action : do_cat,
+        nb_args    : 1
+    },
     /* this has to be the last entry */
     {
         cmd        : NULL,
@@ -479,3 +509,79 @@ void do_rtcSet (unsigned char ** params)
         printk("Can't send time/date to rtc\n");
 }
 #endif
+
+void do_pwd(unsigned char ** params)
+{
+    char path[MAX_PATH];
+    
+    fs_pwd(path);
+    printk("%s\n",path);
+}
+
+void do_cd(unsigned char ** params)
+{
+    int ret_val=fs_cd(params[0]);
+    if(ret_val==-MED_ENOENT)
+    {
+        printk("%s not found\n",params[0]);
+    }
+    else if(ret_val==-MED_ENOTDIR)
+    {
+        printk("%s not a folder\n",params[0]);
+    }
+}
+
+void do_ls(unsigned char ** params)
+{
+    struct vfs_node * ptr,*rootPtr;
+    int nb_children;
+    MED_RET_T ret_val;
+    
+    if(threadCurrent->path)
+        rootPtr=threadCurrent->path;
+    else
+        rootPtr=root_mountPoint->root_node;
+            
+    if(!rootPtr->dir_loaded)
+    {
+        ret_val=fat_loadDir(rootPtr);
+        if(ret_val!=MED_OK)
+        {
+            printk("Error loading dir %s: %d\n",rootPtr->name.str,-ret_val);
+            return;
+        }
+    }
+    
+    LIST_FOREACH_NAMED(rootPtr->children,ptr,nb_children,
+                       siblings_prev,siblings_next)
+    {
+        printk("%s",ptr->name.str);
+        if(ptr->type==VFS_TYPE_DIR)
+        {
+            printk("/");
+        }
+        printk("\n");
+    }
+}
+
+void do_cat(unsigned char ** params)
+{
+    int fd;
+    char tmp[513];
+    int size;
+    fd=open(params[0],O_RDONLY);
+    if(fd>=0)
+    {
+        while(1)
+        {
+            size=read(fd,tmp,512);
+            if(size<0)
+                break;
+            tmp[size]='\0';
+            uart_outString(tmp,CMD_LINE_UART);
+            if(size!=512)
+                break;
+        }
+        printk("\n");
+    }
+}

@@ -10,7 +10,7 @@
 * KIND, either express of implied.
 *
 * Part of this code is from Rockbox project
-* Copyright (C) 2002 by Björn Stenberg
+* Copyright (C) 2002 by Bjï¿½n Stenberg
 *
 */
 #include <lib/string.h>
@@ -30,6 +30,7 @@ DIR * opendir(char * pathname)
 {
     MED_RET_T ret_val;
     struct vfs_pathname path;
+    struct vfs_node * myRoot_node;
     DIR * fd;
     
     if(!root_mountPoint)
@@ -43,12 +44,24 @@ DIR * opendir(char * pathname)
 
     if(path.str[0] != '/')
     {
-        printk("'%s' not an absolute path\n",pathname);
-        printk("only root path (strating with '/') are supported\n");
-        return NULL;//-MED_EINVAL;
+        /* relative path */
+        if(threadCurrent->path)
+        {
+            myRoot_node=threadCurrent->path;
+        }
+        else
+        {
+            /* current thread path == NULL => using root node */ 
+            myRoot_node=root_mountPoint->root_node;
+        }
+    }
+    else
+    {
+        /* absolute path */ 
+        myRoot_node=root_mountPoint->root_node;
     }
 
-    ret_val=vfs_nodeLookup(&path,root_mountPoint->root_node,&fd,&path);
+    ret_val=vfs_nodeLookup(&path,myRoot_node,&fd,&path);
 
     if(ret_val!=MED_OK && ret_val!=-MED_ENOENT)
     {
@@ -107,15 +120,22 @@ DIR * opendir(char * pathname)
     vfs_nodeRef(fd);
 
     LIST_ADD_TAIL_NAMED(fd->mount_point->opened_node,fd,prev_open,next_open);
-
+    thread_listAdd(THREAD_PTR_2_LIST(fd),DIR_RESSOURCE,THREAD_NO_FORCE);
     return fd;
 }
 
 MED_RET_T closedir(DIR * fd)
 {
-    MED_RET_T ret_val;
     CHK_FD(fd);
+    if(thread_listRm(THREAD_PTR_2_LIST(fd),DIR_RESSOURCE,THREAD_NO_FORCE)==MED_OK)
+        return vfs_dirClose(fd);
+    return -MED_ERROR;
+}
 
+MED_RET_T vfs_dirClose(struct vfs_node * fd)
+{
+    MED_RET_T ret_val=MED_OK;
+    
     ret_val = fat_fileClose(fd);
 
     if(ret_val!=MED_OK)

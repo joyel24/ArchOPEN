@@ -52,6 +52,10 @@ void do_umount (unsigned char ** params);
 void do_rtcGet (unsigned char ** params);
 void do_rtcSet (unsigned char ** params);
 #endif
+void do_pwd(unsigned char ** params);
+void do_cd(unsigned char ** params);
+void do_ls(unsigned char ** params);
+void do_cat(unsigned char ** params);
 
 /* cmd line internal functions */
 void init_cmd_line(void);

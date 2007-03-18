@@ -31,6 +31,7 @@ int open(char * name,int flags)
 {
     MED_RET_T ret_val;
     struct vfs_pathname path;
+    struct vfs_node * myRoot_node;
 
     FILE * fd;
 
@@ -45,12 +46,24 @@ int open(char * name,int flags)
 
     if(path.str[0] != '/')
     {
-        printk("'%s' not an absolute path\n",name);
-        printk("only root path (strating with '/') are supported\n");
-        return -MED_EINVAL;
+        /* relative path */
+        if(threadCurrent->path)
+        {
+            myRoot_node=threadCurrent->path;
+        }
+        else
+        {
+            /* current thread path == NULL => using root node */ 
+            myRoot_node=root_mountPoint->root_node;
+        }
+    }
+    else
+    {
+        /* absolute path */ 
+        myRoot_node=root_mountPoint->root_node;
     }
 
-    ret_val=vfs_nodeLookup(&path,root_mountPoint->root_node,&fd,&path);
+    ret_val=vfs_nodeLookup(&path,myRoot_node,&fd,&path);
 
     if(ret_val!=MED_OK && ret_val!=-MED_ENOENT)
     {
@@ -167,7 +180,7 @@ int open(char * name,int flags)
     vfs_nodeRef(fd);
     
     LIST_ADD_TAIL_NAMED(fd->mount_point->opened_node,fd,prev_open,next_open);
-
+    thread_listAdd(THREAD_PTR_2_LIST(fd),FILE_RESSOURCE,THREAD_NO_FORCE);
     return (int)fd;
 }
 
@@ -177,6 +190,12 @@ MED_RET_T fsync(int fdesc)
     FILE * fd = (FILE *)fdesc;
     MED_RET_T ret_val=MED_OK;
     CHK_FD(fd)
+    return vfs_fileSync(fd);
+}
+
+MED_RET_T vfs_fileSync(struct vfs_node * fd)
+{            
+    MED_RET_T ret_val=MED_OK;    
     if(FILE_WRITE(fd->flags))
     {
         /* flush sector cache */
@@ -195,7 +214,6 @@ MED_RET_T fsync(int fdesc)
             if (ret_val != MED_OK)
                 return ret_val;
         }
-
         /* tie up all loose ends */
         ret_val = fat_fileSync(fd);
         if (ret_val != MED_OK)
@@ -206,24 +224,26 @@ MED_RET_T fsync(int fdesc)
 
 MED_RET_T close(int fdesc)
 {
-    
     FILE * fd = (FILE *)fdesc;
-    MED_RET_T ret_val=MED_OK;
-
     CHK_FD(fd)
-
-    fsync(fdesc);
-
+    if(thread_listRm(THREAD_PTR_2_LIST(fd),FILE_RESSOURCE,THREAD_NO_FORCE)==MED_OK)
+        return vfs_fileClose(fd);
+    return -MED_ERROR;
+}
+   
+MED_RET_T vfs_fileClose(struct vfs_node * fd)
+{
+    
+    MED_RET_T ret_val=MED_OK;
+    
+    vfs_fileSync(fd);
     ret_val=fat_fileClose(fd);
-
     if(ret_val!=MED_OK)
         return ret_val;
 
     fd->opened = 0;
-    
     LIST_DELETE_NAMED(fd->mount_point->opened_node,fd,prev_open,next_open);
     vfs_nodeUnRef(fd);
-    
     return MED_OK;
 }
 

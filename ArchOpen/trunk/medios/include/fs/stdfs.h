@@ -42,4 +42,9 @@ MED_RET_T mvdir(char* path, char* newpath);
 
 MED_RET_T rmfile(char* name);
 MED_RET_T mvfile(char* path, char* newpath);
+
+/* path related */
+MED_RET_T fs_pwd(char * name);
+MED_RET_T fs_cd(char * name);
+
 #endif

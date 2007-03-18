@@ -19,6 +19,8 @@
 
 #include <sys_def/stdfs.h>
 
+#include <kernel/thread.h>
+
 #define FILE_WRITE(FLAG)  ((FLAG) & (O_RDWR | O_WRONLY))
 #define FILE_TRUNC(FLAG)  ((FLAG) & (O_TRUNC))
 #define FILE_CREATE(FLAG) ((FLAG) & (O_CREAT))
@@ -73,6 +75,9 @@ struct vfs_node {
     
     /* find the mountpoint structure */
     struct vfs_mountPoint * mount_point;
+    
+    THREAD_LINKS
+    
 };
 
 void vfs_nodePrintTree(struct vfs_node *node,int level);
@@ -97,4 +102,8 @@ MED_RET_T vfs_nodeDestroy(struct vfs_node * node);
 
 MED_RET_T vfs_nodeExist(struct vfs_pathname * path,struct vfs_node ** node);
 
+MED_RET_T vfs_fileClose(struct vfs_node * fd);
+MED_RET_T vfs_dirClose(struct vfs_node * fd);
+MED_RET_T vfs_fileSync(struct vfs_node * fd);
+void vfs_nodePrint(struct vfs_node *node);
 #endif

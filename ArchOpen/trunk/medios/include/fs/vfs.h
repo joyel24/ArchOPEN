@@ -36,6 +36,9 @@ struct vfs_mountPoint {
     struct vfs_mountPoint * next,*prev;
 };
 
+extern struct vfs_mountPoint * root_mountPoint;
+extern struct vfs_mountPoint * mountPoint_list;
+
 MED_RET_T vfs_mount(char * mount_path,int disk, int partition_num);
 MED_RET_T vfs_umount(int disk,int partition_num);
 struct vfs_mountPoint * vfs_isMounted(int disk,int partition_num);

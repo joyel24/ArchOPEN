@@ -32,8 +32,8 @@
 #define SCREEN_NTSC_SHIFT_X               118
 #define SCREEN_NTSC_SHIFT_Y               0
 
-#define LCD_WIDTH SCREEN_REAL_WIDTH
-#define LCD_HEIGHT SCREEN_HEIGHT
+#define LCD_WIDTH                         SCREEN_REAL_WIDTH
+#define LCD_HEIGHT                        SCREEN_HEIGHT
 
 #define OSD_BMAP_1_CFG      OSD_BITMAP_RAMCLUT | OSD_BITMAP_ZX1 \
                 | OSD_BITMAP_8BIT | COLOR_TRSP << OSD_BITMAP_A_SHIFT

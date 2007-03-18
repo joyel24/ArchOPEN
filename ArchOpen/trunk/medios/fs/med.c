@@ -91,7 +91,9 @@ MED_RET_T med_loadParam(int argc,char**argv)
 {
     int fd,ret,i,j,k,res,res2,res1;
     char ** cpy_argv;
-    
+    char path[MAX_PATH];
+    char * pos;
+        
     MED_RET_T ret_val=MED_OK;
     
     //int (*run_med)(int argc,char**argv);
@@ -119,7 +121,8 @@ MED_RET_T med_loadParam(int argc,char**argv)
     {
         
         return -MED_EINVAL;
-    }   
+    }
+    
     fd = open(argv[0],O_RDONLY);
     
     if(fd<0)
@@ -127,6 +130,7 @@ MED_RET_T med_loadParam(int argc,char**argv)
         printk("[load_med] Can't open file %s\n",argv[0]);
         return -MED_EINVAL;
     }
+     
     
     /* reading elf header */
     if((ret=read(fd,(void*)&header,sizeof(elf_hdr)))<sizeof(elf_hdr))
@@ -437,7 +441,14 @@ MED_RET_T med_loadParam(int argc,char**argv)
     else
         cpy_argv = NULL;
     
-    thread_startMed((void*)entry,sdram_start,(void*)iram_ptr,strrchr(argv[0],'/')+1,argc,cpy_argv);
+    
+    /* creating path variable */    
+    strcpy(path,argv[0]);
+    pos=strrchr(argv[0], '/');
+    
+    *(strrchr(path, '/'))='\0';
+        
+    thread_startMed((void*)entry,sdram_start,(void*)iram_ptr,strrchr(argv[0],'/')+1,path,argc,cpy_argv);
     
     //free(sdram_start);
         

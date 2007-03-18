@@ -124,6 +124,9 @@ int            # closedir   # DIR* dir
 struct dirent* # readdir    # DIR* dir
 int            # mkdir      # const char *name, int mode
 
+MED_RET_T      # fs_pwd     # char * name
+MED_RET_T      # fs_cd      # char * name
+
 #k_inc#gfx/graphics.h
 #api_inc#sys_def/graphics.h
 void   # gfx_openGraphics          # void

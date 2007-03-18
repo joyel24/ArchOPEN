@@ -79,141 +79,41 @@ extern int app_main(int argc, char * argv[]);
 unsigned int _svc_IniStack = IRAM_SIZE;
 unsigned int _sys_IniStack = IRAM_SIZE-SVC_STACK_SIZE;
 
-#if 0
+#if 1
+
+int ok=0;
+
 void tst_1(void)
 {
     int fd=open("/test1.bin",O_RDWR);
-    int ok=1;
-    int nb=0;
-    char buffer[512];
-    printk("Thread 1 file open\n");
-    if(fd<0)
-    {
-        printk("Error opening file\n");
-        return;
-    }
-    while(ok)
-    {
-        nb=read(fd,buffer,0x200);
-        printk("Thread 1 read: %d\n",nb);
-        if(nb!=0x200) ok=0;
-    }
-    close(fd);
-    printk("Thread 1 file closed\n");
+    fd=open("/test2.bin",O_RDWR);
+    fd=open("/test3.bin",O_RDWR);
+    vfs_PrintOpenList();
+    ok=1;    
+    printk("exit\n");
 }
 
-void tst_2(void)
-{
-    int fd=open("/test2.bin",O_RDWR);
-    int ok=1;
-    int nb=0;
-    char buffer[512];
-    printk("Thread 2 file open\n");
-    if(fd<0)
-    {
-        printk("Error opening file\n");
-        return;
-    }
-    while(ok)
-    {
-        nb=read(fd,buffer,0x200);
-        printk("Thread 2 read: %d\n",nb);
-        if(nb!=0x200) ok=0;
-    }
-    close(fd);
-    printk("Thread 2 file closed\n");
-}
-
-void tst_3(void)
-{
-    int fd=open("/test3.bin",O_RDWR);
-    int ok=1;
-    int nb=0;
-    char buffer[512];
-    printk("Thread 3 file open\n");
-    if(fd<0)
-    {
-        printk("Error opening file\n");
-        return;
-    }
-    while(ok)
-    {
-        nb=read(fd,buffer,0x200);
-        printk("Thread 3 read: %d\n",nb);
-        if(nb!=0x200) ok=0;
-    }
-    close(fd);
-    printk("Thread 3 file closed\n");
-}
 
 void tst_fct(void)
 {
-    THREAD_INFO *th1,*th2,*th3;
-    int pid1,pid2,pid3;
-    pid1=thread_startFct(&th1,tst_1,"Test1",THREAD_STATE_DISABLE,PRIO_MED);
-    pid2=thread_startFct(&th2,tst_2,"Test2",THREAD_STATE_DISABLE,PRIO_MED);
-    pid3=thread_startFct(&th3,tst_3,"Test3",THREAD_STATE_DISABLE,PRIO_MED);
+    THREAD_INFO *th1;
+    int pid1;
+    ok=0;
+    printk("Start\n");    
+    vfs_PrintOpenList();
+    printk("Ini\n");    
+    pid1=thread_startFct(&th1,tst_1,"Test1",THREAD_STATE_DISABLE,PRIO_MED);   
     thread_ps();
     thread_enable(pid1);
-    thread_enable(pid2);
-    thread_enable(pid3);
+    printk("GO\n");
+    while(!ok) /*nothing*/;
+    printk("done\n");
+    vfs_PrintOpenList();
+    printk("loop\n");
     while(1) /*nothing*/;
 }
 #endif
 
-#if 0
-
-#include <fs/csv_file.h>
-
-struct testStruct {
-    char * st1;
-    int val1;
-    int val2;
-    char * st2;
-};
-
-void test_csv(void)
-{
-    printk("trying to close before start: get %d\n",-csv_end());
-    
-    if(csv_newFile("/test.csv")==MED_OK)
-    {
-        int ret_val;
-        int stop=0;
-        struct testStruct s1;
-        while(!stop)
-        {
-            ret_val=csv_readLine(&s1,"sdds",';');
-            //ret_val=csv_readLine(&s1,"sddA",';'); /*test with bad format string*/
-            //ret_val=csv_readLine(&s1,"sddss",';'); /*test with too much item in format string*/
-            switch(ret_val)
-            {
-                case MED_OK:
-                    printk("Everything is fine, found:\n");
-                    printk("%s\n%d\n%d\n%s\n",s1.st1,s1.val1,s1.val2,s1.st1);                    
-                    print_data((void*)&s1,sizeof(struct testStruct));
-                    break;
-                case -MED_EINVAL:
-                case -MED_EMOBJ:
-                    printk("Error\n");
-                    break;
-                case -MED_EOF:
-                    stop=1;
-                    printk("EOF\n");
-                    break;
-                default:
-                    printk("UKN return code: %d\n",ret_val);
-                    break;            
-            }
-        }
-    }
-    csv_end();
-    printk("end of test let's loop\n");
-    while(1) ;
-}
-
-
-#endif
 
 void kernel_thread(void)
 {
@@ -243,7 +143,7 @@ void kernel_thread(void)
     reload_firmware();
 #endif
     //tst_fct();
-    //test_csv();
+    vfs_rootPrint();
     shell_main();
 
     printk("[SYS thread] error: back to main()\n");

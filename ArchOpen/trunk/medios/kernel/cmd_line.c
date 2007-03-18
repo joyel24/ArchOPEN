@@ -20,6 +20,8 @@
 #include <driver/uart.h>
 #include <driver/hardware.h>
 
+#include <fs/stdfs.h>
+
 #define MAX_CMD_LEN     100
 #define MAX_ARGS        10
 
@@ -47,6 +49,8 @@ THREAD_INFO * cmdLineThread;
 
 int cmd_line_init_ok;
 
+char path[MAX_PATH];
+
 void cmd_line_INT(int irq_num,struct pt_regs * regs)
 {
     if(cmdLineThread->state!=THREAD_STATE_ENABLE)
@@ -65,7 +69,7 @@ void cmd_line_thread(void)
             if(c=='\n' || c=='\r')               /* end of line => add \0 to end the line */
             {
                 cur_cmd[cur_pos++]='\0';
-                printk("\n"); /* local echo */
+                //printk("\n"); /* local echo */
                 process_cmd();
                 continue;
             }
@@ -111,7 +115,8 @@ void cmd_line_thread(void)
                         {
                             cur_pos--;
                             cur_cmd[cur_pos]='\0';
-                            printk("\n"MEDIOS_PROMPT"%s",cur_cmd);
+                            fs_pwd(path);
+                            printk("\n%s>%s",path,cur_cmd);
                         }
                         break;
                     default:
@@ -134,10 +139,11 @@ void process_cmd(void)
     int nb_args=0;
     struct cmd_line_s * cmd_line;
     unsigned  char * ptr;
-
+    
     if(cur_pos==1)
     {
-        printk("\n"MEDIOS_PROMPT);
+        fs_pwd(path);
+        printk("\n%s> ",path);
     }
     else
     {
@@ -155,7 +161,8 @@ void process_cmd(void)
                 printk("Unknown command: %s\nType help to have the list of command\n",cur_cmd);
                 cur_cmd[0]='\0';
                 cur_pos=0;
-                printk(MEDIOS_PROMPT);
+                fs_pwd(path);
+                printk("%s> ",path);
                 return;
             }
         }
@@ -168,7 +175,8 @@ void process_cmd(void)
                 printk("Unknown command: %s\nType help to have the list of command\n",cur_cmd);
                 cur_cmd[0]='\0';
                 cur_pos=0;
-                printk(MEDIOS_PROMPT);
+                fs_pwd(path);
+                printk("%s> ",path);
                 return;
             }
 
@@ -193,12 +201,15 @@ void process_cmd(void)
 
         /* launch the cmd if we have enough params */
         if(nb_args>=cmd_line->nb_args)
-            cmd_line->cmd_action(arg_list);
+        {
+            cmd_line->cmd_action(arg_list);            
+        }
         else
             printk("%s need more args:\n%s\n",cmd_line->cmd,cmd_line->help_str);
 
         /* put back the prompt */
-        printk(MEDIOS_PROMPT);
+        fs_pwd(path);
+        printk("%s> ",path);
     }
 
     /* Ready to get a new cmd */

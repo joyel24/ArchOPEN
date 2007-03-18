@@ -33,9 +33,12 @@
 #define THREAD_USE_SYS_STACK   1
 #define THREAD_USE_OTHER_STACK 0
 
-#define MEM_RESSOURCE 0
+
+#define FILE_RESSOURCE   0
+#define DIR_RESSOURCE    1
+#define MEM_RESSOURCE    2 /* need to be the last one !!! */
 /* Number of managed ressource */
-#define THREAD_NB_RES 1
+#define THREAD_NB_RES    3
 
 /* prio level is measure in number of allowed idle Tick */
 #define PRIO_HIGH  1
@@ -95,6 +98,8 @@ typedef struct thread_info {
     struct thread_info * nxt;
     struct thread_info * prev;
 
+    struct vfs_node * path;
+    
     /* ressource */
     THREAD_RES ressources[THREAD_NB_RES];
 
@@ -130,12 +135,16 @@ MED_RET_T thread_nice(THREAD_INFO * ptr,int prio);
 unsigned long yield(void);
 unsigned long yieldTo(THREAD_INFO * nxtThread);
 
-void thread_startMed(void * entry_fct,void * code_malloc,void * iram_top,char * name,int argc,char ** argv);
-int thread_startFct(THREAD_INFO ** ret_thread,void * entry_fct,char * name,int enable,int prio);
+void thread_startMed(void * entry_fct,void * code_malloc,void * iram_top,char * name,
+                       char * path,int argc,char ** argv);
+int thread_startFct(THREAD_INFO ** ret_thread,void * entry_fct,char * name,
+                    int enable,int prio);
 
 int thread_create(THREAD_INFO ** ret_thread,void * entry_fct,void * exit_fct,
     void * code_malloc,void * stack_top,unsigned stack_size,int useSysStack,
-    void * stack_bottom,int prio,char * name,unsigned long arg1,unsigned long arg2);
+    void * stack_bottom,int prio,char * name,struct vfs_node * path,
+    unsigned long arg1,unsigned long arg2);
+    
 MED_RET_T thread_insert(THREAD_INFO * thread);
 MED_RET_T thread_remove(THREAD_INFO * thread);
 MED_RET_T thread_kill(int pid);

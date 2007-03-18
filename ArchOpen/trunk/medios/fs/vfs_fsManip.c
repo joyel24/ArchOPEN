@@ -36,12 +36,7 @@ MED_RET_T mkdir(char *name, int mode)
     
     struct dirent *entry;
     MED_RET_T ret_val;
-
-    if ( name[0] != '/' ) {
-        printk("mkdir: Only absolute paths supported right now\n");
-        return -1;
-    }
-
+    
     path.length = strlen(name);
     if(path.length>0)
         path.str=name;
@@ -337,4 +332,84 @@ MED_RET_T mvdir(char* path,char* newpath)
     
     return ret_val; 
     
+}
+
+MED_RET_T fs_cd(char * name)
+{
+    struct vfs_node * ptrNode;
+    
+    MED_RET_T ret_val;
+    struct vfs_pathname path;
+    struct vfs_node * myRoot_node;
+
+    if(!root_mountPoint)
+        return -MED_ENOENT;
+    
+    path.length = strlen(name);
+    if(path.length>0)
+        path.str=name;
+    else
+        return -MED_EINVAL;
+
+    if(path.str[0] != '/')
+    {
+        /* relative path */
+        if(threadCurrent->path)
+        {
+            myRoot_node=threadCurrent->path;
+        }
+        else
+        {
+            /* current thread path == NULL => using root node */ 
+            myRoot_node=root_mountPoint->root_node;
+        }
+    }
+    else
+    {
+        /* absolute path */ 
+        myRoot_node=root_mountPoint->root_node;
+    }
+
+    ret_val=vfs_nodeLookup(&path,myRoot_node,&ptrNode,&path);
+    
+    if((ret_val!=MED_OK && ret_val!=-MED_ENOENT) || path.length>0)
+    {
+        return -MED_ENOENT;   
+    }
+    
+    if(ptrNode->type != VFS_TYPE_DIR)
+        return -MED_ENOTDIR;
+    
+    threadCurrent->path=ptrNode;
+    
+    return MED_OK;
+}
+
+MED_RET_T fs_pwd(char * name)
+{
+    char * ptr;
+    char pwd_str[MAX_PATH];
+    struct vfs_node * ptrNode;
+    
+    if(threadCurrent->path==NULL ||threadCurrent->path==root_mountPoint->root_node)
+    {
+        name[0]='/';
+        name[1]='\0';
+    }
+    else
+    {
+        pwd_str[MAX_PATH-1]='\0';
+        ptr=&pwd_str[MAX_PATH-1];
+        for(ptrNode=threadCurrent->path;ptrNode!=root_mountPoint->root_node;ptrNode=ptrNode->parent)
+        {
+            ptr-=ptrNode->name.length;
+            memcpy(ptr,ptrNode->name.str,ptrNode->name.length);
+            ptr--;
+            *ptr='/'; 
+        }
+        /* root / has been added auto by *ptr='/' => 
+        we can stop loop without dealing with root node*/
+        strcpy(name,ptr);
+    }
+    return MED_OK;
 }

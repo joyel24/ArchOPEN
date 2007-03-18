@@ -23,6 +23,10 @@
 #include <driver/hardware.h>
 #include <driver/ata.h>
 
+#include <fs/vfs.h>
+#include <fs/vfs_pathname.h>
+#include <fs/vfs_node.h>
+
 #define SYS_STACK_TOP ((void*)IRAM_SIZE-SVC_STACK_SIZE)
 #define SYS_STACK_BTM ((void*)((char*)&_iram_end + 0x10))
 
@@ -61,7 +65,7 @@ MED_RET_T thread_init(void(*fct)(void))
     /* creating initial thread */
 
     retval=thread_create(&sysThread,(void*)fct,(void*)thread_exit,NULL,NULL,0,THREAD_USE_SYS_STACK,
-        SYS_STACK_BTM,PRIO_HIGH,"KERNEL",(unsigned long)NULL,(unsigned long)NULL);
+        SYS_STACK_BTM,PRIO_HIGH,"KERNEL",NULL,(unsigned long)NULL,(unsigned long)NULL);
 
     if(retval<0)
     {
@@ -76,7 +80,7 @@ MED_RET_T thread_init(void(*fct)(void))
     sysThread->state=THREAD_STATE_ENABLE;
     
     retval=thread_create(&idleThread,(void*)thread_idleFct,(void*)thread_exit,NULL,NULL,0x100,THREAD_USE_OTHER_STACK,
-        NULL,PRIO_HIGH,"IDLE",(unsigned long)NULL,(unsigned long)NULL);
+        NULL,PRIO_HIGH,"IDLE",NULL,(unsigned long)NULL,(unsigned long)NULL);
     if(retval<0)
     {
         printk("Error creating IDLE thread (error code = %d\n",-retval);
@@ -103,11 +107,29 @@ Thread creation
 * disable KERNEL thread
 * yield
 ***********************************/
-void thread_startMed(void * entry_fct,void * code_malloc,void * iram_top,char * name,int argc,char ** argv)
+void thread_startMed(void * entry_fct,void * code_malloc,void * iram_top,char * name,char * path,int argc,char ** argv)
 {
     THREAD_INFO * med_thread;
-    int pid=thread_create(&med_thread,entry_fct,(void*)thread_exit,code_malloc,NULL,0,THREAD_USE_SYS_STACK,
-        iram_top,PRIO_HIGH,name,(unsigned long)argc,(unsigned long)argv);
+    struct vfs_node * path_node=NULL;
+    struct  vfs_pathname pathName;
+    int ret_val,pid;
+    
+    if(path!=NULL)
+    {
+        pathName.length = strlen(path);
+        if(pathName.length>0)
+        {
+            pathName.str=path;
+            ret_val=vfs_nodeLookup(&pathName,root_mountPoint->root_node,&path_node,&pathName);
+            if((ret_val!=MED_OK && ret_val!=-MED_ENOENT) || pathName.length>0)
+            {
+                path_node=NULL;
+            }
+        }
+    }
+    
+    pid=thread_create(&med_thread,entry_fct,(void*)thread_exit,code_malloc,NULL,0,THREAD_USE_SYS_STACK,
+                       iram_top,PRIO_HIGH,name,path_node,(unsigned long)argc,(unsigned long)argv);
     if(pid<0)
     {
         printk("Error starting med, threadStart return: %d\n",-pid);
@@ -129,8 +151,10 @@ void thread_startMed(void * entry_fct,void * code_malloc,void * iram_top,char * 
 int thread_startFct(THREAD_INFO ** ret_thread,void * entry_fct,char * name,int enable,int prio)
 {
     THREAD_INFO * fct_thread;
-    int pid=thread_create(&fct_thread,entry_fct,(void*)thread_exit,0,NULL,0,THREAD_USE_OTHER_STACK,NULL,prio,name,
-        0,(unsigned long)NULL);
+    int pid;
+        
+    pid=thread_create(&fct_thread,entry_fct,(void*)thread_exit,0,NULL,0,THREAD_USE_OTHER_STACK,NULL,prio,name,
+                       NULL,0,(unsigned long)NULL);
     printk("Fct thread created with pid %d\n",pid);
     if(ret_thread)
         *ret_thread=fct_thread;
@@ -146,7 +170,8 @@ int thread_startFct(THREAD_INFO ** ret_thread,void * entry_fct,char * name,int e
 ***********************************/
 int thread_create(THREAD_INFO ** ret_thread,void * entry_fct,void * exit_fct,
     void * code_malloc,void * stack_top,unsigned int stack_size,int useSysStack,
-    void * stack_bottom,int prio,char * name,unsigned long arg1,unsigned long arg2)
+    void * stack_bottom,int prio,char * name,struct vfs_node * path,
+    unsigned long arg1,unsigned long arg2)
 {
     int i;
 
@@ -206,6 +231,7 @@ int thread_create(THREAD_INFO ** ret_thread,void * entry_fct,void * exit_fct,
 /* name */
     strncpy(newThread->name,name,THREAD_NAME_SIZE);
     newThread->name[THREAD_NAME_SIZE-1]=0;
+    newThread->path=path;
 /* flag / data */
     newThread->pid=pid++;
     newThread->state = THREAD_STATE_DISABLE;
@@ -356,13 +382,13 @@ int thread_doKill(THREAD_INFO * thread)
         printk("Error trying to kill idle thread\n");
         return 0;
     }
+    
+    for(i=0;i<THREAD_NB_RES;i++)
+        thread_listFree(thread,i);
+    
     __cli();
     ptr=threadCurrent;
     thread_remove(thread);
-
-    for(i=0;i<THREAD_NB_RES;i++)
-        thread_listFree(thread,i);
-
     if(thread->stackBottom && !thread->useSysStack)
         kfree(thread->stackBottom);
     if(thread->useSysStack)
