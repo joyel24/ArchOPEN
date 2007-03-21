@@ -107,6 +107,9 @@ int # float_lesf2 # float a, float b
 int # float_eqsf2 # float a, float b
 int # float_nesf2 # float a, float b
 
+#k_inc#lib/libmath.h
+double # math_cos # double a
+
 #k_inc#fs/stdfs.h
 #api_inc#sys_def/stdfs.h
 int            # open      # const char* pathname, int flags
