@@ -188,7 +188,6 @@ MED_RET_T fsync(int fdesc)
 {
     
     FILE * fd = (FILE *)fdesc;
-    MED_RET_T ret_val=MED_OK;
     CHK_FD(fd)
     return vfs_fileSync(fd);
 }
