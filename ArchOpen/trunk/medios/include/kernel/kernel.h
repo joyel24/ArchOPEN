@@ -41,7 +41,7 @@ extern unsigned int _sdend_start;
 extern unsigned int _sdend_end;
 
 
-#define HZ 100
+
 
 #define SWAB16(x) (x)
 #define SWAB32(x) (x)

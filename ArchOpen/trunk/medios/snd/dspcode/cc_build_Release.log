@@ -1,0 +1,8 @@
+---------------------------  snd_dsp.pjt - Release  ---------------------------
+[snd_dsp.c] "C:\CCStudio_v3.3\C5400\cgtools\bin\cl500" -os -on2 -o3 -fr"Z:/Av320/ArchOpen/trunk/medios/snd/dspcode/Release" -i"../../../libdsp/" -d"CHIP_5409" -d"DSPCODE" -v549 -@"Release.lkf" "snd_dsp.c"
+
+[Linking...] "C:\CCStudio_v3.3\C5400\cgtools\bin\cl500" -@"Release.lkf"
+<Linking>
+
+Build Complete,
+  0 Errors, 0 Warnings, 0 Remarks.

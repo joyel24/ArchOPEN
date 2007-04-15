@@ -20,5 +20,6 @@ else
     rm -f medios/kernel/api_fct_list.h
     rm -f *.lds *.conf *.out
     rm -Rf lib
+    rm -Rf codec
     $0 ./;
 fi

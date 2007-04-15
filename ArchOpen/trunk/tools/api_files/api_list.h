@@ -12,6 +12,7 @@
 void* # malloc   # long size
 void* # realloc  # void *buffer, long newsize
 void  # free     # void *buf
+void* # calloc   # unsigned int nmemb,unsigned int size
 
 #k_inc#kernel/timer.h
 unsigned int # tmr_getTick   # void
@@ -310,7 +311,23 @@ MED_RET_T  # csv_line2Array   # int nbItem,char ** item_array,char sepChar
 MED_RET_T  # csv_readLine     # void * data,char * formatStr,char sepChar
 
 #k_inc#driver/speaker.h
-
 void       # speaker_enable    # int enable
 int        # speaker_state     # void
 int        # speaker_available # void
+
+#k_inc#snd/codec.h
+#api_inc#sys_def/codec.h
+void         # codec_setGlobalInfo  # CODEC_GLOBAL_INFO * info
+void         # codec_setTrackInfo   # CODEC_TRACK_INFO * info
+bool         # codec_mustSeek       # int * time
+void         # codec_setElapsed     # int elapsed
+void         # codec_seekDone       #
+bool         # codec_mustContinue   #
+CODEC_INFO * # codec_new            #
+
+#k_inc#snd/output.h
+void       # output_write         # void * buffer, int size
+
+#k_inc#snd/buffer.h
+int        # buffer_seek          # int offset,int whence
+int        # buffer_read          # void * buf,int count

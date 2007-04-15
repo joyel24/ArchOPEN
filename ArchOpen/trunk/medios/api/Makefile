@@ -1,6 +1,6 @@
 include $(MEDIOS_SRC_PATH)/Makefile.conf
 
-SUBDIRS = apps_init
+SUBDIRS = apps_init codec_init
 SUBDIRS_CLEAN = $(MEDIOS_SRC_PATH)/lib
 
 all: api_build

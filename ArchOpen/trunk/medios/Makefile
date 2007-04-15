@@ -1,6 +1,6 @@
 include $(MEDIOS_SRC_PATH)/Makefile.conf
 
-SUBDIRS = api init kernel lib driver fs gfx gui target
+SUBDIRS = api init kernel lib driver fs gfx gui snd target
 
 SUBDIRS_CLEAN = build
 

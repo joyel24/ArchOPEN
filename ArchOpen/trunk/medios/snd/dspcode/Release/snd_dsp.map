@@ -1,0 +1,278 @@
+******************************************************************************
+         TMS320C54x COFF Linker PC v4.1.0                      
+******************************************************************************
+>> Linked Sat Mar 31 16:55:54 2007
+
+OUTPUT FILE NAME:   <.\snd_dsp.out>
+ENTRY POINT SYMBOL: "_c_int00"  address: 000024b1
+
+
+MEMORY CONFIGURATION
+
+                  name            origin    length      used    attr    fill
+         ----------------------  --------  ---------  --------  ----  --------
+PAGE  0: DARAM                   00000100   00007e80  00003630  RW X
+         VECTORS                 00007f80   00000080  00000008  RW X
+         SARAM_D                 00008000   00003fff  00001800  RW  
+
+PAGE  1: SARAM_C                 0000c000   00003fff  00000000  RW X
+
+
+SECTION ALLOCATION MAP
+
+ output                                  attributes/
+section   page    origin      length       input sections
+--------  ----  ----------  ----------   ----------------
+.switch    0    00000100    00000000     UNINITIALIZED
+
+.cio       0    00000100    00000000     UNINITIALIZED
+
+.data      0    00000100    00000000     UNINITIALIZED
+
+.bss       0    00000100    00002154     UNINITIALIZED
+                  00000100    00002116     snd_dsp.obj (.bss)
+                  00002216    00000023     rts.lib : exit.obj (.bss)
+                  00002239    00000015     libdsp.lib : aic23.obj (.bss)
+                  0000224e    00000003     rts.lib : memory.obj (.bss)
+                  00002251    00000002             : _lock.obj (.bss)
+                  00002253    00000001     libdsp.lib : libdsp.obj (.bss)
+
+.text      0    00002254    00000afd     
+                  00002254    0000025d     snd_dsp.obj (.text)
+                  000024b1    0000004a     rts.lib : boot.obj (.text)
+                  000024fb    00000052             : exit.obj (.text)
+                  0000254d    00000007             : _lock.obj (.text)
+                  00002554    00000017             : args_main.obj (.text)
+                  0000256b    00000007     csl5409.lib : csl.obj (.text)
+                  00002572    00000001                 : csl.obj (.text:CSL_init)
+                  00002573    00000077                 : dma_open.obj (.text:DMA_open)
+                  000025ea    00000083                 : dma_reset.obj (.text:DMA_reset)
+                  0000266d    00000015                 : irq_d2p.obj (.text:__IRQ_dat2Prg)
+                  00002682    00000008                 : irq_gdis.obj (.text:IRQ_globalDisable)
+                  0000268a    00000008                 : irq_genab.obj (.text:IRQ_globalEnable)
+                  00002692    0000000e                 : irq_grest.obj (.text:IRQ_globalRestore)
+                  000026a0    0000000b                 : _csl_init.obj (.text:_CSL_init)
+                  000026ab    000001fa     libdsp.lib : aic23.obj (.text)
+                  000028a5    00000024                : armint.obj (.text)
+                  000028c9    00000065                : hpidma.obj (.text)
+                  0000292e    00000003                : libdsp.obj (.text)
+                  00002931    0000027d     rts.lib : memory.obj (.text)
+                  00002bae    00000015             : memset.obj (.text)
+                  00002bc3    0000002a             : memmov.obj (.text)
+                  00002bed    0000000e             : memcpy.obj (.text)
+                  00002bfb    00000024     csl5409.lib : dma_close.obj (.text:DMA_close)
+                  00002c1f    00000013                 : dma_stop.obj (.text:DMA_stop)
+                  00002c32    00000065                 : mcbsp_open.obj (.text:MCBSP_open)
+                  00002c97    000000ba                 : mcbsp_rst.obj (.text:MCBSP_reset)
+
+.stack     0    00002d51    00000800     UNINITIALIZED
+
+.cinit     0    00003551    00000108     
+                  00003551    00000015     snd_dsp.obj (.cinit)
+                  00003566    00000009     rts.lib : exit.obj (.cinit)
+                  0000356f    00000006             : _lock.obj (.cinit)
+                  00003575    000000ba     csl5409.lib : csl_csldat.obj (.cinit)
+                  0000362f    00000023     libdsp.lib : aic23.obj (.cinit)
+                  00003652    00000003                : libdsp.obj (.cinit)
+                  00003655    00000003     rts.lib : memory.obj (.cinit)
+                  00003658    00000001     --HOLE-- [fill = 0]
+
+.csldata   0    0000365a    000000b8     UNINITIALIZED
+                  0000365a    000000b8     csl5409.lib : csl_csldat.obj (.csldata)
+
+.const     0    00003712    0000001f     
+                  00003712    0000001f     snd_dsp.obj (.const)
+
+.vectors   0    00007f80    00000008     
+                  00007f80    00000008     vectors.obj (.vectors)
+
+.sysmem    0    00008000    00001000     UNINITIALIZED
+
+.saram_d   0    00009000    00000800     UNINITIALIZED
+                  00009000    00000800     snd_dsp.obj (.saram_d)
+
+
+GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name 
+
+address    name
+--------   ----
+00000100   .bss
+00000100   .data
+00002254   .text
+0000254a   C$$EXIT
+00007f84   NMI_V
+00007f80   RS_V
+00007f84   SINT16_V
+00007f80   SINTR_V
+00002572   _CSL5409_LIB_
+0000256b   _CSL_init
+00002bfb   _DMA_close
+00002573   _DMA_open
+000025ea   _DMA_reset
+00002c1f   _DMA_stop
+00002682   _IRQ_globalDisable
+0000268a   _IRQ_globalEnable
+00002692   _IRQ_globalRestore
+00002c32   _MCBSP_open
+00002c97   _MCBSP_reset
+0000365a   __CSL_DataObj
+000026a0   __CSL_init
+0000266d   __IRQ_dat2Prg
+00000800   __STACK_SIZE
+00001000   __SYSMEM_SIZE
+ffffffff   ___binit__
+00000100   ___bss__
+ffffffff   ___c_args__
+00003551   ___cinit__
+00000100   ___data__
+00000100   ___edata__
+00002254   ___end__
+00002d51   ___etext__
+ffffffff   ___pinit__
+00002254   ___text__
+00002554   __args_main
+00002237   __cleanup_ptr
+00002238   __dtors_ptr
+00000001   __lflags
+00002251   __lock
+0000254d   __nop
+0000254e   __register_lock
+00002551   __register_unlock
+00008000   __sys_memory
+00002252   __unlock
+0000254a   _abort
+00000210   _aic23_dma
+00002701   _aic23_openPort
+0000020f   _aic23_port
+00002777   _aic23_setupDma
+0000280b   _aic23_startDma
+000028a5   _armInt_trigger
+00002528   _atexit
+000024b1   _c_int00
+00002a34   _calloc
+00002253   _chip_num
+000022f7   _debug
+00002215   _dmaActive
+00002326   _dmaEnd
+0000020e   _dspCom
+00000100   _dspComBuffer
+000024fb   _exit
+00002b1e   _free
+00002912   _hpiDma_pending
+000028c9   _hpiDma_start
+0000292e   _libDsp_init
+00002419   _main
+000029c3   _malloc
+00002bed   _memcpy
+00002bc3   _memmove
+00002bae   _memset
+00002994   _minit
+00002211   _outBuf
+00002212   _outBuf2
+00001211   _outBuf2Data
+00002214   _outBuf2Size
+00000211   _outBufData
+00002213   _outBufSize
+00009000   _processBuf
+00002a56   _realloc
+00002254   _startDma
+ffffffff   binit
+00003551   cinit
+00000100   edata
+00002254   end
+00002d51   etext
+ffffffff   pinit
+
+
+GLOBAL SYMBOLS: SORTED BY Symbol Address 
+
+address    name
+--------   ----
+00000001   __lflags
+00000100   ___data__
+00000100   ___bss__
+00000100   _dspComBuffer
+00000100   .data
+00000100   .bss
+00000100   ___edata__
+00000100   edata
+0000020e   _dspCom
+0000020f   _aic23_port
+00000210   _aic23_dma
+00000211   _outBufData
+00000800   __STACK_SIZE
+00001000   __SYSMEM_SIZE
+00001211   _outBuf2Data
+00002211   _outBuf
+00002212   _outBuf2
+00002213   _outBufSize
+00002214   _outBuf2Size
+00002215   _dmaActive
+00002237   __cleanup_ptr
+00002238   __dtors_ptr
+00002251   __lock
+00002252   __unlock
+00002253   _chip_num
+00002254   _startDma
+00002254   ___end__
+00002254   ___text__
+00002254   .text
+00002254   end
+000022f7   _debug
+00002326   _dmaEnd
+00002419   _main
+000024b1   _c_int00
+000024fb   _exit
+00002528   _atexit
+0000254a   C$$EXIT
+0000254a   _abort
+0000254d   __nop
+0000254e   __register_lock
+00002551   __register_unlock
+00002554   __args_main
+0000256b   _CSL_init
+00002572   _CSL5409_LIB_
+00002573   _DMA_open
+000025ea   _DMA_reset
+0000266d   __IRQ_dat2Prg
+00002682   _IRQ_globalDisable
+0000268a   _IRQ_globalEnable
+00002692   _IRQ_globalRestore
+000026a0   __CSL_init
+00002701   _aic23_openPort
+00002777   _aic23_setupDma
+0000280b   _aic23_startDma
+000028a5   _armInt_trigger
+000028c9   _hpiDma_start
+00002912   _hpiDma_pending
+0000292e   _libDsp_init
+00002994   _minit
+000029c3   _malloc
+00002a34   _calloc
+00002a56   _realloc
+00002b1e   _free
+00002bae   _memset
+00002bc3   _memmove
+00002bed   _memcpy
+00002bfb   _DMA_close
+00002c1f   _DMA_stop
+00002c32   _MCBSP_open
+00002c97   _MCBSP_reset
+00002d51   ___etext__
+00002d51   etext
+00003551   ___cinit__
+00003551   cinit
+0000365a   __CSL_DataObj
+00007f80   RS_V
+00007f80   SINTR_V
+00007f84   NMI_V
+00007f84   SINT16_V
+00008000   __sys_memory
+00009000   _processBuf
+ffffffff   ___binit__
+ffffffff   pinit
+ffffffff   ___c_args__
+ffffffff   binit
+ffffffff   ___pinit__
+
+[86 symbols]

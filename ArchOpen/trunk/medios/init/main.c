@@ -45,6 +45,8 @@
 #include <driver/aic23.h>
 #endif
 
+#include <snd/sound.h>
+
 #include <driver/hardware.h>
 #include <driver/uart.h>
 #include <driver/cpld.h>
@@ -142,8 +144,10 @@ void kernel_thread(void)
     app_main(1,&stdalone);
     reload_firmware();
 #endif
-    //tst_fct();
-    vfs_rootPrint();
+    
+    /*sound test*/
+    //sound_init();
+            
     shell_main();
 
     printk("[SYS thread] error: back to main()\n");

@@ -80,7 +80,15 @@ typedef struct __section_t {
     struct __section_t *   rel;
 } section_t;
 
+
+typedef struct __med_t {
+    uint32_t entry;
+    char * sdram_start;
+    char * iram_ptr;
+} med_t;
+
 MED_RET_T med_load(char * file_name);
 MED_RET_T med_loadParam(int argc,char**argv);
+MED_RET_T med_loadMed(char*fName,med_t * medInfo);
 
 #endif

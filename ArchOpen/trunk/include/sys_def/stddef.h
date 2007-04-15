@@ -30,4 +30,6 @@
 
 void exit(int retcode);
 
+#define HZ 100
+
 #endif

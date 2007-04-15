@@ -5,7 +5,9 @@ CLEAN_FILTER = *.o *.bak *~ *.a *.elf *.elf2flt *.grv *.med *.gdb *.wav *.map *.
 SUBDIRS_CLEAN_OBJS=$(foreach filter,$(CLEAN_FILTER),$(SUBDIRS_CLEAN:%=%/$(filter)))
 
 do_build: subdirs $(DEPS) $(OBJS)
+ifneq ("$(BUILD_DIR)","./")
 	@-cp -f *.o $(BUILD_DIR)
+endif   
                
 .PHONY: subdirs $(SUBDIRS)
 

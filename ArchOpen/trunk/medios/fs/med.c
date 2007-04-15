@@ -89,10 +89,64 @@ MED_RET_T med_load(char * file_name)
 
 MED_RET_T med_loadParam(int argc,char**argv)
 {
-    int fd,ret,i,j,k,res,res2,res1;
     char ** cpy_argv;
     char path[MAX_PATH];
     char * pos;
+    MED_RET_T ret_val;
+    med_t medInfo;
+    int i;
+    
+    if(argc<1)
+    {        
+        return -MED_EINVAL;
+    }
+    
+    if((ret_val=med_loadMed(argv[0],&medInfo))!=MED_OK)
+        return ret_val;
+        
+    
+    /* creating tmp argv struct */
+    if(argc)
+    {
+        int len;
+        cpy_argv = (char**)malloc(argc*sizeof(char*));
+        for(i=0;i<argc;i++)
+        {
+            len=strlen(argv[i])+1;
+            cpy_argv[i] = (char*)malloc(len*sizeof(char));
+            strncpy(cpy_argv[i],argv[i],len);
+        }
+    }
+    else
+        cpy_argv = NULL;
+    
+    
+    /* creating path variable */    
+    strcpy(path,argv[0]);
+    pos=strrchr(argv[0], '/');
+    
+    *(strrchr(path, '/'))='\0';
+    
+    thread_startMed((void*)medInfo.entry,medInfo.sdram_start,(void*)medInfo.iram_ptr,
+                     strrchr(argv[0],'/')+1,path,argc,cpy_argv);
+    
+    printk("back from med\n");
+    
+    /* need to clean args */
+    if(argc)
+    {
+        for(i=0;i<argc;i++)
+            free(cpy_argv[i]);
+        free(cpy_argv);
+    }
+    
+    return MED_OK;
+}
+    
+MED_RET_T med_loadMed(char*fName,med_t * medInfo)    
+{
+    
+    int fd,ret,i,j,k,res,res2,res1;
         
     MED_RET_T ret_val=MED_OK;
     
@@ -105,29 +159,23 @@ MED_RET_T med_loadParam(int argc,char**argv)
     
     section_t * section_list;
     
-    uint32_t entry=-1;
-    
     uint32_t sdram_size=0;
-    char * sdram_start=NULL;
     char * sdram_ptr=NULL;
     uint32_t iram_size=0;
-    char * iram_ptr=NULL;
     int first_sdram=-1;
     int first_iram=-1;
     
-    unsigned int diff;
-   
-    if(argc<1)
-    {
-        
-        return -MED_EINVAL;
-    }
+    unsigned int diff; 
     
-    fd = open(argv[0],O_RDONLY);
+    medInfo->sdram_start=NULL;
+    medInfo->iram_ptr=NULL;
+    medInfo->entry=-1;
+    
+    fd = open(fName,O_RDONLY);
     
     if(fd<0)
     {
-        printk("[load_med] Can't open file %s\n",argv[0]);
+        printk("[load_med] Can't open file %s\n",fName);
         return -MED_EINVAL;
     }
      
@@ -267,19 +315,19 @@ MED_RET_T med_loadParam(int argc,char**argv)
         goto exit_point2;
     }
     
-    iram_ptr=CORE_START;
-    DEBUG_MED("Iram start: %x, size= %x\n",iram_ptr,iram_size);
+    medInfo->iram_ptr=CORE_START;
+    DEBUG_MED("Iram start: %x, size= %x\n",medInfo->iram_ptr,iram_size);
     
-    sdram_ptr = sdram_start = (char*)malloc(sdram_size);
+    sdram_ptr = medInfo->sdram_start = (char*)malloc(sdram_size);
     
-    if(!sdram_start)
+    if(!sdram_ptr)
     {
-        printk("Can't get a buffer in SDRAM size: %x\n",sdram_size);
+        printk("Can't get a buffer in SDRAM size: %x\n",sdram_ptr);
         ret_val = -MED_ENOMEM;
         goto exit_point2;
     }
     else
-        DEBUG_MED("buffer in SDRAM created; size: %x, start:%x\n",sdram_size,sdram_start);
+        DEBUG_MED("buffer in SDRAM created; size: %x, start:%x\n",sdram_size,sdram_ptr);
     
     /* loading sections in mem */
     
@@ -302,11 +350,11 @@ MED_RET_T med_loadParam(int argc,char**argv)
         }
         else if(section_list[i].dest == MED_DEST_IRAM)
         {
-            section_list[i].addr = iram_ptr;
-            iram_ptr+=section_list[i].size;
+            section_list[i].addr = medInfo->iram_ptr;
+            medInfo->iram_ptr+=section_list[i].size;
             diff = section_list[i].size % 32;
             if(diff)
-                iram_ptr+=(32-diff);
+                medInfo->iram_ptr+=(32-diff);
         }
         
         if(section_list[i].type == MED_BSS)
@@ -397,12 +445,12 @@ MED_RET_T med_loadParam(int argc,char**argv)
       }
 
       if(section_list[k].vaddr<=header.e_entry && (section_list[k].vaddr+section_list[k].size)>header.e_entry)	{
-        entry=header.e_entry-section_list[k].vaddr+(uint32_t)section_list[k].addr;
+        medInfo->entry=header.e_entry-section_list[k].vaddr+(uint32_t)section_list[k].addr;
         break;
       }
     }
     
-    if(entry==-1)
+    if(medInfo->entry==-1)
     {
         printk("can't find setion of entry point: 0x%x\n",header.e_entry);
         ret_val=-MED_EINVAL; 
@@ -413,9 +461,9 @@ MED_RET_T med_loadParam(int argc,char**argv)
            
     close(fd);
          
-    DEBUG_MED("sdram  %x (@%x)\n",sdram_start,&sdram_start); 
-    DEBUG_MED("sections_name  %x(@%x)\n",sections_name,&sections_name);
-    DEBUG_MED("section_list  %x(@%x)\n",section_list,&section_list);
+    DEBUG_MED("sdram  %x\n",medInfo->sdram_start); 
+    DEBUG_MED("sections_name  %x\n",medInfo->sections_name);
+    DEBUG_MED("section_list  %x\n",medInfo->section_list);
     
 //    DEBUG_MED("calling app (entry %x)\n", run_med);
 
@@ -425,47 +473,11 @@ MED_RET_T med_loadParam(int argc,char**argv)
     /* freeing tmp malloc/struct */
     free(sections_name);
     free(section_list);
-    
-    /* creating tmp argv struct */
-    if(argc)
-    {
-        int len;
-        cpy_argv = (char**)malloc(argc*sizeof(char*));
-        for(i=0;i<argc;i++)
-        {
-            len=strlen(argv[i])+1;
-            cpy_argv[i] = (char*)malloc(len*sizeof(char));
-            strncpy(cpy_argv[i],argv[i],len);
-        }
-    }
-    else
-        cpy_argv = NULL;
-    
-    
-    /* creating path variable */    
-    strcpy(path,argv[0]);
-    pos=strrchr(argv[0], '/');
-    
-    *(strrchr(path, '/'))='\0';
         
-    thread_startMed((void*)entry,sdram_start,(void*)iram_ptr,strrchr(argv[0],'/')+1,path,argc,cpy_argv);
-    
-    //free(sdram_start);
-        
-    printk("back from med\n");
-    
-    /* need to clean args */
-    if(argc)
-    {
-        for(i=0;i<argc;i++)
-            free(cpy_argv[i]);
-        free(cpy_argv);
-    }
-    
     return ret_val;
 
 exit_point3:       
-    free(sdram_start);
+    free(medInfo->sdram_start);
     printk("sdram freed\n"); 
 exit_point2:
     free(sections_name);
