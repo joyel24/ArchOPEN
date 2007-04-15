@@ -40,7 +40,7 @@ extern unsigned int _iram_end;
 extern unsigned int _sdend_start;
 extern unsigned int _sdend_end;
 
-
+extern int has_develFct;
 
 
 #define SWAB16(x) (x)

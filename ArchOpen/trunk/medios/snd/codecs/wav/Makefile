@@ -6,8 +6,10 @@ BUILD_DIR=./
 TARGET_CODEC=wav
 
 all: do_build
-	@$(LD) -o $(TARGET_CODEC).cod $(OBJS) $(LDFLAGS) -Map $(TARGET_CODEC).map
-	@mv $(TARGET_CODEC).cod $(MEDIOS_SRC_PATH)/codec
+	@$(LD) -o $(TARGET_CODEC).bin $(OBJS) $(LDFLAGS) -Map $(TARGET_CODEC).map
+	@cat codec.info $(TARGET_CODEC).bin > $(TARGET_CODEC).cod
+	@rm -f $(TARGET_CODEC).bin
+	@mv -f $(TARGET_CODEC).cod $(MEDIOS_SRC_PATH)/codec
 
 include $(MEDIOS_SRC_PATH)/default.rule
 

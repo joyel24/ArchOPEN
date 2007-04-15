@@ -89,6 +89,6 @@ typedef struct __med_t {
 
 MED_RET_T med_load(char * file_name);
 MED_RET_T med_loadParam(int argc,char**argv);
-MED_RET_T med_loadMed(char*fName,med_t * medInfo);
+MED_RET_T med_loadMed(char*fName,med_t * medInfo,int file_offset);
 
 #endif

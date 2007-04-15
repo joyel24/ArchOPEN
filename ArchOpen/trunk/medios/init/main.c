@@ -131,6 +131,8 @@ void kernel_thread(void)
         for(;;);
     }
     
+    sound_init();
+    
     energy_loadPref();
     misc_loadPref();
     
@@ -144,9 +146,8 @@ void kernel_thread(void)
     app_main(1,&stdalone);
     reload_firmware();
 #endif
-    
-    /*sound test*/
-    //sound_init();
+            
+    //sound_start();
             
     shell_main();
 

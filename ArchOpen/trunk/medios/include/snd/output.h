@@ -31,7 +31,8 @@ void output_write(void * buffer, int size);
 void output_discardBuffer();
 
 void output_init();
-void output_close();
+void output_stop(void);
+void output_start(void);
 
 #endif
 

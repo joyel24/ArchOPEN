@@ -101,7 +101,7 @@ MED_RET_T med_loadParam(int argc,char**argv)
         return -MED_EINVAL;
     }
     
-    if((ret_val=med_loadMed(argv[0],&medInfo))!=MED_OK)
+    if((ret_val=med_loadMed(argv[0],&medInfo,0))!=MED_OK)
         return ret_val;
         
     
@@ -143,7 +143,7 @@ MED_RET_T med_loadParam(int argc,char**argv)
     return MED_OK;
 }
     
-MED_RET_T med_loadMed(char*fName,med_t * medInfo)    
+MED_RET_T med_loadMed(char*fName,med_t * medInfo,int file_offset)    
 {
     
     int fd,ret,i,j,k,res,res2,res1;
@@ -179,6 +179,7 @@ MED_RET_T med_loadMed(char*fName,med_t * medInfo)
         return -MED_EINVAL;
     }
      
+    lseek(fd,file_offset,SEEK_SET);
     
     /* reading elf header */
     if((ret=read(fd,(void*)&header,sizeof(elf_hdr)))<sizeof(elf_hdr))
@@ -208,7 +209,7 @@ MED_RET_T med_loadMed(char*fName,med_t * medInfo)
     /* creating our own list of section infos */ 
     for(i=0;i<header.e_shnum;i++)
     {
-        lseek (fd,header.e_shoff+i*header.e_shentsize,SEEK_SET);
+        lseek (fd,file_offset+header.e_shoff+i*header.e_shentsize,SEEK_SET);
         read(fd,(void*)&section,sizeof(section_hdr));
         /* init from section header*/
         section_list[i].name = (char*)section.sh_name;
@@ -233,7 +234,7 @@ MED_RET_T med_loadMed(char*fName,med_t * medInfo)
     }
     
     /* reading section's name section */
-    lseek (fd,section_list[header.e_shstrndx].offset,SEEK_SET);    
+    lseek (fd,file_offset+section_list[header.e_shstrndx].offset,SEEK_SET);    
     sections_name = (char*)malloc(sizeof(char)*section_list[header.e_shstrndx].size);
     if(!sections_name)
     {
@@ -367,7 +368,7 @@ MED_RET_T med_loadMed(char*fName,med_t * medInfo)
         else
         {
             /* loading section from disk */
-            lseek (fd,section_list[i].offset,SEEK_SET);
+            lseek (fd,file_offset+section_list[i].offset,SEEK_SET);
             res = read(fd,(void*)section_list[i].addr,section_list[i].size);
             DEBUG_MED("[%d] %s load at 0x%x, read %x/%x\n",i,section_list[i].name,
                 section_list[i].addr,res,section_list[i].size);
@@ -389,7 +390,7 @@ MED_RET_T med_loadMed(char*fName,med_t * medInfo)
                 section_list[i].rel->name);
             for(j=0;j<section_list[i].rel->nb_ent;j++)
             {
-                lseek(fd,section_list[i].rel->offset+j*sizeof(rel_entry),SEEK_SET);
+                lseek(fd,file_offset+section_list[i].rel->offset+j*sizeof(rel_entry),SEEK_SET);
                 read(fd,(void*)&rel_data,sizeof(rel_entry));
                 /* only considering type 2 rel */
                 if(ELF32_R_TYPE(rel_data.r_info) == 0x2)

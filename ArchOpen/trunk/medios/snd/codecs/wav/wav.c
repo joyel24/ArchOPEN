@@ -173,14 +173,8 @@ void wav_trackLoop(){
 
 }
 
-void codec_main(){
-    
-    CODEC_INFO * info;
-    
-    info=codec_new();
-    info->name="wav.c";
-    info->extensions="wav";
-
+void codec_main(CODEC_INFO * info)
+{
     info->globalInfo.description="Uncompressed WAV Codec";
     info->globalInfo.seekSupported=true;
     info->globalInfo.trackLoop=wav_trackLoop;

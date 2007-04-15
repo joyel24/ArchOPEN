@@ -93,14 +93,13 @@ CODEC_INFO * codec_new(){
 }
 
 bool codec_load(CODEC_INFO * info){
-
+    med_t medInfo;
     if(info->loaded) return true;
     
     //load codec
 
-    //TODO: I need med codec system to implement this
-    //if(!strcmp(info->name,"wav.c")) wav_main();
-    //if(!strcmp(info->name,"tremor.c")) tremor_main();
+    if(med_loadMed(info->filename,&medInfo,info->fOffset)==MED_OK)
+        ((void (*)(CODEC_INFO * info))medInfo.entry)(info);
 
     printk("[codec] loaded codec %s, description=%s\n",info->name,info->globalInfo.description);
 
@@ -150,6 +149,9 @@ CODEC_INFO * codec_findCodecFor(char * name){
         info=info->next;
     }
 
+    if(!found)
+        info=NULL;
+    
     free(ext);
 
     return info;
@@ -280,14 +282,10 @@ void codec_setTrackInfo(CODEC_TRACK_INFO * info){
     output_outputParamsChanged(codec_trackInfo.sampleRate,codec_trackInfo.stereo);
 }
 
-void codec_init(){
-
-    med_t medInfo;
+void codec_start(void)
+{
+    printk("[Codec] starting\n");
     
-    codec_first=NULL;
-    codec_last=NULL;
-    codec_current=NULL;
-
     memset(&codec_trackInfo,0,sizeof(codec_trackInfo));
 
     codec_startRequested=false;
@@ -300,29 +298,129 @@ void codec_init(){
     codec_startOutPos=0;
     codec_timeDelta=0;
 
+    codec_current=NULL;
+    
+    thread_enable(codec_thread->pid);
+}
+
+void codec_stop(void)
+{
+    thread_disable(codec_thread->pid);
+}
+
+void codec_init()
+{
+    DIR * codec_folder;
+    int fd;
+    struct dirent * entry;
+    char header[4];
+    CODEC_INFO * cInfo;
+    char item_size;
+    char * fname;
+    
+    codec_first=NULL;
+    codec_last=NULL;
+    
     codec_thread=NULL;
 
-    //start codec thread
-    thread_startFct(&codec_thread,codec_threadFunction,"Codec thread",THREAD_STATE_ENABLE,PRIO_HIGH);
-
+    /* seraching for codecs */
+    codec_folder=opendir("/medios/codec");
+    if(codec_folder)
+    {
+        while((entry=readdir(codec_folder))!=NULL)
+        {
+            fname=(char*)malloc(strlen(entry->d_name)+strlen("/medios/codec/")+1);
+            strcpy(fname,"/medios/codec/");
+            strcpy(fname+strlen("/medios/codec/"),entry->d_name);
+            if(entry->type!=VFS_TYPE_FILE)
+            {
+                printk("discard: not a file");
+                free(fname);
+                continue;
+            }
+            fd=open(fname,O_RDONLY);
+            if(fd<0)
+            {
+                printk("Error opening file: %d\n",-fd);
+                free(fname);
+                continue; 
+            }
+            /* is is a codec file ?*/
+            if(read(fd,header,4)!=4)
+            {
+                printk("Can't read Header\n");
+                free(fname);
+                close(fd);
+                continue;
+            }
+            
+            if(strncmp(header,"CDEC",4))
+            {
+                printk("Not a codec file\n");
+                free(fname);
+                close(fd);
+                continue;   
+            }
+            
+            /* created codec info */
+            cInfo=codec_new();
+            cInfo->filename=fname;
+            cInfo->fOffset=5;
+            if(read(fd,(void*)&item_size,1)!=1)
+            {
+                printk("Can't read name size\n");
+                free(fname);
+                close(fd);
+                continue;
+            }
+            cInfo->fOffset+=(item_size+1);
+            cInfo->name=(char*)malloc(item_size+1);
+            if(read(fd,cInfo->name,item_size)!=item_size)
+            {
+                printk("Can't read name\n");
+                free(fname);
+                close(fd);
+#warning should remove codec from list
+                continue;
+            }
+            cInfo->name[(int)item_size]='\0'; /*leading zero*/
+            if(read(fd,(void*)&item_size,1)!=1)
+            {
+                printk("Can't read extension list size\n");
+                free(fname);
+                free(cInfo->name);
+                close(fd);
+                continue;
+            }
+            cInfo->fOffset+=item_size;
+            cInfo->extensions=(char*)malloc(item_size+1);
+            if(read(fd,cInfo->extensions,item_size)!=item_size)
+            {
+                printk("Can't read extension list\n");
+                close(fd);
+                free(fname);
+                free(cInfo->name);
+                free(cInfo->extensions);
+#warning should remove codec from list
+                continue;
+            }
+            cInfo->extensions[(int)item_size]='\0'; /*leading zero*/   
+            close(fd);
+        }
+    }
+    else
+    {
+        printk("Missing codec folder: /medios/codec\n");   
+    }
+    closedir(codec_folder);
+    //create codec thread
+    thread_startFct(&codec_thread,codec_threadFunction,"Codec thread",THREAD_STATE_DISABLE,PRIO_HIGH);
+/*
+    med_t medInfo
     if(med_loadMed("/medios/codec/wav.cod",&medInfo)==MED_OK)
         ((void (*)(void))medInfo.entry)();
     
     if(med_loadMed("/medios/codec/tremor.cod",&medInfo)==MED_OK)
         ((void (*)(void))medInfo.entry)();
-    
-    /*{
-        CODEC_INFO * info;
-        info=codec_new();
-        info->name="wav.c";
-        info->extensions="wav";
-    }*/
-
-    /*{
-        CODEC_INFO * info;
-        info=codec_new();
-        info->name="tremor.c";
-        info->extensions="ogg";
-    }*/
-
+*/
 }

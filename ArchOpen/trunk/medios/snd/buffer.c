@@ -280,12 +280,13 @@ void buffer_setActiveItem(PLAYLIST_ITEM * item){
 }
 
 
-void buffer_init(){
-
+void buffer_start(void)
+{
+    printk("[Buffer] starting\n");
     buffer_startPos=0;
     buffer_endPos=0;
     buffer_curPos=0;
-    buffer_thread=NULL;
+    
     buffer_bufferedItem=NULL;
     buffer_activeItem=NULL;
     buffer_bufferedItemChanged=false;
@@ -299,7 +300,18 @@ void buffer_init(){
         printk("[buffer] error: couldn't alloc audio buffer\n");
         return;
     }
+    thread_enable(buffer_thread->pid);
+}
 
-    //start buffer thread
-    thread_startFct(&buffer_thread,buffer_threadFunction,"Audio buffer",THREAD_STATE_ENABLE,PRIO_MED);
+void buffer_stop(void)
+{
+    free(buffer_data);
+    thread_disable(buffer_thread->pid);
+}
+
+void buffer_init()
+{
+    buffer_thread=NULL;
+    //create buffer thread
+    thread_startFct(&buffer_thread,buffer_threadFunction,"Audio buffer",THREAD_STATE_DISABLE,PRIO_MED);
 }

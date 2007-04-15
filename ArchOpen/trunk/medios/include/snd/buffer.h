@@ -23,5 +23,7 @@ int buffer_read(void * buf,int count);
 void buffer_setActiveItem(PLAYLIST_ITEM * item);
 
 void buffer_init();
+void buffer_start(void);
+void buffer_stop(void);
 
 #endif

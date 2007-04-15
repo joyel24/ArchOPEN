@@ -34,5 +34,7 @@ void codec_setGlobalInfo(CODEC_GLOBAL_INFO * info);
 void codec_setTrackInfo(CODEC_TRACK_INFO * info);
 
 void codec_init();
+void codec_start(void);
+void codec_stop(void);
 
 #endif

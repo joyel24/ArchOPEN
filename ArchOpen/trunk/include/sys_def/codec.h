@@ -30,10 +30,10 @@ typedef struct CODEC_INFO_STRUCT CODEC_INFO;
 
 struct CODEC_INFO_STRUCT{
     char * name;
-
-    char * extensions;
-    
+    char * filename;
+    char * extensions;    
     bool loaded;
+    int fOffset;
 
     CODEC_GLOBAL_INFO globalInfo;
 

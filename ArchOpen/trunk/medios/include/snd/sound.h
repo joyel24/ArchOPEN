@@ -17,6 +17,10 @@ void sound_nextTrack();
 void sound_trackEnd();
 
 void sound_init();
+void sound_start(void);
+void sound_stop(void);
+
+void sound_playFile(char * fName);
 
 #endif
 

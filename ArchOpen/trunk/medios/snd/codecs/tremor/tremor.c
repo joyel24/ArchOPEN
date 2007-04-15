@@ -121,14 +121,8 @@ void tremor_trackLoop(){
     ov_clear(&vf);
 }
 
-void codec_main(){
-    
-    CODEC_INFO * info;
-    
-    info=codec_new();
-    info->name="tremor.c";
-    info->extensions="ogg";
-
+void codec_main(CODEC_INFO * info)
+{
     info->globalInfo.description="Tremor, OGG Vorbis codec";
     info->globalInfo.seekSupported=true;
     info->globalInfo.trackLoop=tremor_trackLoop;

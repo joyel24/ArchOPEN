@@ -35,7 +35,11 @@
 WIDGETLIST menuList;  
 CHECKBOX FmRemote;
 CHECKBOX ExtSpkr;
+CHECKBOX develFct;
+
 int stop_misc_set;
+
+int has_develFct;
 
 #define ICON_X 5
 #define ICON_Y 5
@@ -65,6 +69,12 @@ void okBtnMisc_click(BUTTON b)
         else
             FM_disable();
         cfg_writeInt(cfg,"fmRemote",FmRemote->checked);
+    }
+    
+    if(develFct->checked != has_develFct)
+    {
+        has_develFct=develFct->checked;
+        cfg_writeInt(cfg,"develFct",has_develFct);
     }
     
     if(SPKR_AVAILABLE() && ExtSpkr->checked!=SPKR_STATE())
@@ -140,6 +150,16 @@ void misc_setting(void)
     
     menuList->addWidget(menuList,FmRemote);
     
+    develFct=checkbox_create();
+    develFct->caption="Enable Dev Fction";
+    develFct->font=MISC_GUIFONT;
+    develFct->setRect(develFct,x,y,8,8);
+    develFct->checked=has_develFct;
+    
+    y+=lineH;
+    
+    menuList->addWidget(menuList,develFct);
+    
     if(SPKR_AVAILABLE())
     {
         ExtSpkr=checkbox_create();
@@ -206,6 +226,7 @@ void misc_loadPref(void)
         cfg_writeInt(cfg,"fmRemote",1);
         if(SPKR_AVAILABLE())
             cfg_writeInt(cfg,"ExtSpkr",0);
+        cfg_writeInt(cfg,"develFct",0);
         needWrite=1;   
     }
     else
@@ -221,6 +242,17 @@ void misc_loadPref(void)
         {
             cfg_writeInt(cfg,"fmRemote",1);
             FM_enable();
+            needWrite=1;
+        }
+        
+        if(cfg_itemExists(cfg,"develFct"))
+        {
+            has_develFct=cfg_readInt(cfg,"develFct");
+        }
+        else
+        {
+            cfg_writeInt(cfg,"develFct",0);
+            has_develFct=0;
             needWrite=1;
         }
         

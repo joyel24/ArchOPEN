@@ -240,8 +240,10 @@ void output_discardBuffer(){
     output_discardingBuffer=false;
 }
 
-void output_init(){
-
+void output_start(void)
+{
+    printk("[Output] starting\n");
+    
     output_buffer=malloc(OUTPUT_BUFFER_SIZE);
 
     output_readPos=0;
@@ -251,7 +253,7 @@ void output_init(){
     output_dspWaitingData=false;
     output_dspNoOutput=false;
     output_discardingBuffer=false;
-
+    
     output_initDsp();
 
     output_sampleRate=OUTPUT_DEFAULT_SAMPLERATE;
@@ -259,7 +261,13 @@ void output_init(){
     output_enableAudioOutput(true);
 }
 
-void output_close(){
+void output_init()
+{
+
+}
+
+void output_stop(void)
+{
     output_enableAudioOutput(false);
 
     free(output_buffer);

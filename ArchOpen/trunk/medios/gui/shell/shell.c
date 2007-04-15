@@ -34,6 +34,9 @@
 #include <gui/internal_commands.h>
 #include <gui/settings_energy.h>
 
+#include <snd/codec.h>
+#include <snd/sound.h>
+
 typedef struct SHELL_HANDLER_STRUCT * SHELL_HANDLER;
 
 struct SHELL_HANDLER_STRUCT {
@@ -219,26 +222,34 @@ bool shell_execute(char * command,char * param){
                 retval=shell_executeMed(command,param);
 
             }else{
-                SHELL_HANDLER handler;
-
-                // find the extension handler
-                handler=shell_firstHandler;
-                while(handler!=NULL){
-                    if(!strcmp(ext,handler->ext)){
-                        break;
-                    }
-
-                    handler=handler->next;
+                
+                if(has_develFct && codec_findCodecFor(command)!=NULL)
+                {
+                    sound_playFile(command);
                 }
-
-                //found a handler?
-                if(handler!=NULL){
-                    //execute handler with the file as param
-                    retval=shell_executeMed(handler->handler,command);
-
-                }else{
-                    printk("[shell] error: can't execute '%s', no handler for extension '%s'\n",command,ext);
-                    retval=false;
+                else
+                {
+                    SHELL_HANDLER handler;
+    
+                    // find the extension handler
+                    handler=shell_firstHandler;
+                    while(handler!=NULL){
+                        if(!strcmp(ext,handler->ext)){
+                            break;
+                        }
+    
+                        handler=handler->next;
+                    }
+    
+                    //found a handler?
+                    if(handler!=NULL){
+                        //execute handler with the file as param
+                        retval=shell_executeMed(handler->handler,command);
+    
+                    }else{
+                        printk("[shell] error: can't execute '%s', no handler for extension '%s'\n",command,ext);
+                        retval=false;
+                    }
                 }
             }
 

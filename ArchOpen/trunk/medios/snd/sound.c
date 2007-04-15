@@ -17,6 +17,7 @@
 #include <kernel/delay.h>
 #include <kernel/irq.h>
 #include <kernel/timer.h>
+
 #include <driver/buttons.h>
 #include <driver/dsp.h>
 
@@ -75,25 +76,47 @@ void sound_trackEnd(){
     sound_nextTrack(false);
 };
 
-void sound_init(){
+void sound_start(void)
+{
+    buffer_start();
+    codec_start();
+    output_start();
+    
+}
+
+void sound_stop(void)
+{
+    buffer_stop();
+    codec_stop();
+    output_stop();
+    
+}
+
+void sound_init()
+{   
+    playlist_init();
+    buffer_init();
+    codec_init();
+    output_init();    
+
+}
+
+void sound_playFile(char * fName)
+{
     int b;
     char s[100];
     int len,elap;
     int t,pt,pe;
-
-    gfx_openGraphics();
-    gfx_clearScreen(COLOR_BLACK);
-
-    playlist_init();
-    buffer_init();
-    codec_init();
-    output_init();
     
+    sound_start();   
+    
+    gfx_clearScreen(COLOR_BLACK);
+        
 #ifdef HAVE_AIC23_SOUND
     aic23_setOutputVolume(100,AIC23_CHANNEL_BOTH);
 #endif
-
-    playlist_addFolder("/_mus",false);
+    playlist_clear();
+    playlist_addFile(fName);
 
     sound_activeItem=playlist_first;
 
@@ -155,5 +178,6 @@ void sound_init(){
         yield();
     }while(!(b&BTMASK_OFF));
 
-    output_close();
+    sound_stop();
+
 }
