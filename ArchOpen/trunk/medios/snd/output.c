@@ -17,9 +17,14 @@
 #include <kernel/delay.h>
 #include <kernel/irq.h>
 #include <kernel/io.h>
+
 #include <driver/hardware.h>
 #include <driver/dsp.h>
+
+#ifdef HAVE_AIC23_SOUND
 #include <driver/aic23.h>
+#endif
+
 #include <fs/stdfs.h>
 
 #include <snd/codec.h>
@@ -99,10 +104,10 @@ __IRAM_CODE void output_dspInterrupt(int irq,struct pt_regs * regs){
 }
 
 void output_initDsp(){
-    extern char _binary_apps_aodoom_dspcode_doom_dsp_out_start;
+    /*extern char _binary_apps_aodoom_dspcode_doom_dsp_out_start;
     extern char _binary_apps_aodoom_dspcode_doom_dsp_out_end;
     unsigned char * dspcode=&_binary_apps_aodoom_dspcode_doom_dsp_out_start;
-    int len=&_binary_apps_aodoom_dspcode_doom_dsp_out_end-&_binary_apps_aodoom_dspcode_doom_dsp_out_start;
+    int len=&_binary_apps_aodoom_dspcode_doom_dsp_out_end-&_binary_apps_aodoom_dspcode_doom_dsp_out_start;*/
 
     // dsp irq handler
     irq_changeHandler(IRQ_DSP,output_dspInterrupt);
@@ -166,11 +171,17 @@ void output_outputParamsChanged(int sampleRate, bool stereo){
 }
 
 bool output_setSampleRate(int rate){
+#ifdef HAVE_AIC23_SOUND
     return aic23_setSampleRate(rate);
+#else
+    return 0;
+#endif
 }
 
 void output_enableAudioOutput(bool enabled){
+#ifdef HAVE_AIC23_SOUND
     aic23_enableOutput(enabled);
+#endif
 }
 
 void output_enable(bool enabled){

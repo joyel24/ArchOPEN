@@ -48,7 +48,9 @@ make clean 2>&1 > /dev/null
 buildAndReport ${makeResult} ${reportFile} ${phpReport} ${arch}
 
 #zipping bin and arch spec file (wav,bin,avi)
-zip -9 ${zipFile} medios.${ext} medios.bin
+mv codec medios
+zip -r9 ${zipFile} medios.${ext} medios.bin medios/codec/
+rm -Rf medios/codec
 
 # ok everything is ready we can send
 mvFtp builds $reportFile $makeResult $zipFile

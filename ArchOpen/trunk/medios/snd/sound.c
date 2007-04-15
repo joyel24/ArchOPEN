@@ -19,7 +19,11 @@
 #include <kernel/timer.h>
 #include <driver/buttons.h>
 #include <driver/dsp.h>
+
+#ifdef HAVE_AIC23_SOUND
 #include <driver/aic23.h>
+#endif
+
 #include <fs/stdfs.h>
 #include <gfx/graphics.h>
 
@@ -84,8 +88,11 @@ void sound_init(){
     buffer_init();
     codec_init();
     output_init();
-
+    
+#ifdef HAVE_AIC23_SOUND
     aic23_setOutputVolume(100,AIC23_CHANNEL_BOTH);
+#endif
+
     playlist_addFolder("/_mus",false);
 
     sound_activeItem=playlist_first;

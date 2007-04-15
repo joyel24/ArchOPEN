@@ -164,13 +164,13 @@ void vorbis_lsp_to_curve(ogg_int32_t *curve,int *map,int n,int ln,
 
   i=0;
   while(i<n){
-    int j,k=map[i];
+#ifdef _V_LSP_MATH_ASM
+    int k=map[i];
     ogg_uint32_t pi=46341; /* 2**-.5 in 0.16 */
     ogg_uint32_t qi=46341;
-    ogg_int32_t qexp=0,shift;
+    ogg_int32_t qexp=0;
     ogg_int32_t wi=icos[k];
 
-#ifdef _V_LSP_MATH_ASM
     lsp_loop_asm(&qi,&pi,&qexp,ilsp,wi,m);
 
     pi=((pi*pi)>>16);
@@ -195,7 +195,12 @@ void vorbis_lsp_to_curve(ogg_int32_t *curve,int *map,int n,int ln,
       lsp_norm_asm(&qi,&qexp);
 
 #else
-
+    int j,k=map[i];
+    ogg_uint32_t pi=46341; /* 2**-.5 in 0.16 */
+    ogg_uint32_t qi=46341;
+    ogg_int32_t qexp=0,shift;
+    ogg_int32_t wi=icos[k];
+    
     qi*=labs(ilsp[0]-wi);
     pi*=labs(ilsp[1]-wi);
 
