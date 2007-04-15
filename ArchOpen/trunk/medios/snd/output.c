@@ -112,7 +112,7 @@ void output_initDsp(){
 #if 0
     dsp_loadProgramFromMemory(dspcode,len);
 #else
-    dsp_loadProgramFromHDD("/snd_dsp.out");
+    dsp_loadProgramFromHDD("/medios/codec/snd_dsp.out");
 #endif
 
     // setup dma

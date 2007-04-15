@@ -7,7 +7,7 @@ TARGET_CODEC=wav
 
 all: do_build
 	@$(LD) -o $(TARGET_CODEC).cod $(OBJS) $(LDFLAGS) -Map $(TARGET_CODEC).map
-	@-mv $(TARGET_CODEC).cod $(MEDIOS_SRC_PATH)/codec
+	@mv $(TARGET_CODEC).cod $(MEDIOS_SRC_PATH)/codec
 
 include $(MEDIOS_SRC_PATH)/default.rule
 

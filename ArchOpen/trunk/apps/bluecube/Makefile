@@ -4,7 +4,7 @@ export MEDIOS_SRC_PATH = $(MEDIOS_SRC_PATH_TMP)/../..
 include $(MEDIOS_SRC_PATH)/Makefile.conf
 
 LIBS = $(MEDIOS_SRC_PATH)/lib/libmedios.a
-LDFLAGS = $(MEDIOS_SRC_PATH)/lib/*.o -L$(MEDIOS_SRC_PATH)/lib -lmedios --emit-relocs
+LDFLAGS = $(MEDIOS_SRC_PATH)/lib/apps_start.o $(MEDIOS_SRC_PATH)/lib/apps_stop.o -L$(MEDIOS_SRC_PATH)/lib -lmedios --emit-relocs
 
 TARGET = bluecube
 

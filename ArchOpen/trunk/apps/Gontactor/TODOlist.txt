@@ -1,0 +1,40 @@
+
+0.8 :
+
+PICTURE avec bmp 32bit (en utilisant transparence plan bitmap etVID1 en ycrbr)
+Création et opération depuis Gontactor.
+Menu général à l'ouverture.
+barre d'icone en haut
+CREDIT en utilisant l'affichage de contact.
+
+Moteur de recherche
+	_ordre de base : 	Groupe>Nom>Prénom
+	_+logique : 		Groupe>choix du champ
+	_Donc il faut un tris.....
+
+
+-----------------------------------------------------------------------
+changelog 0.7:
+   GUI RELOADED
+	_Restructuration des sources de la gui
+	_adaptation de l'affichage aux dimention de l'écran
+	_Utilisation des define de charte graphique.
+
+   Affichage d'un contact :
+	_Nouveau design 
+	_PICTURE (necessite un bmp dans la palette)
+	_BUGFIX du retour sur contact
+	_scroll text
+	_Barre bouton en bas
+	_Utiliser Nom et prénom pour les boutons suivant et précédent et dans la list bend
+	_List bend capable de tronquer les textes trop long
+	_pb des champs vides..... (Pas résolu pour Nom prénom et dates)
+	_Afficher l'age
+
+   Général :
+	_crée le dossier GTN au démarrage pour y écrire le log (nécessite que /medios/data existe)
+	_Vérifie la présence des fichiers de configuration.
+	_Si erreur affiche une dialog temporaire (en attendant un support des longs messages dans celles de medios) puis quitte.
+	_Dans l'INIT et l'EXIT, utilise la scrollbar et la status bar.
+	_Charger les dimentions de l'écran au démarrage
+
