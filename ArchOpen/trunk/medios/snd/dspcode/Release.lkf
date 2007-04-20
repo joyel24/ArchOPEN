@@ -1,7 +1,0 @@
--z -c -m"./Release/snd_dsp.map" -o"./Release/snd_dsp.out" -w -x -i"C:/CCStudio_v3.3/C5400/xdais/lib" -i"C:/CCStudio_v3.3/C5400/csl/lib" -i"C:/CCStudio_v3.3/bios_5_31_02/packages/ti/bios/lib" -i"C:/CCStudio_v3.3/bios_5_31_02/packages/ti/rtdx/lib/c5400" -i"C:/CCStudio_v3.3/C5400/cgtools/lib"
-"Z:\Av320\ArchOpen\trunk\medios\snd\dspcode\lnk.cmd"
-"Z:\Av320\ArchOpen\trunk\medios\snd\dspcode\Release\snd_dsp.obj"
-"Z:\Av320\ArchOpen\trunk\medios\snd\dspcode\Release\vectors.obj"
-"C:\CCStudio_v3.3\C5400\cgtools\lib\rts.lib"
-"C:\CCStudio_v3.3\C5400\csl\lib\csl5409.lib"
-"Z:\Av320\ArchOpen\trunk\libdsp\libdsp.lib"
