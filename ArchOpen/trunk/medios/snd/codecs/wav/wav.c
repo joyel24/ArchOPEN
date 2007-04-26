@@ -11,15 +11,10 @@
 
 #include <api.h>
 
-#include <snd/wav.h>
+#include "wav.h"
 
 char dataBuf[DATA_BUFFER_SIZE];
 char processBuf[DATA_BUFFER_SIZE];
-
-WAV_FMT fmt;
-CODEC_TRACK_INFO info;
-bool is8Bit;
-int dataSize,dataStart,dataPos;
 
 int wav_8Bit(){
     int red;
@@ -37,11 +32,16 @@ int wav_8Bit(){
     return red;
 }
 
-bool wav_verifyHeader(){
+bool wav_verifyHeader(bool onBuffer,int f){
     WAV_HEADER header;
 
-    buffer_seek(0,SEEK_SET);
-    buffer_read(&header,sizeof(header));
+    if(onBuffer){
+        buffer_seek(0,SEEK_SET);
+        buffer_read(&header,sizeof(header));
+    }else{
+        lseek(f,0,SEEK_SET);
+        read(f,&header,sizeof(header));
+    }
 
     if(!memcmp(header.id,"RIFF",4) &&
        !memcmp(header.type,"WAVE",4)){
@@ -53,7 +53,7 @@ bool wav_verifyHeader(){
     }
 }
 
-int wav_findChunk(char * id){
+int wav_findChunk(char * id,bool onBuffer,int f){
     WAV_CHUNK chunk;
     int red;
     char idtext[5];
@@ -61,9 +61,17 @@ int wav_findChunk(char * id){
     idtext[4]='\0';
     chunk.size=0;
     do{
-        if (buffer_seek(chunk.size,SEEK_CUR)<0) return -1;
+        if(onBuffer){
+    
+            if (buffer_seek(chunk.size,SEEK_CUR)<0) return -1;
 
-        red=buffer_read(&chunk,sizeof(chunk));
+            red=buffer_read(&chunk,sizeof(chunk));
+        }else{
+
+            if (lseek(f,chunk.size,SEEK_CUR)<0) return -1;
+
+            red=read(f,&chunk,sizeof(chunk));
+        }
 
         memcpy(idtext,chunk.id,4);
         printf("[wav] found chunk '%s'\n",idtext);
@@ -77,52 +85,80 @@ int wav_findChunk(char * id){
     }
 }
 
+void wav_tagRequest(char * name,TAG * tag){
+    int f;
+    int size;
+    WAV_FMT fmt;
+
+    tag->badFile=true;
+
+    f=open(name,O_RDONLY);
+
+    if(f>=0){
+
+        if (wav_verifyHeader(false,f)){
+
+            size=wav_findChunk("fmt ",false,f);
+            if(size>=sizeof(fmt)){
+
+                // parse fmt chunk
+                read(f,&fmt,sizeof(fmt));
+
+                if(fmt.formatTag==WAVE_FORMAT_PCM &&
+                   fmt.channels>0 && fmt.channels<3 &&
+                   (fmt.bitsPerSample==8 || fmt.bitsPerSample==16)){
+
+                    tag->sampleRate=fmt.samplesPerSec;
+                    tag->stereo=fmt.channels==2;
+                    tag->bitRate=fmt.samplesPerSec*fmt.channels*fmt.bitsPerSample;
+
+                    // try to find data chunk
+                    size=wav_findChunk("data",false,f);
+                    if(size>=0){
+                        tag->badFile=false;
+                        tag->length=size*HZ/fmt.avgBytesPerSec;
+                    }
+                }
+            }
+        }
+
+        close(f);
+    }
+}
+
 void wav_trackLoop(){
     int size;
     int red;
     int time;
+    WAV_FMT fmt;
+    bool is8Bit;
+    int dataSize,dataStart,dataPos;
 
-    dataPos=0;
+
+    dataSize=dataStart=dataPos=0;
     is8Bit=false;
-    info.validTrack=false;
-    info.sampleRate=0;
-    info.stereo=false;
 
     printf("[wav] trackStart()\n");
 
     // parse headers
 
-    if (wav_verifyHeader()){
+    if (wav_verifyHeader(true,0)){
 
-        size=wav_findChunk("fmt ");
+        size=wav_findChunk("fmt ",true,0);
         if(size>=sizeof(fmt)){
 
             // parse fmt chunk
             buffer_read(&fmt,sizeof(fmt));
-            if(fmt.formatTag==WAVE_FORMAT_PCM &&
-               fmt.channels>0 && fmt.channels<3 &&
-               (fmt.bitsPerSample==8 || fmt.bitsPerSample==16)){
 
-                info.sampleRate=fmt.samplesPerSec;
-                info.stereo=fmt.channels==2;
-                is8Bit=fmt.bitsPerSample==8;
+            is8Bit=fmt.bitsPerSample==8;
 
-                // try to find data chunk
-                dataSize=wav_findChunk("data");
-                if(dataSize>=0){
-                    dataStart=buffer_seek(0,SEEK_CUR);
-
-                    info.validTrack=true;
-                    info.length=dataSize*HZ/fmt.avgBytesPerSec;
-                }
+            // try to find data chunk
+            dataSize=wav_findChunk("data",true,0);
+            if(dataSize>=0){
+                dataStart=buffer_seek(0,SEEK_CUR);
             }
         }
     }
-
-    // send track info
-    codec_setTrackInfo(&info);
-
-    if(!info.validTrack) return;
 
     // read / write loop
     red=0;
@@ -178,5 +214,6 @@ void codec_main(CODEC_INFO * info)
     info->globalInfo.description="Uncompressed WAV Codec";
     info->globalInfo.seekSupported=true;
     info->globalInfo.trackLoop=wav_trackLoop;
+    info->globalInfo.tagRequest=wav_tagRequest;
 }
 

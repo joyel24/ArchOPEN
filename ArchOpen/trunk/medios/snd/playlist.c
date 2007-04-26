@@ -16,6 +16,7 @@
 #include <fs/stdfs.h>
 
 #include <snd/codec.h>
+#include <snd/tag.h>
 
 #include <snd/playlist.h>
 
@@ -81,6 +82,9 @@ bool playlist_remove(PLAYLIST_ITEM * item){
 
     // free data
     if(item->name!=NULL) free(item->name);
+
+    tag_free(&item->tag);
+
     free(item);
     
     return true;
@@ -105,11 +109,22 @@ bool playlist_addFile(char * name){
     item->name=strdup(name);
     item->fileSize=filesize(f);
 
-    //TODO: tags stuff
-
     close(f);
 
-    return true;
+    //tags stuff
+    tag_clear(&item->tag);
+
+    codec_tagRequest(name,&item->tag);
+    
+    if (item->tag.badFile){
+
+        playlist_remove(item);
+
+        return false;
+    }else{
+
+        return true;
+    }
 }
 
 bool playlist_addFolder(char * name,bool recurse){

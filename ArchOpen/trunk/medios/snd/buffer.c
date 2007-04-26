@@ -152,9 +152,9 @@ static void buffer_threadFunction(){
             yield();
         }
 
-        while(buffer_bufferedItem!=NULL){
+        buffer_bufferedItemChanged=false;
 
-            buffer_bufferedItemChanged=false;
+        while(buffer_bufferedItem!=NULL){
 
             buffer_bufferItem(buffer_bufferedItem);
 
@@ -279,6 +279,9 @@ void buffer_setActiveItem(PLAYLIST_ITEM * item){
     buffer_curPos=buffer_activeItem->startPos;
 }
 
+PLAYLIST_ITEM * buffer_getActiveItem(){
+    return buffer_activeItem;
+}
 
 void buffer_start(void)
 {
@@ -305,6 +308,13 @@ void buffer_start(void)
 
 void buffer_stop(void)
 {
+    // stop buffering any file
+    buffer_bufferedItem=NULL;
+    buffer_bufferedItemChanged=true;
+    while(buffer_bufferedItemChanged){
+        yield();
+    }
+
     free(buffer_data);
     thread_disable(buffer_thread->pid);
 }

@@ -316,9 +316,7 @@ int        # speaker_state     # void
 int        # speaker_available # void
 
 #k_inc#snd/codec.h
-#api_inc#sys_def/codec.h
-void         # codec_setGlobalInfo  # CODEC_GLOBAL_INFO * info
-void         # codec_setTrackInfo   # CODEC_TRACK_INFO * info
+#api_inc#snd_user/codec.h
 bool         # codec_mustSeek       # int * time
 void         # codec_setElapsed     # int elapsed
 void         # codec_seekDone       #
@@ -326,8 +324,11 @@ bool         # codec_mustContinue   #
 CODEC_INFO * # codec_new            #
 
 #k_inc#snd/output.h
-void       # output_write         # void * buffer, int size
+void       # output_write               # void * buffer, int size
+void       # output_outputParamsChanged #
 
 #k_inc#snd/buffer.h
-int        # buffer_seek          # int offset,int whence
-int        # buffer_read          # void * buf,int count
+#api_inc#snd_user/playlist.h
+int             # buffer_seek          # int offset,int whence
+int             # buffer_read          # void * buf,int count
+PLAYLIST_ITEM * # buffer_getActiveItem #

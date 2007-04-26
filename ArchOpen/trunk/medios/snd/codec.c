@@ -17,19 +17,15 @@
 #include <fs/stdfs.h>
 #include <fs/med.h>
 
+#include <snd/buffer.h>
 #include <snd/codec.h>
 #include <snd/playlist.h>
 #include <snd/output.h>
 #include <snd/sound.h>
 
-//#include <snd/wav.h>
-#include <snd/tremor.h>
-
 CODEC_INFO * codec_first = NULL;
 CODEC_INFO * codec_last = NULL;
 CODEC_INFO * codec_current = NULL;
-
-CODEC_TRACK_INFO codec_trackInfo;
 
 int codec_startOutPos = 0;
 int codec_timeDelta = 0;
@@ -52,6 +48,9 @@ static void codec_threadFunction(){
             yield();
         }
         codec_startRequested=false;
+
+        // make sure output params are correctly set up
+        output_outputParamsChanged();
 
         // call trackloop
         if(codec_current->globalInfo.trackLoop!=NULL){
@@ -181,12 +180,6 @@ void codec_trackStart(){
 
     codec_trackStop();
 
-    // init trackInfo
-    codec_trackInfo.validTrack=false;
-    codec_trackInfo.length=0;
-    codec_trackInfo.sampleRate=0;
-    codec_trackInfo.stereo=false;
-
     codec_startOutPos=output_writePos;
     codec_timeDelta=0;
     codec_seekRequested=false;
@@ -244,20 +237,19 @@ void codec_seekDone(){
 }
 
 
-bool codec_getTimes(int * length,int * elapsed){
+bool codec_getElapsed(int * elapsed){
 
-    if(!codec_loopRunning || !codec_trackInfo.validTrack) return false;
-
-    if(length){
-        *length=codec_trackInfo.length;
-    }
+    if(!codec_loopRunning) return false;
 
     if(elapsed){
         int pos;
+        PLAYLIST_ITEM * item;
+        
+        item=buffer_getActiveItem();
 
         pos=MAX(output_readPos-codec_startOutPos,0);
 
-        *elapsed=codec_timeDelta+pos*HZ/(codec_trackInfo.sampleRate*((codec_trackInfo.stereo)?4:2));
+        *elapsed=codec_timeDelta+pos*HZ/(item->tag.sampleRate*((item->tag.stereo)?4:2));
     }
 
     return true;
@@ -266,27 +258,30 @@ bool codec_getTimes(int * length,int * elapsed){
 void codec_setElapsed(int elapsed){
     int prevElap;
 
-    codec_getTimes(NULL,&prevElap);
+    codec_getElapsed(&prevElap);
 
     codec_timeDelta+=elapsed-prevElap;
 }
 
-void codec_setGlobalInfo(CODEC_GLOBAL_INFO * info){
-    codec_current->globalInfo=*info;
-}
+bool codec_tagRequest(char * name, TAG * tag){
+    CODEC_INFO * info;
 
-void codec_setTrackInfo(CODEC_TRACK_INFO * info){
-    codec_trackInfo=*info;
+    info=codec_findCodecFor(name);
 
-    // inform output
-    output_outputParamsChanged(codec_trackInfo.sampleRate,codec_trackInfo.stereo);
+    if(info==NULL) return false;
+
+    codec_load(info);
+
+    if(info->globalInfo.tagRequest==NULL) return false;
+
+    info->globalInfo.tagRequest(name,tag);
+    
+    return true;
 }
 
 void codec_start(void)
 {
     printk("[Codec] starting\n");
-    
-    memset(&codec_trackInfo,0,sizeof(codec_trackInfo));
 
     codec_startRequested=false;
     codec_stopRequested=false;
@@ -305,6 +300,8 @@ void codec_start(void)
 
 void codec_stop(void)
 {
+    codec_trackStop();
+
     thread_disable(codec_thread->pid);
 }
 

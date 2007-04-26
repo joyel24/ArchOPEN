@@ -1,6 +1,6 @@
 include $(MEDIOS_SRC_PATH)/Makefile.conf
 
-SUBDIRS=wav tremor wavpack
+SUBDIRS=wav tremor wavpack mad
 
 all: codec_dir subdirs
 	@cp -f ../dspcode/snd_dsp.out $(MEDIOS_SRC_PATH)/codec

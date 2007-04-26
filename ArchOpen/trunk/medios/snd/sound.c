@@ -37,6 +37,8 @@ PLAYLIST_ITEM * sound_activeItem;
 
 void sound_play(bool discard){
 
+    if (sound_activeItem==NULL) return;
+
     printk("[sound] play %s\n",sound_activeItem->name);
 
     codec_trackStop();
@@ -86,10 +88,10 @@ void sound_start(void)
 
 void sound_stop(void)
 {
-    buffer_stop();
     codec_stop();
     output_stop();
-    
+    buffer_stop();
+
 }
 
 void sound_init()
@@ -133,17 +135,34 @@ void sound_playFile(char * fName)
         gfx_putS(COLOR_WHITE,COLOR_BLACK,0,0,s);
 
         len=elap=-1;
-        codec_getTimes(&len,&elap);
+        len=sound_activeItem->tag.length;
+        codec_getElapsed(&elap);
         sprintf(s,"%8d %8d",len,elap);
         gfx_putS(COLOR_WHITE,COLOR_BLACK,0,20,s);
 
+        *s='\0';
+        if(sound_activeItem->tag.title!=NULL){
+            strcpy(s,sound_activeItem->tag.title);
+        };
+        strcat(s,"                   ");
+        gfx_putS(COLOR_WHITE,COLOR_BLACK,0,40,s);
+
+        *s='\0';
+        if(sound_activeItem->tag.artist!=NULL){
+            strcpy(s,sound_activeItem->tag.artist);
+        };
+        strcat(s,"                   ");
+        gfx_putS(COLOR_WHITE,COLOR_BLACK,0,50,s);
+
+        sprintf(s,"%d     ",sound_activeItem->tag.bitRate/1000);
+        gfx_putS(COLOR_WHITE,COLOR_BLACK,0,60,s);
 
         t=tmr_getTick();
         if(t-pt>=100){
             int pc=(elap-pe)*100/(t-pt);
 
             sprintf(s,"%d     ",pc);
-            gfx_putS(COLOR_WHITE,COLOR_BLACK,0,40,s);
+            gfx_putS(COLOR_WHITE,COLOR_BLACK,0,30,s);
 
             printk("speed: %d%%\n",pc);
 

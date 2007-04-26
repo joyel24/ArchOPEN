@@ -20,7 +20,9 @@
 
 int buffer_seek(int offset,int whence);
 int buffer_read(void * buf,int count);
+
 void buffer_setActiveItem(PLAYLIST_ITEM * item);
+PLAYLIST_ITEM * buffer_getActiveItem();
 
 void buffer_init();
 void buffer_start(void);

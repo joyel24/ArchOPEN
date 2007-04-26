@@ -27,6 +27,7 @@
 
 #include <fs/stdfs.h>
 
+#include <snd/buffer.h>
 #include <snd/codec.h>
 #include <snd/output.h>
 #include <snd/sound.h>
@@ -140,7 +141,15 @@ void output_initDsp(){
     dspCom->armInitFinished=1;
 };
 
-void output_outputParamsChanged(int sampleRate, bool stereo){
+void output_outputParamsChanged(){
+    PLAYLIST_ITEM * item;
+    int sampleRate;
+    bool stereo;
+
+    item=buffer_getActiveItem();
+    
+    sampleRate=item->tag.sampleRate;
+    stereo=item->tag.stereo;
 
     if(dspCom->stereo!=stereo || sampleRate!=output_sampleRate){
         // make sure all previous data is outputted before any change
@@ -254,8 +263,6 @@ void output_start(void)
     output_dspNoOutput=false;
     output_discardingBuffer=false;
     
-    output_initDsp();
-
     output_sampleRate=OUTPUT_DEFAULT_SAMPLERATE;
     output_setSampleRate(output_sampleRate);
     output_enableAudioOutput(true);
@@ -263,11 +270,13 @@ void output_start(void)
 
 void output_init()
 {
-
+    output_initDsp();
 }
 
 void output_stop(void)
 {
+    output_discardBuffer();
+
     output_enableAudioOutput(false);
 
     free(output_buffer);

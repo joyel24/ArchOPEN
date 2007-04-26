@@ -13,17 +13,8 @@
 
 #include <sys_def/types.h>
 
-typedef struct PLAYLIST_ITEM_STRUCT PLAYLIST_ITEM;
-
-struct PLAYLIST_ITEM_STRUCT{
-    char * name;
-    int startPos;
-    int fileSize;
-    int bufferedSize;
-
-    PLAYLIST_ITEM * next;
-    PLAYLIST_ITEM * prev;
-};
+#include <snd_user/playlist.h>
+#include <snd_user/tag.h>
 
 extern PLAYLIST_ITEM * playlist_first;
 extern PLAYLIST_ITEM * playlist_last;

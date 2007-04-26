@@ -7,94 +7,168 @@
 * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 * KIND, either express of implied.
 */
-/*
-#include <lib/string.h>
-#include <sys_def/stddef.h>
-
-#include <kernel/kernel.h>
-#include <kernel/malloc.h>
-#include <kernel/thread.h>
-#include <kernel/evt.h>
-#include <fs/stdfs.h>
-
-#include <snd/tremor.h>
-#include <snd/codec.h>
-#include <snd/buffer.h>
-#include <snd/output.h>
-*/
 
 #include "medios.h"
-#include <snd/tremor.h>
 #include "ivorbisfile.h"
 #include "ivorbiscodec.h"
 
+#define DATA_BUFFER_SIZE 65536
+
 char dataBuf[DATA_BUFFER_SIZE];
 
-ov_callbacks callbacks;
+ov_callbacks bufferCallbacks;
+ov_callbacks fileCallbacks;
 
-size_t tremor_read(void *ptr, size_t size, size_t nmemb, void *datasource){
+size_t tremor_fileRead(void *ptr, size_t size, size_t nmemb, void *datasource){
+//    printf("[tremor] read\n");
+
+    return read((int)datasource,ptr,size*nmemb);
+};
+
+int tremor_fileSeek(void *datasource, ogg_int64_t offset, int whence){
+//    printf("[tremor] seek %d %d\n",offset,whence);
+
+    return lseek((int)datasource,offset,whence);
+};
+
+int tremor_fileClose(void *datasource){
+//    printf("[tremor] close\n");
+
+    return close((int)datasource);
+};
+
+long tremor_fileTell(void *datasource){
+//    printf("[tremor] tell\n");
+
+    return lseek((int)datasource,0,SEEK_CUR);
+};
+
+
+size_t tremor_bufferRead(void *ptr, size_t size, size_t nmemb, void *datasource){
 //    printf("[tremor] read\n");
 
     return buffer_read(ptr,size*nmemb);
 };
 
-int tremor_seek(void *datasource, ogg_int64_t offset, int whence){
+int tremor_bufferSeek(void *datasource, ogg_int64_t offset, int whence){
 //    printf("[tremor] seek %d %d\n",offset,whence);
 
     return buffer_seek(offset,whence);
 };
 
-int tremor_close(void *datasource){
+int tremor_bufferClose(void *datasource){
 //    printf("[tremor] close\n");
 
     return 0;
 };
 
-long tremor_tell(void *datasource){
+long tremor_bufferTell(void *datasource){
 //    printf("[tremor] tell\n");
 
     return buffer_seek(0,SEEK_CUR);
 };
 
+void tremor_tagRequest(char * name,TAG * tag){
+    int res;
+    int f;
+    int i;
+    OggVorbis_File vf;
+    vorbis_comment * comment;
+    vorbis_info * info;
+
+    printf("[tremor] tagRequest()\n");
+
+    tag->badFile=true;
+
+    f=open(name,O_RDONLY);
+
+    if(f>=0){
+
+        res=ov_open_callbacks((void *)f,&vf,NULL,0,fileCallbacks);
+
+        if(res==0){
+
+            tag->badFile=false;
+
+            tag->length=ov_time_total(&vf,-1)/(1000/HZ);
+            tag->bitRate=ov_bitrate(&vf,-1);
+
+            info=ov_info(&vf,-1);
+
+            tag->sampleRate=info->rate;
+            tag->stereo=info->channels==2;
+
+            comment=ov_comment(&vf,-1);
+
+            for(i=0;i<comment->comments;++i){
+                char * key;
+                char * value;
+                char * delim;
+
+                delim=strchr(comment->user_comments[i],'=');
+
+                if(delim!=NULL){
+                    *delim='\0';
+
+                    key=comment->user_comments[i];
+                    value=delim+1;
+
+                    if(!strcasecmp(key,"title")){
+                        tag->title=strdup(value);
+                    }
+
+                    if(!strcasecmp(key,"artist")){
+                        tag->artist=strdup(value);
+                    }
+
+                    if(!strcasecmp(key,"title")){
+                        tag->title=strdup(value);
+                    }
+
+                    if(!strcasecmp(key,"album")){
+                        tag->album=strdup(value);
+                    }
+
+                    if(!strcasecmp(key,"genre")){
+                        tag->genre=strdup(value);
+                    }
+
+                    if(!strcasecmp(key,"tracknumber")){
+                        tag->track=strdup(value);
+                    }
+
+                    if(!strcasecmp(key,"date")){
+                        tag->year=atoi(value);
+                    }
+
+                    *delim='=';
+                }
+            }
+
+            ov_clear(&vf);
+
+        }else{
+
+            close(f);
+        }
+    }
+}
+
+
 void tremor_trackLoop(){
-    CODEC_TRACK_INFO trackInfo;
-    vorbis_info * v_info;
     int res;
     int red;
     int bitstream;
     OggVorbis_File vf;
     int time;
 
-    trackInfo.validTrack=false;
-    trackInfo.sampleRate=0;
-    trackInfo.length=0;
-    trackInfo.stereo=false;
-
     printf("[tremor] trackLoop()\n");
 
-    res=ov_open_callbacks((void *)1,&vf,NULL,0,callbacks);
+    res=ov_open_callbacks((void *)1,&vf,NULL,0,bufferCallbacks);
 
     printf("res %d\n",res);
 
-    if(res==0){
-        trackInfo.validTrack=true;
-
-        v_info=ov_info(&vf,-1);
-
-        if(v_info!=NULL){
-            printf("info ok %d %d\n",v_info->rate,v_info->bitrate_nominal);
-
-            trackInfo.sampleRate=v_info->rate;
-            trackInfo.stereo=v_info->channels==2;
-
-            trackInfo.length=ov_time_total(&vf,-1)/(1000/HZ);
-        }
-    }
-
-    // send track info
-    codec_setTrackInfo(&trackInfo);
-
-    if(!trackInfo.validTrack) return;
+    if(res!=0) return;
 
     do{
         red=ov_read(&vf,dataBuf,DATA_BUFFER_SIZE,&bitstream);
@@ -121,17 +195,24 @@ void tremor_trackLoop(){
     ov_clear(&vf);
 }
 
-void codec_main(CODEC_INFO * info)
-{
+void codec_main(CODEC_INFO * info){
+
+    printf("[tremor] main()\n");
+
     info->globalInfo.description="Tremor, OGG Vorbis codec";
     info->globalInfo.seekSupported=true;
     info->globalInfo.trackLoop=tremor_trackLoop;
- 
-    printf("[tremor] main()\n");
-    
-    callbacks.read_func=tremor_read;
-    callbacks.seek_func=tremor_seek;
-    callbacks.close_func=tremor_close;
-    callbacks.tell_func=tremor_tell;
+    info->globalInfo.tagRequest=tremor_tagRequest;
+
+
+    bufferCallbacks.read_func=tremor_bufferRead;
+    bufferCallbacks.seek_func=tremor_bufferSeek;
+    bufferCallbacks.close_func=tremor_bufferClose;
+    bufferCallbacks.tell_func=tremor_bufferTell;
+
+    fileCallbacks.read_func=tremor_fileRead;
+    fileCallbacks.seek_func=tremor_fileSeek;
+    fileCallbacks.close_func=tremor_fileClose;
+    fileCallbacks.tell_func=tremor_fileTell;
 }
 

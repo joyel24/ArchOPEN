@@ -14,10 +14,11 @@ static long dataBuf [DATA_BUFFER_SIZE];
         
 void wavpack_trackLoop()
 {
+/*
     CODEC_TRACK_INFO trackInfo;
     WavpackContext *wpc;
     char error [80];
-    
+
     int res;
     int red;
     int bitstream;
@@ -30,7 +31,7 @@ void wavpack_trackLoop()
     trackInfo.stereo=false;
 
     printf("[wavpack] trackLoop()\n");
-    
+
     wpc = WavpackOpenFileInput (buffer_read, error);
 
     if (!wpc)
@@ -43,14 +44,14 @@ void wavpack_trackLoop()
     trackInfo.stereo = WavpackGetReducedChannels (wpc)==2;
     printf("sample rate=%d,stereo=%d\n",trackInfo.sampleRate,trackInfo.stereo);
     nb2=WavpackGetBytesPerSample (wpc)*4;
-    nb=DATA_BUFFER_SIZE/nb2;    
+    nb=DATA_BUFFER_SIZE/nb2;
     printf("nb samples per buffer=%d\n",nb);
     do{
         red= WavpackUnpackSamples (wpc, dataBuf, nb);
         output_write(dataBuf,red*nb2);
         printf("red:%d\n",red);
     }while(codec_mustContinue() && red>0);
-   
+*/   
 }
 
 void codec_main(CODEC_INFO * info)

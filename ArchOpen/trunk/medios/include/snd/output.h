@@ -20,7 +20,7 @@
 extern int output_readPos;
 extern int output_writePos;
 
-void output_outputParamsChanged(int sampleRate, bool stereo);
+void output_outputParamsChanged();
 
 bool output_setSampleRate(int rate);
 void output_enableAudioOutput(bool enabled);
