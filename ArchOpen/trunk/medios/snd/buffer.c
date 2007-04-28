@@ -156,6 +156,8 @@ static void buffer_threadFunction(){
 
         while(buffer_bufferedItem!=NULL){
 
+            buffer_bufferedItemChanged=false;
+
             buffer_bufferItem(buffer_bufferedItem);
 
             if(!buffer_bufferedItemChanged){

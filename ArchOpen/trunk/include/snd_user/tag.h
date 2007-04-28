@@ -26,6 +26,7 @@ struct TAG_STRUCT{
     int bitRate;
     int sampleRate;
     bool stereo;
+    int sampleCount;
     bool badFile;
 };
 

@@ -41,6 +41,7 @@ void tag_clear(TAG * tag){
     tag->bitRate=-1;
     tag->sampleRate=-1;
     tag->stereo=false;
+    tag->sampleCount=-1;
     tag->badFile=false;
 }
 

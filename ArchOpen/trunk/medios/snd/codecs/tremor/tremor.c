@@ -50,6 +50,12 @@ size_t tremor_bufferRead(void *ptr, size_t size, size_t nmemb, void *datasource)
     return buffer_read(ptr,size*nmemb);
 };
 
+int tremor_bufferNoSeek(void *datasource, ogg_int64_t offset, int whence){
+//    printf("[tremor] seek %d %d\n",offset,whence);
+
+    return -1;
+};
+
 int tremor_bufferSeek(void *datasource, ogg_int64_t offset, int whence){
 //    printf("[tremor] seek %d %d\n",offset,whence);
 
@@ -92,6 +98,7 @@ void tremor_tagRequest(char * name,TAG * tag){
 
             tag->length=ov_time_total(&vf,-1)/(1000/HZ);
             tag->bitRate=ov_bitrate(&vf,-1);
+            tag->sampleCount=ov_pcm_total(&vf,-1);
 
             info=ov_info(&vf,-1);
 
@@ -161,6 +168,12 @@ void tremor_trackLoop(){
     int bitstream;
     OggVorbis_File vf;
     int time;
+    PLAYLIST_ITEM * item;
+
+    ogg_int64_t vf_offsets[2];
+    ogg_int64_t vf_dataoffsets;
+    ogg_uint32_t vf_serialnos;
+    ogg_int64_t vf_pcmlengths[2];
 
     printf("[tremor] trackLoop()\n");
 
@@ -169,6 +182,29 @@ void tremor_trackLoop(){
     printf("res %d\n",res);
 
     if(res!=0) return;
+
+    item=buffer_getActiveItem();
+
+    // data is openned as non seekable to avoid buffering the whole file
+    // now we hack through OggVorbis_File to make it seekable again
+    // (idea taken from the Rockbox project)
+
+    vf.offsets=vf_offsets;
+    vf.dataoffsets=&vf_dataoffsets;
+    vf.serialnos=&vf_serialnos;
+    vf.pcmlengths=vf_pcmlengths;
+
+    vf.offsets[0]=0;
+    vf.offsets[1]=item->fileSize;
+    vf.dataoffsets[0]=vf.offset;
+    vf.pcmlengths[0]=0;
+    vf.pcmlengths[1]=item->tag.sampleCount;
+    vf.serialnos[0]=vf.current_serialno;
+    vf.callbacks.seek_func=tremor_bufferSeek;
+    vf.seekable=1;
+    vf.end=item->fileSize;
+    vf.ready_state=OPENED;
+    vf.links=1;
 
     do{
         red=ov_read(&vf,dataBuf,DATA_BUFFER_SIZE,&bitstream);
@@ -206,7 +242,7 @@ void codec_main(CODEC_INFO * info){
 
 
     bufferCallbacks.read_func=tremor_bufferRead;
-    bufferCallbacks.seek_func=tremor_bufferSeek;
+    bufferCallbacks.seek_func=tremor_bufferNoSeek;
     bufferCallbacks.close_func=tremor_bufferClose;
     bufferCallbacks.tell_func=tremor_bufferTell;
 
