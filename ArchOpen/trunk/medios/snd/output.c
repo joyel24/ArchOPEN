@@ -50,9 +50,10 @@ static bool output_active = false;
 static bool output_dspWaitingData = false;
 static bool output_dspNoOutput = false;
 static bool output_discardingBuffer = false;
+static bool output_dspRetrievingData = false;
 
 __IRAM_CODE void output_dspInterrupt(int irq,struct pt_regs * regs){
-    //printf("I");
+
     // debug message coming from the dsp
     if (dspCom->hasDbgMsg){
         char * str=malloc(256);
@@ -69,7 +70,15 @@ __IRAM_CODE void output_dspInterrupt(int irq,struct pt_regs * regs){
 
     // the dsp requests a decoding
     if(dspCom->decodeRequest){
-       // printk("D");
+
+        // we got a decode request -> we are now sure that the dsp has retrieved previous data
+        if(output_dspRetrievingData){
+
+            output_readPos+=dspCom->bufSize;
+            output_dspRetrievingData=false;
+        }
+
+
         if(output_active && (output_writePos-output_readPos)>0){
             // update states
             if(!output_dspWaitingData){
@@ -82,7 +91,7 @@ __IRAM_CODE void output_dspInterrupt(int irq,struct pt_regs * regs){
 
             dsp_write32(&dspCom->bufAddr,((unsigned long)POS2PTR(output_readPos))-SDRAM_START);
 
-            output_readPos+=dspCom->bufSize;
+            output_dspRetrievingData=true;
 
             dspCom->decodeDone=1;
         }else{
@@ -101,7 +110,6 @@ __IRAM_CODE void output_dspInterrupt(int irq,struct pt_regs * regs){
 
         dspCom->decodeRequest=0;
     }
-    //printf("F");
 }
 
 void output_initDsp(){
@@ -147,7 +155,7 @@ void output_outputParamsChanged(){
     bool stereo;
 
     item=buffer_getActiveItem();
-    
+
     sampleRate=item->tag.sampleRate;
     stereo=item->tag.stereo;
 
@@ -212,24 +220,23 @@ void output_write(void * buffer, int size){
             break;
         }else{
             //wait for some data to be outputted
-           // printk("c");
             yield();
         }
     }
 
     // wait if we're discarding the buffer
     while(output_discardingBuffer){
-      //  printk("b");
+
         yield();
     }
 
     // copy data, handle buffer boundary crossing
     continuous=OUTPUT_BUFFER_SIZE-POS2OFF(output_writePos);
     if(size<=continuous){
-        //printk("d");
+
         memcpy(POS2PTR(output_writePos),buffer,size);
     }else{
-       // printk("e");
+
         memcpy(POS2PTR(output_writePos),buffer,continuous);
         memcpy(output_buffer,((char *)buffer)+continuous,size-continuous);
     }
@@ -242,7 +249,7 @@ void output_discardBuffer(){
     output_discardingBuffer=true;
 
     while(!output_dspNoOutput){
-      //  printk("a");
+
         yield();
     }
 
@@ -262,7 +269,8 @@ void output_start(void)
     output_dspWaitingData=false;
     output_dspNoOutput=false;
     output_discardingBuffer=false;
-    
+    output_dspRetrievingData=false;
+
     output_sampleRate=OUTPUT_DEFAULT_SAMPLERATE;
     output_setSampleRate(output_sampleRate);
     output_enableAudioOutput(true);

@@ -164,8 +164,6 @@ void sound_playFile(char * fName)
             sprintf(s,"%d     ",pc);
             gfx_putS(COLOR_WHITE,COLOR_BLACK,0,30,s);
 
-            printk("speed: %d%%\n",pc);
-
             pe=elap;
             pt=tmr_getTick();
         }
@@ -182,14 +180,14 @@ void sound_playFile(char * fName)
 
         if(b&BTMASK_F1){
             output_discardBuffer();
-            codec_seekRequest(elap-100);
+            codec_seekRequest(elap-500);
             while(codec_mustSeek(NULL));
             mdelay(100);
         }
 
         if(b&BTMASK_F2){
             output_discardBuffer();
-            codec_seekRequest(elap+100);
+            codec_seekRequest(elap+500);
             while(codec_mustSeek(NULL));
             mdelay(100);
         }

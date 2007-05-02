@@ -12,28 +12,77 @@
 
 #include "mad.h"
 
-#define MAD_INPUT_BUFFER_SIZE 65536
+#include "id3.h"
+#include "mp3_data.h"
+
+#define MAD_INPUT_BUFFER_SIZE 4096
 #define MAD_OUTPUT_BUFFER_SIZE 4096
 
 char inBuf[MAD_INPUT_BUFFER_SIZE];
 short outBuf[MAD_OUTPUT_BUFFER_SIZE];
 bool firstOutput;
+bool mustReRun;
+
+int dataStart,dataSize;
+int length;
+
+extern unsigned char mp3buf[0x1000];
 
 static enum mad_flow mad_input(void *data,struct mad_stream *stream){
     int red;
     int left;
+    int time;
+    int wasSeeking;
 
 //    printf("[mad] mad_input()\n");
 
     left=0;
+    wasSeeking=false;
 
-    if(stream->next_frame!=NULL){
+    //do we have to seek?
+    if(codec_mustSeek(&time)){
+        int pos;
+        int offset;
+        int header;
 
-        left=(int)inBuf+MAD_INPUT_BUFFER_SIZE-(int)stream->next_frame;
+        wasSeeking=true;
 
-        memcpy(inBuf,stream->next_frame,left);
+        //use track length to find where we should seek
+        pos=dataStart+(long long)(dataSize-dataStart)*time/length;
 
+        buffer_seek(pos,SEEK_SET);
+
+
+        //find next frame boundary
+        red=buffer_read(mp3buf,sizeof(mp3buf));
+
+        header=stream->this_frame[0]<<24 | stream->this_frame[1]<<16 | stream->this_frame[2]<<8 | stream->this_frame[3];
+
+        if(mem_find_next_frame(0,&offset,red,header)){
+
+            buffer_seek(-red+offset,SEEK_CUR);
+        }
+
+        codec_setElapsed(time);
+        codec_seekDone();
+
+        mustReRun=true;
+
+        return MAD_FLOW_STOP;
     }
+
+    if(!wasSeeking){
+
+        // copy what was left in the last buffer
+        if(stream->next_frame!=NULL){
+
+            left=(int)inBuf+MAD_INPUT_BUFFER_SIZE-(int)stream->next_frame;
+
+            memcpy(inBuf,stream->next_frame,left);
+
+        }
+    }
+
 
     red=buffer_read(inBuf+left,MAD_INPUT_BUFFER_SIZE-left);
 
@@ -73,9 +122,9 @@ static enum mad_flow mad_output(void *data,struct mad_header const *header,struc
 
     if(firstOutput){
         PLAYLIST_ITEM * item;
-        
+
         item=buffer_getActiveItem();
-        
+
         item->tag.sampleRate=pcm->samplerate;
         item->tag.stereo=pcm->channels==2;
 
@@ -131,18 +180,98 @@ static enum mad_flow mad_error(void *data,struct mad_stream *stream,struct mad_f
     return MAD_FLOW_CONTINUE;
 }
 
+void mad_skipId3v2(){
+    unsigned char buf[4];
+    int size;
+
+    buffer_read(buf,3);
+
+    if(buf[0]=='I' && buf[1]=='D' && buf[2]=='3'){
+
+        //skip flags
+        buffer_seek(3,SEEK_CUR);
+
+        //read size
+        buffer_read(buf,4);
+        size=buf[0]<<21 | buf[1]<<14 | buf[2]<<7 | buf[3];
+
+        printf("[mad] found id3v2 tag, size=%d\n",size+10);
+
+        //skip tag
+        buffer_seek(size,SEEK_CUR);
+    }else{
+
+        //rewind
+        buffer_seek(0,SEEK_SET);
+    }
+}
+
+
+void mad_tagRequest(char * name,TAG * tag){
+    struct mp3entry entry;
+    char * genre;
+    char s[10];
+
+    if(!mp3info(&entry,name,0)){
+
+        if(entry.title!=NULL){
+            tag->title=strdup(entry.title);
+        }
+
+        if(entry.artist!=NULL){
+            tag->artist=strdup(entry.artist);
+        }
+
+        if(entry.album!=NULL){
+            tag->album=strdup(entry.album);
+        }
+
+        if(entry.track_string!=NULL){
+            tag->track=strdup(entry.track_string);
+        }else{
+            sprintf(s,"%d",entry.tracknum);
+            tag->track=strdup(s);
+        }
+
+        genre=id3_get_genre(&entry);
+        if(genre!=NULL){
+            tag->genre=strdup(genre);
+        }
+
+        tag->year=entry.year;
+        tag->length=entry.length/(1000/HZ);
+        tag->bitRate=entry.bitrate*1000;
+        tag->sampleRate=entry.frequency;
+    }
+}
+
 void mad_trackLoop(){
     struct mad_decoder decoder;
+    PLAYLIST_ITEM * item;
 
     printf("[mad] trackLoop()\n");
 
     firstOutput=true;
+    mustReRun=false;
 
+    //skip id3v2 tag if present
+    mad_skipId3v2();
+
+    dataStart=buffer_seek(0,SEEK_CUR);
+
+    item=buffer_getActiveItem();
+    dataSize=item->fileSize;
+    length=item->tag.length;
+
+    // mad stuff
     mad_decoder_init(&decoder, 0,
 		   mad_input, 0 /* header */, 0 /* filter */, mad_output,
 		   mad_error, 0 /* message */);
 
-    mad_decoder_run(&decoder, MAD_DECODER_MODE_SYNC);
+    do{
+        mustReRun=false;
+        mad_decoder_run(&decoder, MAD_DECODER_MODE_SYNC);
+    }while(mustReRun);
 
     mad_decoder_finish(&decoder);
 }
@@ -152,10 +281,8 @@ void codec_main(CODEC_INFO * info){
     printf("[mad] main()\n");
 
     info->globalInfo.description="MAD, MPEG audio codec";
-    info->globalInfo.seekSupported=false;
+    info->globalInfo.seekSupported=true;
     info->globalInfo.trackLoop=mad_trackLoop;
-    info->globalInfo.tagRequest=NULL;
-
-//    info.tagRequest=NULL;
+    info->globalInfo.tagRequest=mad_tagRequest;
 }
 

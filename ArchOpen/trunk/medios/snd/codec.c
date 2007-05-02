@@ -212,9 +212,9 @@ bool codec_mustContinue(){
 
 bool codec_seekRequest(int time){
 
-    if(codec_current->globalInfo.seekSupported){
+    if(codec_loopRunning && codec_current->globalInfo.seekSupported){
 
-        codec_seekTime=time;
+        codec_seekTime=MAX(0,time);
         codec_seekRequested=true;
 
         return true;
@@ -249,7 +249,7 @@ bool codec_getElapsed(int * elapsed){
 
         pos=MAX(output_readPos-codec_startOutPos,0);
 
-        *elapsed=codec_timeDelta+pos*HZ/(item->tag.sampleRate*((item->tag.stereo)?4:2));
+        *elapsed=codec_timeDelta+(long long)pos*HZ/(item->tag.sampleRate*((item->tag.stereo)?4:2));
     }
 
     return true;
