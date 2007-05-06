@@ -14,7 +14,7 @@ int32_t dataBuf[DATA_BUFFER_SIZE];
         
 void wavpack_trackLoop()
 {
-    WavpackContext *wpc;
+    /*WavpackContext *wpc;
     char error [80];
 
     int res;
@@ -61,7 +61,7 @@ void wavpack_trackLoop()
         //print_data(dataBuf,red*4);
         output_write((char*)dataBuf,red*4);
     }
-    while(codec_mustContinue() && red>0);
+    while(codec_mustContinue() && red>0);*/
 }
 
 void codec_main(CODEC_INFO * info)

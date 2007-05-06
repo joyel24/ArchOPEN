@@ -1,10 +1,10 @@
-////////////////////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////////////////////
 //                           **** WAVPACK ****                            //
 //                  Hybrid Lossless Wavefile Compressor                   //
 //              Copyright (c) 1998 - 2006 Conifer Software.               //
 //                          All Rights Reserved.                          //
 //      Distributed under the BSD Software License (see license.txt)      //
-////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////*/
 
 /* This is an assembly optimized version of the following WavPack function:
  *
