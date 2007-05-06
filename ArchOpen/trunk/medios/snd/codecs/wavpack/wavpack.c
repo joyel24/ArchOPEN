@@ -10,12 +10,10 @@
 
 #include "wavpack.h"
 
-static long dataBuf [DATA_BUFFER_SIZE];
+int32_t dataBuf[DATA_BUFFER_SIZE];
         
 void wavpack_trackLoop()
 {
-/*
-    CODEC_TRACK_INFO trackInfo;
     WavpackContext *wpc;
     char error [80];
 
@@ -24,6 +22,8 @@ void wavpack_trackLoop()
     int bitstream;
     int time;
     int nb,nb2;
+    short * dst_ptr;
+    int32_t * src_ptr;
 
     trackInfo.validTrack=false;
     trackInfo.sampleRate=0;
@@ -40,18 +40,28 @@ void wavpack_trackLoop()
         return ;
     }
 
-    trackInfo.sampleRate = WavpackGetSampleRate;
+    trackInfo.sampleRate = WavpackGetSampleRate(wpc);
     trackInfo.stereo = WavpackGetReducedChannels (wpc)==2;
-    printf("sample rate=%d,stereo=%d\n",trackInfo.sampleRate,trackInfo.stereo);
-    nb2=WavpackGetBytesPerSample (wpc)*4;
-    nb=DATA_BUFFER_SIZE/nb2;
-    printf("nb samples per buffer=%d\n",nb);
+
+    codec_setTrackInfo(&trackInfo);
+    printf("sample rate=%d, stereo=%d\n",trackInfo.sampleRate,trackInfo.stereo);
+    printf("bytes per sample: %d, bits per sample: %d\n",WavpackGetBytesPerSample(wpc),WavpackGetBitsPerSample(wpc));
     do{
-        red= WavpackUnpackSamples (wpc, dataBuf, nb);
-        output_write(dataBuf,red*nb2);
-        printf("red:%d\n",red);
-    }while(codec_mustContinue() && red>0);
-*/   
+        printf("a\n");
+        red= WavpackUnpackSamples (wpc, dataBuf, DATA_BUFFER_SIZE/2);
+        printf("b\n");        
+        dst_ptr = (short *) dataBuf;
+        src_ptr = dataBuf;
+        nb = red;
+        while(nb--)
+        {
+            *dst_ptr++ = (short)(*src_ptr++);
+            *dst_ptr++ = (short)(*src_ptr++);
+        }        
+        //print_data(dataBuf,red*4);
+        output_write((char*)dataBuf,red*4);
+    }
+    while(codec_mustContinue() && red>0);
 }
 
 void codec_main(CODEC_INFO * info)

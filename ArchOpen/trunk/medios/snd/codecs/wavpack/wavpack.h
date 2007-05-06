@@ -37,6 +37,8 @@ typedef unsigned int    uint;
 #include <stdio.h>
 */
 
+#define CPU_ARM
+
 #include <api.h>
 
 #define labs(x) abs(x)

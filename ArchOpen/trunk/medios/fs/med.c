@@ -463,8 +463,8 @@ MED_RET_T med_loadMed(char*fName,med_t * medInfo,int file_offset)
     close(fd);
          
     DEBUG_MED("sdram  %x\n",medInfo->sdram_start); 
-    DEBUG_MED("sections_name  %x\n",medInfo->sections_name);
-    DEBUG_MED("section_list  %x\n",medInfo->section_list);
+    DEBUG_MED("sections_name  %x\n",sections_name);
+    DEBUG_MED("section_list  %x\n",section_list);
     
 //    DEBUG_MED("calling app (entry %x)\n", run_med);
 

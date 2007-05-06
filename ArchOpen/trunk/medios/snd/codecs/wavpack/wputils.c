@@ -166,7 +166,6 @@ uint32_t WavpackUnpackSamples (WavpackContext *wpc, int32_t *buffer, uint32_t sa
         if (!wps->wphdr.block_samples || !(wps->wphdr.flags & INITIAL_BLOCK) ||
             wps->sample_index >= wps->wphdr.block_index + wps->wphdr.block_samples) {
                 bcount = read_next_header (wpc->infile, &wps->wphdr);
-
                 if (bcount == (uint32_t) -1)
                     break;
 
@@ -321,7 +320,6 @@ static uint32_t read_next_header (read_stream infile, WavpackHeader *wphdr)
     char buffer [sizeof (*wphdr)], *sp = buffer + sizeof (*wphdr), *ep = sp;
     uint32_t bytes_skipped = 0;
     int bleft;
-
     while (1) {
         if (sp < ep) {
             bleft = ep - sp;

@@ -63,6 +63,7 @@ void # reload_firmware # void
 
 #k_inc#kernel/kernel.h
 void # printf        # char *fmt, ...
+void # print_data    # char * data,int length
 void # do_bkpt       # void
 int  # getArch       # void
 void # getResolution # int * width,int * height

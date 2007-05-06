@@ -309,25 +309,21 @@ int32_t unpack_samples (WavpackContext *wpc, int32_t *buffer, uint32_t sample_co
 
     if (wps->sample_index + sample_count > wps->wphdr.block_index + wps->wphdr.block_samples)
         sample_count = wps->wphdr.block_index + wps->wphdr.block_samples - wps->sample_index;
-
     if (wps->mute_error) {
         memset (buffer, 0, sample_count * (flags & MONO_FLAG ? 4 : 8));
         wps->sample_index += sample_count;
         return sample_count;
     }
-
+    
     if (flags & HYBRID_FLAG)
         mute_limit *= 2;
 
     ///////////////////// handle version 4 mono data /////////////////////////
-
     if (flags & MONO_DATA) {
         eptr = buffer + sample_count;
         i = get_words (buffer, sample_count, flags, &wps->w, &wps->wvbits);
-
         for (tcount = wps->num_terms, dpp = wps->decorr_passes; tcount--; dpp++)
             decorr_mono_pass (dpp, buffer, sample_count);
-
         for (bptr = buffer; bptr < eptr; ++bptr) {
             if (labs (bptr [0]) > mute_limit) {
                 i = bptr - buffer;
@@ -342,12 +338,16 @@ int32_t unpack_samples (WavpackContext *wpc, int32_t *buffer, uint32_t sample_co
 
     else {
         eptr = buffer + (sample_count * 2);
+        printf("U1\n");
         i = get_words (buffer, sample_count, flags, &wps->w, &wps->wvbits);
-
+        printf("U2\n");
         if (sample_count < 16)
+        {
             for (tcount = wps->num_terms, dpp = wps->decorr_passes; tcount--; dpp++)
                 decorr_stereo_pass (dpp, buffer, sample_count);
+        }
         else
+        {
             for (tcount = wps->num_terms, dpp = wps->decorr_passes; tcount--; dpp++) {
                 decorr_stereo_pass (dpp, buffer, 8);
 #if defined(CPU_COLDFIRE) && !defined(SIMULATOR)
@@ -358,9 +358,11 @@ int32_t unpack_samples (WavpackContext *wpc, int32_t *buffer, uint32_t sample_co
                 else
                     decorr_stereo_pass_cont_arm (dpp, buffer + 16, sample_count - 8);
 #else
+                
                 decorr_stereo_pass_cont (dpp, buffer + 16, sample_count - 8);
 #endif
             }
+        }
 
         if (flags & JOINT_STEREO)
             for (bptr = buffer; bptr < eptr; bptr += 2) {

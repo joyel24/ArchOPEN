@@ -1,6 +1,8 @@
 include $(MEDIOS_SRC_PATH)/Makefile.conf
 
-LDFLAGS = $(MEDIOS_SRC_PATH)/lib/codec_start.o $(MEDIOS_SRC_PATH)/lib/codec_stop.o -L$(MEDIOS_SRC_PATH)/lib -lmedios --emit-relocs
+LDFLAGS = $(MEDIOS_SRC_PATH)/lib/codec_start.o $(MEDIOS_SRC_PATH)/lib/codec_stop.o -L$(MEDIOS_SRC_PATH)/lib -lmedios --emit-relocs -Map $(TARGET_CODEC).map
+
+GCCFLAGS += -O3
 
 BUILD_DIR=./
 TARGET_CODEC=wavpack

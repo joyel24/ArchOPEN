@@ -12,9 +12,34 @@
 */
 #include <sys_def/colordef.h>
 #include <sys_def/font.h>
+#include <sys_def/evt.h>
 
 #include <api.h>
-#include <sys_def/evt.h>
+
+#include "othello.h"
+
+#define ACTION_EXIT         (cur_conf->action_exit)
+
+#define ACTION_UP           (cur_conf->action_up)
+#define ACTION_DOWN         (cur_conf->action_down)
+#define ACTION_RIGHT        (cur_conf->action_right)
+#define ACTION_LEFT         (cur_conf->action_left)
+
+#define ACTION_PLAY         (cur_conf->action_play)
+#define ACTION_TOGGLE_MODE  (cur_conf->action_toggle_mode)
+#define ACTION_NEW_GAME     (cur_conf->action_new_game)
+
+#define CELL_SIZE           (cur_conf->cellSize)
+
+#define NB_PIECE_U_X          (cur_conf->nbPieceU_X)
+#define NB_PIECE_O_X          (cur_conf->nbPieceO_X)
+#define NB_PIECE_U_Y          (cur_conf->nbPieceU_Y)
+#define NB_PIECE_O_Y          (cur_conf->nbPieceO_Y)
+
+#define MODE_TXT_X          (cur_conf->modeTxt_X)
+#define MODE_TXT_Y          (cur_conf->modeTxt_Y)
+
+struct othello_s * cur_conf;
 
 struct position {
     int x;
@@ -22,100 +47,30 @@ struct position {
 };
 
 struct position cursor_pos={3,2};
-
-#define PIECE_SIZE 12
-#define NB_CELL    8
-#define X_INI      10
-
-#define BG_COLOR     COLOR_BLACK
-#define LINE_COLOR   COLOR_WHITE
-#define SEL_COLOR    COLOR_RED
-#define TXT_COLOR    COLOR_WHITE
-
-#define EMPTY      -1
-#define HUMAN      0
-#define ENEMY      1
-
-#define JUST_TEST   0
-#define NO_MOVE     0
-#define CHK_ALL     1
-#define DO_MOVE     1
-
-#define NXT_POS     0
-#define PREV_POS    1
-
-#define SEARCH_DEPTH 4
-
-#define DEBUG
-
-int screenWidth,screenHeight,arch;
-int cellSize;
-int nbPieceY;
-
- int board[NB_CELL][NB_CELL];
- int allowedHuman[NB_CELL][NB_CELL];
- int nbPieces[2]={2,2};
+int board[NB_CELL][NB_CELL];
+int allowedHuman[NB_CELL][NB_CELL];
+int nbPieces[2]={2,2};
 int endOfGame=0;
- int cursorMoveMode=0; /* 0 = move anywhere, 1 = move to possible locations */
-
- unsigned char human_bmap[12][12]= {
-{00,00,00,00,24,24,24,24,00,00,00,00},
-{00,00,24,24,24,24,24,24,24,24,00,00},
-{00,24,24,24,24,24,24,24,24,24,24,00},
-{00,24,24,24,00,00,00,00,24,24,24,00},
-{24,24,24,00,00,00,00,00,00,24,24,24},
-{24,24,24,00,00,00,00,00,00,24,24,24},
-{24,24,24,00,00,00,00,00,00,24,24,24},
-{24,24,24,00,00,00,00,00,00,24,24,24},
-{00,24,24,24,00,00,00,00,24,24,24,00},
-{00,24,24,24,24,24,24,24,24,24,24,00},
-{00,00,24,24,24,24,24,24,24,24,00,00},
-{00,00,00,00,24,24,24,24,00,00,00,00},
-};
-
- unsigned char av3xx_bmap[12][12]= {
-{00,00,00,00,25,25,25,25,00,00,00,00},
-{00,00,25,25,25,25,25,25,25,25,00,00},
-{00,25,25,25,25,25,25,25,25,25,25,00},
-{00,25,25,25,25,25,25,25,25,25,25,00},
-{25,25,25,25,25,25,25,25,25,25,25,25},
-{25,25,25,25,25,25,25,25,25,25,25,25},
-{25,25,25,25,25,25,25,25,25,25,25,25},
-{25,25,25,25,25,25,25,25,25,25,25,25},
-{00,25,25,25,25,25,25,25,25,25,25,00},
-{00,25,25,25,25,25,25,25,25,25,25,00},
-{00,00,25,25,25,25,25,25,25,25,00,00},
-{00,00,00,00,25,25,25,25,00,00,00,00},
-};
-
-BITMAP hBitmap = {(unsigned int) human_bmap, 12, 12, 0, 0};
-BITMAP aBitmap = {(unsigned int) av3xx_bmap, 12, 12, 0, 0};
-
-int stop_othello;
-
-void redraw(void);
-
-
-#define PIECE_OFFSET (cellSize-PIECE_SIZE)/2+1
-#define Y_INI      ((screenHeight-((cellSize+1)*NB_CELL)-1)/2)
-
+int cursorMoveMode=0; /* 0 = move anywhere, 1 = move to possible locations */
+int evt_handler;
+int y_ini,x_ini,piece_offset;
 
  void drawPiece(int x, int y, int player)
 {
     switch(player)
     {
         case HUMAN:
-            gfx_drawBitmap(&hBitmap,X_INI+PIECE_OFFSET+x*(cellSize+1),Y_INI+PIECE_OFFSET+y*(cellSize+1));
+            gfx_drawBitmap(&hBitmap,x_ini+piece_offset+x*(CELL_SIZE+1),y_ini+piece_offset+y*(CELL_SIZE+1));
             break;
         case ENEMY:
-            gfx_drawBitmap(&aBitmap,X_INI+PIECE_OFFSET+x*(cellSize+1),Y_INI+PIECE_OFFSET+y*(cellSize+1));
+            gfx_drawBitmap(&aBitmap,x_ini+piece_offset+x*(CELL_SIZE+1),y_ini+piece_offset+y*(CELL_SIZE+1));
             break;
     }
 }
 
  void erasePiece(int x, int y)
 {
-    gfx_fillRect(BG_COLOR,X_INI+1+x*(cellSize+1),Y_INI+1+y*(cellSize+1),cellSize,cellSize);
+    gfx_fillRect(BG_COLOR,x_ini+1+x*(CELL_SIZE+1),y_ini+1+y*(CELL_SIZE+1),CELL_SIZE,CELL_SIZE);
 }
 
  void drawBoard(void)
@@ -128,9 +83,9 @@ void redraw(void);
     for(i=0;i<NB_CELL+1;i++)
     {
         /* horizontal line */
-        gfx_drawLine(LINE_COLOR,X_INI,Y_INI+i*(cellSize+1),X_INI+NB_CELL*(cellSize+1),Y_INI+i*(cellSize+1));
+        gfx_drawLine(LINE_COLOR,x_ini,y_ini+i*(CELL_SIZE+1),x_ini+NB_CELL*(CELL_SIZE+1),y_ini+i*(CELL_SIZE+1));
         /* vertical line */
-        gfx_drawLine(LINE_COLOR,X_INI+i*(cellSize+1),Y_INI,X_INI+i*(cellSize+1),Y_INI+NB_CELL*(cellSize+1));
+        gfx_drawLine(LINE_COLOR,x_ini+i*(CELL_SIZE+1),y_ini,x_ini+i*(CELL_SIZE+1),y_ini+NB_CELL*(CELL_SIZE+1));
     }
 
     for(j=0;j<NB_CELL;j++)
@@ -141,34 +96,37 @@ void redraw(void);
 
  void selectCell(int x, int y)
 {
-    gfx_drawRect(SEL_COLOR,X_INI+x*(cellSize+1),Y_INI+y*(cellSize+1),cellSize+2,cellSize+2);
+    gfx_drawRect(SEL_COLOR,x_ini+x*(CELL_SIZE+1),y_ini+y*(CELL_SIZE+1),CELL_SIZE+2,CELL_SIZE+2);
 }
 
  void unSelectCell(int x, int y)
 {
-    gfx_drawRect(LINE_COLOR,X_INI+x*(cellSize+1),Y_INI+y*(cellSize+1),cellSize+2,cellSize+2);
+    gfx_drawRect(LINE_COLOR,x_ini+x*(CELL_SIZE+1),y_ini+y*(CELL_SIZE+1),CELL_SIZE+2,CELL_SIZE+2);
 }
 
  void drawNbPiece()
 {
     char tmp[10];
+    
+    gfx_drawBitmap(&hBitmap, NB_PIECE_U_X, NB_PIECE_U_Y);
     sprintf(tmp,"You: %02d",nbPieces[HUMAN]);
-    gfx_putS(TXT_COLOR, BG_COLOR, 20, nbPieceY, tmp);
-    gfx_drawBitmap(&hBitmap, 4, nbPieceY);
+    gfx_putS(TXT_COLOR, BG_COLOR, NB_PIECE_U_X+PIECE_SIZE+2 , NB_PIECE_U_Y, tmp);
+    
+    gfx_drawBitmap(&aBitmap, NB_PIECE_O_X, NB_PIECE_O_Y);
     sprintf(tmp,"Archos: %02d",nbPieces[ENEMY]);
-    gfx_putS(TXT_COLOR, BG_COLOR, 120, nbPieceY, tmp);
-    gfx_drawBitmap(&aBitmap, 104, nbPieceY);
+    gfx_putS(TXT_COLOR, BG_COLOR, NB_PIECE_O_X+PIECE_SIZE+2, NB_PIECE_O_Y, tmp);
+    
 }
 
  void drawMenu()
 {
     if(cursorMoveMode == 0)
     {
-        gfx_putS(TXT_COLOR, BG_COLOR, 10,2, "Nav Mode (F3): Traditional");
+    gfx_putS(TXT_COLOR, BG_COLOR, MODE_TXT_X,MODE_TXT_Y, "Nav Mode (F3): Traditional");
     }
     else
     {
-        gfx_putS(TXT_COLOR, BG_COLOR, 10,2, "Nav Mode (F3): Standard   ");
+    gfx_putS(TXT_COLOR, BG_COLOR, MODE_TXT_X,MODE_TXT_Y, "Nav Mode (F3): Intelligent");
     }
 }
 
@@ -206,7 +164,6 @@ void iniBoard(void)
     int out_of_board=0;
     int tot=0,i;
     x+=dx;y+=dy;
-   // printf("[tstMove] dx=%d dy=%d\n",dx,dy);
     while(board[x][y]==other)
     {
         x+=dx;y+=dy;
@@ -229,8 +186,6 @@ void iniBoard(void)
                 drawPiece(x,y,player);
                 board[x][y]=player;
             }
-            printf("\n");
-
         }
         return tot;
     }
@@ -335,14 +290,38 @@ void iniBoard(void)
     nbPieces[ENEMY]-=tot;
 }
 
-void endGame(void)
+int winLoose_screen(char * msg)
+{
+    int evt;
+    int stop;
+    msgBox_info(msg);
+    while(1)
+    {
+        evt=evt_getStatus(evt_handler);
+        if(evt==NO_EVENT)
+            continue;
+        if(evt==BTN_OFF)
+        {
+            stop=1;
+            break;
+        }
+        if(evt==BTN_ON)
+        {
+            stop=0;
+            break;
+        }
+    }
+    return stop;
+}
+
+int endGame(void)
 {
     if(nbPieces[HUMAN]>nbPieces[ENEMY])
-        gfx_putS(COLOR_WHITE,COLOR_BLACK,10,2,"Game Over... You won! :D  ");
+        return winLoose_screen("You won!");
     else if(nbPieces[HUMAN]<nbPieces[ENEMY])
-        gfx_putS(COLOR_WHITE,COLOR_BLACK,10,2,"Game Over... You lost. :( ");
+        return winLoose_screen("You lost!");
     else
-        gfx_putS(COLOR_WHITE,COLOR_BLACK,10,2,"Game Over... You tied. :| ");
+        return winLoose_screen("You tied!");
 }
 
  void nxtCursosPos(int direction,int dispMove)
@@ -446,46 +425,47 @@ void iniCursorPos()
 
 
 
- void eventHandler(int evt)
-{  
-    switch(evt)
+void eventLoop()
+{
+    int evt;
+    int stop_othello=0;
+    
+    evt_handler=evt_getHandler(BTN_CLASS);
+    if(evt_handler<0)             /* we need a proper error handling in api */
     {
-        case BTN_UP:
-            if(cursorMoveMode==0)
-                simpleMove(0,-1);
-            break;
-
-        case BTN_LEFT:
+        printf("[othello init] can't register to evt\n");
+        return;
+    }
+    
+    while(!stop_othello)
+    {
+        evt=evt_getStatus(evt_handler);
+        if(evt==NO_EVENT)
+            continue;
+        if(evt==ACTION_UP && cursorMoveMode==0)
+        {
+            simpleMove(0,-1);
+        }
+        else if(evt==ACTION_LEFT)
+        {
             if(cursorMoveMode==0)
                 simpleMove(-1,0);
             else
                 nxtCursosPos(PREV_POS,DO_MOVE);
-            break;
-
-        case BTN_DOWN:
-            if(cursorMoveMode==0)
-                simpleMove(0,1);
-            break;
-
-        case BTN_RIGHT:
+        }
+        else if(evt==ACTION_DOWN && cursorMoveMode==0)
+        {
+            simpleMove(0,1);
+        }
+        else if(evt==ACTION_RIGHT)
+        {
             if(cursorMoveMode==0)
                 simpleMove(1,0);
             else
                 nxtCursosPos(NXT_POS,DO_MOVE);
-            break;
-
-        case BTN_1:
-#ifdef AV4XX
-                case BTN_ON:
-#endif
-#ifndef AV4XX
-                case BTN_F1:
-#endif
-            // BTN_1=joypress on av3xx, bad button
-            if(arch==AV3XX_ARCH && evt==BTN_1) break;
-
-            if(cursorMoveMode==0 && allowedHuman[cursor_pos.x][cursor_pos.y]!=1)
-                break;
+        }
+        else if(evt==ACTION_PLAY && (cursorMoveMode!=0 || allowedHuman[cursor_pos.x][cursor_pos.y]==1))
+        {
 
             doMove(cursor_pos.x,cursor_pos.y);
             computerMove();
@@ -501,30 +481,24 @@ void iniCursorPos()
             }
             if(!endOfGame)
                 iniCursorPos();
-            break;
-
-        case BTN_F3:
+        }
+        else if(evt==ACTION_TOGGLE_MODE)
+        {   
             cursorMoveMode = !cursorMoveMode;
             drawMenu();
-            break;
-
-        case BTN_OFF:
+        }
+        else if(evt==ACTION_EXIT)
+        {
             stop_othello=1;
-            break;
-
-#ifdef AV4XX
-                case BTN_F1:
-#endif
-#ifndef AV4XX
-                case BTN_ON:
-#endif
+        }
+        else if(evt==ACTION_NEW_GAME)
+        {
             iniBoard();
             computeAllowed(allowedHuman,HUMAN);
             redraw();
-            break;
-
-       
+        }
     }
+    evt_freeHandler(evt_handler);
 }
 
 void redraw(void)
@@ -535,62 +509,53 @@ void redraw(void)
     drawNbPiece();
 }
 
-void iniArch(){
+void iniArch()
+{
+    int arch;
+    int i=0;
+    int width,height;
     arch=getArch();
-    getResolution(&screenWidth,&screenHeight);
-
-    if(screenWidth>=320){
-        cellSize=20;
-        nbPieceY=220;
-    }else if(screenWidth>=220){
-        cellSize=16;
-        nbPieceY=160;
-    }else{
-        cellSize=13;
-        nbPieceY=120;
+    while(conf_tab[i].conf!=NULL && conf_tab[i].arch!=arch) i++;
+    if(conf_tab[i].conf==NULL)
+    {
+        printf("Using default conf");
+        cur_conf=&default_conf;
     }
+    else
+    {
+        printf("Using conf for %d\n",arch);
+        cur_conf=conf_tab[i].conf;
+    }
+    getResolution(&width,&height);
+    if(cur_conf->center_Y)
+        y_ini=((height-((cur_conf->cellSize+1)*NB_CELL)-1)/2);
+    else
+        y_ini=cur_conf->y_ini;
+
+    if(cur_conf->center_X)
+        x_ini=((width-((cur_conf->cellSize+1)*NB_CELL)-1)/2);
+    else
+        x_ini=cur_conf->x_ini;
+    
+    piece_offset=(cur_conf->cellSize-PIECE_SIZE)/2+1;
 }
 
 void app_main(int argc, char ** argv)
 {
-    int evt;
-    int evt_handler;
-
+/* gfx init */
     gfx_openGraphics();
-    
     gfx_clearScreen(COLOR_WHITE);
-
+/* std font */
     gfx_fontSet(STD8X13);
-
+/* getting arch config */
     iniArch();
-
+/* reall init */
     iniBoard();
-
-    evt_handler=evt_getHandler(BTN_CLASS);
-
-    if(evt_handler<0)             /* we need a proper error handling in api */
-    {
-        printf("[othello init] can't register to evt\n");
-        return;
-    }
-
     computeAllowed(allowedHuman,HUMAN);
     redraw();
-
-    stop_othello=0;
-    printf("\nbefore loop\n");
-
-    while(!stop_othello)
-    {
-      evt=evt_getStatus(evt_handler);
-      eventHandler(evt);
-    }
-
-    printf("\nafter loop\n");
-    evt_freeHandler(evt_handler);
-
+/* let's go */
+    eventLoop();
     printf("\nout othello\n");
-
 }
 
 
