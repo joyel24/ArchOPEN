@@ -1,0 +1,50 @@
+; Code Composer Project File, Version 2.0 (do not modify or remove this line)
+
+[Project Settings]
+ProjectDir="C:\cygwin\home\Reego\ArchOpen\ArchOpen\trunk\apps\pico\dspcode\"
+ProjectType=Executable
+CPUFamily=TMS320C54XX
+Tool="Compiler"
+Tool="CustomBuilder"
+Tool="DspBiosBuilder"
+Tool="Linker"
+Config="Release"
+
+[Source Files]
+Source="..\..\..\libdsp\aic23.c"
+Source="..\..\..\libdsp\armint.c"
+Source="..\..\..\libdsp\hpidma.c"
+Source="..\..\..\libdsp\ibdma.c"
+Source="..\..\..\libdsp\libdsp.c"
+Source="..\..\..\libdsp\libdsp.lib"
+Source="C:\CCStudio_v3.2\C5400\cgtools\lib\rts.lib"
+Source="C:\CCStudio_v3.2\C5400\csl\lib\csl5409.lib"
+Source="fm.c"
+Source="fm.h"
+Source="fmint.h"
+Source="fmsupport.c"
+Source="fmtables.c"
+Source="fmtables.h"
+Source="pico_dsp.c"
+Source="sn76496.c"
+Source="vectors.asm"
+Source="lnk.cmd"
+
+["Compiler" Settings: "Release"]
+Options=-o2 -fr"$(Proj_dir)\Release" -i"../../../libdsp/" -d"CHIP_5409" -d"DSPCODE" -d"SOUND_USE_DSP" -v549
+
+["Linker" Settings: "Release"]
+Options=-c -m".\Release\test.map" -o".\Release\test.out" -w -x
+
+["fm.h" Settings: "Release"]
+ExcludeFromBuild=true
+
+["fmint.h" Settings: "Release"]
+ExcludeFromBuild=true
+
+["fmtables.h" Settings: "Release"]
+ExcludeFromBuild=true
+
+["lnk.cmd" Settings: "Release"]
+LinkOrder=1
+

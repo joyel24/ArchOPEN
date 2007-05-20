@@ -44,4 +44,8 @@ aosms: LD_BIN_INC = apps/aosms/dspcode/aosms_dsp.out
 aosms: APP_NAME = aosms
 aosms: do_build_app
 
+pico: LD_BIN_INC = apps/pico/dspcode/pico_dsp.out
+pico: APP_NAME = pico
+pico: do_build_app
+
 include default.rule
