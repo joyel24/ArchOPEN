@@ -6,10 +6,12 @@ if [ "$1" == "dummy" ]; then
 arch=$2
 phpReport="/home/thomas/tmp/dummyReport.log"
 savPath="/home/thomas/tmp"
+distribPath="/home/thomas/tmp"
 else
 arch=$1
 phpReport=$2
 savPath=$3
+distribPath=$4
 fi
 
 reportFile="report_medios_${arch}_${curDate}.log"
@@ -33,10 +35,13 @@ fi
 echo "Building mediOS for $arch"
 
 zipFile="${arch}_medios_${curDate}.zip"
+zipDistrib="${arch}_medios_dist.zip"
 makeResult="${arch}_makeMedios_${curDate}.log"
 reportFile="${arch}_reportMedios_${curDate}.log"
 
-cd ~/archopen_src/build/trunk
+basePath="/home/thomas/archopen_src/build/trunk"
+
+cd ${basePath}
 
 cp -f ../${arch}.conf ./Makefile.conf
 
@@ -47,11 +52,24 @@ make clean 2>&1 > /dev/null
 
 buildAndReport ${makeResult} ${reportFile} ${phpReport} ${arch}
 
+rm -f ${distribPath}/*.bin ${distribPath}/*.avi ${distribPath}/*.wav
+cp -f medios.${ext} ${distribPath}
+rm -f ${distribPath}/codec/*
+cd ${distribPath}
+zip -r9 ${basePath}/${zipDistrib} *
+cd ${basePath}
+
+echo ${zipDistrib}
+unzip -l ${zipDistrib}
+echo "--" 
+
 #zipping bin and arch spec file (wav,bin,avi)
 mv codec medios
 zip -r9 ${zipFile} medios.${ext} medios.bin medios/codec/
 rm -Rf medios/codec
 
 # ok everything is ready we can send
-mvFtp builds $reportFile $makeResult $zipFile
-cp -f $reportFile $makeResult $zipFile $savPath
+mvFtp builds $reportFile $makeResult $zipFile $zipDistrib
+cp -f $reportFile $makeResult $zipFile $zipDistrib $savPath
+
+

@@ -5,6 +5,7 @@ curTime=`date +"%H:%M"`
 
 phpReport=$1
 savPath=$2
+distribPath=$3
 
 cd ~/archopen_src/build/trunk
 cp -f ../av3xx.conf ./Makefile.conf
@@ -50,3 +51,4 @@ zip ${zipFile} *.med
 
 mvFtp builds $reportFile $makeResult $zipFile ${appsReportFile}
 cp -f ${reportFile} ${makeResult} ${zipFile} ${appsReportFile} ${savPath}
+cp -f *.med ${distribPath}/medios/apps

@@ -4,6 +4,7 @@ curDate=`date +"%Y%m%d"`
 phpReportFile="phpReport_${curDate}.log"
 phpReportPath="/home/thomas/archopen_src/tmp/"
 savPath="/home/thomas/archopen_src/sav_report"
+distribPath="/home/thomas/archopen_src/build/medios_distrib"
 
 echo "<?" > ${phpReportPath}${phpReportFile}
 echo "/* report for php */" >> ${phpReportPath}${phpReportFile}
@@ -13,24 +14,38 @@ echo "" >> ${phpReportPath}${phpReportFile}
 # mediOS
 mediOS_arch="jbmm av1xx av3xx g4xx g402 av4xx pma av5xx"
 
-echo "Cpy SRC folder"
 cd ~/archopen_src
-cp -Rf ArchOpen/trunk build/
 
+echo "Cleaning"
+rm -Rf build/*
+
+echo "Cpy SRC folder"
+cp -Rf ArchOpen/trunk build/
+cd build/trunk
+rmSVN_folder
+cd ~/archopen_src
+
+#creating config
 mkConfig
 
+#building medios folder
+mkdir ${distribPath}
+mkdir ${distribPath}/medios
+mkdir ${distribPath}/medios/apps
+mkdir ${distribPath}/medios/codec
+cp -Rf build/trunk/tools/medios_files/* ${distribPath}/medios/
+
+#building meds apps
+buildMediosApps ${phpReportPath}${phpReportFile} ${savPath} ${distribPath}
+
+#building kernel + codec
+
 for arch in $mediOS_arch; do
-buildMediOS $arch ${phpReportPath}${phpReportFile} ${savPath}
+buildMediOS $arch ${phpReportPath}${phpReportFile} ${savPath} ${distribPath}
 done
 
-# apps in mediOS
-
-buildMediosApps ${phpReportPath}${phpReportFile} ${savPath}
-
-echo "removing SRC folder"
-rm -Rf ~/archopen_src/build/trunk
-echo "removing config files"
-rm -Rf ~/archopen_src/build/*.conf
+echo "removing build folder"
+rm -Rf ~/archopen_src/build/*
 
 echo "?>" >> ${phpReportPath}${phpReportFile}
 
