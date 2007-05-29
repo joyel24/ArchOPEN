@@ -410,22 +410,22 @@ MED_RET_T med_loadMed(char*fName,med_t * medInfo,int file_offset)
                             outl(content-section_list[k].vaddr+(uint32_t)section_list[k].addr,addr);
                             res2++;
                             found=1;
-                            /*DEBUG_MED("REL: from %x(%x), data %x changed to %x (in section %d start: %x(%x))\n",
+                            DEBUG_MED("REL: from %x(%x), data %x changed to %x (in section %d start: %x(%x))\n",
                                 rel_data.r_offset,addr,content,
                                 content-section_list[k].vaddr+(uint32_t)section_list[k].addr,k,
                                 section_list[k].vaddr,
-                                (uint32_t)section_list[k].addr);*/
+                                (uint32_t)section_list[k].addr);
                         }    
                     }     
-                    /*if(!found)
-                        DEBUG_MED("REL: from %x(%x), data %x NOT FOUND\n",rel_data.r_offset,addr,content);*/
+                    if(!found)
+                        DEBUG_MED("REL: from %x(%x), data %x NOT FOUND\n",rel_data.r_offset,addr,content);
                 }
                 else if(ELF32_R_TYPE(rel_data.r_info)==1)
                 {
                     res1++;
                 }
-                /*else
-                    DEBUG_MED("REL: %x of type %d \n",rel_data.r_offset,ELF32_R_TYPE(rel_data.r_info));*/
+                else
+                    DEBUG_MED("REL: %x of type %d \n",rel_data.r_offset,ELF32_R_TYPE(rel_data.r_info));
             }
             DEBUG_MED("%d of type 1, %d were of type 2, %d were found, %d of other type\n",
                 res1,res,res2,section_list[i].rel->nb_ent-res-res1);

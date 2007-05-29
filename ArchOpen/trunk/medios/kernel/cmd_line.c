@@ -243,7 +243,8 @@ void init_cmd_line(void)
     cur_cmd[0]='\0';
 
     
-    pid=thread_startFct(&cmdLineThread,cmd_line_thread,"cmd line",THREAD_STATE_DISABLE,PRIO_HIGH);
+    pid=thread_startFct(&cmdLineThread,cmd_line_thread,"cmd line",
+                         THREAD_STATE_DISABLE,PRIO_HIGH,THREAD_USE_OTHER_STACK);
     
     if(pid<0)
     {

@@ -16,4 +16,6 @@
 
 double math_cos(double);
 double cos(double);
+double math_sqrt(double);
+double sqrt(double);
 #endif

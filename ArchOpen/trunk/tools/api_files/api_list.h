@@ -4,6 +4,7 @@
 #api_inc#sys_def/section_types.h
 #api_inc#sys_def/stddef.h
 #api_inc#sys_def/types.h
+#api_inc#kernel/io.h
 
 #k_inc#sys_def/errors.h
 #api_inc#sys_def/errors.h
@@ -111,6 +112,7 @@ int # float_nesf2 # float a, float b
 
 #k_inc#lib/libmath.h
 double # math_cos # double a
+double # math_sqrt # double a
 
 #k_inc#fs/stdfs.h
 #api_inc#sys_def/stdfs.h
@@ -333,3 +335,8 @@ void       # output_outputParamsChanged #
 int             # buffer_seek          # int offset,int whence
 int             # buffer_read          # void * buf,int count
 PLAYLIST_ITEM * # buffer_getActiveItem #
+
+#k_inc#kernel/irq.h
+void    #  irq_changeHandler # int irq_num,void(*fct)(int irq,struct pt_regs * regs)
+void    #  irq_enable        # int irq
+void    #  irq_disable       # int irq

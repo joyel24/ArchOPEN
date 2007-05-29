@@ -20,7 +20,7 @@ echo "<br><br><a href='ao_ircLog.php'>Back</a><br><br>\n";
 else
 {
 
-echo "<a href='/tiki-index.php'>back</a><p>\n";
+echo "<a href='http://www.archopen.org/tiki-index.php'>back</a><p>\n";
 
 echo "<ul>\n";
 
@@ -39,7 +39,7 @@ while($time_inc>=$first_day)
     $time_inc-=24*60*60;
 }
 echo "</ul>\n";
-echo "<p><a href='/tiki-index.php'>back</a>\n";
+echo "<p><a href='http://www.archopen.org/tiki-index.php'>back</a>\n";
 }
 ?>
 

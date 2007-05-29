@@ -22,7 +22,7 @@ for($i=0;$i<$nb_days;$i++)
 ?>
 <center>
 <H1>ArchOpen Daily Builds</h1></center>
-<a href='/tiki-index.php'>back</a><p>
+<a href='http://www.archopen.org/tiki-index.php'>back</a><p>
 <center>
 <table border="1">
   <tbody>
@@ -45,6 +45,19 @@ for($i=0;$i<$nb_arch;$i++)
 echo "<tr><td colspan=".($nb_arch+1).">";
 echo "<font size=+1><center><a href='/tiki-download_file.php?fileId=52'>Icons and other basic medios files</a></center></font>";
 echo "</td></tr>";
+
+
+echo "<tr><td>Daily<br>Distribution&nbsp</td>\n";
+for($i=0;$i<$nb_arch;$i++)
+{
+    echo "<td>";
+    if($arch_list[$i]!="apps")    
+        echo "<center><a href='builds/".$arch_list[$i]."_medios_dist.zip'>ZIP dist</a><center>";
+    else
+        echo "&nbsp";
+    echo "</td>\n";
+}
+echo "</tr>\n";
 
 for($j=0;$j<$nb_days;$j++)
 {
@@ -105,6 +118,7 @@ for($j=0;$j<$nb_days;$j++)
 </tbody>
 </table>
 </center>
-<p><a href='/tiki-index.php'>back</a>
+<p>
+<a href='http://www.archopen.org/tiki-index.php'>back</a>
 </body>
 </html>

@@ -64,8 +64,12 @@ MED_RET_T thread_init(void(*fct)(void))
     threadCurrent = sysThread = idleThread = NULL;
     /* creating initial thread */
 
-    retval=thread_create(&sysThread,(void*)fct,(void*)thread_exit,NULL,NULL,0,THREAD_USE_SYS_STACK,
-        SYS_STACK_BTM,PRIO_HIGH,"KERNEL",NULL,(unsigned long)NULL,(unsigned long)NULL);
+    /*retval=thread_create(&sysThread,(void*)fct,(void*)thread_exit,NULL,NULL,0,THREAD_USE_SYS_STACK,
+        SYS_STACK_BTM,PRIO_HIGH,"KERNEL",NULL,(unsigned long)NULL,(unsigned long)NULL);*/
+    
+    retval=thread_create(&sysThread,(void*)fct,(void*)thread_exit,NULL,NULL,0,THREAD_USE_OTHER_STACK,
+        NULL,PRIO_HIGH,"KERNEL",NULL,(unsigned long)NULL,(unsigned long)NULL);
+    
 
     if(retval<0)
     {
@@ -75,7 +79,8 @@ MED_RET_T thread_init(void(*fct)(void))
     else
         printk("KERNEL thread created with pid %d\n",retval);
 
-    threadSysStack=sysThread;
+    //threadSysStack=sysThread;
+    threadSysStack=NULL;
 
     sysThread->state=THREAD_STATE_ENABLE;
     
@@ -148,12 +153,13 @@ void thread_startMed(void * entry_fct,void * code_malloc,void * iram_top,char * 
 * "enable" is used to enable/disable
 * thread once created
 ***********************************/
-int thread_startFct(THREAD_INFO ** ret_thread,void * entry_fct,char * name,int enable,int prio)
+int thread_startFct(THREAD_INFO ** ret_thread,void * entry_fct,char * name,int enable,int prio,int stack_type)
 {
     THREAD_INFO * fct_thread;
     int pid;
+    void * bottom=stack_type==THREAD_USE_SYS_STACK?SYS_STACK_BTM:NULL;
         
-    pid=thread_create(&fct_thread,entry_fct,(void*)thread_exit,0,NULL,0,THREAD_USE_OTHER_STACK,NULL,prio,name,
+    pid=thread_create(&fct_thread,entry_fct,(void*)thread_exit,0,NULL,0,stack_type,bottom,prio,name,
                        NULL,0,(unsigned long)NULL);
     printk("Fct thread created with pid %d\n",pid);
     if(ret_thread)

@@ -144,7 +144,7 @@ void drawBat(void)
             first_plug_dc=1;
             if(level!=old_level)
             {
-                old_level=level;                
+                old_level=level;
                 if(level<7)
                     FM_setIcon(FM_BAT,1);
                 else if(level<14)
@@ -175,17 +175,17 @@ void drawStatus(void)
         cfState=0;
         printk("FW and CF detected !!!\n");
     }
-    
+
     if(fwExtState)
         gfx_drawBitmap(st_fwExtIcon, lineData.module_x, lineData.module_y);
-       
+
     if(cfState)
         gfx_drawBitmap(st_cfIcon, lineData.module_x, lineData.module_y);
-    
+
     if(!cfState && !fwExtState)
         gfx_fillRect(lineData.bg_color,lineData.module_x,lineData.module_y,15,6);
-    
-        
+
+
     if(pwrState)
         gfx_drawBitmap(st_powerIcon, lineData.pwr_x, lineData.pwr_y);
     else
@@ -236,6 +236,11 @@ void statusLine_handleEvent(int evt)
 {
     switch (evt) {
         case EVT_REDRAW:
+            pwrState=POWER_CONNECTED;
+            batteryRefresh = 0;
+            usbState=kusbIsConnected();
+            fwExtState=kFWIsConnected();
+            cfState=CF_IS_CONNECTED;
             drawGui();
             break;
         case EVT_TIMER:
@@ -267,7 +272,7 @@ void statusLine_handleEvent(int evt)
         case EVT_CF_OUT:
             cfState=CF_IS_CONNECTED;
             drawStatus();
-            break;    
+            break;
     }
 }
 
@@ -280,20 +285,20 @@ void statusLine_init(void)
     st_usbIcon=&icon_get("usbIcon")->bmap_data;
     st_powerIcon=&icon_get("powerIcon")->bmap_data;
     st_mediosLogo=&icon_get("mediosLogo")->bmap_data;
-        
+
     pwrState=POWER_CONNECTED;
     usbState=kusbIsConnected();
     fwExtState=kFWIsConnected();
-    
+
     first_plug_dc = 0;
     old_level = -1;
-    
+
     /* read cfg */
     cfg=cfg_readFile("/medios/medios.cfg");
-    
+
     if(!cfg)
     {
-        printk("Can't open cfg file\n");        
+        printk("Can't open cfg file\n");
         time_format=FORMAT_24;
         date_format=FORMAT_DDMMYYYY;
         cfg=cfg_newFile();
@@ -308,11 +313,11 @@ void statusLine_init(void)
     }
     else
     {
-        time_format=cfg_readInt(cfg,"is12H");    
+        time_format=cfg_readInt(cfg,"is12H");
         date_format=cfg_readInt(cfg,"isMMDDYYYY");
     }
-    
-    cfg_clear(cfg);    
+
+    cfg_clear(cfg);
 
     cfState=CF_IS_CONNECTED;
 

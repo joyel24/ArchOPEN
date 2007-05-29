@@ -104,7 +104,7 @@ void tst_fct(void)
     printk("Start\n");    
     vfs_PrintOpenList();
     printk("Ini\n");    
-    pid1=thread_startFct(&th1,tst_1,"Test1",THREAD_STATE_DISABLE,PRIO_MED);   
+    pid1=thread_startFct(&th1,tst_1,"Test1",THREAD_STATE_DISABLE,PRIO_MED,THREAD_USE_OTHER_STACK);   
     thread_ps();
     thread_enable(pid1);
     printk("GO\n");
@@ -148,6 +148,11 @@ void kernel_thread(void)
 #endif
             
     //sound_start();
+    //gfx_initGraphics();  
+    //gfx_clearScreen(COLOR_WHITE);
+    //screens_show(SCREEN_GFX);
+    //gfx_fontSet(STD6X9);
+    //sound_playFile("/_mus/file.ogg");     
             
     shell_main();
 

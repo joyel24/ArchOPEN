@@ -516,7 +516,7 @@ void ata_init(void)
     cmd_list.nIN=cmd_list.nOUT=0;
     
 #ifndef ATA_NO_TASKLIST    
-    thread_startFct(&ata_thread,ata_rwThread,"ATA rw",THREAD_STATE_ENABLE,PRIO_HIGH);
+    thread_startFct(&ata_thread,ata_rwThread,"ATA rw",THREAD_STATE_ENABLE,PRIO_HIGH,THREAD_USE_OTHER_STACK);
 #endif
 
     tmr_setup(&ataStop_tmr,"ata Stop");
@@ -544,7 +544,7 @@ void ide_intAction(int irq,struct pt_regs * regs)
     }
     else
     {
-        printk("DMA INT\n");
+        //printk("DMA INT\n");
     }
 }
 

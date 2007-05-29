@@ -138,7 +138,7 @@ unsigned long yieldTo(THREAD_INFO * nxtThread);
 void thread_startMed(void * entry_fct,void * code_malloc,void * iram_top,char * name,
                        char * path,int argc,char ** argv);
 int thread_startFct(THREAD_INFO ** ret_thread,void * entry_fct,char * name,
-                    int enable,int prio);
+                    int enable,int prio,int stack_type);
 
 int thread_create(THREAD_INFO ** ret_thread,void * entry_fct,void * exit_fct,
     void * code_malloc,void * stack_top,unsigned stack_size,int useSysStack,

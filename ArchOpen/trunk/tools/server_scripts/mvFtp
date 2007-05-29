@@ -22,7 +22,7 @@ echo "user ${user} ${pass}" >> ftp.in
 echo "passiv" >> ftp.in
 echo "bin" >> ftp.in
 echo "prompt" >> ftp.in
-#echo "cd ${rdir}" >> ftp.in
+echo "cd ${rdir}" >> ftp.in
 echo "cd ${dname}" >> ftp.in
 for file in ${fname}; do
 echo "dele $file" >> ftp.in

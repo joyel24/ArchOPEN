@@ -13,3 +13,4 @@
 #include <lib/libmath.h>
 #include <math.h>
 double math_cos(double a) { return cos(a); }
+double math_sqrt(double a) { return sqrt(a); }
