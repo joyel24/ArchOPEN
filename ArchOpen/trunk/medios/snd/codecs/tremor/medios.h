@@ -1,8 +1,7 @@
 #ifndef __MEDIOS_H
 #define __MEDIOS_H
 
-//#ifdef BUILD_STDALONE
-#if 0 //TODO: need a way to propagate BUILD_STDALONE GCC flag in subdirs
+/*
     #include <lib/string.h>
 
     #include <kernel/malloc.h>
@@ -33,8 +32,20 @@
     #include <gui/widgetlist.h>
     #include <gui/widgetmenu.h>
     #include <gui/file_browser.h>
-#else
+*/
+#if 1
     #include <api.h>
+#else
+    #include <lib/string.h>
+    
+    #include <kernel/malloc.h>
+    #include <kernel/kernel.h>
+    
+    #include <fs/stdfs.h>
+    
+    #include <snd/codec.h>
+    #include <snd/buffer.h>
+    #include <snd/output.h>
 #endif
 
 #include <sys_def/int_timer.h>

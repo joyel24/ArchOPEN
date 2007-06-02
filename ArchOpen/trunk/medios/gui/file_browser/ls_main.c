@@ -33,12 +33,12 @@ struct browser_data realData = {
     list            : NULL,
     listused        : 0,
     listsize        : 0,
-    
+
     scroll_pos      : LEFT_SCROLL,
-    
+
     pos             : 0,
     nselect         : 0,
-   
+
     show_dot_files  : 1,
 
     nbFile          : 0,
@@ -50,7 +50,7 @@ struct browser_data realData = {
 
     x_start         : 0,
     y_start         : 0,
-    
+
     font            : STD6X9,
 
     width           : LCD_WIDTH,
@@ -61,7 +61,11 @@ struct browser_data realData = {
 
     draw_bottom_status : draw_bottom_status,
     draw_file_size     : draw_file_size,
-    clear_status       : clear_status
+    clear_status       : clear_status,
+    
+    is_dual            : 0,
+    dual_mode          : 0,
+    dual               : NULL
 };
 
 void printList(struct browser_data * bdata,int val)
@@ -74,12 +78,45 @@ void printList(struct browser_data * bdata,int val)
     printk("---------------------------- %d\n",val);
 }
 
+void iniBrowserData(struct browser_data * ptr)
+{
+    memcpy(ptr,&realData,sizeof(struct browser_data));
+    
+    ptr->browser_scroll.border_color = COLOR_BLACK;
+    ptr->browser_scroll.fg_color     = COLOR_BLUE;
+    ptr->browser_scroll.bg_color     = COLOR_WHITE;
+    ptr->browser_scroll.orientation  = VERTICAL;   
+    ptr->browser_scroll.width        = 8;
+}
+
 struct browser_data * browser_NewBrowse(void)
 {
     struct browser_data * ptr = (struct browser_data *)malloc(sizeof(struct browser_data));
     if(!ptr)
         return NULL;
-    memcpy(ptr,&realData,sizeof(struct browser_data));
+    iniBrowserData(ptr);
+
+    return ptr;
+}
+
+struct browser_data * browser_NewDualBrowse(void)
+{
+    struct browser_data * ptr = (struct browser_data *)malloc(sizeof(struct browser_data));
+    if(!ptr)
+        return NULL;
+    iniBrowserData(ptr);
+    
+    ptr->is_dual=1;
+    
+    ptr->dual=(struct browser_data *)malloc(sizeof(struct browser_data));
+    if(!ptr->dual)
+    {
+        free(ptr);
+        return NULL;
+    }
+    iniBrowserData(ptr->dual);
+    ptr->dual->is_dual=2;
+    ptr->dual->dual=ptr;
     
     return ptr;
 }
@@ -91,8 +128,14 @@ void browser_setPath(char * path,struct browser_data *bdata)
 
 void browser_disposeBrowse(struct browser_data * bdata)
 {
+    if(bdata->is_dual)
+    {
+        cleanList(bdata->dual);
+        free(bdata->dual);
+    }
     cleanList(bdata);
     free(bdata);
+    
 }
 
 int browser_oldFileSizeX=LCD_WIDTH;
@@ -165,7 +208,7 @@ void createSizeString(char * str,int Isize)
         {
             if((tmp=(tmp>>10))!=0)
             {
-                Isize=Isize>>10;                
+                Isize=Isize>>10;
                 if((tmp=(tmp>>10))!=0)
                 {
                     Isize=Isize>>10;
@@ -186,8 +229,8 @@ void createSizeString(char * str,int Isize)
             {
                 tmp=(Isize*100)>>10;
                 a=Isize>>10;
-                b=tmp-a*100;           
-                unit="Kb";            
+                b=tmp-a*100;
+                unit="Kb";
             }
         }
         else
@@ -196,8 +239,8 @@ void createSizeString(char * str,int Isize)
             b=0;
             unit = "b";
         }
-     
-        sprintf(str,"%d.%d %s",a,b,unit);   
-        
+
+        sprintf(str,"%d.%d %s",a,b,unit);
+
     }
 }

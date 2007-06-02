@@ -13,6 +13,8 @@
 #ifndef __GUI_FILE_BROWSER_H
 #define __GUI_FILE_BROWSER_H
 
+#include <gui/scrollbar.h>
+
 #define TYPE_STD      0
 #define TYPE_BACK     1
 #define TYPE_DIR      2
@@ -31,49 +33,57 @@
 
 struct dir_entry {
     char * name;
+    int name_size;
+    char * cur_name;
     int type;
     int size;
     int selected;
+    int inc;
 };
 
 struct browser_data {
 
     char path[PATHLEN];
-    
+
     int pos;
     int nselect;
-    
+
     int show_dot_files;
-    
+
     int scroll_pos;
 
     int nbFile;
     int nbDir;
     int totSize;
-    
+
     int nb_disp_entry;
     int max_entry_length;
     int x_start;
     int y_start;
-    
+
     int width;
     int height;
-    
+
     int entry_height;
-    
+
     int mode;
     int font;
 
     struct dir_entry * list;
     int                listused;
     int                listsize;
-    
+
     void (*draw_bottom_status)  (struct browser_data *bdata);
     void (*draw_file_size)      (struct browser_data *bdata, struct dir_entry * entry);
     void (*clear_status)        (struct browser_data *bdata);
-    
+
     char * retPath;
     
+    int is_dual;
+    int dual_mode;
+    struct browser_data * dual;
+    
+    struct scroll_bar browser_scroll;
 };
 
 #define    BROWSER_STATUS_HEIGHT 20
@@ -110,6 +120,7 @@ int  viewNewDir         (struct browser_data *bdata,char *name);
 void printName          (struct dir_entry * dEntry,int pos,int clear,int selected,struct browser_data *bdata);
 void printAllName       (struct browser_data *bdata);
 void printAName         (struct browser_data *bdata,int pos, int nselect, int clear, int selected);
+void printLongName      (int pos,int selected,struct browser_data *bdata);
 void createSizeString   (char * str,int Isize);
 void clearBrowser       (struct browser_data *bdata);
 void redrawBrowser      (struct browser_data *bdata);

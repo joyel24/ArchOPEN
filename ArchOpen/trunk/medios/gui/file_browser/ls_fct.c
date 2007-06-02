@@ -43,10 +43,10 @@ void cleanList(struct browser_data * bdata)
         for (i = 0; i < bdata->listused; i++)
             if(bdata->list[i].name)
                 free(bdata->list[i].name);
-    
-        free(bdata->list);        
+
+        free(bdata->list);
     }
-    
+
     bdata->list=NULL;
     bdata->listused=0;
     bdata->listsize=0;
@@ -54,7 +54,7 @@ void cleanList(struct browser_data * bdata)
 
 int ini_lists(struct browser_data * bdata)
 {
-   
+
     if (bdata->listsize == 0) {
         bdata->list = (struct dir_entry *) malloc(LISTSIZE * sizeof(struct dir_entry));
         if (bdata->list == NULL) {
@@ -64,7 +64,7 @@ int ini_lists(struct browser_data * bdata)
         bdata->listsize = LISTSIZE;
     }
     bdata->listused = 0;
-    
+
     return 1;
 }
 
@@ -80,7 +80,7 @@ int qSortEntry(const void * a1,const void * a2)
 int addEntry(struct browser_data * bdata,char * name,int type,int size)
 {
     struct dir_entry * newlist;
-   
+
     if (bdata->listused >= bdata->listsize) /* do we need to increase the list size? */
     {
         newlist = (struct dir_entry *) malloc((LISTSIZE+bdata->listsize) * sizeof(struct dir_entry));
@@ -94,23 +94,25 @@ int addEntry(struct browser_data * bdata,char * name,int type,int size)
         bdata->list=newlist;
         bdata->listsize += LISTSIZE;
     }
-   
-    
+
+
     bdata->list[bdata->listused].name = strdup(name);
-    
+
     if (bdata->list[bdata->listused].name == NULL)
     {
         printk( "No memory for filenames\n");
         return 0;
     }
-        
+
+    bdata->list[bdata->listused].name_size=strlen(name);
+    bdata->list[bdata->listused].cur_name=name;
     bdata->list[bdata->listused].type=type;
     bdata->list[bdata->listused].size=size;
     bdata->list[bdata->listused].selected=0;
-    
+
     /*printf("Entry |%s|%s| added as %s (s=%d)\n",bdata->list[bdata->listused].name,name,
         type==TYPE_FILE?"File":type==TYPE_DIR?"DIR":"BCK",bdata->list[bdata->listused].size);*/
-        
+
     bdata->listused++;
     return 1;
 }
@@ -123,42 +125,42 @@ int doLs(struct browser_data * bdata)
     struct dirent   *dp=NULL;
 
     char            fullname[PATHLEN];
-    
+
     bdata->totSize=0;
     bdata->nbFile=0;
     bdata->nbDir=0;
-       
+
     if(!ini_lists(bdata))
         return 0;
-        
+
         printk( "[dols] opening %s\n",bdata->path);
-        
-    dirp = opendir(bdata->path);   
-    
+
+    dirp = opendir(bdata->path);
+
     if(!dirp)
     {
         printk( "[dols] error opening dir\n");
         return 0;
     }
-        
+
     while ((dp = readdir(dirp)) != NULL)
     {
        /* printk( "[dols] found |%s|\n",dp->d_name);*/
         if(dp->d_name[0]=='\0')
-            continue;            
-          
+            continue;
+
         if ((dp->d_name[0] == '.') && !bdata->show_dot_files)
-            continue; 
-                       
+            continue;
+
         fullname[0] = '\0';
         strcat(fullname, dp->d_name);
-                       
+
         if(dp->type & VFS_TYPE_DIR)
         {
             if(fullname[0]=='.' && fullname[1]=='\0')
                 continue;
             if(fullname[0]=='.' && fullname[1]=='.' && fullname[2]=='\0')
-            {                
+            {
                 if(!addEntry(bdata,"<-Back",TYPE_BACK,0))
                     return 0;
             }
@@ -178,15 +180,15 @@ int doLs(struct browser_data * bdata)
             bdata->nbFile++;
         }
     }
-    
+
     printk( "[dols] folder parsed: find %d files %d folder => %d entires\n",bdata->nbFile,bdata->nbDir,bdata->listused);
-       
+
     closedir(dirp);
 
     printk("[dols] closed dir\n");
-    
+
     qsort(bdata->list,bdata->listused,sizeof(struct dir_entry),qSortEntry);
-    
+
     return 1;
 }
 
@@ -206,17 +208,17 @@ int upDir(struct browser_data * bdata)
             printk("[upDir] error can't find a '/' (%s)\n",bdata->path);
             return 0;
         }
-        
+
         if(ptr==bdata->path)
             *(ptr+1)='\0';
         else
             *ptr='\0';
-        
+
         printk("[upDir] %s\n",bdata->path);
         return 1;
     }
-    
-    
+
+
 }
 
 int isRoot(struct browser_data * bdata)
@@ -239,7 +241,7 @@ int inDir(struct browser_data * bdata,char * name)
            printk("[inDir] not from root\n");
            bdata->path[len]='/';
            strcpy(bdata->path+len+1,name);
-        } 
+        }
         printk("[inDir] %s (%s)\n",bdata->path,name);
         return 1;
     }

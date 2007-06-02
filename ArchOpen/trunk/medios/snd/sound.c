@@ -174,7 +174,7 @@ void sound_playFile(char * fName){
     sound_start();
 
     gfx_clearScreen(COLOR_BLACK);
-
+    gfx_fontSet(0);
     playlist_clear();
 
     playlist_addFile(fName,playlist_last);

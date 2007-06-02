@@ -8,7 +8,8 @@
 * KIND, either express of implied.
 */
 
-#include <api.h>
+//#include <api.h>
+#include "medios.h"
 
 #include "mad.h"
 
@@ -17,6 +18,8 @@
 
 #define MAD_INPUT_BUFFER_SIZE 4096
 #define MAD_OUTPUT_BUFFER_SIZE 4096
+
+#define BUILD_HAS_MED
 
 char inBuf[MAD_INPUT_BUFFER_SIZE];
 short outBuf[MAD_OUTPUT_BUFFER_SIZE];
@@ -279,8 +282,11 @@ void mad_trackLoop(){
     mad_decoder_finish(&decoder);
 }
 
+#ifdef BUILD_HAS_MED
 void codec_main(CODEC_GLOBAL_INFO * info){
-
+#else
+void mad_main(CODEC_INFO * info){
+#endif
     printf("[mad] main()\n");
 
     info->description="MAD, MPEG audio codec";

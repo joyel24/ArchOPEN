@@ -22,7 +22,12 @@ for($i=0;$i<$nb_days;$i++)
 
 ?>
 <center>
-<H1>ArchOpen Daily Builds</h1></center>
+<a href='http://www.archopen.org/tiki-index.php'>
+<img src='http://archopen.org/show_image.php?id=57&nocount=y' border=0></a>
+<br>
+<hr>
+<font size=+5><b>Daily Builds</b></font>
+</center>
 <DIV ALIGN=right><a href='http://www.archopen.org/tiki-index.php'>Back to index</a></div><p>
 
 <H1> Content of this page</h1>
@@ -43,16 +48,17 @@ These files are available in 3 types of package:
 <li><a href='#bin'>Binary of medios and sound codecs</a>
 </ul>
 
+Each day around midnight (GMT+1) we build all this files using the fresh sources from our svn repository.
+
 <?
 $arch_list=array("jbmm","av1xx","av3xx","g4xx","g402","av4xx","pma","av5xx","apps");
-$arch_name=array("jbmm"=>"Jbmm","av1xx"=>"Av 1xx","av3xx"=>"Av 3xx","g4xx"=>"Gmini 4XX","g402"=>"Gmini 402","av4xx"=>"Av 4xx","pma"=>"PMA","av5xx"=>"Ax 5xx","apps"=>"Med Applications");
+$arch_name=array("jbmm"=>"Jbmm","av1xx"=>"Av 1xx","av3xx"=>"Av 3xx","g4xx"=>"Gmini 4XX","g402"=>"Gmini 402","av4xx"=>"Av 4xx","pma"=>"PMA","av5xx"=>"Av 5xx","apps"=>"Med Applications");
 $nb_arch=count($arch_list);
 ?>
 
 <H1><a name='icons'>Config files and Icons</a></H1>
  
-The full medios folder with icons and config files :  <a href='/tiki-download_file.php?fileId=52'>ZIP</a>
-
+The full medios folder with icons and config files :  <a href='/tiki-download_file.php?fileId=52'>ZIP</a><br>
 Unpack the zip and put the medios folder it contains in the root folder of your device.
 
 <H1><a name='dist'>Full distribution<a></H1>
@@ -94,7 +100,18 @@ Unpack the zip file, it contains:
 Put the file and the folder in the root folder of your device. Make sure to replace all existing files if you have
 previously instaled medios on your device.
 
+
+
 <H1><a name='bin'>Binary of medios and sound codecs</a></H1>
+
+We keep here 10 days of daily builds. You find in each cell 3 links:
+<ul>
+<li><b>ZIP</b>: this the zip file containing the medios binary and the folder with codecs, put the binary (.bin, .avi or .wav according to the arch) and the medios folder in the root folder of your device
+<li><b>Err:#-Warn:#</b>: this tells you if errors of warnings were generated during build, the link will open the error/warning log
+<li><b>Make log</b>: this is a link to the full build log
+</u><p>
+
+You can also download only the applications designed for mediOS using "Med Applications" column.
 
 <center>
 <table border="0" cellspacing="1">

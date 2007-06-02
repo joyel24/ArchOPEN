@@ -27,16 +27,16 @@
 #include <gui/scrollbar.h>
 #include <gui/msgBox.h>
 
-extern struct scroll_bar browser_scroll;
 extern int evt_handler;
 
 MED_RET_T browserEvt(struct browser_data * bdata)
 {
     int w = 0;
     int h = 10;
-    
+
     int stop=0;;
     int ret=-MED_ERROR;
+    int i;
     char evt=0;
     gfx_getStringSize("M", &w, &h);
 
@@ -44,14 +44,24 @@ MED_RET_T browserEvt(struct browser_data * bdata)
     h = bdata->entry_height;
 
     evt_purgeHandler(evt_handler);
-    
+
     while(!stop)
     {
         evt = evt_getStatus(evt_handler);
+
         if(!evt)
-            continue;  
+            continue;
         switch(evt)
         {
+            case EVT_TIMER:
+                for (i = bdata->pos; i < bdata->listused && i < bdata->pos+bdata->nb_disp_entry; i++)
+                {
+                    if(bdata->list[i].name_size>bdata->max_entry_length)
+                    {
+                        printLongName(i,i==bdata->nselect,bdata);
+                    }
+                }
+                break;
             case EVT_CF_IN:
             case EVT_CF_OUT:
                 if(!viewNewDir(bdata,"/"))
@@ -97,12 +107,12 @@ MED_RET_T browserEvt(struct browser_data * bdata)
                         else // not going up, scrolling
                         {
                             gfx_scrollWindowVert(COLOR_WHITE, bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0), bdata->y_start,
-    					     bdata->width-10, (h)*(bdata->nb_disp_entry), h,0);
+                             bdata->width-10, (h)*(bdata->nb_disp_entry), h,0);
                             printAName(bdata,bdata->pos+bdata->nselect+1,bdata->nselect+1,1,0);
                             printAName(bdata,bdata->pos+bdata->nselect,bdata->nselect,1,1);
                         }
 
-                        draw_scrollBar(&browser_scroll, bdata->listused, bdata->pos,bdata->nb_disp_entry+bdata->pos);
+                        draw_scrollBar(&bdata->browser_scroll, bdata->listused, bdata->pos,bdata->nb_disp_entry+bdata->pos);
                     }
                     else // just going up
                     {
@@ -111,12 +121,12 @@ MED_RET_T browserEvt(struct browser_data * bdata)
                     }
                 }
                 break;
-    
+
             case BTN_DOWN:
                 if(bdata->listused) // is there items in the list?
                 {
                     bdata->nselect++;
-    
+
                     if(bdata->nselect+bdata->pos>=bdata->listused)       // jump to beginning
                     {
                         if(bdata->listused<=bdata->nb_disp_entry)
@@ -132,8 +142,9 @@ MED_RET_T browserEvt(struct browser_data * bdata)
                             bdata->nselect=0;
                             printAllName(bdata);
                         }
-        
-                        draw_scrollBar(&browser_scroll, bdata->listused, bdata->pos,bdata->nb_disp_entry+bdata->pos);
+
+                        draw_scrollBar(&bdata->browser_scroll, bdata->listused, bdata->pos,
+                                        bdata->nb_disp_entry+bdata->pos);
                     }
                     else
                     {
@@ -149,13 +160,16 @@ MED_RET_T browserEvt(struct browser_data * bdata)
                             }
                             else // not going down, scrolling
                             {
-                                gfx_scrollWindowVert(COLOR_WHITE, bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0), bdata->y_start,
-    						 bdata->width-10, (h)*(bdata->nb_disp_entry-1), h,1);
+                                gfx_scrollWindowVert(COLOR_WHITE,
+                                        bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0),
+                                        bdata->y_start,
+                             bdata->width-10, (h)*(bdata->nb_disp_entry-1), h,1);
                                 printAName(bdata,bdata->pos+bdata->nselect-1,bdata->nselect-1,1,0);
                                 printAName(bdata,bdata->pos+bdata->nselect,bdata->nselect,1,1);
                             }
-        
-                            draw_scrollBar(&browser_scroll, bdata->listused, bdata->pos,bdata->nb_disp_entry+bdata->pos);
+
+                            draw_scrollBar(&bdata->browser_scroll, bdata->listused, bdata->pos,
+                                            bdata->nb_disp_entry+bdata->pos);
                         }
                         else
                         {
@@ -221,7 +235,7 @@ MED_RET_T browserEvt(struct browser_data * bdata)
 #endif
             case BTN_LEFT:
                 if(upDir(bdata))
-                {              
+                {
                     if(!viewNewDir(bdata,NULL))
                     {
                         stop=1;

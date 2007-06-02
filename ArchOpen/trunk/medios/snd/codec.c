@@ -50,7 +50,7 @@ static void codec_threadFunction(){
         codec_startRequested=false;
 
         // make sure output params are correctly set up
-        output_outputParamsChanged();
+        //output_outputParamsChanged();
 
         // call trackloop
         if(codec_current->globalInfo.trackLoop!=NULL){
@@ -416,5 +416,29 @@ void codec_init()
     closedir(codec_folder);
 
     //create codec thread
-    thread_startFct(&codec_thread,codec_threadFunction,"Codec thread",THREAD_STATE_DISABLE,PRIO_HIGH,THREAD_USE_SYS_STACK);
+
+    thread_startFct(&codec_thread,codec_threadFunction,"Codec thread",
+                     THREAD_STATE_DISABLE,PRIO_HIGH,THREAD_USE_SYS_STACK);
+#if 0
+    /*cInfo=codec_new();
+    cInfo->filename="tremor.c";
+    cInfo->extensions="ogg";
+    tremor_main(cInfo);
+    cInfo->loaded=true;*/
+    
+    
+    cInfo=codec_new();
+    cInfo->filename="mad.c";
+    cInfo->extensions="mp3";
+    mad_main(cInfo);
+    cInfo->loaded=true;
+    
+    /*
+    if(med_loadMed("/medios/codec/wav.cod",&medInfo)==MED_OK)
+        ((void (*)(void))medInfo.entry)();
+    
+    if(med_loadMed("/medios/codec/tremor.cod",&medInfo)==MED_OK)
+        ((void (*)(void))medInfo.entry)();
+*/
+#endif
 }

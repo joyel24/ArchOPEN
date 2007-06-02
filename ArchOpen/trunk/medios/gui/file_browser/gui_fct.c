@@ -24,7 +24,7 @@
 
 #include <gui/icons.h>
 #include <gui/file_browser.h>
-#include <gui/scrollbar.h>
+
 
 BITMAP * gui_ls_upBitmap;
 BITMAP * gui_ls_dwBitmap;
@@ -35,17 +35,10 @@ BITMAP * gui_ls_imageBitmap;
 
 //#include "browser_icons.h"
 
-struct scroll_bar browser_scroll = {
-    border_color : COLOR_BLACK,
-    fg_color     : COLOR_BLUE,
-    bg_color     : COLOR_WHITE,
-    orientation  : VERTICAL
-};
-
 int evt_handler;
 
 void iniBrowser(void)
-{   
+{
     gui_ls_upBitmap=&icon_get("upBitmap")->bmap_data;
     gui_ls_dwBitmap=&icon_get("dwBitmap")->bmap_data;
     gui_ls_dirBitmap=&icon_get("dirBitmap")->bmap_data;
@@ -91,7 +84,7 @@ int viewNewDir(struct browser_data *bdata,char *name)
     if (bdata->max_entry_length<0)
     {
         int fw,fh;
-        
+
         gfx_getStringSize("M",&fw,&fh);
 
         bdata->max_entry_length=(bdata->width-
@@ -100,10 +93,9 @@ int viewNewDir(struct browser_data *bdata,char *name)
                                 /fw;
     }
 
-    browser_scroll.x=bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?1:bdata->width-BROWSER_SCROLLBAR_WIDTH);
-    browser_scroll.y=bdata->y_start;
-    browser_scroll.width=8;
-    browser_scroll.height=bdata->nb_disp_entry*bdata->entry_height;
+    bdata->browser_scroll.x=bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?1:bdata->width-BROWSER_SCROLLBAR_WIDTH);
+    bdata->browser_scroll.y=bdata->y_start;
+    bdata->browser_scroll.height=bdata->nb_disp_entry*bdata->entry_height;
 
     bdata->pos=0;
     bdata->nselect=0;
@@ -115,7 +107,7 @@ int viewNewDir(struct browser_data *bdata,char *name)
 int browser_browse(struct browser_data *bdata,char * path,char * res)
 {
     if(viewNewDir(bdata,path))
-    {        
+    {
         if(browserEvt(bdata)==MED_OK)
         {
             if(bdata->mode==MODE_STRING && res)
@@ -153,7 +145,7 @@ void redrawBrowser(struct browser_data *bdata)
     gfx_fillRect(COLOR_WHITE,bdata->x_start,bdata->y_start,bdata->width,bdata->height);
 
     printAllName(bdata);
-    draw_scrollBar(&browser_scroll, bdata->listused, bdata->pos,bdata->nb_disp_entry+bdata->pos);
+    draw_scrollBar(&bdata->browser_scroll, bdata->listused, bdata->pos,bdata->nb_disp_entry+bdata->pos);
 }
 
 void clearBrowser(struct browser_data *bdata)
@@ -198,7 +190,7 @@ void printName(struct dir_entry * dEntry,int pos,int clear,int selected,struct b
         case TYPE_FILE:
             color=COLOR_BLACK;
             select_color=COLOR_BLUE;
-            
+
             type=get_file_type(dEntry->name);
             switch(type)
             {
@@ -234,22 +226,57 @@ void printName(struct dir_entry * dEntry,int pos,int clear,int selected,struct b
         else
             select_color= COLOR_WHITE;
     }
-    
 
-    if(strlen(dEntry->name)<bdata->max_entry_length)
+    dEntry->cur_name=dEntry->name;
+    dEntry->inc=1;
+    if(dEntry->name_size<bdata->max_entry_length)
     {
         gfx_putS(color, select_color,X+BROWSER_ICON_WIDTH, Y, dEntry->name);
     }
     else
     {
-        char * trimmed_filename=malloc(PATHLEN);
-        memset(trimmed_filename,0,PATHLEN);
-
-        strncpy(trimmed_filename,dEntry->name,bdata->max_entry_length);
-        gfx_putS(color, select_color,X+BROWSER_ICON_WIDTH, Y, trimmed_filename);
-
-        free(trimmed_filename);
+        char c=dEntry->name[bdata->max_entry_length];
+        dEntry->name[bdata->max_entry_length]=0;
+        gfx_putS(color, select_color,X+BROWSER_ICON_WIDTH, Y, dEntry->name);
+        dEntry->name[bdata->max_entry_length]=c;
+        printk("long: %s-%d\n",dEntry->name, dEntry->name_size);
     }
+}
+
+void printLongName(int pos,int selected,struct browser_data *bdata)
+{
+    int             H=bdata->entry_height;
+    int             X=bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0);
+    int             Y=bdata->y_start+pos*H;
+    char            c;
+    int             color=COLOR_BLACK;
+    int             select_color=COLOR_BLUE;
+
+    //printk("Long\n");
+
+    if(selected)
+    {
+        if(bdata->list[pos].selected)
+            select_color=COLOR_ORANGE2;
+    }
+    else
+    {
+        if(bdata->list[pos].selected)
+            select_color=COLOR_ORANGE;
+        else
+            select_color= COLOR_WHITE;
+    }
+    bdata->list[pos].cur_name+=bdata->list[pos].inc;
+    if((bdata->list[pos].cur_name+bdata->max_entry_length) >=
+        (bdata->list[pos].name+bdata->list[pos].name_size))
+        bdata->list[pos].inc=-1;
+    if(bdata->list[pos].cur_name==bdata->list[pos].name)
+        bdata->list[pos].inc=1;
+
+    c=bdata->list[pos].cur_name[bdata->max_entry_length];
+    bdata->list[pos].cur_name[bdata->max_entry_length]=0;
+    gfx_putS(color, select_color,X+BROWSER_ICON_WIDTH, Y,bdata->list[pos].cur_name);
+    bdata->list[pos].cur_name[bdata->max_entry_length]=c;
 }
 
 void printAllName(struct browser_data *bdata)
