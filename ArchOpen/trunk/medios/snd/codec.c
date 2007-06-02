@@ -411,7 +411,7 @@ void codec_init()
     }
     closedir(codec_folder);
     //create codec thread
-    thread_startFct(&codec_thread,codec_threadFunction,"Codec thread",THREAD_STATE_DISABLE,PRIO_HIGH);
+    thread_startFct(&codec_thread,codec_threadFunction,"Codec thread",THREAD_STATE_DISABLE,PRIO_HIGH,THREAD_USE_SYS_STACK);
 /*
     med_t medInfo
     if(med_loadMed("/medios/codec/wav.cod",&medInfo)==MED_OK)
