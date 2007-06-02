@@ -21,7 +21,7 @@ struct TAG_STRUCT{
     char * album;
     char * genre;
     char * track;
-    int year;
+    char * date;
     int length;
     int bitRate;
     int sampleRate;

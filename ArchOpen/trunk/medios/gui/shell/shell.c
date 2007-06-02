@@ -17,6 +17,7 @@
 #include <kernel/kernel.h>
 #include <kernel/malloc.h>
 #include <kernel/evt.h>
+#include <kernel/thread.h>
 
 #include <fs/med.h>
 #include <fs/stdfs.h>
@@ -33,6 +34,8 @@
 #include <gui/shellmenu.h>
 #include <gui/internal_commands.h>
 #include <gui/settings_energy.h>
+#include <gui/player.h>
+#include <gui/playlistmenu.h>
 
 #include <snd/codec.h>
 #include <snd/sound.h>
@@ -56,7 +59,10 @@ static void shell_loop(){
 
     for(;;){
         event=evt_getStatus(shell_eventHandler);
-        if (event==NO_EVENT) continue; // no new events
+        if (event==NO_EVENT){ // no new events
+            yield();
+            continue;
+        }
 
         // event handlers
         shellMenu_handleEvent(event);
@@ -223,12 +229,12 @@ bool shell_execute(char * command,char * param){
 
             }else{
                 
-                if(has_develFct && codec_findCodecFor(command)!=NULL)
-                {
-                    sound_playFile(command);
-                }
-                else
-                {
+                if(codec_findCodecFor(command)!=NULL){
+
+                    intCmd_execute("player",command);
+
+                }else{
+
                     SHELL_HANDLER handler;
     
                     // find the extension handler
@@ -244,8 +250,8 @@ bool shell_execute(char * command,char * param){
                     //found a handler?
                     if(handler!=NULL){
                         //execute handler with the file as param
-                        retval=shell_executeMed(handler->handler,command);
-    
+                        retval=shell_execute(handler->handler,command);
+
                     }else{
                         printk("[shell] error: can't execute '%s', no handler for extension '%s'\n",command,ext);
                         retval=false;
@@ -308,6 +314,10 @@ void shell_main()
 
         // init status line
         statusLine_init();
+
+        // init player & playlist
+        playlistMenu_init();
+        player_init();
 
         // initial paint
         shell_restore();

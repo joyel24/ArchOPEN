@@ -13,7 +13,7 @@
 
 #include <snd/playlist.h>
 
-#define BUFFER_SIZE 4*1024*1024
+#define BUFFER_SIZE 12*1024*1024
 
 #define BUFFER_CRITICAL_ZONE 512*1024
 

@@ -33,12 +33,76 @@ struct CFG_DATA_STRUCT {
     int current;
 };
 
-/*
-static CFG_ITEM * cfg_items = NULL;
-static int cfg_itemCount = 0;
+static void cfg_escapeLF(char * input,char * output,int length){
+    char * ip;
+    char * op;
 
-static int cfg_currentItem = -1;
-*/
+    op=output;
+    ip=input;
+
+    while(*ip!='\0' && op-output<length){
+        switch(*ip){
+            case '\\':
+                *op++='\\';
+                if(op-output<length){
+                    *op++='\\';
+                }
+                break;
+            case '\n':
+                *op++='\\';
+                if(op-output<length){
+                    *op++='n';
+                }
+                break;
+            default:
+                *op++=*ip;
+                break;
+        }
+
+        ++ip;
+    }
+
+    *op='\0';
+}
+
+static void cfg_unescapeLF(char * input,char * output,int length){
+    char * ip;
+    char * op;
+    bool wasSlash;
+
+    op=output;
+    ip=input;
+    wasSlash=false;
+
+    while(*ip!='\0' /*&& op-output<length*/){
+        switch(*ip){
+            case '\\':
+                if(wasSlash){
+                    *op++='\\';
+                    wasSlash=false;
+                }else{
+                    wasSlash=true;
+                }
+                break;
+            case 'n':
+                if(wasSlash){
+                    *op++='\n';
+                }else{
+                    *op++='n';
+                }
+                wasSlash=false;
+                break;
+            default:
+                *op++=*ip;
+                wasSlash=false;
+                break;
+        }
+
+        ++ip;
+    }
+
+    *op='\0';
+}
 
 static CFG_ITEM * cfg_getItem(CFG_DATA * data, char * name){
     int i;
@@ -97,6 +161,7 @@ CFG_DATA * cfg_readFile(char * filename){
     int f;
     char * filedata;
     char prev;
+    char save;
     int size;
     int namebeg,nameend,valbeg,valend;
     int i;
@@ -179,7 +244,10 @@ CFG_DATA * cfg_readFile(char * filename){
         if(!item->dummy){
             item->value=malloc(valend-valbeg+1);
             memset(item->value,0,valend-valbeg+1);
-            strncpy(item->value,&filedata[valbeg],valend-valbeg);
+            save=filedata[valend];
+            filedata[valend]='\0';
+            cfg_unescapeLF(&filedata[valbeg],item->value,valend-valbeg);
+            filedata[valend]=save;
         }
 
         // handle CR+LF
@@ -220,7 +288,7 @@ bool cfg_writeFile(CFG_DATA * data, char * filename){
             strcpy(line,item->name);
             if(!item->dummy){ // dummy items don't have value
                 strcat(line,"=");
-                strcat(line,item->value);
+                cfg_escapeLF(item->value,line+strlen(line),255-strlen(line));
             }
             strcat(line,"\r\n");
 

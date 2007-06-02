@@ -32,8 +32,16 @@
 #include <snd/playlist.h>
 #include <snd/codec.h>
 #include <snd/output.h>
+#include <snd/sound.h>
+
+#include <gui/player.h>
+#include <gui/playlistmenu.h>
 
 PLAYLIST_ITEM * sound_activeItem;
+
+SOUND_STATE sound_state;
+
+bool sound_started=false;
 
 void sound_play(bool discard){
 
@@ -41,11 +49,19 @@ void sound_play(bool discard){
 
     printk("[sound] play %s\n",sound_activeItem->name);
 
+    // make sure the codec thread is not waiting for output
+    if(sound_state==SS_PAUSED){
+        output_discardBuffer();
+    }
+
     codec_trackStop();
 
     if(discard){
         output_discardBuffer();
     }
+
+    output_enable(true);
+    sound_state=SS_PLAYING;
 
     buffer_setActiveItem(sound_activeItem);
     codec_setCodecFor(sound_activeItem->name);
@@ -53,9 +69,12 @@ void sound_play(bool discard){
 }
 
 void sound_prevTrack(bool discard){
+
+    if (sound_activeItem==NULL) return;
+
     printk("[sound] prev track\n");
 
-    if(sound_activeItem->prev){
+    if(sound_activeItem->prev!=NULL){
         sound_activeItem=sound_activeItem->prev;
     }
 
@@ -64,9 +83,11 @@ void sound_prevTrack(bool discard){
 
 void sound_nextTrack(bool discard){
 
+    if (sound_activeItem==NULL) return;
+
     printk("[sound] next track\n");
 
-    if(sound_activeItem->next){
+    if(sound_activeItem->next!=NULL){
         sound_activeItem=sound_activeItem->next;
         sound_play(discard);
     }else{
@@ -75,55 +96,94 @@ void sound_nextTrack(bool discard){
 }
 
 void sound_trackEnd(){
+
+    sound_state=SS_STOPPED;
+
     sound_nextTrack(false);
-};
+}
 
-void sound_start(void)
-{
-    buffer_start();
-    codec_start();
-    output_start();
+void sound_pause(bool paused){
+    if(sound_state!=SS_STOPPED){
+
+        output_enable(!paused);
+
+        if(paused){
+            sound_state=SS_PAUSED;
+        }else{
+            sound_state=SS_PLAYING;
+        }
+    }
+}
+
+void sound_seek(int time){
     
+    if(sound_state==SS_STOPPED) return;
+
+    output_discardBuffer();
+    codec_seekRequest(time);
+    while(codec_mustSeek(NULL));
 }
 
-void sound_stop(void)
-{
-    codec_stop();
-    output_stop();
-    buffer_stop();
-
+void sound_setVolume(int volume){
+    output_setVolume(volume);
 }
 
-void sound_init()
-{   
+void sound_start(void){
+    if(!sound_started){
+        buffer_start();
+        codec_start();
+        output_start();
+
+        sound_activeItem=NULL;
+        sound_state=SS_STOPPED;
+        sound_started=true;
+    }
+}
+
+void sound_stop(void){
+    if(sound_started){
+        output_discardBuffer();
+        codec_stop();
+        output_stop();
+        buffer_stop();
+
+        sound_activeItem=NULL;
+        sound_state=SS_STOPPED;
+        sound_started=false;
+    }
+}
+
+void sound_init(){
     playlist_init();
     buffer_init();
     codec_init();
-    output_init();    
+    output_init();
 
+    sound_activeItem=NULL;
+    sound_state=SS_STOPPED;
+    sound_started=false;
 }
 
-void sound_playFile(char * fName)
-{
+void sound_playFile(char * fName){
     int b;
-    char s[100];
+    char s[200];
     int len,elap;
     int t,pt,pe;
-    
-    sound_start();   
-    
+    int vol;
+
+    sound_start();
+
     gfx_clearScreen(COLOR_BLACK);
-        
-#ifdef HAVE_AIC23_SOUND
-    aic23_setOutputVolume(100,AIC23_CHANNEL_BOTH);
-#endif
+
     playlist_clear();
-    playlist_addFile(fName);
+
+    playlist_addFile(fName,playlist_last);
 
     sound_activeItem=playlist_first;
 
-    output_enable(true);
     sound_play(false);
+
+    vol=90;
 
     pt=tmr_getTick();
     pe=0;
@@ -137,7 +197,7 @@ void sound_playFile(char * fName)
         len=elap=-1;
         len=sound_activeItem->tag.length;
         codec_getElapsed(&elap);
-        sprintf(s,"%8d %8d",len,elap);
+        sprintf(s,"%8d %8d   %d   ",len,elap,vol);
         gfx_putS(COLOR_WHITE,COLOR_BLACK,0,20,s);
 
         *s='\0';
@@ -178,18 +238,40 @@ void sound_playFile(char * fName)
             mdelay(500);
         }
 
+        if(b&BTMASK_UP){
+            vol=MIN(100,vol+1);
+            sound_setVolume(vol);
+            mdelay(50);
+        }
+
+        if(b&BTMASK_DOWN){
+            vol=MAX(0,vol-1);
+            sound_setVolume(vol);
+            mdelay(50);
+        }
+
         if(b&BTMASK_F1){
-            output_discardBuffer();
-            codec_seekRequest(elap-500);
-            while(codec_mustSeek(NULL));
+            sound_seek(elap-500);
             mdelay(100);
         }
 
         if(b&BTMASK_F2){
-            output_discardBuffer();
-            codec_seekRequest(elap+500);
-            while(codec_mustSeek(NULL));
+            sound_seek(elap+500);
             mdelay(100);
+        }
+
+        if(b&BTMASK_F3){
+            playlistMenu_eventLoop();
+            gfx_clearScreen(COLOR_BLACK);
+            mdelay(100);
+        }
+
+        if(b&BTMASK_BTN1){
+            sound_pause(true);
+        }
+
+        if(b&BTMASK_BTN2){
+            sound_pause(false);
         }
 
         yield();

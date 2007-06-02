@@ -20,12 +20,13 @@ extern PLAYLIST_ITEM * playlist_first;
 extern PLAYLIST_ITEM * playlist_last;
 extern int playlist_count;
 
-PLAYLIST_ITEM * playlist_new();
+PLAYLIST_ITEM * playlist_new(PLAYLIST_ITEM * prevItem);
 bool playlist_remove(PLAYLIST_ITEM * item);
 void playlist_clear();
 
-bool playlist_addFile(char * name);
+PLAYLIST_ITEM * playlist_addFile(char * name, PLAYLIST_ITEM * prevItem);
 bool playlist_addFolder(char * name,bool recurse);
+bool playlist_addM3UPlaylist(char * name);
 
 void playlist_printItems();
 

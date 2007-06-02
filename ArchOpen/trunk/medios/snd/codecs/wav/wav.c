@@ -209,11 +209,11 @@ void wav_trackLoop(){
 
 }
 
-void codec_main(CODEC_INFO * info)
+void codec_main(CODEC_GLOBAL_INFO * info)
 {
-    info->globalInfo.description="Uncompressed WAV Codec";
-    info->globalInfo.seekSupported=true;
-    info->globalInfo.trackLoop=wav_trackLoop;
-    info->globalInfo.tagRequest=wav_tagRequest;
+    info->description="Uncompressed WAV Codec";
+    info->seekSupported=true;
+    info->trackLoop=wav_trackLoop;
+    info->tagRequest=wav_tagRequest;
 }
 

@@ -22,18 +22,4 @@ typedef struct{
     void (*tagRequest) (char *, TAG *);
 } CODEC_GLOBAL_INFO;
 
-typedef struct CODEC_INFO_STRUCT CODEC_INFO;
-
-struct CODEC_INFO_STRUCT{
-    char * name;
-    char * filename;
-    char * extensions;    
-    bool loaded;
-    int fOffset;
-
-    CODEC_GLOBAL_INFO globalInfo;
-
-    CODEC_INFO * next;
-};
-
 #endif

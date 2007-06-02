@@ -201,6 +201,12 @@ void output_enableAudioOutput(bool enabled){
 #endif
 }
 
+void output_setVolume(int volume){
+#ifdef HAVE_AIC23_SOUND
+    aic23_setOutputVolume(volume+AIC23_MAX_OUTPUT_VOLUME-100,AIC23_CHANNEL_BOTH);
+#endif
+}
+
 void output_enable(bool enabled){
     output_active=enabled;
 }
@@ -248,7 +254,7 @@ void output_discardBuffer(){
 
     output_discardingBuffer=true;
 
-    while(!output_dspNoOutput){
+    while(!output_dspNoOutput || output_readPos!=output_writePos){
 
         yield();
     }

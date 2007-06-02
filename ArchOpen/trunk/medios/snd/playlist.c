@@ -25,9 +25,8 @@ PLAYLIST_ITEM * playlist_last = NULL;
 
 int playlist_count=0;
 
-PLAYLIST_ITEM * playlist_new(){
+PLAYLIST_ITEM * playlist_new(PLAYLIST_ITEM * prevItem){
     PLAYLIST_ITEM * item;
-    PLAYLIST_ITEM * prevItem;
 
     playlist_count++;
 
@@ -35,23 +34,35 @@ PLAYLIST_ITEM * playlist_new(){
     item=malloc(sizeof(PLAYLIST_ITEM));
 
     // add to linked list
-    prevItem=playlist_last;
+    item->prev=prevItem;
 
-    if(prevItem==NULL){
-        playlist_first=item;
-    }else{
+    if(prevItem!=NULL){
+
+        item->next=prevItem->next;
+
+        if(prevItem->next!=NULL){
+            prevItem->next->prev=item;
+        }
         prevItem->next=item;
+    }else{
+
+        item->next=playlist_first;
+        if(playlist_first!=NULL){
+            playlist_first->prev=item;
+        }
+
+        playlist_first=item;
     }
 
+    if(prevItem==playlist_last){
+        playlist_last=item;
+    }
+
+    // init members
     item->name=NULL;
     item->startPos=-1;
     item->fileSize=0;
     item->bufferedSize=0;
-
-    item->prev=prevItem;
-    item->next=NULL;
-
-    playlist_last=item;
 
     return item;
 }
@@ -59,7 +70,7 @@ PLAYLIST_ITEM * playlist_new(){
 bool playlist_remove(PLAYLIST_ITEM * item){
 
     if(item==NULL) return false;
-
+    
     playlist_count--;
 
     // link previous and next items
@@ -96,15 +107,15 @@ void playlist_clear(){
     }
 }
 
-bool playlist_addFile(char * name){
+PLAYLIST_ITEM * playlist_addFile(char * name, PLAYLIST_ITEM * prevItem){
     int f;
     PLAYLIST_ITEM * item;
 
     f=open(name,O_RDONLY);
 
-    if (f<0) return false;
+    if (f<0) return NULL;
 
-    item=playlist_new();
+    item=playlist_new(prevItem);
 
     item->name=strdup(name);
     item->fileSize=filesize(f);
@@ -115,15 +126,15 @@ bool playlist_addFile(char * name){
     tag_clear(&item->tag);
 
     codec_tagRequest(name,&item->tag);
-    
+
     if (item->tag.badFile){
 
         playlist_remove(item);
 
-        return false;
+        return NULL;
     }else{
 
-        return true;
+        return item;
     }
 }
 
@@ -131,12 +142,19 @@ bool playlist_addFolder(char * name,bool recurse){
     DIR * dir;
     struct dirent * ent;
     char * fname;
+    PLAYLIST_ITEM * startItem;
+    PLAYLIST_ITEM * prevItem;
+    PLAYLIST_ITEM * item;
+    bool nullItem;
 
     dir=opendir(name);
 
     if (dir==NULL){
         return false;
     }
+
+    startItem=playlist_last;
+    prevItem=playlist_last;
 
     fname=malloc(MAX_PATH);
 
@@ -153,15 +171,40 @@ bool playlist_addFolder(char * name,bool recurse){
 
         sprintf(fname,"%s/%s",name,ent->d_name);
 
+        prevItem=startItem;
+
+        nullItem=(prevItem==NULL);
+
+        for(;;){
+
+            if(nullItem){
+                item=playlist_first;
+                nullItem=false;
+            }else{
+                item=prevItem->next;
+            }
+
+            if(item==NULL || strcasecmp(item->name,fname)>0){
+                break;
+            }
+
+            prevItem=item;
+        };
+
         if(ent->type==VFS_TYPE_DIR && recurse){
 
-            playlist_addFolder(fname,true);
+            //add a temporary fake item
+            item=playlist_new(prevItem);
+
+            item->name=strdup(fname);
+            item->fileSize=-1;
+
         }else if (ent->type==VFS_TYPE_FILE){
 
             // do we have a codec for the file?
             if(codec_findCodecFor(fname)!=NULL){
 
-                playlist_addFile(fname);
+                item=playlist_addFile(fname,prevItem);
             }
         }
     }
@@ -169,8 +212,121 @@ bool playlist_addFolder(char * name,bool recurse){
     closedir(dir);
     free(fname);
 
+    //find fake dir items, call addFolder on them then delete them
+
+    if(startItem==NULL){
+        item=playlist_first;
+    }else{
+        item=startItem->next;
+    }
+
+    do{
+        if(item->fileSize==-1){
+            
+            playlist_addFolder(item->name,true);
+            
+            prevItem=item;
+            item=item->next;
+            
+            playlist_remove(prevItem);
+        }else{
+
+            item=item->next;
+        }
+
+    }while(item!=NULL);
+
+
     return true;
 }
+
+bool playlist_addM3UPlaylist(char * name){
+    char * data;
+    char * path;
+    char * item;
+    char * line;
+    char * pos;
+    char * context;
+    char save;
+    int f;
+    int dataSize;
+
+    //read playlist file
+    f=open(name,O_RDONLY);
+
+    if(f<0){
+        return false;
+    }
+
+    dataSize=filesize(f);
+    data=malloc(dataSize+1);
+
+    read(f,data,dataSize);
+    data[dataSize]='\0';
+
+    close(f);
+
+    //extract path
+    path=malloc(MAX_PATH+1);
+    pos=strrchr(name,'/');
+    if(pos!=NULL){
+        ++pos;
+        save=*pos;
+        *pos='\0';
+        strcpy(path,name);
+        *pos=save;
+    }else{
+        *path='\0';
+    }
+
+    //convert \ to /
+    do{
+        pos=strchr(data,'\\');
+        if(pos!=NULL){
+            *pos='/';
+        }
+    }while(pos!=NULL);
+
+
+    item=malloc(MAX_PATH+1);
+
+    //scan lines
+    pos=strtok_r(data,"\r\n",&context);
+    while(pos!=NULL){
+
+        //trim spaces
+        line=pos;
+        while(*line==' '){
+            line++;
+        }
+
+        if(strstr(line,"#EXTINF")!=line && strstr(line,"#EXTM3U")!=line){ // skip extended m3u lines
+            //detect & remove windows drives letters
+            if(line[1]==':'){
+                line+=2;
+            }
+
+            if(line[0]=='/'){ // absolute path?
+                strncpy(item,line,MAX_PATH);
+            }else{
+                snprintf(item,MAX_PATH,"%s%s",path,line);
+            }
+
+            //add item to playlist
+            playlist_addFile(item,playlist_last);
+        }
+
+        pos=strtok_r(NULL,"\r\n",&context);
+    }
+
+    free(item);
+    free(path);
+    free(data);
+
+    return true;
+}
+
+
 
 void playlist_printItems(){
     PLAYLIST_ITEM * item;

@@ -8,15 +8,15 @@
 * KIND, either express of implied.
 */
 
-#ifndef __TAG_H
-#define __TAG_H
+#ifndef __PLAYLISTMENU_H
+#define __PLAYLISTMENU_H
 
-#include <snd_user/tag.h>
+#define PLAYLISTMENU_ACTIVEITEM_COLOR COLOR_RED
 
-#include <snd/playlist.h>
+void playlistMenu_refresh();
+void playlistMenu_build();
+void playlistMenu_eventLoop();
+void playlistMenu_init();
 
-void tag_parse(PLAYLIST_ITEM * item, char * format, char * output,int length);
-void tag_clear(TAG * tag);
-void tag_free(TAG * tag);
 
-#endif
+#endif /* __PLAYLISTMENU_H */

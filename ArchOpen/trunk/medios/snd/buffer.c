@@ -38,12 +38,14 @@ static PLAYLIST_ITEM * buffer_bufferedItem = NULL;
 
 bool buffer_bufferedItemChanged=false;
 
+bool buffer_loadingData=false;
+
 static void buffer_updateBounds(int delta){
     buffer_endPos+=delta;
-    
+
     if((buffer_endPos-buffer_startPos)>buffer_size){
         buffer_startPos=buffer_endPos-buffer_size;
-        printk("buffer_startPos %d\n",buffer_startPos);
+//        printk("buffer_startPos %d\n",buffer_startPos);
     }
 }
 
@@ -82,7 +84,7 @@ static bool buffer_bufferItem(PLAYLIST_ITEM * item){
     if(f<0) return false;
 
     //calculate free buffer space
-    free=buffer_size-(buffer_endPos-buffer_curPos);
+    free=buffer_size-MAX(0,(buffer_endPos-buffer_curPos));
 
     item->bufferedSize=0;
     item->startPos=buffer_endPos;
@@ -91,20 +93,29 @@ static bool buffer_bufferItem(PLAYLIST_ITEM * item){
     if(item->fileSize<=free){
 
         // buffer whole file
+        buffer_loadingData=true;
+
         item->bufferedSize=buffer_loadData(f,buffer_endPos,item->fileSize);
 
         buffer_updateBounds(item->bufferedSize);
+
+        buffer_loadingData=false;
 
         success=true;
     }else{
         for(;;){
             int red;
 
+
             // buffer what we can
+            buffer_loadingData=true;
+
             red=buffer_loadData(f,buffer_endPos,free);
 
             buffer_updateBounds(red);
             item->bufferedSize+=red;
+
+            buffer_loadingData=false;
 
             if((buffer_endPos-item->startPos)>=item->fileSize){
                 success=true;
@@ -121,6 +132,7 @@ static bool buffer_bufferItem(PLAYLIST_ITEM * item){
 
                 // discard what was buffered
                 buffer_curPos=buffer_endPos=item->startPos;
+                buffer_startPos=MIN(buffer_startPos,item->startPos);
 
                 item->bufferedSize=0;
                 item->startPos=-1;
@@ -129,10 +141,14 @@ static bool buffer_bufferItem(PLAYLIST_ITEM * item){
                 break;
             }
 
-            //TODO: seek if curpos is farther than 1 buffer size from endpos (optimisation)
+            // seek if curpos is greater than endpos
+            if(buffer_curPos>buffer_endPos){
+                lseek(f,buffer_curPos-buffer_endPos,SEEK_CUR);
+                buffer_updateBounds(buffer_curPos-buffer_endPos);
+            }
 
             // recalc free space
-            free=buffer_size-(buffer_endPos-buffer_curPos);
+            free=buffer_size-MAX(0,(buffer_endPos-buffer_curPos));
         }
     }
 
@@ -173,7 +189,7 @@ int buffer_seek(int offset,int whence){
 
         case SEEK_SET:
             if(offset>=0 &&
-               offset<buffer_activeItem->fileSize){
+               offset<=buffer_activeItem->fileSize){
                 buffer_curPos=buffer_activeItem->startPos+offset;
                 break;
             }else{
@@ -216,14 +232,13 @@ int buffer_read(void * buf,int count){
 
         buffer_curPos=buffer_endPos;
 
-        printk("rewind %d\n",offset);
+//        printk("rewind %d\n",offset);
 
         // ask to rebuffer the item
         buffer_setActiveItem(buffer_activeItem);
 
         // restore offset
         buffer_seek(offset,SEEK_SET);
-
     }
 
 
@@ -260,10 +275,13 @@ int buffer_read(void * buf,int count){
 
 void buffer_setActiveItem(PLAYLIST_ITEM * item){
 
-/*
-    printk("### sp=%d ep=%d isp=%d\n",buffer_startPos,buffer_endPos,item->startPos);
-    playlist_printItems();
-*/
+
+//    printk("### sp=%d ep=%d isp=%d\n",buffer_startPos,buffer_endPos,item->startPos);
+
+    // wait if we're loading data, prevents false buffer boundaries
+    while(buffer_loadingData){
+        yield();
+    }
 
     buffer_activeItem=item;
 
@@ -271,6 +289,10 @@ void buffer_setActiveItem(PLAYLIST_ITEM * item){
     if(item->startPos<buffer_startPos){
         buffer_bufferedItem=buffer_activeItem;
         buffer_bufferedItemChanged=true;
+
+        while(buffer_bufferedItemChanged){
+            yield();
+        }
 
         // wait for the item buffering to start
         while(buffer_activeItem->startPos<buffer_startPos){
@@ -295,6 +317,7 @@ void buffer_start(void)
     buffer_bufferedItem=NULL;
     buffer_activeItem=NULL;
     buffer_bufferedItemChanged=false;
+    buffer_loadingData=false;
 
     // alloc audio buffer
     buffer_size=BUFFER_SIZE;

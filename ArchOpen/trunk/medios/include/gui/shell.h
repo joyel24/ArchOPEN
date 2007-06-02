@@ -20,7 +20,7 @@
 
 #define SHELL_HANDLERS_FILE SHELL_DIR"/handlers.cfg"
 
-#define SHELL_STATUS_HEIGHT 16
+#define SHELL_STATUS_HEIGHT 17
 
 bool shell_execute(char * command,char * param);
 void shell_restore();

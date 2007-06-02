@@ -64,9 +64,9 @@ void wavpack_trackLoop()
     while(codec_mustContinue() && red>0);*/
 }
 
-void codec_main(CODEC_INFO * info)
+void codec_main(CODEC_GLOBAL_INFO * info)
 {
-    info->globalInfo.description="Wav Pack Codec";
-    info->globalInfo.seekSupported=false;
-    info->globalInfo.trackLoop=wavpack_trackLoop;
+    info->description="Wav Pack Codec";
+    info->seekSupported=false;
+    info->trackLoop=wavpack_trackLoop;
 }

@@ -32,7 +32,7 @@
 
 #include "mp3_data.h"
 
-#define DEBUG_VERBOSE
+//#define DEBUG_VERBOSE
 
 #define BYTES2INT(b1,b2,b3,b4) (((b1 & 0xFF) << (3*8)) | \
                                 ((b2 & 0xFF) << (2*8)) | \

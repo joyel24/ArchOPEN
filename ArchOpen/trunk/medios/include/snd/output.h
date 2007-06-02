@@ -24,6 +24,7 @@ void output_outputParamsChanged();
 
 bool output_setSampleRate(int rate);
 void output_enableAudioOutput(bool enabled);
+void output_setVolume(int volume);
 
 void output_enable(bool enabled);
 

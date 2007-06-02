@@ -145,7 +145,7 @@ void tremor_tagRequest(char * name,TAG * tag){
                     }
 
                     if(!strcasecmp(key,"date")){
-                        tag->year=atoi(value);
+                        tag->date=strdup(value);
                     }
 
                     *delim='=';
@@ -231,14 +231,14 @@ void tremor_trackLoop(){
     ov_clear(&vf);
 }
 
-void codec_main(CODEC_INFO * info){
+void codec_main(CODEC_GLOBAL_INFO * info){
 
     printf("[tremor] main()\n");
 
-    info->globalInfo.description="Tremor, OGG Vorbis codec";
-    info->globalInfo.seekSupported=true;
-    info->globalInfo.trackLoop=tremor_trackLoop;
-    info->globalInfo.tagRequest=tremor_tagRequest;
+    info->description="Tremor, OGG Vorbis codec";
+    info->seekSupported=true;
+    info->trackLoop=tremor_trackLoop;
+    info->tagRequest=tremor_tagRequest;
 
 
     bufferCallbacks.read_func=tremor_bufferRead;

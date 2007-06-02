@@ -21,14 +21,19 @@
 #include <driver/lcd.h>
 
 #include <kernel/console.h>
+#include <kernel/thread.h>
 
 //int vsnprintf (char * buf, size_t size, const char * fmt, va_list args);
 static char debugmembuf[255];
 
 int printk_on_uart=0;
+bool printk_printing=false;
 
 void printk(char *fmt, ...)
 {
+    while(printk_printing) yield();
+    printk_printing=true;
+
     va_list ap;
     va_start(ap, fmt);
     vsnprintf(debugmembuf, sizeof(debugmembuf), fmt, ap);
@@ -36,28 +41,44 @@ void printk(char *fmt, ...)
     if(printk_on_uart)
         uart_outString(debugmembuf,DEBUG_UART);
     con_write(debugmembuf,COLOR_LIGHT_GREEN);
+
+    printk_printing=false;
 }
 
 int printf(__const char * fmt, ...)
 {
-  int res;
+    int res;
     va_list ap;
+
+    while(printk_printing) yield();
+    printk_printing=true;
+
     va_start(ap, fmt);
     res = vsnprintf(debugmembuf, sizeof(debugmembuf), fmt, ap);
     va_end(ap);
     if(printk_on_uart)
         uart_outString(debugmembuf,DEBUG_UART);
     con_write(debugmembuf,COLOR_WHITE);
+
+    printk_printing=false;
+
     return res;
 }
 
 int vprintf(__const char * fmt, va_list args)
 {
-  int res;
+    int res;
+
+    while(printk_printing) yield();
+    printk_printing=true;
+
     res = vsnprintf(debugmembuf, sizeof(debugmembuf), fmt, args);
     if(printk_on_uart)
         uart_outString(debugmembuf,DEBUG_UART);
     con_write(debugmembuf,COLOR_WHITE);
+
+    printk_printing=false;
+
     return res;
 }
 
@@ -92,7 +113,7 @@ void print_data(char * data,int length)
         
         if(i%4==0)
             printk(" ");
-        
+
         printk("%02X",(unsigned char)data[i]);
         str[i%16]=data[i];        
     }
@@ -116,5 +137,6 @@ void printk_uartDisable(void)
 void printk_init(void)
 {
     printk_on_uart = 0;
+    printk_printing = false;
     printk_uartEnable();
 }

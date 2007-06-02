@@ -11,16 +11,30 @@
 #ifndef __SOUND_H
 #define __SOUND_H
 
-void sound_prevTrack();
-void sound_nextTrack();
+#include <snd/playlist.h>
+
+typedef enum {SS_STOPPED,SS_PLAYING,SS_PAUSED} SOUND_STATE;
+
+void sound_play(bool discard);
+
+void sound_prevTrack(bool discard);
+void sound_nextTrack(bool discard);
 
 void sound_trackEnd();
+
+void sound_pause(bool paused);
+void sound_seek(int time);
+void sound_setVolume(int volume);
 
 void sound_init();
 void sound_start(void);
 void sound_stop(void);
 
 void sound_playFile(char * fName);
+
+extern PLAYLIST_ITEM * sound_activeItem;
+
+extern SOUND_STATE sound_state;
 
 #endif
 

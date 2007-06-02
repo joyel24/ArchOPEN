@@ -98,7 +98,7 @@ bool codec_load(CODEC_INFO * info){
     //load codec
 
     if(med_loadMed(info->filename,&medInfo,info->fOffset)==MED_OK)
-        ((void (*)(CODEC_INFO * info))medInfo.entry)(info);
+        ((void (*)(CODEC_GLOBAL_INFO * info))medInfo.entry)(&info->globalInfo);
 
     printk("[codec] loaded codec %s, description=%s\n",info->name,info->globalInfo.description);
 
@@ -110,6 +110,7 @@ bool codec_load(CODEC_INFO * info){
 CODEC_INFO * codec_findCodecFor(char * name){
     char * ext;
     char * tok;
+    char * context;
     bool found;
     CODEC_INFO * info;
 
@@ -125,20 +126,20 @@ CODEC_INFO * codec_findCodecFor(char * name){
     // force lowercase
     ext=strdup(ext);
     strlwr(ext);
-    
+
     // scan through codecs
     found=false;
     info=codec_first;
     while(info!=NULL){
 
         // scan through | separated extensions
-        tok=strtok(info->extensions,"|");
+        tok=strtok_r(info->extensions,"|",&context);
         while(tok!=NULL){
 
             if(!strcmp(ext,tok)){
                 found=true;
             }
-            tok=strtok(NULL,"|");
+            tok=strtok_r(NULL,"|",&context);
         }
 
         if(found){
@@ -272,7 +273,10 @@ bool codec_tagRequest(char * name, TAG * tag){
 
     codec_load(info);
 
-    if(info->globalInfo.tagRequest==NULL) return false;
+    if(info->globalInfo.tagRequest==NULL){
+        printk("[codec] error: tagRequest not assigned\n");
+        return false;
+    }
 
     info->globalInfo.tagRequest(name,tag);
     
@@ -320,15 +324,15 @@ void codec_init()
     
     codec_thread=NULL;
 
-    /* seraching for codecs */
-    codec_folder=opendir("/medios/codec");
+    /* searching for codecs */
+    codec_folder=opendir(CODECS_DIR);
     if(codec_folder)
     {
         while((entry=readdir(codec_folder))!=NULL)
         {
-            fname=(char*)malloc(strlen(entry->d_name)+strlen("/medios/codec/")+1);
-            strcpy(fname,"/medios/codec/");
-            strcpy(fname+strlen("/medios/codec/"),entry->d_name);
+            fname=(char*)malloc(strlen(entry->d_name)+strlen(CODECS_DIR)+1);
+            strcpy(fname,CODECS_DIR);
+            strcat(fname,entry->d_name);
             if(entry->type!=VFS_TYPE_FILE)
             {
                 printk("discard: not a file");
@@ -407,17 +411,10 @@ void codec_init()
     }
     else
     {
-        printk("Missing codec folder: /medios/codec\n");   
+        printk("Missing codec folder: "CODECS_DIR"\n");
     }
     closedir(codec_folder);
+
     //create codec thread
     thread_startFct(&codec_thread,codec_threadFunction,"Codec thread",THREAD_STATE_DISABLE,PRIO_HIGH,THREAD_USE_SYS_STACK);
-/*
-    med_t medInfo
-    if(med_loadMed("/medios/codec/wav.cod",&medInfo)==MED_OK)
-        ((void (*)(void))medInfo.entry)();
-    
-    if(med_loadMed("/medios/codec/tremor.cod",&medInfo)==MED_OK)
-        ((void (*)(void))medInfo.entry)();
-*/
 }

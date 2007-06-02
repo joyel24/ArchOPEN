@@ -33,6 +33,15 @@
 #include "id3.h"
 #include "mp3_data.h"
 
+
+//#define DO_ID3_DEBUG
+
+#ifdef DO_ID3_DEBUG
+#define DEBUG_ID3(s...)   printf(s)
+#else
+#define DEBUG_ID3(s...)
+#endif
+
 #define UNSYNC(b0,b1,b2,b3) (((b0 & 0x7F) << (3*7)) | \
                              ((b1 & 0x7F) << (2*7)) | \
                              ((b2 & 0x7F) << (1*7)) | \
@@ -125,7 +134,7 @@ char* id3_get_genre(const struct mp3entry* id3)
          variable in struct mp3entry, 
          special processing function address
          
-    5.  Add code to wps-display.c function get_tag to assign a printk-like 
+    5.  Add code to wps-display.c function get_tag to assign a DEBUG_ID3-like
         format specifier for the tag */
 
 /* Structure for ID3 Tag extraction information */
@@ -621,7 +630,7 @@ static void setid3v2title(int fd, struct mp3entry *entry)
         if(framelen >= buffersize - bufferpos)
             framelen = buffersize - bufferpos - 1;
 
-        printf("id3v2 frame: %.4s\n", header);
+        DEBUG_ID3("id3v2 frame: %.4s\n", header);
 
         /* Check for certain frame headers
 
@@ -718,7 +727,7 @@ static int getid3v2len(int fd)
         else
             offset = UNSYNC(buf[0], buf[1], buf[2], buf[3]) + 10;
 
-    printf("ID3V2 Length: 0x%x\n", offset);
+    DEBUG_ID3("ID3V2 Length: 0x%x\n", offset);
     return offset;
 }
 
@@ -745,7 +754,7 @@ static int getsonglength(int fd, struct mp3entry *entry)
 
     bytecount = get_mp3file_info(fd, &info);
 
-    printf("Space between ID3V2 tag and first audio frame: 0x%x bytes\n",
+    DEBUG_ID3("Space between ID3V2 tag and first audio frame: 0x%x bytes\n",
            bytecount);
 
     if(bytecount < 0)
@@ -783,7 +792,7 @@ static int getsonglength(int fd, struct mp3entry *entry)
     
     /* Update the seek point for the first playable frame */
     entry->first_frame_offset = bytecount;
-    printf("First frame is at %x\n", entry->first_frame_offset);
+    DEBUG_ID3("First frame is at %x\n", entry->first_frame_offset);
 
     return filetime;
 }

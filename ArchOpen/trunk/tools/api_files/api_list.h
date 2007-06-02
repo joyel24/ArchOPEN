@@ -324,7 +324,6 @@ bool         # codec_mustSeek       # int * time
 void         # codec_setElapsed     # int elapsed
 void         # codec_seekDone       #
 bool         # codec_mustContinue   #
-CODEC_INFO * # codec_new            #
 
 #k_inc#snd/output.h
 void       # output_write               # void * buffer, int size

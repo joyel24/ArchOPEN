@@ -52,7 +52,6 @@ static enum mad_flow mad_input(void *data,struct mad_stream *stream){
 
         buffer_seek(pos,SEEK_SET);
 
-
         //find next frame boundary
         red=buffer_read(mp3buf,sizeof(mp3buf));
 
@@ -212,6 +211,8 @@ void mad_tagRequest(char * name,TAG * tag){
     char * genre;
     char s[10];
 
+    printf("[mad] tagRequest()\n");
+
     if(!mp3info(&entry,name,0)){
 
         if(entry.title!=NULL){
@@ -238,7 +239,9 @@ void mad_tagRequest(char * name,TAG * tag){
             tag->genre=strdup(genre);
         }
 
-        tag->year=entry.year;
+        sprintf(s,"%d",entry.year);
+        tag->date=strdup(s);
+
         tag->length=entry.length/(1000/HZ);
         tag->bitRate=entry.bitrate*1000;
         tag->sampleRate=entry.frequency;
@@ -276,13 +279,13 @@ void mad_trackLoop(){
     mad_decoder_finish(&decoder);
 }
 
-void codec_main(CODEC_INFO * info){
+void codec_main(CODEC_GLOBAL_INFO * info){
 
     printf("[mad] main()\n");
 
-    info->globalInfo.description="MAD, MPEG audio codec";
-    info->globalInfo.seekSupported=true;
-    info->globalInfo.trackLoop=mad_trackLoop;
-    info->globalInfo.tagRequest=mad_tagRequest;
+    info->description="MAD, MPEG audio codec";
+    info->seekSupported=true;
+    info->trackLoop=mad_trackLoop;
+    info->tagRequest=mad_tagRequest;
 }
 

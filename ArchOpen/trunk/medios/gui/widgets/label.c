@@ -10,6 +10,8 @@
 * KIND, either express of implied.
 */
 
+#include <lib/string.h>
+
 #include <gui/label.h>
 
 #include <kernel/malloc.h>
@@ -42,6 +44,9 @@ void label_paint(LABEL l){
     int x,y;
     int w,h;
     int of;
+    char * s;
+    char * c;
+    char save;
 
     widget_paint((WIDGET)l);
 
@@ -49,23 +54,45 @@ void label_paint(LABEL l){
 
     gfx_fontSet(l->font);
 
-    gfx_getStringSize(l->caption,&w,&h);
-    y=l->y+(l->height-h)/2;
-    x=0;
+    y=l->y+l->margin;
+    
+    c=l->caption;
+    save='\0';
 
-    switch (l->alignment){
-        case LA_LEFT:
-            x=l->x+l->margin;
-            break;
-        case LA_RIGHT:
-            x=l->x+l->width-l->margin-w;
-            break;
-        case LA_CENTER:
-            x=l->x+(l->width-w)/2;
-            break;
+    while(c!=NULL){
+
+        if(c!=l->caption){
+            *c=save;
+            ++c;
+        }
+
+        s=c;
+
+        c=strpbrk(c,"\n");
+
+        if(c!=NULL){
+            save=*c;
+            *c='\0';
+        }
+
+        gfx_getStringSize(s,&w,&h);
+        x=0;
+
+        switch (l->alignment){
+            case LA_LEFT:
+                x=l->x+l->margin;
+                break;
+            case LA_RIGHT:
+                x=l->x+l->width-l->margin-w;
+                break;
+            case LA_CENTER:
+                x=l->x+(l->width-w)/2;
+                break;
+        }
+        gfx_putS(l->foreColor,l->backColor,x,y,s);
+
+        y+=h;
     }
-
-    gfx_putS(l->foreColor,l->backColor,x,y,l->caption);
 
     gfx_fontSet(of); // restore previous font
 }

@@ -43,6 +43,8 @@ static bool intCmd_doUsbMode(char * param);
 static bool intCmd_doTimeSetting(char * param);
 static bool intCmd_doEnergySetting(char * param);
 static bool intCmd_doMiscSetting(char * param);
+static bool intCmd_doPlayer(char * param);
+static bool intCmd_doPlaylist(char * param);
 
 typedef struct{
     char * command;
@@ -73,6 +75,14 @@ INTERNAL_COMMAND intCmd_commands[] = {
     {
         command:  "set_misc",
         function: intCmd_doMiscSetting
+    },
+    {
+        command:  "player",
+        function: intCmd_doPlayer
+    },
+    {
+        command:  "playlist",
+        function: intCmd_doPlaylist
     },
     /* should always be the last entry */
     {
@@ -212,24 +222,94 @@ static bool intCmd_doUsbMode(char * param){
 
 #include <gui/settings_time.h>
 
-static bool intCmd_doTimeSetting(char * param)
-{
+static bool intCmd_doTimeSetting(char * param){
     clock_setting();
     return true;
 }
 
 #include <gui/settings_energy.h>
 
-static bool intCmd_doEnergySetting(char * param)
-{
+static bool intCmd_doEnergySetting(char * param){
     energy_setting();
-    return true;   
+    return true;
 }
 
 #include <gui/settings_misc.h>
 
-static bool intCmd_doMiscSetting(char * param)
-{
+static bool intCmd_doMiscSetting(char * param){
     misc_setting();
-    return true;   
+    return true;
+}
+
+#include <gui/player.h>
+#include <gui/playlistmenu.h>
+#include <snd/sound.h>
+#include <snd/playlist.h>
+
+static bool intCmd_doPlayer(char * param){
+    char * ext;
+    char * p;
+    PLAYLIST_ITEM * item;
+
+    if(param!=NULL && strlen(param)>0){
+
+        p=strrchr(param,'.');
+
+        ext="";
+        if(p!=NULL){
+            ext=p+1;
+        }
+
+        if(strcmp(ext,"m3u")){ //is it not a playlist?
+
+            p=strrchr(param,'/');
+
+            if(p!=NULL){
+
+                sound_stop();
+
+                //we want only the path part of the filename
+                *p='\0';
+
+                playlist_clear();
+                playlist_addFolder(param,false);
+
+                *p='/';
+
+                //find the item corresponding to the filename
+                item=playlist_first;
+                while(item!=NULL && strcasecmp(param,item->name)){
+                    item=item->next;
+                }
+
+                //play it
+                sound_start();
+                sound_activeItem=item;
+                sound_play(false);
+            }
+
+        }else{
+
+            sound_stop();
+
+            playlist_clear();
+
+            playlist_addM3UPlaylist(param);
+
+            //play the playlist
+            sound_start();
+            sound_activeItem=playlist_first;
+            sound_play(false);
+        }
+    }
+
+    //show player
+    player_eventLoop();
+    return true;
+}
+
+static bool intCmd_doPlaylist(char * param){
+    //show playlist
+    playlistMenu_eventLoop();
+    return true;
 }
