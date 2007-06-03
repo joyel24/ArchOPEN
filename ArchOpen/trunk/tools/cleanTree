@@ -14,7 +14,8 @@ if [ -n "$1" ]; then
 else
 	make clean
 	make -C apps/ clean
-    make -C tools/bin2exploit clean    
+    make -C tools/bin2exploit clean
+    make -C tools/buildTools clean
     rm -f medios/api/api.c
     rm -f include/api.h
     rm -f medios/kernel/api_fct_list.h

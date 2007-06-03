@@ -65,15 +65,16 @@ __attribute__((section(".fwuncomp_code"))) reload_mediosStart(char * buffer, int
 #endif
 #endif
 
-void reload_medios(char * fname)
+MED_RET_T reload_medios(char * fname)
 {
 #ifndef NO_MEDIOS_RELOAD
 #ifndef MEDIOS_POS 
 #error no MEDIOS_POS define for arch
 #endif
     int fd;
-    int size;
+    int size,i,binSize;
     char * filedata;
+    char header[18];
     void (*firmware_start)(void);
     
     printk("[exit] reload Medios from disk\n");
@@ -82,30 +83,55 @@ void reload_medios(char * fname)
     fd=open(fname,O_RDONLY);
     if (fd<0){
         printk("[Reload Medios] can't open file %s !\n",fname);
-        return;
+        return -MED_ERROR;
     }
     
     size=filesize(fd);
     lseek(fd,MEDIOS_POS,SEEK_SET);
-    filedata=(char*)malloc(size-MEDIOS_POS);
+    
+    i=read(fd,header,18);
+    if(i!=18)
+    {
+        printk("Error reading header\n");
+        close(fd);
+        return -MED_ERROR;
+    }
+    
+    /*check magik*/    
+    if(strncmp(&header[4],"MEDIOS",6))
+    {
+        printk("Bad Magik\n");
+        close(fd);
+        return -MED_ERROR;
+    }
+    
+    /* get size */
+    
+    binSize=0;
+    for(i=0;i<4;i++)
+        binSize|=header[i+12]<<(i*8);
+    printk("Bin size = %d-%x\n",binSize,binSize);
+    
+    if(binSize>(size-MEDIOS_POS))
+    {
+        printk("Bad size\n");
+        close(fd);
+        return -MED_ERROR;
+    }
+    
+    filedata=(char*)malloc(binSize);
     
     if(!filedata)
     {
         printk("Can't malloc\n");
-        return;
+        close(fd);
+        return -MED_ERROR;
     }
     
-    read(fd,filedata,size-MEDIOS_POS);
+    lseek(fd,MEDIOS_POS,SEEK_SET);
+    read(fd,filedata,binSize);
     close(fd);
     
-    /*check magik*/
-    
-    if(strncmp(&filedata[4],"MEDIOS",6))
-    {
-        free(filedata);
-        printk("Bad Magik\n");
-        return;
-    }
     
 #ifdef RELOAD_CP_BASE
     reload_mediosStart(filedata,size-MEDIOS_POS);
@@ -114,5 +140,6 @@ void reload_medios(char * fname)
     firmware_start();
 #endif
 #endif
+    return MED_OK;
 }
 

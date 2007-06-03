@@ -10,6 +10,7 @@
 entry_code:
 b real_entry_code
     .asciz "MEDIOS0"
+    .word 0
 real_entry_code:
     /* av3 init */
     mov SP,#0x8000

@@ -162,7 +162,8 @@ static bool intCmd_doReloadMedios(char * param)
 #ifndef MEDIOS_FILE 
 #error no MEDIOS_FILE define for arch
 #endif
-    reload_medios(MEDIOS_FILE);
+    if(reload_medios(MEDIOS_FILE)!=MED_OK)
+        return false;
 #endif
     return true;
 }
@@ -170,7 +171,8 @@ static bool intCmd_doReloadMedios(char * param)
 static bool intCmd_doReloadMediosFile(char * param)
 {
 #ifndef NO_MEDIOS_RELOAD
-    reload_medios(param);
+    if(reload_medios(param)!=MED_OK)
+        return false;
 #endif
     return true;
 }

@@ -10,10 +10,11 @@
 entry_code:
     b real_entry_code
     .asciz "MEDIOS0"
+    .word 0
 real_entry_code:
    /* Gmini402 init */ 
     mov r7,pc
-    sub r7,r7,#20
+    sub r7,r7,#24
 
     /* set UART0 to 115200 bauds */
     ldr r5,=0x30302

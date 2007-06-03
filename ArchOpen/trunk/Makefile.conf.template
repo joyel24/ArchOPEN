@@ -116,6 +116,7 @@ RM=rm
 AR=$(TOOL)-ar
 RANLIB=$(TOOL)-ranlib
 ELF2FLT=arm-linux-elf2flt
+ADDSIZE=tools/buildTools/addSize
 
 SRC = $(wildcard *.c) $(wildcard *.S)
 

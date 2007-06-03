@@ -10,4 +10,5 @@
 entry_code:
     /* no specific init for av1xx*/
     b kernel_entry
-    .asciz "MEDIOS0"    
+    .asciz "MEDIOS0" 
+    .word 0

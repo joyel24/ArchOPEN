@@ -10,10 +10,11 @@
 entry_code:
     b real_entry_code
     .asciz "MEDIOS0"
+    .word 0
 real_entry_code:
    /* av4 init */ 
     mov r7,pc
-    sub r7,r7,#20
+    sub r7,r7,#24
 
     /* copy everything to the sdram start */
     msr cpsr_c, #0xDF /* Disable IRQ+FIQ and set SYS mode */

@@ -14,9 +14,12 @@ incdir:
 	@make -C medios/include/target --no-print-directory incdir
 	@make -C medios/include/target/chip --no-print-directory incdir
                 
+mk_build_tools:
+	@make -C tools/buildTools --no-print-directory
+                
 medios_shell: medios.bin medios.wav medios.avi
         
-medios.bin: incdir mk_api_file subdirs
+medios.bin: incdir mk_api_file mk_build_tools subdirs
 	@echo '-----   Linking medios.bin 1/2'
 	@chmod 777 ./tools/lds_files/create_lds
 	@./tools/lds_files/create_lds init
@@ -25,6 +28,7 @@ medios.bin: incdir mk_api_file subdirs
 	@./tools/lds_files/create_lds final
 	@$(LD) -N -Tmedios.lds -o medios.elf $(KERNEL_OBJS) $(LDFLAGS) -Map medios.map
 	@$(OBJCOPY) -O binary medios.elf medios.bin
+	@$(ADDSIZE) medios.bin
 
 medios_lib: incdir mk_api_file
 	@make -C $(MEDIOS_SRC_PATH)/medios --no-print-directory -s medios_lib

@@ -14,9 +14,11 @@
 #ifndef __EXIT_H
 #define __EXIT_H
 
+#include <sys_def/errors.h>
+
 void halt_device(void);
 void reload_firmware(void);
-void reload_medios(char * fname);
+MED_RET_T reload_medios(char * fname);
 
 void arch_reload_firmware(void);
 void arch_HaltMsg(void);
