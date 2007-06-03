@@ -132,14 +132,15 @@ bool intCmd_execute(char * command,char * param){
 static bool intCmd_doBrowser(char * param){
     struct browser_data * browser;
 
-    browser=browser_NewDualBrowse();
+    //browser=browser_NewDualBrowse();
+    browser=browser_NewBrowse();
 
     if(!browser){
         return false;
     }
 
-    browser->is_dual=1;
-    browser->dual_mode=1;
+   /* browser->is_dual=1;
+    browser->dual_mode=1;*/
     
     browser_browse(browser,param,NULL);
 
