@@ -1,5 +1,5 @@
 /*
- * include/kernel/target/gmini4xx_def.h
+ * include/kernel/G402/arch_def.h
  *
  * mediOS project
  * Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -24,6 +24,9 @@
 #define CONFIG_EXT_CLK 27000000
 
 #define CURRENT_ARCH  GMINI402_ARCH
+
+#define MEDIOS_POS  0x249E00
+#define MEDIOS_FILE "/medios.avi"
 
 /* DEBUG */
 #define DEBUG_UART              UART_0

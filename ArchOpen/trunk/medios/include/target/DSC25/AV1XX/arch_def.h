@@ -1,5 +1,5 @@
 /*
- * include/kernel/target/av3xx_def.h
+ * include/kernel/AV1XX/arch_def.h
  *
  * mediOS project
  * Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -7,8 +7,8 @@
  * This file contains the hardware definitions of the AV3XX series machines
  */
 
-#ifndef __AV3XX_DEF_H
-#define __AV3XX_DEF_H
+#ifndef __AV1XX_DEF_H
+#define __AV1XX_DEF_H
 
 #include <sys_def/arch.h>
 
@@ -24,6 +24,10 @@
 #define CONFIG_EXT_CLK 27000000
 
 #define CURRENT_ARCH  AV1XX_ARCH
+
+#define MEDIOS_POS  0x0
+#define MEDIOS_FILE "/medios.bin"
+#define RELOAD_CP_BASE
 
 /* DEBUG */
 #define DEBUG_UART              UART_1

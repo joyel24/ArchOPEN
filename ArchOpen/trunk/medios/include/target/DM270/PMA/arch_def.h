@@ -1,5 +1,5 @@
 /*
- * include/kernel/AV4XX/arch_def.h
+ * include/kernel/PMA/arch_def.h
  *
  * mediOS project
  * Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -25,6 +25,10 @@
 #define CONFIG_EXT_CLK 27000000
 
 #define CURRENT_ARCH  PMA_ARCH
+
+#define NO_MEDIOS_RELOAD
+//#define MEDIOS_POS  0x3d1c00
+//#define MEDIOS_FILE "/medios.avi"
 
 /* DEBUG */
 #define DEBUG_UART                        UART_0

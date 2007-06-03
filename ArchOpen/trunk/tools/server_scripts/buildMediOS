@@ -54,7 +54,8 @@ buildAndReport ${makeResult} ${reportFile} ${phpReport} ${arch}
 
 rm -f ${distribPath}/*.bin ${distribPath}/*.avi ${distribPath}/*.wav
 cp -f medios.${ext} ${distribPath}
-rm -f ${distribPath}/codec/*
+rm -f ${distribPath}/medios/codec/*
+cp -f codec/* ${distribPath}/medios/codec/
 cd ${distribPath}
 zip -r9 ${basePath}/${zipDistrib} *
 cd ${basePath}

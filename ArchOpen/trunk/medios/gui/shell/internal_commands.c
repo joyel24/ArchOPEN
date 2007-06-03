@@ -45,6 +45,7 @@ static bool intCmd_doEnergySetting(char * param);
 static bool intCmd_doMiscSetting(char * param);
 static bool intCmd_doPlayer(char * param);
 static bool intCmd_doPlaylist(char * param);
+static bool intCmd_doReloadMedios(char * param);
 
 typedef struct{
     char * command;
@@ -59,6 +60,10 @@ INTERNAL_COMMAND intCmd_commands[] = {
     {
         command:  "reload_firmware",
         function: intCmd_doReloadFirmware
+    },
+    {
+        command:  "reload_medios",
+        function: intCmd_doReloadMedios
     },
     {
         command:  "usb_mode",
@@ -122,12 +127,15 @@ bool intCmd_execute(char * command,char * param){
 static bool intCmd_doBrowser(char * param){
     struct browser_data * browser;
 
-    browser=browser_NewBrowse();
+    browser=browser_NewDualBrowse();
 
     if(!browser){
         return false;
     }
 
+    browser->is_dual=1;
+    browser->dual_mode=1;
+    
     browser_browse(browser,param,NULL);
 
     browser_disposeBrowse(browser);
@@ -139,6 +147,12 @@ static bool intCmd_doReloadFirmware(char * param){
 
     reload_firmware();
 
+    return true;
+}
+
+static bool intCmd_doReloadMedios(char * param)
+{
+    reload_medios();
     return true;
 }
 

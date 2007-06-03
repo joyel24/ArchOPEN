@@ -58,8 +58,8 @@ $nb_arch=count($arch_list);
 
 <H1><a name='icons'>Config files and Icons</a></H1>
  
-The full medios folder with icons and config files :  <a href='/tiki-download_file.php?fileId=52'>ZIP</a><br>
-Unpack the zip and put the medios folder it contains in the root folder of your device.
+The full medios folder with icons and config files :  <a href='builds/iconsCfg.zip'>ZIP</a><br>
+Unpack the zip and put the medios folder it contains in the root folder of your device. Make sure you overwrite existing files.
 
 <H1><a name='dist'>Full distribution<a></H1>
 

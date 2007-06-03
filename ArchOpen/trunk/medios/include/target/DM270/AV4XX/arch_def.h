@@ -27,6 +27,9 @@
 
 #define CURRENT_ARCH  AV4XX_ARCH
 
+#define MEDIOS_POS  0x3d1c00
+#define MEDIOS_FILE "/medios.avi"
+
 /* DEBUG */
 #define DEBUG_UART                        UART_0
 #define CMD_LINE_UART                     UART_0

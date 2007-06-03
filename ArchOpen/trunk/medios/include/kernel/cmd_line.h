@@ -29,6 +29,7 @@ void do_run (unsigned char ** params);
 void do_tasks (unsigned char ** params);
 void do_halt (unsigned char ** params);
 void do_reload (unsigned char ** params);
+void do_reloadMedios (unsigned char ** params);
 void print_handler_info (unsigned char ** params);
 void do_memory_dump (unsigned char ** params);
 void do_reg_print (unsigned char ** params);

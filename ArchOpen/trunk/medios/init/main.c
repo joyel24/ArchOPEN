@@ -147,13 +147,7 @@ void kernel_thread(void)
     reload_firmware();
 #endif
             
-    //sound_start();
-    //gfx_initGraphics();  
-    //gfx_clearScreen(COLOR_WHITE);
-    //screens_show(SCREEN_GFX);
-    //gfx_fontSet(STD6X9);
-    //sound_playFile("/_mus/file.ogg");     
-            
+         
     shell_main();
 
     printk("[SYS thread] error: back to main()\n");

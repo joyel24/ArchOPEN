@@ -73,7 +73,7 @@ struct cmd_line_s cmd_tab[] = {
         nb_args    : 0
     },
     {
-        cmd        : "reload",
+        cmd        : "restart",
         help_str   : "Reloads the firmware",
         cmd_action : do_reload,
         nb_args    : 0
@@ -212,6 +212,12 @@ struct cmd_line_s cmd_tab[] = {
         cmd_action : do_cat,
         nb_args    : 1
     },
+    {
+        cmd        : "reload",
+        help_str   : "Reload medios from medios bin on HDD",
+        cmd_action : do_reloadMedios,
+        nb_args    : 0
+    },
     /* this has to be the last entry */
     {
         cmd        : NULL,
@@ -247,6 +253,11 @@ void do_halt (unsigned char ** params)
 void do_reload (unsigned char ** params)
 {
     reload_firmware();
+}
+
+void do_reloadMedios (unsigned char ** params)
+{
+    reload_medios();
 }
 
 void print_handler_info (unsigned char ** params)

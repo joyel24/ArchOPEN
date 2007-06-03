@@ -22,6 +22,7 @@ rm -Rf build/*
 echo "Cpy SRC folder"
 cp -Rf ArchOpen/trunk build/
 cd build/trunk
+echo "Clean SVN entry"
 rmSVN_folder
 cd ~/archopen_src
 
@@ -34,6 +35,12 @@ mkdir ${distribPath}/medios
 mkdir ${distribPath}/medios/apps
 mkdir ${distribPath}/medios/codec
 cp -Rf build/trunk/tools/medios_files/* ${distribPath}/medios/
+
+cd ${distribPath}
+zip -r iconsCfg.zip  ./
+mvFtp builds iconsCfg.zip
+
+cd ~/archopen_src
 
 #building meds apps
 buildMediosApps ${phpReportPath}${phpReportFile} ${savPath} ${distribPath}

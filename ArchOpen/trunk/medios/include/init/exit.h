@@ -16,6 +16,8 @@
 
 void halt_device(void);
 void reload_firmware(void);
+void reload_medios(void);
+
 void arch_reload_firmware(void);
 void arch_HaltMsg(void);
 
