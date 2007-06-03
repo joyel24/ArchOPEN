@@ -10,6 +10,7 @@
 #include <kernel/io.h>
 #include <kernel/irq.h>
 #include <kernel/delay.h>
+#include <kernel/malloc.h>
 
 #include <driver/ata.h>
 #include <driver/hardware.h>
@@ -18,6 +19,8 @@
 #include <fs/stdfs.h>
 
 #include <init/exit.h>
+
+#include <lib/string.h>
 
 __IRAM_DATA int powering_off = 0;
 
@@ -62,14 +65,11 @@ __attribute__((section(".fwuncomp_code"))) reload_mediosStart(char * buffer, int
 #endif
 #endif
 
-void reload_medios(void)
+void reload_medios(char * fname)
 {
 #ifndef NO_MEDIOS_RELOAD
 #ifndef MEDIOS_POS 
 #error no MEDIOS_POS define for arch
-#endif
-#ifndef MEDIOS_FILE 
-#error no MEDIOS_FILE define for arch
 #endif
     int fd;
     int size;
@@ -79,9 +79,9 @@ void reload_medios(void)
     printk("[exit] reload Medios from disk\n");
     
     /* opening medios.avi */
-    fd=open(MEDIOS_FILE,O_RDONLY);
+    fd=open(fname,O_RDONLY);
     if (fd<0){
-        printk("[Reload Medios] can't open file %s !\n",MEDIOS_FILE);
+        printk("[Reload Medios] can't open file %s !\n",fname);
         return;
     }
     
@@ -97,6 +97,15 @@ void reload_medios(void)
     
     read(fd,filedata,size-MEDIOS_POS);
     close(fd);
+    
+    /*check magik*/
+    
+    if(strncmp(&filedata[4],"MEDIOS",6))
+    {
+        free(filedata);
+        printk("Bad Magik\n");
+        return;
+    }
     
 #ifdef RELOAD_CP_BASE
     reload_mediosStart(filedata,size-MEDIOS_POS);

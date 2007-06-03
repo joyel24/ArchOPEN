@@ -28,6 +28,7 @@
 #define MEDIOS_POS  0x0
 #define MEDIOS_FILE "/medios.bin"
 #define RELOAD_CP_BASE
+#define MEDIOS_EXT "bin"
 
 /* DEBUG */
 #define DEBUG_UART              UART_1

@@ -8,9 +8,12 @@
 .section ".text.init.arch"
 .global entry_code
 entry_code:
-    /* get starting address */
+    b real_entry_code
+    .asciz "MEDIOS0"
+real_entry_code:
+   /* Gmini402 init */ 
     mov r7,pc
-    sub r7,r7,#8
+    sub r7,r7,#20
 
     /* set UART0 to 115200 bauds */
     ldr r5,=0x30302

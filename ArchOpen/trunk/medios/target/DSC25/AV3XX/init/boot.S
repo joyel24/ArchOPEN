@@ -8,6 +8,9 @@
 .section ".text.init.arch"
 .global entry_code
 entry_code:
+b real_entry_code
+    .asciz "MEDIOS0"
+real_entry_code:
     /* av3 init */
     mov SP,#0x8000
     ldr r0,=0x30920

@@ -1,6 +1,6 @@
 /*
 *   kernel/target/arch/boot.S
-*   Av1XX boot
+*   Av4XX boot
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
 *
@@ -8,10 +8,12 @@
 .section ".text.init.arch"
 .global entry_code
 entry_code:
-
+    b real_entry_code
+    .asciz "MEDIOS0"
+real_entry_code:
    /* av4 init */ 
     mov r7,pc
-    sub r7,r7,#8
+    sub r7,r7,#20
 
     /* copy everything to the sdram start */
     msr cpsr_c, #0xDF /* Disable IRQ+FIQ and set SYS mode */

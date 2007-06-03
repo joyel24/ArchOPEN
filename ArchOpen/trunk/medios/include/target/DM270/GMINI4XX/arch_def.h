@@ -27,6 +27,7 @@
 
 #define MEDIOS_POS  0x9C00
 #define MEDIOS_FILE "/medios.wav"
+#define MEDIOS_EXT "wav"
 
 /* DEBUG */
 #define DEBUG_UART              UART_0

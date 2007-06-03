@@ -96,6 +96,7 @@ void browser_setPath(char * path,struct browser_data *bdata);
 
 void browser_disposeBrowse(struct browser_data * bdata);
 struct browser_data * browser_NewBrowse(void);
+struct browser_data * browser_NewDualBrowse(void);
 
 /*****    ls_fct    *****/
 int  qSortEntry  (const void * a1,const void * a2);

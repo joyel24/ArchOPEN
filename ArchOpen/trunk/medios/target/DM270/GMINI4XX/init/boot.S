@@ -8,7 +8,12 @@
 .section ".text.init.arch"
 .global entry_code
 entry_code:
-    /* g4 init */
+    b real_entry_code
+    .asciz "MEDIOS0"
+real_entry_code:
+   /* Gmini402 init */ 
+    mov r7,pc
+    sub r7,r7,#20
 
     /* set UART0 to 115200 bauds */
     ldr r5,=0x30302
@@ -39,7 +44,8 @@ entry_code:
     mov r3,#0x20
     ldr r4,=0x30500
 
-    mov r0, #0xc10000
+    @mov r0, #0xc10000
+    mov r0, r7
     mov r1, #0x900000
 
     /* don't copy the .bss part */

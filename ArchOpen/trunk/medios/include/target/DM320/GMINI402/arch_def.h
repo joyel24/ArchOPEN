@@ -27,6 +27,7 @@
 
 #define MEDIOS_POS  0x249E00
 #define MEDIOS_FILE "/medios.avi"
+#define MEDIOS_EXT "avi"
 
 /* DEBUG */
 #define DEBUG_UART              UART_0

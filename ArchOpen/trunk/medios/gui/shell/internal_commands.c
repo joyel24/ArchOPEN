@@ -46,6 +46,7 @@ static bool intCmd_doMiscSetting(char * param);
 static bool intCmd_doPlayer(char * param);
 static bool intCmd_doPlaylist(char * param);
 static bool intCmd_doReloadMedios(char * param);
+static bool intCmd_doReloadMediosFile(char * param);
 
 typedef struct{
     char * command;
@@ -64,6 +65,10 @@ INTERNAL_COMMAND intCmd_commands[] = {
     {
         command:  "reload_medios",
         function: intCmd_doReloadMedios
+    },
+    {
+        command:  "reload_mediosFile",
+        function: intCmd_doReloadMediosFile
     },
     {
         command:  "usb_mode",
@@ -152,7 +157,20 @@ static bool intCmd_doReloadFirmware(char * param){
 
 static bool intCmd_doReloadMedios(char * param)
 {
-    reload_medios();
+#ifndef NO_MEDIOS_RELOAD 
+#ifndef MEDIOS_FILE 
+#error no MEDIOS_FILE define for arch
+#endif
+    reload_medios(MEDIOS_FILE);
+#endif
+    return true;
+}
+
+static bool intCmd_doReloadMediosFile(char * param)
+{
+#ifndef NO_MEDIOS_RELOAD
+    reload_medios(param);
+#endif
     return true;
 }
 
