@@ -29,6 +29,7 @@
 
 #include <fs/disk.h>
 #include <fs/vfs.h>
+#include <fs/stdfs.h>
 
 #include <gfx/graphics.h>
 
@@ -47,6 +48,7 @@ static bool intCmd_doPlayer(char * param);
 static bool intCmd_doPlaylist(char * param);
 static bool intCmd_doReloadMedios(char * param);
 static bool intCmd_doReloadMediosFile(char * param);
+static bool intCmd_doFlashDump(char * param);
 
 typedef struct{
     char * command;
@@ -93,6 +95,10 @@ INTERNAL_COMMAND intCmd_commands[] = {
     {
         command:  "playlist",
         function: intCmd_doPlaylist
+    },
+    {
+        command:  "flashDump",
+        function: intCmd_doFlashDump
     },
     /* should always be the last entry */
     {
@@ -348,3 +354,18 @@ static bool intCmd_doPlaylist(char * param){
     playlistMenu_eventLoop();
     return true;
 }
+
+static bool intCmd_doFlashDump(char * param){
+    int fd,size;
+    
+    fd=open("/flash.bin",O_WRONLY|O_CREAT);
+    if (fd<0){
+        printk("[Dump] can't open file /flash.bin !\n");
+        return true;
+    }
+    size=write(fd,(char*)0x100000,0x100000);
+    printk("Wrote :%x\n",size);
+    close(fd);
+    return true;
+}
+

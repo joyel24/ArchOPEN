@@ -121,7 +121,7 @@ int  viewNewDir         (struct browser_data *bdata,char *name);
 void printName          (struct dir_entry * dEntry,int pos,int clear,int selected,struct browser_data *bdata);
 void printAllName       (struct browser_data *bdata);
 void printAName         (struct browser_data *bdata,int pos, int nselect, int clear, int selected);
-void printLongName      (int pos,int selected,struct browser_data *bdata);
+void printLongName      (int pos,int relPos,int selected,struct browser_data *bdata);
 void createSizeString   (char * str,int Isize);
 void clearBrowser       (struct browser_data *bdata);
 void redrawBrowser      (struct browser_data *bdata);

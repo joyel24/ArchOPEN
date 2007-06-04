@@ -135,7 +135,7 @@ char button_to_key[2][NB_DOOM_BUTTONS]=
   DOOM_KEY_MENUOK,DOOM_KEY_NONE,
   DOOM_KEY_MENUOK,DOOM_KEY_DOOMMENU}};
 #endif
-#if defined(AV4XX) || defined(PMA)
+#if defined(AV4XX) || defined(PMA) || defined(AV5XX)
   char button_to_key[2][NB_DOOM_BUTTONS]=
   // ingame
 {{DOOM_KEY_UP,DOOM_KEY_DOWN,DOOM_KEY_LEFT,DOOM_KEY_RIGHT,
@@ -242,8 +242,7 @@ void display_getRealSize(){
 #if defined(GMINI4XX) || defined(GMINI402)
             realscreenwidth=224;
             realscreenheight=176;
-#endif
-#if defined(AV3XX) || defined(AV4XX) || defined(PMA)
+#else
             realscreenwidth=320;
             realscreenheight=200;
 #endif
@@ -402,8 +401,7 @@ void I_FinishUpdate (void)
   }else{
     memcpy(offset2,offset1,SCREENWIDTH*SCREENHEIGHT);
   }
-#endif
-#if defined(AV3XX) || defined(AV4XX) || defined(PMA)
+#else
     memcpy(offset2,offset1,SCREENWIDTH*realscreenheight);
 #endif
 }
@@ -453,7 +451,11 @@ void I_InitGraphics(void)
   gfx_planeSetSize(BMAP1,SCREENWIDTH,SCREENHEIGHT,8);
 
   gfx_planeGetPos(BMAP1,&screen_initialX,&screen_initialY);
-
+/*
+#if defined(AV5XX)
+  gfx_planeSetPos(BMAP1,screen_initialX+80,&screen_initialY+36);
+#endif
+  */
 #if defined(GMINI4XX) || defined(GMINI402)
   InitResizeLookups();
 #endif

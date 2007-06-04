@@ -58,13 +58,13 @@ MED_RET_T browserEvt(struct browser_data * bdata)
                 {
                     if(bdata->list[i].name_size>bdata->max_entry_length)
                     {
-                        printLongName(i,i==bdata->nselect,bdata);
+                        printLongName(i,i-bdata->pos,(i-bdata->pos)==bdata->nselect,bdata);
                     }
                 }
                 break;
             case EVT_CF_IN:
             case EVT_CF_OUT:
-                if(!viewNewDir(bdata,"/"))
+                if(viewNewDir(bdata,"/")!=MED_OK)
                     stop=1;
                 break;
             case BTN_OFF:
@@ -189,7 +189,7 @@ MED_RET_T browserEvt(struct browser_data * bdata)
                     {
                         case TYPE_BACK:
                             upDir(bdata);
-                            if(!viewNewDir(bdata,NULL))
+                            if(viewNewDir(bdata,NULL)!=MED_OK)
                             {
                                 stop=1;
                                 break;
@@ -197,7 +197,7 @@ MED_RET_T browserEvt(struct browser_data * bdata)
                             break;
                         case TYPE_DIR:
                             inDir(bdata,bdata->list[bdata->pos+bdata->nselect].name);
-                            if(!viewNewDir(bdata,NULL))
+                            if(viewNewDir(bdata,NULL)!=MED_OK)
                             {
                                 stop=1;
                                 break;
@@ -236,7 +236,7 @@ MED_RET_T browserEvt(struct browser_data * bdata)
             case BTN_LEFT:
                 if(upDir(bdata))
                 {
-                    if(!viewNewDir(bdata,NULL))
+                    if(viewNewDir(bdata,NULL)!=MED_OK)
                     {
                         stop=1;
                         break;

@@ -107,7 +107,7 @@ struct browser_data * browser_NewDualBrowse(void)
     iniBrowserData(ptr);
     
     ptr->is_dual=1;
-    
+
     ptr->dual=(struct browser_data *)malloc(sizeof(struct browser_data));
     if(!ptr->dual)
     {

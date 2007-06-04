@@ -130,9 +130,9 @@ void kernel_thread(void)
         printk("[init] ------ Halting\n");
         for(;;);
     }
-    
+#ifdef BUILD_LIB    
     sound_init();
-    
+#endif    
     energy_loadPref();
     misc_loadPref();
     

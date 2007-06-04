@@ -100,8 +100,7 @@ void gui_init(){
     menu=widgetMenu_create();
 #if defined(GMINI4XX) || defined(GMINI402)
     menu->setRect(menu,0,0,220,176);
-#endif
-#if defined(AV4XX) || defined(AV3XX) || defined(PMA)
+#else
     menu->setRect(menu,0,0,320,200);
 #endif
     menu->ownItems=true; // the menu will handle items destroy
@@ -290,7 +289,7 @@ void gui_welcomeScreen(){
     int y=0;
 
     gfx_clearScreen(COLOR_WHITE);
-    gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y,       "aoDoom v0.3");
+    gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y,       "aoDoom v1.0");
     gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "===========");
 
 #if defined(GMINI4XX) || defined(GMINI402)
@@ -316,7 +315,7 @@ void gui_welcomeScreen(){
     gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "  Off:      Doom menu");
 #endif
 
-#if defined(AV4XX) || defined(PMA)
+#if defined(AV4XX) || defined(PMA) || defined(AV5XX)
     gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=18,   "Keys:");
     gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "  D-Pad:  Move");
     gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "  LCD/TV: Shoot");

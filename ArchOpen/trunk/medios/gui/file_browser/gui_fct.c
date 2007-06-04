@@ -25,6 +25,7 @@
 #include <gui/icons.h>
 #include <gui/file_browser.h>
 
+#include <driver/lcd.h>
 
 BITMAP * gui_ls_upBitmap;
 BITMAP * gui_ls_dwBitmap;
@@ -53,14 +54,14 @@ void iniBrowser(void)
     gui_ls_imageBitmap=&icon_get("imageBitmap")->bmap_data;
 }
 
-int viewNewDir(struct browser_data *bdata,char *name)
+MED_RET_T viewNewDir(struct browser_data *bdata,char *name)
 {
     if(name!=NULL)
     {
         if(strlen(name)>PATHLEN)
         {
            // msgBox("ERROR - Browser", "Can't load dir, path too long", MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR);
-            return 0;
+            return -MED_ERROR;
         }
         strcpy(bdata->path,name);
     }
@@ -71,7 +72,7 @@ int viewNewDir(struct browser_data *bdata,char *name)
     {
         cleanList(bdata);
         //msgBox("ERROR - Browser", "Can't load dir", MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR);
-        return 0;
+        return -MED_ERROR;
     }
 
     // compute nb_disp_entry if none is given
@@ -101,30 +102,54 @@ int viewNewDir(struct browser_data *bdata,char *name)
     bdata->nselect=0;
     redrawBrowser(bdata);
 
-    return 1;
+    return MED_OK;
 }
 
 int browser_browse(struct browser_data *bdata,char * path,char * res)
 {
-    if(viewNewDir(bdata,path))
+    if(bdata->is_dual && bdata->dual_mode!=0 && bdata->dual != NULL)
     {
-        if(browserEvt(bdata)==MED_OK)
-        {
-            if(bdata->mode==MODE_STRING && res)
-            {
-                if(bdata->path[0]=='/' && bdata->path[1]=='\0')
-                    sprintf(res,"/%s",bdata->list[bdata->pos+bdata->nselect].name);
-                else
-                    sprintf(res,"%s/%s",bdata->path,bdata->list[bdata->pos+bdata->nselect].name);
-            }
-            return MED_OK;
-        }
-        else
-        {
+        /*dual screen mode => recompute position/width*/
+        bdata->x_start=0;
+        bdata->y_start=0;
+        bdata->width=LCD_WIDTH/2;
+        bdata->height=LCD_HEIGHT;
+        bdata->dual->x_start=LCD_WIDTH/2;
+        bdata->dual->y_start=0;
+        bdata->dual->width=LCD_WIDTH/2;
+        bdata->dual->height=LCD_HEIGHT;
+        /* draw main screen */
+        if(viewNewDir(bdata,path)!=MED_OK)
             return -MED_ERROR;
-        }
+        /* draw second screen */
+        if(viewNewDir(bdata->dual,path)!=MED_OK)
+            return -MED_ERROR;        
     }
-    return -MED_ERROR;
+    else
+    {
+        /* single screen mode => recompute position/width*/
+        bdata->x_start=0;
+        bdata->y_start=0;
+        bdata->width=LCD_WIDTH;
+        bdata->height=LCD_HEIGHT;
+        /* draw screen */
+        if(viewNewDir(bdata,path)!=MED_OK)
+            return -MED_ERROR;
+    }
+    
+    /* start evt loop */
+    
+    if(browserEvt(bdata)!=MED_OK)
+        return -MED_ERROR;
+    
+    if(bdata->mode==MODE_STRING && res)
+    {
+        if(bdata->path[0]=='/' && bdata->path[1]=='\0')
+            sprintf(res,"/%s",bdata->list[bdata->pos+bdata->nselect].name);
+        else
+            sprintf(res,"%s/%s",bdata->path,bdata->list[bdata->pos+bdata->nselect].name);
+    }
+    return MED_OK;
 }
 
 int browser_simpleBrowse(char * path,char * res)
@@ -243,11 +268,11 @@ void printName(struct dir_entry * dEntry,int pos,int clear,int selected,struct b
     }
 }
 
-void printLongName(int pos,int selected,struct browser_data *bdata)
+void printLongName(int pos,int relPos,int selected,struct browser_data *bdata)
 {
     int             H=bdata->entry_height;
     int             X=bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0);
-    int             Y=bdata->y_start+pos*H;
+    int             Y=bdata->y_start+relPos*H;
     char            c;
     int             color=COLOR_BLACK;
     int             select_color=COLOR_BLUE;
@@ -276,6 +301,7 @@ void printLongName(int pos,int selected,struct browser_data *bdata)
     c=bdata->list[pos].cur_name[bdata->max_entry_length];
     bdata->list[pos].cur_name[bdata->max_entry_length]=0;
     gfx_putS(color, select_color,X+BROWSER_ICON_WIDTH, Y,bdata->list[pos].cur_name);
+    
     bdata->list[pos].cur_name[bdata->max_entry_length]=c;
 }
 

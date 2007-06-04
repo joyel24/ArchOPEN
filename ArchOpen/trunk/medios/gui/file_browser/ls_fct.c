@@ -181,7 +181,8 @@ int doLs(struct browser_data * bdata)
         }
     }
 
-    printk( "[dols] folder parsed: find %d files %d folder => %d entires\n",bdata->nbFile,bdata->nbDir,bdata->listused);
+    printk( "[dols] folder parsed: find %d files %d folder => %d entires\n",
+                bdata->nbFile,bdata->nbDir,bdata->listused);
 
     closedir(dirp);
 
