@@ -54,6 +54,8 @@ SHELL_HANDLER shell_lastHandler = NULL;
 
 int shell_eventHandler = -1;
 
+bool shell_isInitialized = false;
+
 static void shell_loop(){
     int event;
 
@@ -292,9 +294,8 @@ void shell_restore(){
     evt_send(&evt);
 }
 
-void shell_main()
-{
-    
+void shell_main(){
+
     gfx_initGraphics();
     gfx_clearScreen(COLOR_WHITE);
 
@@ -308,7 +309,7 @@ void shell_main()
     if(!shell_parseHandlers(SHELL_HANDLERS_FILE)){
         printk("[shell] error reading handlers file\n");
     }
-    
+
     // init shell menu
     if (shellMenu_init()){
 
@@ -316,22 +317,52 @@ void shell_main()
         statusLine_init();
 
         // init player & playlist
-        playlistMenu_init();
         player_init();
+        playlistMenu_init();
+
+        shell_isInitialized=true;
 
         // initial paint
         shell_restore();
 
         screens_show(SCREEN_GFX);
-        
+
         // main loop (never returns)
         shell_loop();
 
     }
+}
 
-    // cleanup
-    shellMenu_close();
-    gfx_closeGraphics();
 
-    evt_freeHandler(shell_eventHandler);
+void shell_close(){
+    SHELL_HANDLER h;
+    SHELL_HANDLER prev;
+
+    printk("[shell] closing\n");
+
+    if(shell_isInitialized){
+
+        player_close();
+        playlistMenu_close();
+    
+        shellMenu_close();
+    
+        gfx_closeGraphics();
+        evt_freeHandler(shell_eventHandler);
+    
+        // free handlers
+        h=shell_firstHandler;
+        while(h!=NULL){
+            // free strings
+            if(h->ext!=NULL) free(h->ext);
+            if(h->handler!=NULL) free(h->handler);
+    
+            // get next item pointer before freeing item
+            prev=h;
+    
+            h=h->next;
+    
+            free(prev);
+        }
+    }
 }

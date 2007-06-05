@@ -122,6 +122,7 @@ void playlistMenu_build(){
         mi=textMenuItem_create();
         mi->caption=pi->name;
         mi->data=pi;
+        mi->font=player_playlistFont;
         mi->paint=(WIDGET_PAINTHANDLER)playlistMenu_itemPaint;
 
         playlistMenu->addItem(playlistMenu,mi);
@@ -164,11 +165,16 @@ void playlistMenu_eventLoop(){
 }
 
 void playlistMenu_init(){
+    int h;
+
+    gfx_fontSet(player_playlistFont);
+    gfx_getStringSize("W",NULL,&h);
 
     playlistMenu=textMenu_create();
     playlistMenu->setRect(playlistMenu,0,SHELL_STATUS_HEIGHT,LCD_WIDTH,LCD_HEIGHT-SHELL_STATUS_HEIGHT);
     playlistMenu->onClick=(MENU_CLICKEVENT)playlistMenu_onClick;
     playlistMenu->font=player_playlistFont;
+    playlistMenu->itemHeight=h;
 
     playlistMenu_eventHandler=evt_getHandler(ALL_CLASS);
 
@@ -179,4 +185,10 @@ void playlistMenu_init(){
     playlistMenu_timer.action=playlistMenu_timerAction;
     playlistMenu_timer.freeRun=1;
     playlistMenu_timer.stdDelay=HZ/5;
+}
+
+void playlistMenu_close(){
+    evt_freeHandler(playlistMenu_eventHandler);
+    playlistMenu->destroy(playlistMenu);
+    tmr_remove(&playlistMenu_timer);
 }

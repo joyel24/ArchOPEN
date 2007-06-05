@@ -288,7 +288,6 @@ void player_eventLoop(){
             case BTN_OFF:
                 sound_stop();
                 playlist_clear();
-                player_writeCfg();
                 wantQuit=true;
                 break;
         }
@@ -459,4 +458,15 @@ void player_init(){
     player_timer.stdDelay=HZ/10;
 
     player_applyCfg();
+}
+
+void player_close(){
+
+    sound_stop();
+    playlist_clear();
+    player_writeCfg();
+
+    player_widgetList->destroy(player_widgetList);
+    evt_freeHandler(player_eventHandler);
+    tmr_remove(&player_timer);
 }

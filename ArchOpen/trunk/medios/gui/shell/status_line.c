@@ -308,7 +308,7 @@ void statusLine_init(void)
             return;
         }
         cfg_writeInt(cfg,"is12H",time_format);
-        cfg_writeInt(cfg,"isMMDD",date_format);
+        cfg_writeInt(cfg,"isMMDDYYYY",date_format);
         cfg_writeFile(cfg,"/medios/medios.cfg");
     }
     else

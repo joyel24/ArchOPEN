@@ -34,5 +34,6 @@ extern int player_playlistFont;
 void player_refresh(bool full);
 void player_eventLoop();
 void player_init();
+void player_close();
 
 #endif

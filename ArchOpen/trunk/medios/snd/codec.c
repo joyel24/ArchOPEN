@@ -50,7 +50,7 @@ static void codec_threadFunction(){
         codec_startRequested=false;
 
         // make sure output params are correctly set up
-        //output_outputParamsChanged();
+        output_outputParamsChanged();
 
         // call trackloop
         if(codec_current->globalInfo.trackLoop!=NULL){
@@ -67,6 +67,111 @@ static void codec_threadFunction(){
         }
     }
 };
+
+static void codec_findCodecs(){
+    DIR * codec_folder;
+    int fd;
+    struct dirent * entry;
+    char header[4];
+    CODEC_INFO * cInfo;
+    char item_size;
+    char * fname;
+
+    /* searching for codecs */
+    codec_folder=opendir(CODECS_DIR);
+    if(codec_folder)
+    {
+        while((entry=readdir(codec_folder))!=NULL)
+        {
+            fname=(char*)malloc(strlen(entry->d_name)+strlen(CODECS_DIR)+1);
+            strcpy(fname,CODECS_DIR);
+            strcat(fname,entry->d_name);
+            if(entry->type!=VFS_TYPE_FILE)
+            {
+                printk("discard: not a file");
+                free(fname);
+                continue;
+            }
+            fd=open(fname,O_RDONLY);
+            if(fd<0)
+            {
+                printk("Error opening file: %d\n",-fd);
+                free(fname);
+                continue; 
+            }
+            /* is is a codec file ?*/
+            if(read(fd,header,4)!=4)
+            {
+                printk("Can't read Header\n");
+                free(fname);
+                close(fd);
+                continue;
+            }
+            
+            if(strncmp(header,"CDEC",4))
+            {
+                printk("Not a codec file\n");
+                free(fname);
+                close(fd);
+                continue;   
+            }
+            
+            /* created codec info */
+            cInfo=codec_new();
+            cInfo->filename=fname;
+            cInfo->fOffset=5;
+            if(read(fd,(void*)&item_size,1)!=1)
+            {
+                printk("Can't read name size\n");
+                free(fname);
+                close(fd);
+                codec_remove(cInfo);
+                continue;
+            }
+            cInfo->fOffset+=(item_size+1);
+            cInfo->name=(char*)malloc(item_size+1);
+            if(read(fd,cInfo->name,item_size)!=item_size)
+            {
+                printk("Can't read name\n");
+                free(fname);
+                close(fd);
+                codec_remove(cInfo);
+                continue;
+            }
+            cInfo->name[(int)item_size]='\0'; /*leading zero*/
+            if(read(fd,(void*)&item_size,1)!=1)
+            {
+                printk("Can't read extension list size\n");
+                free(fname);
+                free(cInfo->name);
+                close(fd);
+                codec_remove(cInfo);
+                continue;
+            }
+            cInfo->fOffset+=item_size;
+            cInfo->extensions=(char*)malloc(item_size+1);
+            if(read(fd,cInfo->extensions,item_size)!=item_size)
+            {
+                printk("Can't read extension list\n");
+                free(fname);
+                free(cInfo->name);
+                free(cInfo->extensions);
+                close(fd);
+                codec_remove(cInfo);
+                continue;
+            }
+            cInfo->extensions[(int)item_size]='\0'; /*leading zero*/
+            close(fd);
+        }
+    }
+    else
+    {
+        printk("Missing codec folder: "CODECS_DIR"\n");
+    }
+    closedir(codec_folder);
+
+}
+
 
 CODEC_INFO * codec_new(){
     CODEC_INFO * info;
@@ -91,20 +196,59 @@ CODEC_INFO * codec_new(){
     return info;
 }
 
+bool codec_remove(CODEC_INFO * info){
+    CODEC_INFO * prev;
+
+    if(info==NULL) return false;
+
+    // find previous item
+    prev=codec_first;
+    while(prev!=NULL && prev->next!=info){
+        prev=prev->next;
+    }
+
+    // link previous and next items
+    if(prev!=NULL){
+        prev->next=info->next;
+    }
+
+    // reajust first or last if necessary
+    if(info==codec_first){
+        codec_first=info->next;
+    }
+
+    if(info==codec_last){
+        codec_last=prev;
+    }
+
+    free(info);
+
+    return true;
+}
+
+
 bool codec_load(CODEC_INFO * info){
     med_t medInfo;
     if(info->loaded) return true;
     
     //load codec
 
-    if(med_loadMed(info->filename,&medInfo,info->fOffset)==MED_OK)
+    if(med_loadMed(info->filename,&medInfo,info->fOffset)==MED_OK){
+
         ((void (*)(CODEC_GLOBAL_INFO * info))medInfo.entry)(&info->globalInfo);
 
-    printk("[codec] loaded codec %s, description=%s\n",info->name,info->globalInfo.description);
+        printk("[codec] loaded codec %s, description=%s\n",info->name,info->globalInfo.description);
 
-    info->loaded=true;
+        info->loaded=true;
 
-    return true;
+        return true;
+
+    }else{
+
+        printk("[codec] error loading codec %s\n",info->name);
+
+        return false;
+    }
 }
 
 CODEC_INFO * codec_findCodecFor(char * name){
@@ -283,8 +427,8 @@ bool codec_tagRequest(char * name, TAG * tag){
     return true;
 }
 
-void codec_start(void)
-{
+void codec_start(void){
+
     printk("[Codec] starting\n");
 
     codec_startRequested=false;
@@ -302,118 +446,20 @@ void codec_start(void)
     thread_enable(codec_thread->pid);
 }
 
-void codec_stop(void)
-{
+void codec_stop(void){
+
     codec_trackStop();
 
     thread_disable(codec_thread->pid);
 }
 
-void codec_init()
-{
-    DIR * codec_folder;
-    int fd;
-    struct dirent * entry;
-    char header[4];
-    CODEC_INFO * cInfo;
-    char item_size;
-    char * fname;
-    
+void codec_init(){
     codec_first=NULL;
     codec_last=NULL;
-    
+
     codec_thread=NULL;
 
-    /* searching for codecs */
-    codec_folder=opendir(CODECS_DIR);
-    if(codec_folder)
-    {
-        while((entry=readdir(codec_folder))!=NULL)
-        {
-            fname=(char*)malloc(strlen(entry->d_name)+strlen(CODECS_DIR)+1);
-            strcpy(fname,CODECS_DIR);
-            strcat(fname,entry->d_name);
-            if(entry->type!=VFS_TYPE_FILE)
-            {
-                printk("discard: not a file");
-                free(fname);
-                continue;
-            }
-            fd=open(fname,O_RDONLY);
-            if(fd<0)
-            {
-                printk("Error opening file: %d\n",-fd);
-                free(fname);
-                continue; 
-            }
-            /* is is a codec file ?*/
-            if(read(fd,header,4)!=4)
-            {
-                printk("Can't read Header\n");
-                free(fname);
-                close(fd);
-                continue;
-            }
-            
-            if(strncmp(header,"CDEC",4))
-            {
-                printk("Not a codec file\n");
-                free(fname);
-                close(fd);
-                continue;   
-            }
-            
-            /* created codec info */
-            cInfo=codec_new();
-            cInfo->filename=fname;
-            cInfo->fOffset=5;
-            if(read(fd,(void*)&item_size,1)!=1)
-            {
-                printk("Can't read name size\n");
-                free(fname);
-                close(fd);
-                continue;
-            }
-            cInfo->fOffset+=(item_size+1);
-            cInfo->name=(char*)malloc(item_size+1);
-            if(read(fd,cInfo->name,item_size)!=item_size)
-            {
-                printk("Can't read name\n");
-                free(fname);
-                close(fd);
-#warning should remove codec from list
-                continue;
-            }
-            cInfo->name[(int)item_size]='\0'; /*leading zero*/
-            if(read(fd,(void*)&item_size,1)!=1)
-            {
-                printk("Can't read extension list size\n");
-                free(fname);
-                free(cInfo->name);
-                close(fd);
-                continue;
-            }
-            cInfo->fOffset+=item_size;
-            cInfo->extensions=(char*)malloc(item_size+1);
-            if(read(fd,cInfo->extensions,item_size)!=item_size)
-            {
-                printk("Can't read extension list\n");
-                close(fd);
-                free(fname);
-                free(cInfo->name);
-                free(cInfo->extensions);
-#warning should remove codec from list
-                continue;
-            }
-            cInfo->extensions[(int)item_size]='\0'; /*leading zero*/   
-            close(fd);
-        }
-    }
-    else
-    {
-        printk("Missing codec folder: "CODECS_DIR"\n");
-    }
-    closedir(codec_folder);
+    codec_findCodecs();
 
     //create codec thread
 

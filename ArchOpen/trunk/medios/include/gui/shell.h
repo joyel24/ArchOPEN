@@ -25,6 +25,7 @@
 bool shell_execute(char * command,char * param);
 void shell_restore();
 void shell_main();
+void shell_close();
 
 //debug
 void shell_printHandlers();

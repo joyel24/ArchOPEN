@@ -20,7 +20,7 @@ typedef struct CODEC_INFO_STRUCT CODEC_INFO;
 struct CODEC_INFO_STRUCT{
     char * name;
     char * filename;
-    char * extensions;    
+    char * extensions;
     bool loaded;
     int fOffset;
 
@@ -30,6 +30,7 @@ struct CODEC_INFO_STRUCT{
 };
 
 CODEC_INFO * codec_new();
+bool codec_remove(CODEC_INFO * info);
 
 bool codec_load(CODEC_INFO * info);
 CODEC_INFO * codec_findCodecFor(char * name);

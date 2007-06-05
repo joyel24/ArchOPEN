@@ -22,20 +22,35 @@
 
 #include <lib/string.h>
 
+#include <gui/shell.h>
+
 __IRAM_DATA int powering_off = 0;
 
 extern int kusb_fw_status;
 
-void halt_device(void)
-{
-    powering_off=1;
-    printk("[exit] device halt\n");
+static void medios_close(){
+
+#ifndef BUILD_LIB
+    shell_close();
+#endif
+
 #ifdef CHK_USB_FW
     if(kusb_fw_status)
         disableUsbFw();
-#endif        
+#endif
+}
+
+
+void halt_device(void)
+{
+    powering_off=1;
+
+    printk("[exit] device halt\n");
+
+    medios_close();
+
     arch_HaltMsg();
-    
+
     ata_stopHD(ATA_FORCE_STOP); /* we need to call halt_hd later to unmount all partitions */
 
     udelay(100);
@@ -48,6 +63,8 @@ void halt_device(void)
 void reload_firmware(void)
 {
     printk("[exit] firmware reload\n");
+
+    medios_close();
 
     arch_reload_firmware();
 }
@@ -132,7 +149,8 @@ MED_RET_T reload_medios(char * fname)
     read(fd,filedata,binSize);
     close(fd);
     
-    
+    medios_close();
+
 #ifdef RELOAD_CP_BASE
     reload_mediosStart(filedata,size-MEDIOS_POS);
 #else

@@ -17,6 +17,6 @@ void playlistMenu_refresh();
 void playlistMenu_build();
 void playlistMenu_eventLoop();
 void playlistMenu_init();
-
+void playlistMenu_close();
 
 #endif /* __PLAYLISTMENU_H */
