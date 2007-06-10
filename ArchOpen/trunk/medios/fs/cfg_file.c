@@ -201,63 +201,67 @@ CFG_DATA * cfg_readFile(char * filename){
         prev=filedata[i];
     }
 
+    printk("count %d\n",data->count);
+
     data->items=malloc(data->count*sizeof(CFG_ITEM));
 
     // read again and fill cfg_items
 
-    i=0;
-    ii=0;
-    do{
-        item=&data->items[ii];
-        item->dummy=true;
-        item->deleted=false;
-        item->name=NULL;
-        item->value=NULL;
-
-        namebeg=nameend=valbeg=valend=i;
-
-        // parse a line
-        while(i<size && filedata[i]!='\r' && filedata[i]!='\n'){
-
-            if(filedata[i]=='=' && valbeg==nameend){ // first '=' on a line?
-                item->dummy=filedata[namebeg]=='#'; // dummy item if no '=' or line is a comment
-
+    if(data->count>0){
+        i=0;
+        ii=0;
+        do{
+            item=&data->items[ii];
+            item->dummy=true;
+            item->deleted=false;
+            item->name=NULL;
+            item->value=NULL;
+    
+            namebeg=nameend=valbeg=valend=i;
+    
+            // parse a line
+            while(i<size && filedata[i]!='\r' && filedata[i]!='\n'){
+    
+                if(filedata[i]=='=' && valbeg==nameend){ // first '=' on a line?
+                    item->dummy=filedata[namebeg]=='#'; // dummy item if no '=' or line is a comment
+    
+                    nameend=i;
+                    valbeg=valend=i+1;
+                }
+    
+                i++;
+            };
+    
+            if (item->dummy){ // dummy item -> the whole line goes into the 'name' field
                 nameend=i;
-                valbeg=valend=i+1;
+            }else{
+                valend=i;
             }
-
+    
+            // copy name
+            item->name=malloc(nameend-namebeg+1);
+            memset(item->name,0,nameend-namebeg+1);
+            strncpy(item->name,&filedata[namebeg],nameend-namebeg);
+    
+            // copy value
+            if(!item->dummy){
+                item->value=malloc(valend-valbeg+1);
+                memset(item->value,0,valend-valbeg+1);
+                save=filedata[valend];
+                filedata[valend]='\0';
+                cfg_unescapeLF(&filedata[valbeg],item->value,valend-valbeg);
+                filedata[valend]=save;
+            }
+    
+            // handle CR+LF
+            if (i<size-1 && filedata[i]=='\r' && filedata[i+1]=='\n'){
+                i++;
+            }
+    
             i++;
-        };
-
-        if (item->dummy){ // dummy item -> the whole line goes into the 'name' field
-            nameend=i;
-        }else{
-            valend=i;
-        }
-
-        // copy name
-        item->name=malloc(nameend-namebeg+1);
-        memset(item->name,0,nameend-namebeg+1);
-        strncpy(item->name,&filedata[namebeg],nameend-namebeg);
-
-        // copy value
-        if(!item->dummy){
-            item->value=malloc(valend-valbeg+1);
-            memset(item->value,0,valend-valbeg+1);
-            save=filedata[valend];
-            filedata[valend]='\0';
-            cfg_unescapeLF(&filedata[valbeg],item->value,valend-valbeg);
-            filedata[valend]=save;
-        }
-
-        // handle CR+LF
-        if (i<size-1 && filedata[i]=='\r' && filedata[i+1]=='\n'){
-            i++;
-        }
-
-        i++;
-        ii++;
-    }while(i<size);
+            ii++;
+        }while(i<size);
+    }
 
     free(filedata);
 
