@@ -75,7 +75,9 @@ long # float_umodsi3# long a, long b
 long # float_divsi3# long a, long b
 long # float_udivsi3# long a, long b
 long long # float_divdi3# long long a, long long b
-
+int # float_fixsfdi # float a
+int # float_moddi3  # int a, int b
+int # float_ashrdi3 # int a, int b
 float # float_addsf3 # float a, float b
 float # float_subsf3 # float a, float b
 float # float_mulsf3 # float a, float b

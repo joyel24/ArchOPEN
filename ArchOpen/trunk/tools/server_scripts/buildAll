@@ -39,7 +39,7 @@ cp -Rf build/trunk/tools/medios_files/* ${distribPath}/medios/
 cd ${distribPath}
 zip -r iconsCfg.zip  ./
 mvFtp builds iconsCfg.zip
-
+rm -f iconsCfg.zip
 cd ~/archopen_src
 
 #building meds apps

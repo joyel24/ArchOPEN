@@ -51,3 +51,7 @@ int float_ltsf2 (float a, float b) { return __ltsf2(a,b); }
 int float_lesf2 (float a, float b) { return __lesf2(a,b); }
 int float_eqsf2 (float a, float b) { return __eqsf2(a,b); }
 int float_nesf2 (float a, float b) { return __nesf2(a,b); }
+
+int float_fixsfdi(float a) {return __fixsfdi(a); } 
+int float_moddi3(int a, int b) {return __moddi3(a,b);}
+int float_ashrdi3(int a, int b) {return __ashrdi3(a,b);}
