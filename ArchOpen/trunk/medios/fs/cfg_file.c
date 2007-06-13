@@ -272,7 +272,7 @@ bool cfg_writeFile(CFG_DATA * data, char * filename){
     int f;
     int i;
     CFG_ITEM * item;
-    char * line=malloc(256);
+    char * line;
 
     // open the file and write back items
 
@@ -282,6 +282,8 @@ bool cfg_writeFile(CFG_DATA * data, char * filename){
         printk("[cfg] can't open file!\n");
         return false;
     }
+
+    line=malloc(256);
 
     for(i=0;i<data->count;++i){
         item=&data->items[i];

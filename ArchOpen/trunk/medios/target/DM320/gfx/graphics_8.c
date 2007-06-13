@@ -71,12 +71,13 @@ void graphics8_DrawPixel(unsigned int color, int x, int y, struct graphicsBuffer
 unsigned int graphics8_ReadPixel(int x, int y, struct graphicsBuffer * buff)
 {
     unsigned int px;
+    unsigned char * addr;
 
-    DISABLE_CACHE_START
+    addr=getOffset(x,y,buff,unsigned char);
 
-    px=inb(getOffset(x,y,buff,unsigned char));
+    px=inb(addr);
 
-    DISABLE_CACHE_END
+    cache_invalidateRange(CACHE_DATA,addr,1);
     
     return px;
 }
@@ -236,8 +237,6 @@ void graphics8_ScrollWindowVert(unsigned int bgColor, int x, int y, int width, i
 
     unsigned char *src,*dest;
 
-    DISABLE_CACHE_START
-
     if(scroll == 0)
         return;
 
@@ -259,6 +258,7 @@ void graphics8_ScrollWindowVert(unsigned int bgColor, int x, int y, int width, i
     for(j=0;j<(height-scroll);j++)
     {
         memcpy(dest,src,width);
+        cache_invalidateRange(CACHE_DATA,src,width);
         dest=dest+inc*buff->width;
         src=src+inc*buff->width;
     }
@@ -272,8 +272,6 @@ void graphics8_ScrollWindowVert(unsigned int bgColor, int x, int y, int width, i
         }
 
     }
-
-    DISABLE_CACHE_END
 }
 
 void graphics8_ScrollWindowHoriz(unsigned int bgColor, int x, int y, int width, int height, int scroll, int RIGHT, struct graphicsBuffer * buff)

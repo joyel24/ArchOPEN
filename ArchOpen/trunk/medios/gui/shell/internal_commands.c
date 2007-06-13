@@ -38,6 +38,17 @@
 #include <gui/file_browser.h>
 #include <gui/msgBox.h>
 
+#include <gui/settings_time.h>
+
+#include <gui/settings_energy.h>
+
+#include <gui/settings_misc.h>
+
+#include <gui/player.h>
+#include <gui/playlistmenu.h>
+#include <snd/sound.h>
+#include <snd/playlist.h>
+
 static bool intCmd_doBrowser(char * param);
 static bool intCmd_doReloadFirmware(char * param);
 static bool intCmd_doUsbMode(char * param);
@@ -204,6 +215,9 @@ static bool intCmd_doUsbMode(char * param){
 
             msgBox_show("MediOS - USB mode","Switching to USB mode",MSGBOX_TYPE_INFO,MSGBOX_ICON_INFORMATION,-1);
             
+            // stop sound player if playing
+            sound_stop();
+
             if(disk_rmAll()!=MED_OK)
             {
                 printk("can't umount\n");
@@ -211,9 +225,9 @@ static bool intCmd_doUsbMode(char * param){
                 evt_freeHandler(eh);
                 return false;
             }
-            
+
             enableUsbFw();
-            
+
             usbMode=1;
             mdelay(10);
             msgBox_show("MediOS - USB mode","Press F3 or unplug cable to exit",MSGBOX_TYPE_INFO,
@@ -261,31 +275,20 @@ static bool intCmd_doUsbMode(char * param){
     return true;
 }
 
-#include <gui/settings_time.h>
-
 static bool intCmd_doTimeSetting(char * param){
     clock_setting();
     return true;
 }
-
-#include <gui/settings_energy.h>
 
 static bool intCmd_doEnergySetting(char * param){
     energy_setting();
     return true;
 }
 
-#include <gui/settings_misc.h>
-
 static bool intCmd_doMiscSetting(char * param){
     misc_setting();
     return true;
 }
-
-#include <gui/player.h>
-#include <gui/playlistmenu.h>
-#include <snd/sound.h>
-#include <snd/playlist.h>
 
 static bool intCmd_doPlayer(char * param){
     char * ext;
