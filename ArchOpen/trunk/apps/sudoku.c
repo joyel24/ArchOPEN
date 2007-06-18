@@ -20,6 +20,9 @@ int screen_width;
 int screen_height;
 int arch;
 
+#define GRID_X ((screen_width-171)/2)
+#define GRID_Y ((screen_height-171)/2)
+
 int plane_x;
 int plane_y;
 
@@ -50,6 +53,7 @@ void switchcol(int x, int y);
 void swap(int x, int y);
 bool generate();
 void printmenu(char *one, char *two, char *three);
+bool verify(void);
 
 __IRAM_DATA static int solvedtemplate[81] = {4, 5, 7, 3, 6, 1, 9, 2, 8,
 						 2, 8, 3, 4, 9, 7, 6, 5, 1,
@@ -85,14 +89,14 @@ void draw_grid(){
     int color;
 
     //grid
-    for(i=2;i<=173;i+=19){
-        gfx_drawLine(COLOR_GRAY,i,2,i,9*19+2);
-        gfx_drawLine(COLOR_GRAY,2,i,9*19+2,i);
+    for(i=0;i<=171;i+=19){
+        gfx_drawLine(COLOR_GRAY,GRID_X+i,GRID_Y,GRID_X+i,9*19+GRID_Y);
+        gfx_drawLine(COLOR_GRAY,GRID_X,GRID_Y+i,9*19+GRID_X,GRID_Y+i);
     }
 
-    for(i=2;i<=173;i+=19*3){
-        gfx_drawLine(COLOR_BLACK,i,2,i,9*19+2);
-        gfx_drawLine(COLOR_BLACK,2,i,9*19+2,i);
+    for(i=0;i<=171;i+=19*3){
+        gfx_drawLine(COLOR_BLACK,GRID_X+i,GRID_Y,GRID_X+i,9*19+GRID_Y);
+        gfx_drawLine(COLOR_BLACK,GRID_X,GRID_Y+i,9*19+GRID_X,GRID_Y+i);
     }
 
     //numbers
@@ -109,7 +113,7 @@ void draw_grid(){
                 color=COLOR_BLACK;
                 if(grid[pos]==0) color=COLOR_BLUE;
 
-                my_putC(color,19*i+8,19*j+6,solved[pos]+'0');
+                my_putC(color,19*i+6+GRID_X,19*j+4+GRID_Y,solved[pos]+'0');
 
             }else{
 
@@ -127,7 +131,7 @@ void draw_grid(){
                     hy=0;
 
                     for(k=1;k<=hnum;++k){
-                        my_putC(COLOR_GREEN,19*i+4+hx*6,19*j+4+hy*6,helpers[pos][k]+'0');
+                        my_putC(COLOR_GREEN,19*i+2+hx*6+GRID_X,19*j+2+hy*6+GRID_Y,helpers[pos][k]+'0');
 
                         hx++;
                         if(hx>2){
@@ -144,6 +148,8 @@ void draw_grid(){
 
 void draw_numbers(){
 
+    //drawing made in bmap2
+    
     gfx_fontSet(STD8X13);
 
     //grid
@@ -270,9 +276,9 @@ int navigate_grid(bool *helper,bool *clear){
 
         //selection
         if(sel2){
-            gfx_fillRect(COLOR_LIGHT_BLUE,2+(x1*3+x2)*19,2+(y1*3+y2)*19,19,19);
+            gfx_fillRect(COLOR_LIGHT_BLUE,GRID_X+(x1*3+x2)*19,GRID_Y+(y1*3+y2)*19,19,19);
         }else{
-            gfx_fillRect(COLOR_LIGHT_BLUE,2+x1*57,2+y1*57,57,57);
+            gfx_fillRect(COLOR_LIGHT_BLUE,GRID_X+x1*57,GRID_Y+y1*57,57,57);
         }
 
         draw_grid();
@@ -371,6 +377,7 @@ void game_loop(){
     bool clear;
     int pos;
     int num;
+    int evt;
 
     do{
         pos=navigate_grid(&helper,&clear);
@@ -420,6 +427,20 @@ void game_loop(){
                     }
                 }
             }
+        }
+        if(verify())
+        {
+            gfx_setPlane(BMAP1);
+            msgBox_info("You win");
+            while(1)
+            {
+                evt=evt_getStatus(evt_handler);
+                if(evt==NO_EVENT)
+                    continue;
+                if(evt==BTN_ON || evt==BTN_OFF)
+                    break;
+            }
+            break;
         }
     }while(pos>=0);
 }
@@ -501,6 +522,7 @@ bool menu_execute(){
 
     menu_chosen=0;
 
+    gfx_setPlane(BMAP1);
     menu->handleEvent(menu,EVT_REDRAW);
 
     do
@@ -622,6 +644,15 @@ void app_main(int argc,char* argv)
 //SOLVER FUNCTIONS
 //*****************************************************************************
 //*****************************************************************************
+
+bool verify(void)
+{
+    int i;
+    for(i=0;i<81;i++)
+        if(solution[i]!=solved[i])
+            return false;
+    return true;
+}
 
 bool haspair(int row[])
 {
