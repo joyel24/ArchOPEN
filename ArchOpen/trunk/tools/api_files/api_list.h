@@ -269,6 +269,9 @@ WIDGETLIST              # widgetList_create           # void
 #k_inc#gui/label.h
 LABEL                   # label_create                # void
 
+#k_inc#gui/file_browser.h
+int                     # browser_simpleBrowse        # char * path,char * res
+
 #api_inc#gui_user/icons.h
 #k_inc#gui/icons.h
 ICON   # icon_load                 # char * filename

@@ -17,7 +17,8 @@
 
 void app_main(int argc,char* argv)
 {
-    int ver,w,h;
+    int ver,w,h,i;
+    char res[256];
 
     printf("in test\n");
     
@@ -26,4 +27,10 @@ void app_main(int argc,char* argv)
     printf("We are on %s\n resolution is: (%d,%d)\n",ver==AV3XX_ARCH?"AV3XX":ver==GMINI4XX_ARCH?"Gmini4xx":"UKN ARCH",
         w,h
     );
+    
+    for(i=0;i<2;i++)
+    {
+        browser_simpleBrowse("/",res);
+        printf("res: %s\n",res);
+    }
 }
