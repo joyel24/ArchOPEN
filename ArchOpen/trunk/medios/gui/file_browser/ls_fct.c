@@ -265,7 +265,7 @@ void chgSelect(struct browser_data *bdata,int num)
     if(bdata->list[num].type != TYPE_BACK)
     {
         bdata->list[num].selected = ~bdata->list[num].selected;
-        /* see if e need to redraw it */
+        /* see if we need to redraw it */
         if(num >= bdata->pos && num < bdata->pos+bdata->nb_disp_entry)
             printName(&bdata->list[num],num-bdata->pos,1,num-bdata->pos==bdata->nselect,bdata);
     }
@@ -274,6 +274,7 @@ void chgSelect(struct browser_data *bdata,int num)
 int nbSelected(struct browser_data * bdata)
 {
     int i,nb=0;
+    printk("Nb Sel in %s\n",bdata->path);
     for(i=0;i<bdata->listused;i++)
         nb+=bdata->list[i].selected;
     return nb;

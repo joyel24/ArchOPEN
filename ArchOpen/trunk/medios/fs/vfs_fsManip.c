@@ -97,7 +97,7 @@ MED_RET_T mkdir(char *name, int mode)
     return ret_val;
 }
 
-MED_RET_T rmdir(char* name)
+MED_RET_T rmdir(char* name,int recurse)
 {
     MED_RET_T ret_val;
     DIR* dir;
@@ -116,9 +116,22 @@ MED_RET_T rmdir(char* name)
         if (strcmp(entry->d_name, ".") &&
             strcmp(entry->d_name, ".."))
         {
-            printk("[rmdir] error, folder not empty\n");
-            closedir(dir);
-            return -MED_ENOTEMPTY;
+            if(recurse)
+            {
+                /* NOTE: this is not the best way to do it
+                as we only have a limied number of slot for opened folder*/
+                if(entry->type==VFS_TYPE_FILE)
+                    /* NOTE: need to rebuild path: name/entry->d_name */
+                    rmfile(entry->d_name);
+                else
+                    rmdir(entry->d_name,1);
+            }
+            else
+            {
+                printk("[rmdir] error, folder not empty\n");
+                closedir(dir);
+                return -MED_ENOTEMPTY;
+            }
         }
     }
 

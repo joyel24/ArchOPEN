@@ -19,6 +19,7 @@
 #include <kernel/kernel.h>
 #include <kernel/malloc.h>
 #include <kernel/evt.h>
+#include <kernel/timer.h>
 
 #include <gfx/graphics.h>
 
@@ -29,7 +30,7 @@
 
 extern int evt_handler;
 
-MED_RET_T browserEvt(struct browser_data * bdata)
+MED_RET_T browserEvt(struct browser_data * mainBdata)
 {
     int w = 0;
     int h = 10;
@@ -38,29 +39,80 @@ MED_RET_T browserEvt(struct browser_data * bdata)
     int ret=-MED_ERROR;
     int i;
     char evt=0;
+    int prev_tick;
+    struct browser_data * bdata;
+    struct browser_data * dualBdata;
     gfx_getStringSize("M", &w, &h);
 
     // VP using configuration from bdata
-    h = bdata->entry_height;
-
+    h = mainBdata->entry_height;
+    
+    bdata=mainBdata;
+    if(mainBdata->is_dual)
+        dualBdata=mainBdata->dual;
+    else
+        dualBdata=NULL;
+    
     evt_purgeHandler(evt_handler);
 
+    prev_tick=tmr_getTick();
+    
     while(!stop)
     {
         evt = evt_getStatus(evt_handler);
-
+        
+        if(mainBdata->txt_scroll_speed>0 
+           && prev_tick+mainBdata->txt_scroll_speed<tmr_getTick())
+        {
+            for (i = mainBdata->pos; i < mainBdata->listused && i < mainBdata->pos+mainBdata->nb_disp_entry; i++)
+                if(mainBdata->list[i].name_size>mainBdata->max_entry_length)
+                    printLongName(i,i-mainBdata->pos,(i-mainBdata->pos)==mainBdata->nselect,mainBdata);
+            if(mainBdata->is_dual && mainBdata->dual_mode!=0)
+            {
+                for (i = dualBdata->pos; i < dualBdata->listused && i < dualBdata->pos+dualBdata->nb_disp_entry;
+                     i++)
+                    if(dualBdata->list[i].name_size>dualBdata->max_entry_length)
+                        printLongName(i,i-dualBdata->pos,(i-dualBdata->pos)==dualBdata->nselect,dualBdata);
+            }
+            prev_tick=tmr_getTick();
+        }
+        
         if(!evt)
             continue;
+        
         switch(evt)
         {
-            case EVT_TIMER:
-                for (i = bdata->pos; i < bdata->listused && i < bdata->pos+bdata->nb_disp_entry; i++)
+            case BTN_F1:
+                if(mainBdata->is_dual && mainBdata->dual_mode>0)
                 {
-                    if(bdata->list[i].name_size>bdata->max_entry_length)
-                    {
-                        printLongName(i,i-bdata->pos,(i-bdata->pos)==bdata->nselect,bdata);
-                    }
+                    /*remove cursor*/
+                    printk("[Browser] %d->", mainBdata->dual_mode);
+                    mainBdata->dual_mode--;
+                    dualBdata->dual_mode=mainBdata->dual_mode;
+                    printk("%d\n", mainBdata->dual_mode);
+                    bdata=mainBdata->dual_mode==2?dualBdata:mainBdata;
+                    browser_computeSize(mainBdata);
+                    /*draw*/
+                    browser_doDraw(mainBdata);
                 }
+                break;
+            case BTN_F2:
+                if(mainBdata->is_dual && mainBdata->dual_mode<2)
+                {
+                    /*remove cursor*/
+                    printk("[Browser] %d->", mainBdata->dual_mode);
+                    mainBdata->dual_mode++;
+                    dualBdata->dual_mode=mainBdata->dual_mode;
+                    printk("%d\n", mainBdata->dual_mode);
+                    bdata=mainBdata->dual_mode==2?dualBdata:mainBdata;
+                    browser_computeSize(mainBdata);
+                    /*draw*/
+                    browser_doDraw(mainBdata);
+                }
+                break;
+            case BTN_F3:
+                browser_contMenu(bdata);
+                browser_doDraw(mainBdata);
                 break;
             case EVT_CF_IN:
             case EVT_CF_OUT:
@@ -71,6 +123,16 @@ MED_RET_T browserEvt(struct browser_data * bdata)
                 stop=1;
                 break;
             case BTN_ON:
+                if(bdata->list[bdata->pos+bdata->nselect].type==TYPE_BACK)
+                {
+                    if(upDir(bdata))
+                    {
+                        if(viewNewDir(bdata,NULL)!=MED_OK)
+                            stop=1;
+                    }
+                    break;
+                }
+                
                 if(bdata->mode==MODE_SELECT)
                     chgSelect(bdata,bdata->pos+bdata->nselect);
                 if(bdata->mode==MODE_STRING && bdata->list[bdata->pos+bdata->nselect].type==TYPE_FILE)
@@ -106,8 +168,10 @@ MED_RET_T browserEvt(struct browser_data * bdata)
                         }
                         else // not going up, scrolling
                         {
-                            gfx_scrollWindowVert(COLOR_WHITE, bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0), bdata->y_start,
-                             bdata->width-10, (h)*(bdata->nb_disp_entry), h,0);
+                            gfx_scrollWindowVert(COLOR_WHITE,
+                                    bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0), 
+                                    bdata->y_start,
+                                    bdata->width-10, (h)*(bdata->nb_disp_entry), h,0);
                             printAName(bdata,bdata->pos+bdata->nselect+1,bdata->nselect+1,1,0);
                             printAName(bdata,bdata->pos+bdata->nselect,bdata->nselect,1,1);
                         }
@@ -223,7 +287,7 @@ MED_RET_T browserEvt(struct browser_data * bdata)
 
                                 //TODO: not very nice, browser should be able to recieve EVT_REDRAW and process it
                                 evt_purgeHandler(evt_handler);
-                                redrawBrowser(bdata);
+                                browser_doDraw(mainBdata);
                             }
                             break;
                         }
@@ -247,3 +311,5 @@ MED_RET_T browserEvt(struct browser_data * bdata)
     }
     return ret;
 }
+
+

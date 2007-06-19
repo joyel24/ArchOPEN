@@ -46,8 +46,7 @@ struct browser_data realData = {
     totSize         : 0,
     nb_disp_entry   : -1, // will be computed
     max_entry_length: -1,
-
-
+    
     x_start         : 0,
     y_start         : 0,
 
@@ -56,13 +55,10 @@ struct browser_data realData = {
     width           : LCD_WIDTH,
     height          : LCD_HEIGHT,
 
+    txt_scroll_speed: BROWSER_TXT_SCROLL_SPEED,
 
     entry_height    : 10,
 
-    draw_bottom_status : draw_bottom_status,
-    draw_file_size     : draw_file_size,
-    clear_status       : clear_status,
-    
     is_dual            : 0,
     dual_mode          : 0,
     dual               : NULL
@@ -145,12 +141,16 @@ void draw_file_size(struct browser_data *bdata, struct dir_entry * entry)
     int sh,sw;
     char tmpS[15];
     int bx,by;
+    
+    if(bdata->is_dual && bdata->dual_mode!=0)
+        bx=((bdata->x_start>bdata->dual->x_start)?bdata->dual->x_start:bdata->x_start)
+                    +bdata->width+bdata->dual->width;
+    else
+        bx=bdata->x_start+bdata->width;
 
     by=bdata->y_start+bdata->height;
-    bx=bdata->x_start+bdata->width;
 
     /* erase previous drawing */
-
     gfx_fillRect(COLOR_WHITE,browser_oldFileSizeX, by-10,bx-browser_oldFileSizeX,10);
     if(entry->type == TYPE_FILE)
     {
@@ -167,15 +167,18 @@ void draw_bottom_status(struct browser_data *bdata)
     char tmpS[15];
     int bx,by;
 
+    if(bdata->is_dual && bdata->dual_mode!=0)
+        bx=((bdata->x_start>bdata->dual->x_start)?bdata->dual->x_start:bdata->x_start)
+                    +bdata->width+bdata->dual->width;
+    else
+        bx=bdata->x_start+bdata->width;
     by=bdata->y_start+bdata->height;
-    bx=bdata->x_start+bdata->width;
-
+    
     createSizeString(tmpS,bdata->totSize);
 
     gfx_fillRect(COLOR_WHITE,2, by-20,bx-4,20);
 
     gfx_putS(COLOR_BLUE, COLOR_WHITE,2, by-20,bdata->path);
-
 
 #if defined(GMINI4XX) || defined(AV1XX) || defined(JBMM) || defined(GMINI402)
     snprintf(tmp,100,"%d %s, %s",bdata->nbFile,bdata->nbFile>1?"files":"file",tmpS);
@@ -184,15 +187,21 @@ void draw_bottom_status(struct browser_data *bdata)
             bdata->nbDir,bdata->nbDir>1?"folders":"folder",tmpS);
 #endif
 
-    gfx_putS(COLOR_BLUE, COLOR_WHITE,2, by-10, tmp);
+    gfx_putS(COLOR_BLUE, COLOR_WHITE,2, by-10, tmp);    
 }
 
 void clear_status(struct browser_data *bdata)
 {
     int bx,by;
-
+    
+    if(bdata->is_dual && bdata->dual_mode!=0)
+        bx=((bdata->x_start>bdata->dual->x_start)?bdata->dual->x_start:bdata->x_start)
+                +bdata->width+bdata->dual->width;
+    else
+        bx=bdata->x_start+bdata->width;
+    
     by=bdata->y_start+bdata->height;
-    bx=bdata->x_start+bdata->width;
+    
 
     gfx_fillRect(COLOR_WHITE,2, by-20,bx-24,20);
 }

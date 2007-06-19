@@ -428,7 +428,7 @@ int ata_waitForXfer(void)
             return 0;
     }
     while((tmr_getTick()-t)<WAIT_XFER_TIMEOUT);
-
+    printk("[ATA] err TMOUT while wait for xfer\n");
     return -1; /* if we are here => we have a timeout */
 }
 
@@ -448,6 +448,8 @@ int ata_waitForReady(void)
     }
     while((tmr_getTick()-t)<WAIT_READY_TIMEOUT);
 
+    printk("[ATA] err TMOUT while wait for ready\n");
+    
     return -1; /* if we are here => we have a timeout */
 }
 
@@ -498,9 +500,10 @@ void ata_stopTmrFct(void)
     {
         ata_stopping++;
         __status=ata_status();
+        /* if (Drive Ready || ata_stopping > 1000)*/
         if(((__status & IDE_STATUS_BSY)==0 && (__status & IDE_STATUS_RDY)!=0) || ata_stopping > 1000)
         {
-            if(ata_stopping > 1000) printk("ata_stopping timout\n");
+            if(ata_stopping > 1000) printk("[ATA] TMOUT in ata_stopTmrFct\n");
             ata_stopHDEnd();
             ata_stopping = 0;
             tmr_stop(&ataStop_tmr);

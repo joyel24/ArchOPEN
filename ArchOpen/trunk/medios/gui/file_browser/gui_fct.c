@@ -56,14 +56,89 @@ void iniBrowser(void)
 
 MED_RET_T viewNewDir(struct browser_data *bdata,char *name)
 {
-    if(name!=NULL)
+    MED_RET_T ret_val;
+    ret_val=browser_loadFoler(bdata,name); 
+    if(ret_val!=MED_OK)
+        return ret_val;
+    
+    redrawBrowser(bdata);
+    
+    return MED_OK;
+}
+
+void browser_screenSize(struct browser_data *bdata)
+{
+    int fw,fh;
+    
+    bdata->nb_disp_entry=(bdata->height-BROWSER_STATUS_HEIGHT)/bdata->entry_height;
+    gfx_getStringSize("M",&fw,&fh);
+    bdata->max_entry_length=(bdata->width-
+            (bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0)-
+            BROWSER_ICON_WIDTH)
+                                /fw;
+
+    bdata->browser_scroll.x=bdata->x_start
+            +(bdata->scroll_pos==LEFT_SCROLL?1:bdata->width-BROWSER_SCROLLBAR_WIDTH);
+    bdata->browser_scroll.y=bdata->y_start;
+    bdata->browser_scroll.height=bdata->nb_disp_entry*bdata->entry_height;
+}
+
+void browser_computeSize(struct browser_data *bdata)
+{
+    if(BROWSE_IS_DUAL)
     {
-        if(strlen(name)>PATHLEN)
+        /*dual screen mode => recompute position/width*/
+        
+        if(bdata->dual_mode==1)
+        {        
+            bdata->x_start=0;
+            bdata->y_start=0;
+            bdata->width=2*LCD_WIDTH/3;
+            bdata->height=LCD_HEIGHT;
+        
+            bdata->dual->x_start=2*LCD_WIDTH/3;
+            bdata->dual->y_start=0;
+            bdata->dual->width=LCD_WIDTH/3;
+            bdata->dual->height=LCD_HEIGHT;
+        }
+        else
+        {
+            bdata->x_start=0;
+            bdata->y_start=0;
+            bdata->width=LCD_WIDTH/3;
+            bdata->height=LCD_HEIGHT;
+        
+            bdata->dual->x_start=LCD_WIDTH/3;
+            bdata->dual->y_start=0;
+            bdata->dual->width=2*LCD_WIDTH/3;
+            bdata->dual->height=LCD_HEIGHT;
+        }            
+        
+        browser_screenSize(bdata);
+        browser_screenSize(bdata->dual);
+    }
+    else
+    {
+        /* single screen mode => recompute position/width*/
+        bdata->x_start=0;
+        bdata->y_start=0;
+        bdata->width=LCD_WIDTH;
+        bdata->height=LCD_HEIGHT;
+        
+        browser_screenSize(bdata);
+    }
+}
+
+int browser_loadFoler(struct browser_data *bdata,char * path)
+{
+    if(path!=NULL)
+    {
+        if(strlen(path)>PATHLEN)
         {
            // msgBox("ERROR - Browser", "Can't load dir, path too long", MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR);
             return -MED_ERROR;
         }
-        strcpy(bdata->path,name);
+        strcpy(bdata->path,path);
     }
 
 
@@ -74,68 +149,50 @@ MED_RET_T viewNewDir(struct browser_data *bdata,char *name)
         //msgBox("ERROR - Browser", "Can't load dir", MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR);
         return -MED_ERROR;
     }
-
-    // compute nb_disp_entry if none is given
-    if (bdata->nb_disp_entry<0)
-    {
-        bdata->nb_disp_entry=(bdata->height-BROWSER_STATUS_HEIGHT)/bdata->entry_height;
-    }
-
-    // compute max_entry_length if none is given
-    if (bdata->max_entry_length<0)
-    {
-        int fw,fh;
-
-        gfx_getStringSize("M",&fw,&fh);
-
-        bdata->max_entry_length=(bdata->width-
-                                  (bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0)-
-                                  BROWSER_ICON_WIDTH)
-                                /fw;
-    }
-
-    bdata->browser_scroll.x=bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?1:bdata->width-BROWSER_SCROLLBAR_WIDTH);
-    bdata->browser_scroll.y=bdata->y_start;
-    bdata->browser_scroll.height=bdata->nb_disp_entry*bdata->entry_height;
-
+    
     bdata->pos=0;
     bdata->nselect=0;
-    redrawBrowser(bdata);
-
+    
     return MED_OK;
+}
+
+void browser_doDraw(struct browser_data *bdata)
+{
+    if(BROWSE_IS_DUAL)
+    {
+        redrawBrowser(bdata);
+        redrawBrowser(bdata->dual);
+    }
+    else
+        redrawBrowser(bdata);
 }
 
 int browser_browse(struct browser_data *bdata,char * path,char * res)
 {
-    if(bdata->is_dual && bdata->dual_mode!=0 && bdata->dual != NULL)
+    int ret_val;
+        
+    /* load data from disk*/
+    if(bdata->is_dual!=0 && bdata->dual!=0)
     {
-        /*dual screen mode => recompute position/width*/
-        bdata->x_start=0;
-        bdata->y_start=0;
-        bdata->width=LCD_WIDTH/2;
-        bdata->height=LCD_HEIGHT;
-        bdata->dual->x_start=LCD_WIDTH/2;
-        bdata->dual->y_start=0;
-        bdata->dual->width=LCD_WIDTH/2;
-        bdata->dual->height=LCD_HEIGHT;
-        /* draw main screen */
-        if(viewNewDir(bdata,path)!=MED_OK)
-            return -MED_ERROR;
-        /* draw second screen */
-        if(viewNewDir(bdata->dual,path)!=MED_OK)
-            return -MED_ERROR;        
+        ret_val=browser_loadFoler(bdata,path); 
+        if(ret_val!=MED_OK)
+            return ret_val;
+        ret_val=browser_loadFoler(bdata->dual,path); 
+        if(ret_val!=MED_OK)
+            return ret_val;
     }
     else
     {
-        /* single screen mode => recompute position/width*/
-        bdata->x_start=0;
-        bdata->y_start=0;
-        bdata->width=LCD_WIDTH;
-        bdata->height=LCD_HEIGHT;
-        /* draw screen */
-        if(viewNewDir(bdata,path)!=MED_OK)
-            return -MED_ERROR;
+        ret_val=browser_loadFoler(bdata,path); 
+        if(ret_val!=MED_OK)
+            return ret_val;
     }
+    
+    /* compute screen sizes*/
+    browser_computeSize(bdata);
+    
+    /*initial draw*/
+    browser_doDraw(bdata);
     
     /* start evt loop */
     
@@ -167,18 +224,37 @@ int browser_simpleBrowse(char * path,char * res)
 void redrawBrowser(struct browser_data *bdata)
 {
     gfx_fontSet(bdata->font);
-    gfx_fillRect(COLOR_WHITE,bdata->x_start,bdata->y_start,bdata->width,bdata->height);
-
-    printAllName(bdata);
+    /*clear whole screen */
+    gfx_fillRect(COLOR_WHITE,
+                 bdata->x_start,bdata->y_start,
+                 bdata->width,bdata->height);
+    
+    /*printk("erase %d (%d,%d) size %d/%d\n", bdata->is_dual,bdata->x_start,bdata->y_start,
+        bdata->width+1,bdata->height);*/
+    
     draw_scrollBar(&bdata->browser_scroll, bdata->listused, bdata->pos,bdata->nb_disp_entry+bdata->pos);
+    
+    printAllName(bdata);
+    
 }
 
 void clearBrowser(struct browser_data *bdata)
 {
     cleanList(bdata);
     gfx_fillRect(COLOR_WHITE,bdata->x_start,bdata->y_start,bdata->width,bdata->height);
-    if(bdata->clear_status)
-        bdata->clear_status(bdata);
+    clear_status(bdata);
+}
+
+void browser_computeNamePos(struct browser_data *bdata,int * x,int * y,int * w,int * h)
+{
+    if(x)
+        *x=bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0);
+    if(y)
+        *y=bdata->y_start;
+    if(w)
+        *w=bdata->width-BROWSER_SCROLLBAR_WIDTH;
+    if(h)
+        *h=bdata->entry_height;
 }
 
 void printName(struct dir_entry * dEntry,int pos,int clear,int selected,struct browser_data *bdata)
@@ -187,11 +263,13 @@ void printName(struct dir_entry * dEntry,int pos,int clear,int selected,struct b
     int             select_color=COLOR_BLUE;
     char *          cp;
     int             type;
-    int             H=bdata->entry_height;
-    int             X=bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0);
-    int             Y=bdata->y_start+pos*H;
-    int             W=bdata->width-BROWSER_SCROLLBAR_WIDTH;
+    int             H,X,Y,W;
 
+    browser_computeNamePos(bdata,&X,&Y,&W,&H);
+    Y+=pos*H;
+    
+    //printk("[printName] pos=%d,selected=%d,clear=%d (%d,%d)-dim %d/%d (%d)\n",pos,selected,clear,X,Y,W,H,bdata->entry_height);
+    
     cp = strrchr(dEntry->name,(int) '/');
     if (cp)
         cp++;
@@ -200,7 +278,7 @@ void printName(struct dir_entry * dEntry,int pos,int clear,int selected,struct b
 
     if(clear)
         gfx_fillRect(COLOR_WHITE, X, Y , W, H);
-
+    
     switch(dEntry->type)
     {
         case TYPE_BACK:
@@ -236,21 +314,27 @@ void printName(struct dir_entry * dEntry,int pos,int clear,int selected,struct b
             }
             break;
     }
-
-    if(selected)
+    
+    if(BROWSER_IS_FOCUSED)
     {
-        if(dEntry->selected)
-            select_color=COLOR_ORANGE2;
-        if(bdata->draw_file_size)
-            bdata->draw_file_size(bdata,dEntry);
+        if(selected)
+        {
+            if(dEntry->selected)
+                select_color=COLOR_ORANGE2;
+            draw_file_size(bdata,dEntry);
+        }
+        else
+        {
+            if(dEntry->selected)
+                select_color=COLOR_ORANGE;
+            else
+                select_color= COLOR_WHITE;
+        }
     }
     else
-    {
-        if(dEntry->selected)
-            select_color=COLOR_ORANGE;
-        else
-            select_color= COLOR_WHITE;
-    }
+        select_color= COLOR_WHITE;            
+    
+//    printk("s=%d c=%d %s\n",bdata->is_dual,select_color,dEntry->name);
 
     dEntry->cur_name=dEntry->name;
     dEntry->inc=1;
@@ -264,33 +348,53 @@ void printName(struct dir_entry * dEntry,int pos,int clear,int selected,struct b
         dEntry->name[bdata->max_entry_length]=0;
         gfx_putS(color, select_color,X+BROWSER_ICON_WIDTH, Y, dEntry->name);
         dEntry->name[bdata->max_entry_length]=c;
-        printk("long: %s-%d\n",dEntry->name, dEntry->name_size);
+        //printk("long: %s-%d\n",dEntry->name, dEntry->name_size);
     }
 }
 
 void printLongName(int pos,int relPos,int selected,struct browser_data *bdata)
 {
-    int             H=bdata->entry_height;
-    int             X=bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0);
-    int             Y=bdata->y_start+relPos*H;
+    int             H,X,Y;
     char            c;
     int             color=COLOR_BLACK;
     int             select_color=COLOR_BLUE;
 
-    //printk("Long\n");
-
-    if(selected)
+    browser_computeNamePos(bdata,&X,&Y,NULL,&H);
+    Y+=relPos*H;
+    
+    switch(bdata->list[pos].type)
     {
-        if(bdata->list[pos].selected)
-            select_color=COLOR_ORANGE2;
+        case TYPE_BACK:
+            color=COLOR_BLUE;
+            select_color=COLOR_RED;
+            break;
+        case TYPE_DIR:
+            color=COLOR_RED;
+            select_color=COLOR_BLUE;
+            break;
+        case TYPE_FILE:
+            color=COLOR_BLACK;
+            select_color=COLOR_BLUE;
+            break;
+    }
+    
+    if(BROWSER_IS_FOCUSED)
+    {
+        if(selected)
+        {
+            if(bdata->list[pos].selected)
+                select_color=COLOR_ORANGE2;
+        }
+        else
+        {
+            if(bdata->list[pos].selected)
+                select_color=COLOR_ORANGE;
+            else
+                select_color= COLOR_WHITE;
+        }
     }
     else
-    {
-        if(bdata->list[pos].selected)
-            select_color=COLOR_ORANGE;
-        else
-            select_color= COLOR_WHITE;
-    }
+        select_color= COLOR_WHITE;
     bdata->list[pos].cur_name+=bdata->list[pos].inc;
     if((bdata->list[pos].cur_name+bdata->max_entry_length) >=
         (bdata->list[pos].name+bdata->list[pos].name_size))
@@ -310,11 +414,16 @@ void printAllName(struct browser_data *bdata)
     int i;
     int pos=bdata->pos;
     int nselect=bdata->nselect;
-    int H=bdata->entry_height;
-    int X=bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0);
-    int Y=bdata->y_start+pos*H;
-    int W=bdata->width-BROWSER_SCROLLBAR_WIDTH;
+    int H,X,Y,W;
+    
+    browser_computeNamePos(bdata,&X,&Y,&W,&H);
+    Y+=pos*H;
 
+    if(BROWSER_IS_FOCUSED)
+    {
+        draw_bottom_status(bdata);
+    }
+    
     for (i = pos; i < bdata->listused && i < pos+bdata->nb_disp_entry; i++)
         printName(&bdata->list[i], i-pos,1,(i-pos)==nselect,bdata);
 
@@ -322,8 +431,7 @@ void printAllName(struct browser_data *bdata)
     We should replace this with one call to gfx_fillRect !! */
     for(;i<pos+bdata->nb_disp_entry;i++)
         gfx_fillRect(COLOR_WHITE,X, Y+(i-pos)*H, W,H);
-    if(bdata->draw_bottom_status)
-        bdata->draw_bottom_status(bdata);
+    
 }
 
 void printAName(struct browser_data *bdata,int pos, int nselect, int clear, int selected)

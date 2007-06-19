@@ -65,17 +65,13 @@ struct browser_data {
     int height;
 
     int entry_height;
-
+    
     int mode;
     int font;
 
     struct dir_entry * list;
     int                listused;
     int                listsize;
-
-    void (*draw_bottom_status)  (struct browser_data *bdata);
-    void (*draw_file_size)      (struct browser_data *bdata, struct dir_entry * entry);
-    void (*clear_status)        (struct browser_data *bdata);
 
     char * retPath;
     
@@ -84,11 +80,15 @@ struct browser_data {
     struct browser_data * dual;
     
     struct scroll_bar browser_scroll;
+    
+    int txt_scroll_speed;
+    
 };
 
-#define    BROWSER_STATUS_HEIGHT 20
-#define    BROWSER_ICON_WIDTH 11
-#define    BROWSER_SCROLLBAR_WIDTH 10
+#define    BROWSER_STATUS_HEIGHT     20
+#define    BROWSER_ICON_WIDTH        11
+#define    BROWSER_SCROLLBAR_WIDTH   10
+#define    BROWSER_TXT_SCROLL_SPEED  30
 
 int browser_simpleBrowse(char * path,char * res);
 int browser_browse(struct browser_data *bdata,char * path,char * res);
@@ -118,6 +118,7 @@ int  browserEvt         (struct browser_data * bdata);
 /*****    gui_fct    *****/
 void iniBrowser         (void);
 int  viewNewDir         (struct browser_data *bdata,char *name);
+void browser_doDraw     (struct browser_data *bdata);
 void printName          (struct dir_entry * dEntry,int pos,int clear,int selected,struct browser_data *bdata);
 void printAllName       (struct browser_data *bdata);
 void printAName         (struct browser_data *bdata,int pos, int nselect, int clear, int selected);
@@ -125,7 +126,9 @@ void printLongName      (int pos,int relPos,int selected,struct browser_data *bd
 void createSizeString   (char * str,int Isize);
 void clearBrowser       (struct browser_data *bdata);
 void redrawBrowser      (struct browser_data *bdata);
-
+void browser_screenSize (struct browser_data *bdata);
+void browser_computeSize(struct browser_data *bdata);
+int  browser_loadFoler  (struct browser_data *bdata,char * path);
 /* main fct */
 void  bwseventHandler       (int evt);
 
@@ -137,7 +140,11 @@ void clear_status(struct browser_data *bdata);
 //char *  browse     (char * path,int mode);
 //void ini_file_browser  (void);
 
+/*** Conctextual Menu ****/
+void browser_mkMenu(struct browser_data * bdata);
+void browser_contMenu(struct browser_data * bdata);
 
 
-
+#define BROWSE_IS_DUAL      (bdata->is_dual!=0 && bdata->dual_mode!=0 && bdata->dual != NULL)
+#define BROWSER_IS_FOCUSED  ((BROWSE_IS_DUAL && (bdata->is_dual==bdata->dual_mode))||!BROWSE_IS_DUAL)
 #endif

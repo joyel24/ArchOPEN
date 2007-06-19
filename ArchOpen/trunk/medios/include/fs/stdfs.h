@@ -37,7 +37,7 @@ struct dirent * readdir(DIR * fd);
 
 /* file/dir ops */
 MED_RET_T mkdir(char *name, int mode);
-MED_RET_T rmdir(char* name);
+MED_RET_T rmdir(char* name,int recurse);
 MED_RET_T mvdir(char* path, char* newpath);
 
 MED_RET_T rmfile(char* name);
