@@ -24,9 +24,10 @@ long __divsi3(long a, long b) { return float_divsi3(a,b); }
 long __udivsi3(long a, long b) { return float_udivsi3(a,b); }
 long long __divdi3(long long a,long long b) { return float_divdi3(a,b); }
 
-int __fixsfdi (float a) {return float_fixsfdi(a); } 
-int __moddi3(int a, int b) {return float_moddi3(a,b);}
-int __ashrdi3(int a, int b) {return float_ashrdi3(a,b);}
+long long __fixsfdi (float a) {return float_fixsfdi(a); }
+long long __moddi3(long long  a, long long  b) {return float_moddi3(a,b);}
+long long __ashrdi3(long long  a, unsigned int b) {return float_ashrdi3(a,b);}
+long long __ashldi3(long long  a, unsigned int b) {return float_ashldi3(a,b);}
 
 float __addsf3 (float a, float b) { return float_addsf3(a,b); }
 float __subsf3 (float a, float b) { return float_subsf3(a,b); }

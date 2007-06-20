@@ -114,7 +114,7 @@ void trackbar_paint(TRACKBAR t){
     };
 
     // cursor
-    if(t->value>=t->minimum && t->value<=t->maximum){
+    if(t->value>=t->minimum && t->value<=t->maximum && (t->maximum-t->minimum)!=0){
       x=t->x+(t->value-t->minimum)*w/(t->maximum-t->minimum)+t->margin;
       y=t->y+t->margin;
       h=t->height-2*t->margin;

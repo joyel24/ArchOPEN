@@ -12,7 +12,7 @@
 #include "ivorbisfile.h"
 #include "ivorbiscodec.h"
 
-#define DATA_BUFFER_SIZE 65536
+#define DATA_BUFFER_SIZE 4096
 
 char dataBuf[DATA_BUFFER_SIZE];
 

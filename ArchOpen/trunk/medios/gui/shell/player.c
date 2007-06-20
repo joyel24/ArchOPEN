@@ -102,7 +102,11 @@ void player_refresh(bool full){
                 }
 
                 player_timeToString(elapsed,player_elapsedText,sizeof(player_elapsedText)-1);
-                player_timeToString(length-elapsed,player_remainingText,sizeof(player_remainingText)-1);
+                if(length>=elapsed){
+                    player_timeToString(length-elapsed,player_remainingText,sizeof(player_remainingText)-1);
+                }else{
+                    strcpy(player_remainingText,"0:00");
+                }
 
                 player_positionTrackbar->value=elapsed;
                 player_positionTrackbar->maximum=length;

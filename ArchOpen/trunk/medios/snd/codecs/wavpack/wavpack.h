@@ -372,6 +372,7 @@ void float_values (WavpackStream *wps, int32_t *values, int32_t num_values);
 // wputils.c
 
 WavpackContext *WavpackOpenFileInput (read_stream infile, char *error);
+void WavpackClose (WavpackContext *wpc);
 
 int WavpackGetMode (WavpackContext *wpc);
 

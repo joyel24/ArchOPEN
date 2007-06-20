@@ -16,7 +16,7 @@ long float_modsi3(long a, long b) { return __modsi3(a,b); }
 long float_umodsi3(long a, long b) { return __umodsi3(a,b); }
 long float_divsi3(long a, long b) { return __divsi3(a,b); }
 long float_udivsi3(long a, long b) { return __udivsi3(a,b); }
-unsigned int float_divdi3(unsigned int a, unsigned int b) { return __divdi3(a,b); }
+long long float_divdi3(long long a, long long b) { return __divdi3(a,b); }
 
 float float_addsf3 (float a, float b) { return __addsf3(a,b); }
 float float_subsf3 (float a, float b) { return __subsf3(a,b); }
@@ -52,6 +52,7 @@ int float_lesf2 (float a, float b) { return __lesf2(a,b); }
 int float_eqsf2 (float a, float b) { return __eqsf2(a,b); }
 int float_nesf2 (float a, float b) { return __nesf2(a,b); }
 
-int float_fixsfdi(float a) {return __fixsfdi(a); } 
-int float_moddi3(int a, int b) {return __moddi3(a,b);}
-int float_ashrdi3(int a, int b) {return __ashrdi3(a,b);}
+long long float_fixsfdi(float a) {return __fixsfdi(a); }
+long long float_moddi3(long long a, long long b) {return __moddi3(a,b);}
+long long float_ashrdi3(long long a, unsigned int b) {return __ashrdi3(a,b);}
+long long float_ashldi3(long long a, unsigned int b) {return __ashldi3(a,b);}

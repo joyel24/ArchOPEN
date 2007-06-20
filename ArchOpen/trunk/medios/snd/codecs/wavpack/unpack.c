@@ -338,9 +338,9 @@ int32_t unpack_samples (WavpackContext *wpc, int32_t *buffer, uint32_t sample_co
 
     else {
         eptr = buffer + (sample_count * 2);
-        printf("U1\n");
+
         i = get_words (buffer, sample_count, flags, &wps->w, &wps->wvbits);
-        printf("U2\n");
+
         if (sample_count < 16)
         {
             for (tcount = wps->num_terms, dpp = wps->decorr_passes; tcount--; dpp++)

@@ -11,26 +11,64 @@
 #include "wavpack.h"
 
 int32_t dataBuf[DATA_BUFFER_SIZE];
+
+int file;
+
+int wavpack_fileRead(void * buffer,int count)
+{
+    return read(file,buffer,count);
+}
+
+void wavpack_tagRequest(char * name,TAG * tag)
+{
+    WavpackContext *wpc;
+    char error [80];
+    int size;
+
+    printf("[wavpack] tagRequest()\n");
+
+    tag->badFile=true;
+
+    file=open(name,O_RDONLY);
+
+    if(file>=0)
+    {
+        size=filesize(file);
         
+        wpc = WavpackOpenFileInput (wavpack_fileRead, error);
+
+        if(wpc)
+        {
+            tag->stereo=WavpackGetReducedChannels(wpc)==2;
+            tag->sampleRate=WavpackGetSampleRate(wpc);
+            tag->length=HZ*WavpackGetNumSamples(wpc)/tag->sampleRate;
+            tag->bitRate=(long long)size*8*WavpackGetSampleRate(wpc)/WavpackGetNumSamples(wpc);
+
+            tag->badFile=false;
+            
+            WavpackClose(wpc);
+        }
+
+        close(file);
+    }
+}
+
 void wavpack_trackLoop()
 {
-    /*WavpackContext *wpc;
+    WavpackContext *wpc;
     char error [80];
 
-    int res;
     int red;
-    int bitstream;
     int time;
-    int nb,nb2;
+    int nb;
     short * dst_ptr;
     int32_t * src_ptr;
-
-    trackInfo.validTrack=false;
-    trackInfo.sampleRate=0;
-    trackInfo.length=0;
-    trackInfo.stereo=false;
+    int numChan;
+    PLAYLIST_ITEM * item;
 
     printf("[wavpack] trackLoop()\n");
+
+    item=buffer_getActiveItem();
 
     wpc = WavpackOpenFileInput (buffer_read, error);
 
@@ -40,33 +78,55 @@ void wavpack_trackLoop()
         return ;
     }
 
-    trackInfo.sampleRate = WavpackGetSampleRate(wpc);
-    trackInfo.stereo = WavpackGetReducedChannels (wpc)==2;
+    numChan=WavpackGetReducedChannels (wpc);
 
-    codec_setTrackInfo(&trackInfo);
-    printf("sample rate=%d, stereo=%d\n",trackInfo.sampleRate,trackInfo.stereo);
     printf("bytes per sample: %d, bits per sample: %d\n",WavpackGetBytesPerSample(wpc),WavpackGetBitsPerSample(wpc));
-    do{
-        printf("a\n");
-        red= WavpackUnpackSamples (wpc, dataBuf, DATA_BUFFER_SIZE/2);
-        printf("b\n");        
+    do
+    {
+        red= WavpackUnpackSamples (wpc, dataBuf, DATA_BUFFER_SIZE/numChan);
+
         dst_ptr = (short *) dataBuf;
         src_ptr = dataBuf;
-        nb = red;
+        nb = red*numChan;
         while(nb--)
         {
             *dst_ptr++ = (short)(*src_ptr++);
-            *dst_ptr++ = (short)(*src_ptr++);
-        }        
-        //print_data(dataBuf,red*4);
-        output_write((char*)dataBuf,red*4);
+        }
+
+        output_write((char*)dataBuf,red*2*numChan);
+
+        if(codec_mustSeek(&time))
+        {
+            int pos;
+
+            pos=(long long)time*item->fileSize/item->tag.length;
+
+            buffer_seek(pos,SEEK_SET);
+
+            WavpackClose(wpc);
+            wpc = WavpackOpenFileInput (buffer_read, error);
+
+            if (!wpc)
+            {
+                printf("Error reopening file while seeking: %s\n",error);
+                return ;
+            }
+
+            time=HZ*WavpackGetSampleIndex(wpc)/item->tag.sampleRate;
+
+            codec_setElapsed(time);
+            codec_seekDone();
+        }
     }
-    while(codec_mustContinue() && red>0);*/
+    while(codec_mustContinue() && red>0);
+
+    WavpackClose(wpc);
 }
 
 void codec_main(CODEC_GLOBAL_INFO * info)
 {
     info->description="Wav Pack Codec";
-    info->seekSupported=false;
+    info->seekSupported=true;
     info->trackLoop=wavpack_trackLoop;
+    info->tagRequest=wavpack_tagRequest;
 }

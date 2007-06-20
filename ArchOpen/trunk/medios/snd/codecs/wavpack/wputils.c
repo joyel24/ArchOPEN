@@ -44,70 +44,83 @@ static uint32_t read_next_header (read_stream infile, WavpackHeader *wphdr);
 // large integer or floating point files (but always provides at least 24 bits
 // of resolution).
 
-static WavpackContext wpc;
+//static WavpackContext wpc;
 
 WavpackContext *WavpackOpenFileInput (read_stream infile, char *error)
 {
-    WavpackStream *wps = &wpc.stream;
+    WavpackStream *wps;
     uint32_t bcount;
 
-    CLEAR (wpc);
-    wpc.infile = infile;
-    wpc.total_samples = (uint32_t) -1;
-    wpc.norm_offset = 0;
-    wpc.open_flags = 0;
+    WavpackContext * wpc;
+
+    wpc=malloc(sizeof(WavpackContext));
+
+    memset(wpc,0,sizeof(WavpackContext));
+    
+    wps = &(wpc->stream);
+
+    wpc->infile = infile;
+    wpc->total_samples = (uint32_t) -1;
+    wpc->norm_offset = 0;
+    wpc->open_flags = 0;
 
     // open the source file for reading and store the size
 
     while (!wps->wphdr.block_samples) {
 
-        bcount = read_next_header (wpc.infile, &wps->wphdr);
+        bcount = read_next_header (wpc->infile, &wps->wphdr);
 
         if (bcount == (uint32_t) -1) {
             strcpy (error, "not compatible with this version of WavPack file!");
+            free(wpc);
             return NULL;
         }
 
         if (wps->wphdr.block_samples && wps->wphdr.total_samples != (uint32_t) -1)
-            wpc.total_samples = wps->wphdr.total_samples;
+            wpc->total_samples = wps->wphdr.total_samples;
 
-        if (!unpack_init (&wpc)) {
-            strcpy (error, wpc.error_message [0] ? wpc.error_message :
+        if (!unpack_init (wpc)) {
+            strcpy (error, wpc->error_message [0] ? wpc->error_message :
                 "not compatible with this version of WavPack file!");
-
+            free(wpc);
             return NULL;
         }
     }
 
-    wpc.config.flags &= ~0xff;
-    wpc.config.flags |= wps->wphdr.flags & 0xff;
-    wpc.config.bytes_per_sample = (wps->wphdr.flags & BYTES_STORED) + 1;
-    wpc.config.float_norm_exp = wps->float_norm_exp;
+    wpc->config.flags &= ~0xff;
+    wpc->config.flags |= wps->wphdr.flags & 0xff;
+    wpc->config.bytes_per_sample = (wps->wphdr.flags & BYTES_STORED) + 1;
+    wpc->config.float_norm_exp = wps->float_norm_exp;
 
-    wpc.config.bits_per_sample = (wpc.config.bytes_per_sample * 8) - 
+    wpc->config.bits_per_sample = (wpc->config.bytes_per_sample * 8) - 
         ((wps->wphdr.flags & SHIFT_MASK) >> SHIFT_LSB);
 
-    if (wpc.config.flags & FLOAT_DATA) {
-        wpc.config.bytes_per_sample = 3;
-        wpc.config.bits_per_sample = 24;
+    if (wpc->config.flags & FLOAT_DATA) {
+        wpc->config.bytes_per_sample = 3;
+        wpc->config.bits_per_sample = 24;
     }
 
-    if (!wpc.config.sample_rate) {
+    if (!wpc->config.sample_rate) {
         if (!wps || !wps->wphdr.block_samples || (wps->wphdr.flags & SRATE_MASK) == SRATE_MASK)
-            wpc.config.sample_rate = 44100;
+            wpc->config.sample_rate = 44100;
         else
-            wpc.config.sample_rate = sample_rates [(wps->wphdr.flags & SRATE_MASK) >> SRATE_LSB];
+            wpc->config.sample_rate = sample_rates [(wps->wphdr.flags & SRATE_MASK) >> SRATE_LSB];
     }
 
-    if (!wpc.config.num_channels) {
-        wpc.config.num_channels = (wps->wphdr.flags & MONO_FLAG) ? 1 : 2;
-        wpc.config.channel_mask = 0x5 - wpc.config.num_channels;
+    if (!wpc->config.num_channels) {
+        wpc->config.num_channels = (wps->wphdr.flags & MONO_FLAG) ? 1 : 2;
+        wpc->config.channel_mask = 0x5 - wpc->config.num_channels;
     }
 
     if (!(wps->wphdr.flags & FINAL_BLOCK))
-        wpc.reduced_channels = (wps->wphdr.flags & MONO_FLAG) ? 1 : 2;
+        wpc->reduced_channels = (wps->wphdr.flags & MONO_FLAG) ? 1 : 2;
 
-    return &wpc;
+    return wpc;
+}
+
+void WavpackClose (WavpackContext *wpc)
+{
+    free(wpc);
 }
 
 // This function obtains general information about an open file and returns
@@ -337,7 +350,7 @@ static uint32_t read_next_header (read_stream infile, WavpackHeader *wphdr)
             !(*++sp & 1) && sp [2] < 16 && !sp [3] && sp [5] == 4 &&
             sp [4] >= (MIN_STREAM_VERS & 0xff) && sp [4] <= (MAX_STREAM_VERS & 0xff)) {
                 memcpy (wphdr, buffer, sizeof (*wphdr));
-                little_endian_to_native (wphdr, WavpackHeaderFormat);
+                //gli little_endian_to_native (wphdr, WavpackHeaderFormat);
                 return bytes_skipped;
             }
 
