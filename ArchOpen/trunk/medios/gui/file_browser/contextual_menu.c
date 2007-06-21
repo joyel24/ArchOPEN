@@ -155,7 +155,7 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                         else
                         {
                             printk("rm folder: %s\n",fullname);
-                            ret_val=rmdir(fullname,0); /*NOTE: not using recurse for now*/
+                            ret_val=rmdir(fullname,1);
                             if(ret_val!=MED_OK)
                             {
                                 if(ret_val==-MED_ENOTEMPTY)

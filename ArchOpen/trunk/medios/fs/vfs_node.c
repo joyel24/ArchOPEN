@@ -116,7 +116,8 @@ MED_RET_T vfs_nodeAddChild(struct vfs_node * parent, struct vfs_node * child)
     child->parent=parent;
     if(parent)
     {
-        vfs_nodeRef(parent);
+        if (strcmp(child->name.str, ".") && strcmp(child->name.str, ".."))
+            vfs_nodeRef(parent);
         LIST_ADD_HEAD_NAMED(parent->children,child,siblings_prev,siblings_next);
     }
     return MED_OK;
@@ -264,7 +265,7 @@ MED_RET_T vfs_nodeUnRef(struct vfs_node * node)
 {
     if(!(node->ref_cnt >= 1))
     {
-        printk("[FATAL ERROR] in vfs_nodeRef cnt is not =>1 : %d\n",node->ref_cnt);
+        printk("[FATAL ERROR] in vfs_nodeUnRef cnt is not =>1 : %d\n",node->ref_cnt);
         return -MED_EBADDATA;
     }
     node->ref_cnt--;
@@ -282,8 +283,12 @@ MED_RET_T vfs_rmNodeFromTree(struct vfs_node * node)
     if(node->parent)
     {
         struct vfs_node * parent = node->parent;
-        if(vfs_nodeUnRef(node->parent)!=MED_OK)
-            return -MED_EBADDATA;
+        if (strcmp(node->name.str, ".") && strcmp(node->name.str, ".."))
+            if(vfs_nodeUnRef(node->parent)!=MED_OK)
+                return -MED_EBADDATA;
+        /* are we removing current node ?*/
+        if(parent->children == node &&  parent->curNode == node->siblings_next)
+            parent->curNode = NULL;
         LIST_DELETE_NAMED(parent->children,node,siblings_prev,siblings_next);
     }
     vfs_nodeDestroy(node);

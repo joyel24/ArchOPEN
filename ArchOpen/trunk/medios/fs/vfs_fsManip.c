@@ -102,6 +102,7 @@ MED_RET_T rmdir(char* name,int recurse)
     MED_RET_T ret_val;
     DIR* dir;
     struct dirent* entry;
+    char fullname[MAX_PATH];
     
     dir = opendir(name);
     if (!dir)
@@ -109,24 +110,25 @@ MED_RET_T rmdir(char* name,int recurse)
      /* open error */
         return -1;
     }
-
+    
     /* check if the directory is empty */
     while ((entry = readdir(dir)))
     {
         if (strcmp(entry->d_name, ".") &&
             strcmp(entry->d_name, ".."))
         {
+#if 1
             if(recurse)
             {
-                /* NOTE: this is not the best way to do it
-                as we only have a limied number of slot for opened folder*/
+                snprintf(fullname,MAX_PATH,"%s/%s",name[1]==0?"":name,entry->d_name);
                 if(entry->type==VFS_TYPE_FILE)
                     /* NOTE: need to rebuild path: name/entry->d_name */
-                    rmfile(entry->d_name);
+                    rmfile(fullname);
                 else
-                    rmdir(entry->d_name,1);
+                    rmdir(fullname,1);
             }
             else
+#endif
             {
                 printk("[rmdir] error, folder not empty\n");
                 closedir(dir);
@@ -135,12 +137,14 @@ MED_RET_T rmdir(char* name,int recurse)
         }
     }
 
+    
+    
     ret_val = fat_fileRemove(dir);
     if ( ret_val != MED_OK )
     {
         printk("[rmdir] Failed removing dir |%s| (err=%d)\n", name,-ret_val);
     }
-
+    
     closedir(dir);
     
     ret_val = vfs_rmNodeFromTree(dir);
@@ -167,7 +171,7 @@ MED_RET_T rmfile(char* name)
 
     file = (FILE*)fd;
     
-    ret_val = fat_fileRemove(file);
+    ret_val = fat_fileRemove(file);    
     if ( ret_val != MED_OK )
     {
         printk("[rmfile] Failed removing dir |%s| (err=%d)\n", name,-ret_val);
@@ -189,7 +193,7 @@ MED_RET_T rmfile(char* name)
         printk("[rmfile] Failed removing node (%s) (err=%d)\n", name,-ret_val);
         return ret_val;
     }
-
+    
     return MED_OK;
 }
 
