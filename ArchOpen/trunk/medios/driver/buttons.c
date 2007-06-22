@@ -56,6 +56,8 @@ extern int btn_mask[NB_BUTTONS];
 
 int need_clean;
 
+extern __IRAM_DATA int powering_off;
+
 __IRAM_CODE int btn_readState(void)
 {
     return btn_state;
@@ -69,8 +71,13 @@ __IRAM_CODE void btn_chkPress(void)
         nb_off_press++;
         if(nb_off_press>MAX_OFF)
         {
-            printk("[OFF button] => halt\n");
-            halt_device();
+#if 0
+            if(!powering_off)
+#endif
+            {
+                printk("[OFF button] => halt\n");
+                halt_device();
+            }
         }
     }
     else

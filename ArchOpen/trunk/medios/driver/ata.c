@@ -60,7 +60,7 @@ struct pipe cmd_list;
     }                           \
     })
 
-//#define ATA_NO_TASKLIST
+#define ATA_NO_TASKLIST
 #define NO_MULTYSECT
 
 int ata_rwData(int disk,unsigned int lba,void * data,int count,int cmd,int use_dma)

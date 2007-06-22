@@ -200,9 +200,7 @@ CFG_DATA * cfg_readFile(char * filename){
         if (prev=='\n' || prev==0) data->count++;
         prev=filedata[i];
     }
-
-    printk("count %d\n",data->count);
-
+    
     data->items=malloc(data->count*sizeof(CFG_ITEM));
 
     // read again and fill cfg_items

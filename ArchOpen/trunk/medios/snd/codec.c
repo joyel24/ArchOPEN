@@ -88,7 +88,7 @@ static void codec_findCodecs(){
             strcat(fname,entry->d_name);
             if(entry->type!=VFS_TYPE_FILE)
             {
-                printk("discard: not a file");
+                printk("discard: '%s' not a file\n",entry->d_name);
                 free(fname);
                 continue;
             }

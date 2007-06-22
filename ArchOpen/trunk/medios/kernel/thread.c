@@ -645,7 +645,8 @@ MED_RET_T thread_listRm(THREAD_LIST * ptr,int res_id,int force)
             else
             {
                 /* not SYS nor force => not allowed to remove mem */
-                printk("[THREAD LIST] RM failed, res= %d, pid is diff from current\n",res_id);
+                printk("[THREAD LIST] RM failed, res= %d, pid is diff from current (cur=%d, ask=%d)\n",
+                       res_id,threadCurrent->pid,ptr->pid);
                 return -MED_EINVAL;
             }
         }
