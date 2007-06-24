@@ -50,6 +50,9 @@ void okBtnMisc_click(BUTTON b)
 {
     CFG_DATA * cfg;
     /* opening config file */
+    
+    
+    
     cfg=cfg_readFile("/medios/medios.cfg");
     if(!cfg)
     {
@@ -183,7 +186,7 @@ void misc_setting(void)
     virtKbdLY->caption="Text at top";
     virtKbdLY->font=MISC_GUIFONT;
     virtKbdLY->setRect(virtKbdLY,x,y,8,8);
-    virtKbdLY->checked=has_develFct;
+    virtKbdLY->checked=paramVirtKbd;
     y+=lineH;
     
     menuList->addWidget(menuList,virtKbdLY);

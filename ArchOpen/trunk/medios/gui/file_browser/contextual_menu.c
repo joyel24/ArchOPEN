@@ -247,6 +247,7 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                 browser_loadFoler(curBdata,NULL);                      
                 break;
             case 6: /*open*/
+                snprintf(fullname,PATHLEN,"%s/%s",curBdata->path[1]==0?"":curBdata->path,selected_entry->name);
                 if(selected_entry->type==TYPE_FILE)
                 {
                     

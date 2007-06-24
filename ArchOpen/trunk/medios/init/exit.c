@@ -49,6 +49,8 @@ void halt_device(void)
 
     medios_close();
 
+    printk("[exit] medios cleanup done\n");
+    
     arch_HaltMsg();
 
     ata_stopHD(ATA_FORCE_STOP); /* we need to call halt_hd later to unmount all partitions */

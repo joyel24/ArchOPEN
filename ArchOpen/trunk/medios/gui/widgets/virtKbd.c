@@ -63,7 +63,7 @@ int modify_str=1;
 char cur_str[MAX_PATH];
 int txt_x,txt_y,txt_w,txt_max_char;
 int page,shift;
-int paramVirtKbd;
+int paramVirtKbd=0;
 
 void calcCoord(int txt_on_top)
 {
@@ -268,6 +268,7 @@ void majCursor(void)
     drawPage();
     drawBtn();
     drawTxtZone();
+    cur_str[str_len]='\0';
     gfx_putS(TXT_COLOR,TXT_BG_COLOR,txt_x,txt_y,cur_str);    
     gfx_putSelect(SEL_COLOR);  
     putCursor(SEL_COLOR);
@@ -280,6 +281,7 @@ void numPage(void)
     drawPage();
     drawBtn();
     drawTxtZone();
+    cur_str[str_len]='\0';
     gfx_putS(TXT_COLOR,TXT_BG_COLOR,txt_x,txt_y,cur_str);    
     gfx_putSelect(SEL_COLOR);  
     putCursor(SEL_COLOR);
@@ -400,8 +402,9 @@ void virtKbdEvtHandler(int evt_hanlder)
             case BTN_F2:
                 char_num++;
             case BTN_F1:
+                //printk("char num=%d mode=%d, elem=%d, page=%d\n",char_num,mode,elem,page);
                 if(cur_index<txt_max_char)
-                {
+                {                    
                     str=mode==1?char_horiz[page][elem][char_num]:char_vert[page][elem][char_num];
                     if(str)
                     {
@@ -420,7 +423,7 @@ void virtKbdEvtHandler(int evt_hanlder)
                     {
                         if(mode==1)
                         {
-                            if(action_horiz[elem][char_num])
+                            if(action_horiz[page][elem][char_num])
                             {
                                 routine=action_horiz[page][elem][char_num];
                                 routine();
@@ -428,7 +431,7 @@ void virtKbdEvtHandler(int evt_hanlder)
                         }
                         else
                         {
-                            if(action_vert[elem][char_num])
+                            if(action_vert[page][elem][char_num])
                             {
                                 routine=action_vert[page][elem][char_num];
                                 routine();
@@ -440,7 +443,7 @@ void virtKbdEvtHandler(int evt_hanlder)
                 if(shift==1)
                     majCursor();
                 if(shift==2)
-                    shift--;                
+                    shift--;  
                 break;
         }
     }    
