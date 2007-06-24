@@ -15,8 +15,12 @@
 #define __KERNEL_H
 
 #include <sys_def/section_types.h>
+#include <sys_def/errors.h>
 
 #define SVC_STACK_SIZE 0x200
+
+extern MED_RET_T errno;
+MED_RET_T getErrno(void);
 
 void printk(char *fmt, ...);
 int printf(__const char *fmt, ...);

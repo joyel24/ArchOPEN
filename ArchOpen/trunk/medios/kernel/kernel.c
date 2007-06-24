@@ -15,6 +15,8 @@
 #include <driver/hardware.h>
 #include <driver/lcd.h>
 
+MED_RET_T errno=0;
+
 int getArch(void)
 {
     return CURRENT_ARCH;
@@ -24,4 +26,9 @@ void getResolution(int * width,int * height)
 {
     if(width) *width=SCREEN_REAL_WIDTH;
     if(height) *height=SCREEN_HEIGHT;
+}
+
+MED_RET_T getErrno(void)
+{
+    return errno;
 }
