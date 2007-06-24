@@ -6,13 +6,19 @@ awk 'BEGIN{FS="[\t ]*#[\t ]*"} NF==0{next} \
 
 cat head_api_h api_inc_h.tmp med_api_h api_h.tmp tail_api_h > tmp.h
 
-cmp -s $2 tmp.h
-
-if [ $? -eq 1 ]
+if [ -f $2 ]
 then
-mv tmp.h $2
+
+    cmp -s $2 tmp.h
+
+    if [ $? -eq 1 ]
+    then
+        mv tmp.h $2
+    else
+        rm tmp.h
+    fi
 else
-rm tmp.h
+    mv tmp.h $2
 fi
 
 rm -f api_h.tmp api_inc_h.tmp 
