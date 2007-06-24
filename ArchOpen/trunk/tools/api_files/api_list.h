@@ -286,9 +286,6 @@ ICON   # icon_get                  # char * name
 int    # msgBox_show    # unsigned char* caption, unsigned char* msg, int type, int icon,int evt_hanlder
 void   # msgBox_info    # unsigned char* msg
 
-#k_inc#gui/virtKbd.h
-void   # virtKbd        # int evt_hanlder,char * str
-
 #api_inc#sys_def/cfg_file.h
 #k_inc#fs/cfg_file.h
 
