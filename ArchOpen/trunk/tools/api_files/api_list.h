@@ -63,11 +63,12 @@ void # halt_device     # void
 void # reload_firmware # void
 
 #k_inc#kernel/kernel.h
-void # printf        # char *fmt, ...
-void # print_data    # char * data,int length
-void # do_bkpt       # void
-int  # getArch       # void
-void # getResolution # int * width,int * height
+void        # printf        # char *fmt, ...
+void        # print_data    # char * data,int length
+void        # do_bkpt       # void
+int         # getArch       # void
+void        # getResolution # int * width,int * height
+MED_RET_T   # getErrno      # void
 
 #k_inc#lib/libfloat.h
 long # float_modsi3# long a, long b
@@ -284,6 +285,9 @@ ICON   # icon_get                  # char * name
 
 int    # msgBox_show    # unsigned char* caption, unsigned char* msg, int type, int icon,int evt_hanlder
 void   # msgBox_info    # unsigned char* msg
+
+#k_inc#gui/virtKbd.h
+void   # virtKbd        # int evt_hanlder,char * str
 
 #api_inc#sys_def/cfg_file.h
 #k_inc#fs/cfg_file.h
