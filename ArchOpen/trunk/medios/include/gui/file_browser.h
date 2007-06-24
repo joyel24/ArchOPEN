@@ -14,6 +14,7 @@
 #define __GUI_FILE_BROWSER_H
 
 #include <gui/scrollbar.h>
+#include <sys_def/stdfs.h>
 
 #define TYPE_STD      0
 #define TYPE_BACK     1
@@ -25,7 +26,7 @@
 #define LEFT_SCROLL  0
 #define RIGHT_SCROLL 1
 
-#define PATHLEN    256
+#define PATHLEN    MAX_PATH
 
 #define MODE_SELECT   0
 #define MODE_NOSELECT 1

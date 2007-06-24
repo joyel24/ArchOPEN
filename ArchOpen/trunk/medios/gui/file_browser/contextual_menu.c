@@ -19,6 +19,7 @@
 #include <gui/widgetlist.h>
 #include <gui/msgBox.h>
 #include <gui/shell.h>
+#include <gui/virtKbd.h>
 
 #include <kernel/evt.h>
 #include <kernel/kernel.h>
@@ -57,7 +58,6 @@ int browser_isInPath(char * path1,char * path2)
 {
     int len1,len2;
     char * ptr1,*ptr2;
-    char c;
     len1=strlen(path1);
     len2=strlen(path2);
 
@@ -110,6 +110,8 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
     int i,j;
     char fullname[PATHLEN];
     char fullname2[PATHLEN];
+    char fullname3[PATHLEN];
+    char fullname4[PATHLEN];
     MED_RET_T ret_val=MED_OK;
     struct dir_entry * selected_entry=&curBdata->list[curBdata->nselect];
     
@@ -126,11 +128,32 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                 menuList->focusedWidget->paint(menuList->focusedWidget);
                 break;
             case 1: /*Create Folder*/
-                /* NOTE: need a keyboard emu*/
-                msgBox_show("Create not supported","We need a virtual keybord",
-                                    MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler);
+                fullname[0]=0;
+                virtKbd(evt_handler,fullname);       
+                if(fullname[0]==0)
+                    break;
+                snprintf(fullname2,PATHLEN,"%s/%s",curBdata->path[1]==0?"":curBdata->path,fullname);
+                printk("create %s\n",fullname2);
+                sprintf(fullname3,"Create: %s",fullname);
+                if(msgBox_show(fullname,"Are you sure?",
+                   MSGBOX_TYPE_YESNO, MSGBOX_ICON_QUESTION,evt_handler) != MSGBOX_YES)
+                    break;
+                ret_val=mkdir(fullname2,0);
+                if(ret_val!=MED_OK)
+                {
+                    sprintf(fullname,"Error (%d)",-ret_val);
+                    msgBox_show(fullname,"Creating folder", 
+                                MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler);
+                    printk("Error: %d - while creating folder\n",-ret_val);
+                    break;
+                }
+                browser_loadFoler(curBdata,NULL);
                 break;
             case 2: /*Delete*/
+                if(msgBox_show("Delete selected files","Are you sure?",
+                   MSGBOX_TYPE_YESNO, MSGBOX_ICON_QUESTION,evt_handler) != MSGBOX_YES)
+                    break;
+                
                 /* select current item */
                 selected_entry->selected=1;
                 /* go thru the list */
@@ -194,9 +217,34 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                     curBdata->list[i].selected=j;
                 break;
             case 5: /*Rename*/
-                /* NOTE: need a keyboard */
-                msgBox_show("Rename not supported","We need a virtual keybord",
-                            MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler);
+                printk("File type= %d\n",selected_entry->type);
+                if(selected_entry->type!=TYPE_FILE && selected_entry->type!=TYPE_DIR)
+                    break;
+                strcpy(fullname3,selected_entry->name);
+                virtKbd(evt_handler,fullname3);   
+                snprintf(fullname,PATHLEN,"%s/%s",curBdata->path[1]==0?"":curBdata->path,selected_entry->name);
+                snprintf(fullname2,PATHLEN,"%s/%s",curBdata->path[1]==0?"":curBdata->path,fullname3);             
+                printk("Rename %s to %s\n",fullname,fullname2);
+                if(strcmp(fullname,fullname2)!=0)
+                {
+                    sprintf(fullname4,"New name: %s",fullname3);
+                    sprintf(fullname3,"Rename %s",selected_entry->name);
+                    if(msgBox_show(fullname3,fullname4,
+                       MSGBOX_TYPE_YESNO, MSGBOX_ICON_QUESTION,evt_handler) != MSGBOX_YES)
+                        break;
+                    if(selected_entry->type==TYPE_FILE)
+                        ret_val=mvfile(fullname,fullname2);
+                    else
+                        ret_val=mvdir(fullname,fullname2);
+                    if(ret_val!=MED_OK)
+                    {
+                        sprintf(fullname,"Error (%d)",-ret_val);
+                        msgBox_show(fullname,"Renaming File", 
+                                    MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler);
+                        printk("Error: %d - while renaming\n",-ret_val);
+                    }
+                } 
+                browser_loadFoler(curBdata,NULL);                      
                 break;
             case 6: /*open*/
                 if(selected_entry->type==TYPE_FILE)
@@ -220,9 +268,51 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                 }
                 break;
             case 7: /*copy*/
-                /* NOTE: need a copy fction in vfs */
-                msgBox_show("Copy not supported","We need a copy in VFS", 
-                       MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler);
+                if(!curBdata->is_dual || curBdata->dual_mode==0 || strcmp(curBdata->path,curBdata->dual->path)==0)
+                {
+                    printk("Error should not do copy!!!\n");
+                    break;
+                }
+                
+                if(msgBox_show("Copy selected files","Are you sure?",
+                   MSGBOX_TYPE_YESNO, MSGBOX_ICON_QUESTION,evt_handler) != MSGBOX_YES)
+                    break;
+                
+                selected_entry->selected=1;
+                for(i=0;i<curBdata->listused;i++)
+                {
+                    if(curBdata->list[i].selected)
+                    {
+                        snprintf(fullname,PATHLEN,"%s/%s",
+                                 curBdata->path[1]==0?"":curBdata->path,
+                                 curBdata->list[i].name);
+                        snprintf(fullname2,PATHLEN,"%s/%s",
+                                 curBdata->dual->path[1]==0?"":curBdata->dual->path,
+                                 curBdata->list[i].name);
+                        
+                        if(selected_entry->type==TYPE_FILE)
+                        {
+                            printk("copy file: %s to %s\n",fullname,fullname2);
+                            ret_val=cpfile(fullname,fullname2);
+                            if(ret_val!=MED_OK)
+                            {
+                                sprintf(fullname,"Error (%d)",-ret_val);
+                                msgBox_show(fullname,"Copying File", 
+                                            MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler);
+                                printk("Error: %d - Stopping copy loop\n",-ret_val);
+                                break;
+                            }
+                        }
+                        else if(selected_entry->type==TYPE_DIR)
+                        {
+                            msgBox_show("Copy folder not supported","We need a fction in VFS",
+                                        MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler);
+                        }
+                    }
+                }
+                selected_entry->selected=0;
+                /* have probably change the dest folder => reload it*/
+                browser_loadFoler(curBdata->dual,NULL);
                 break;
             case 8: /*move*/
                 /* select current item */
@@ -231,6 +321,11 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                     printk("Error should not do move!!!\n");
                     break;
                 }
+                
+                if(msgBox_show("Move selected files","Are you sure?",
+                   MSGBOX_TYPE_YESNO, MSGBOX_ICON_QUESTION,evt_handler) != MSGBOX_YES)
+                    break;
+                
                 selected_entry->selected=1;
                 for(i=0;i<curBdata->listused;i++)
                 {
@@ -251,7 +346,7 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                                 sprintf(fullname,"Error (%d)",-ret_val);
                                 msgBox_show(fullname,"Moving File", 
                                             MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler);
-                                printk("Error: %d - Stopping rm loop\n",-ret_val);
+                                printk("Error: %d - Stopping move loop\n",-ret_val);
                                 break;
                             }
                         }
@@ -280,6 +375,7 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                         }
                     }
                 }
+                selected_entry->selected=0;
                 /* we have probably change the list content => reload both screen */
                 browser_loadFoler(curBdata,NULL);
                 browser_loadFoler(curBdata->dual,NULL);

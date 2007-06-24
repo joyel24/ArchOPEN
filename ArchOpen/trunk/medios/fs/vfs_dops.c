@@ -40,7 +40,10 @@ DIR * opendir(char * pathname)
     if(path.length>0)
         path.str=pathname;
     else
-        return NULL; //-MED_EINVAL
+    {
+        errno=MED_EINVAL;
+        return NULL;
+    }
 
     if(path.str[0] != '/')
     {
@@ -66,6 +69,7 @@ DIR * opendir(char * pathname)
     if(ret_val!=MED_OK && ret_val!=-MED_ENOENT)
     {
         printk("Err(%d): during 'vfs_nodeLookup' call\n",-ret_val);
+        errno=-ret_val;
         return NULL;
     }
 
@@ -76,7 +80,8 @@ DIR * opendir(char * pathname)
         {
             /* already opened */
             printk("Dir %s alreday opened\n",pathname);
-            return NULL;//-MED_EBUSY;
+            errno=MED_EBUSY;
+            return NULL;
         }
 
         if(fd->type == VFS_TYPE_FILE)
@@ -84,6 +89,7 @@ DIR * opendir(char * pathname)
             /* it is a file => can't open file with opendir !! */
             printk("Trying to open a file with opendir !!\n");
             printk("File name: '%s'\n",pathname);
+            errno=MED_EISFILE;
             return NULL;
         }
 
@@ -91,7 +97,8 @@ DIR * opendir(char * pathname)
     else
     {
         printk("File '%s' not found\n",pathname);
-        return NULL;//-MED_ENOENT;
+        errno=MED_ENOENT;
+        return NULL;
     }
 
     ret_val=fat_fileOpen(fd);
@@ -99,6 +106,7 @@ DIR * opendir(char * pathname)
     if(ret_val != MED_OK)
     {
         printk("Error in fat_open: %d\n",-ret_val);
+        errno=-ret_val;
         return NULL;
     }
 
@@ -110,6 +118,7 @@ DIR * opendir(char * pathname)
         if(ret_val!=MED_OK)
         {
             printk("error loading folder: err=%d\n",-ret_val);
+            errno=-ret_val;
             return NULL;
         }
     }
@@ -153,7 +162,10 @@ struct dirent * readdir(DIR * fd)
     struct dirent * entry;
 
     if(!fd->opened || !fd->children)
+    {
+        errno=MED_EINVAL;
         return NULL;
+    }
 
     entry= &fd->theent;
 
@@ -177,7 +189,10 @@ struct dirent * readdir(DIR * fd)
             fd->curNode=fd->curNode->siblings_next;
         }
         else
+        {
+            errno=MED_EOF;
             return NULL;
+        }
     }
     return entry;
 }

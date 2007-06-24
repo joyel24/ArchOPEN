@@ -16,6 +16,7 @@
 #include <sys_def/errors.h>
 
 #include <kernel/kernel.h>
+#include <kernel/malloc.h>
 
 #include <fs/stdfs.h>
 #include <fs/vfs.h>
@@ -253,11 +254,61 @@ MED_RET_T mvEntry(char* path,char* newpath,struct vfs_node * openedfile, vfs_nod
     return ret_val;
 }
 
-MED_RET_T mvfile(char* path, char* newpath)
+MED_RET_T cpEntry(char* path,char* newpath,struct vfs_node * fd)
+{
+    int fd_dest;
+    char * buffer;
+    int nbBytes,size;
+    
+    fd_dest=open(newpath,O_CREAT|O_RDWR);
+    
+    if(fd_dest<0)
+    {
+        printk("[cpEntry] error creating new file: %s\n",-fd_dest);
+        return fd_dest;   
+    }
+    
+    buffer=(char*)kmalloc(512);
+    
+    if(!buffer)
+    {
+        printk("[cpEntry] error malloc buffer\n");
+        return -MED_ENOMEM;
+    }
+    
+    size=filesize((int)fd);
+    
+    printk("Need to copy %d bytes\n");
+    
+    while((nbBytes=read((int)fd,buffer,512))>0)
+    {
+        size-=nbBytes;
+        if(write(fd_dest,buffer,nbBytes)!=nbBytes)
+        {
+            printk("Wrote less than expected\n");
+            close(fd_dest);
+            rmfile(newpath);
+            free(buffer);
+            return -MED_EIO;
+        }
+    }
+    
+    free(buffer);
+    close(fd_dest);
+    
+    if(size>0)
+    {
+        printk("Org file read ended while size >0: %d\n",size);
+        return -MED_EIO;
+    }
+    
+    return MED_OK;    
+}
+
+MED_RET_T cpMvFile(char* path, char* newpath,int type)
 {
     int fd;
     MED_RET_T ret_val,ret_val2;
-    
     /* verify new path does not already exist or isn't a folder */
     fd = open(newpath, O_RDONLY);
     if ( fd >= 0 || fd == -MED_EISDIR)
@@ -274,27 +325,37 @@ MED_RET_T mvfile(char* path, char* newpath)
         return -fd;
     }
     
-    ret_val = mvEntry(path, newpath, (FILE*)fd,VFS_TYPE_FILE);
-        
-    ret_val2 = close(fd);
-    if ( ret_val2 != MED_OK )
+    if(type==1) /* MV */
     {
-        printk("[mvfile] error closing file |%s| (err=%d)\n", path,-ret_val2);
-        return ret_val2;
-    }
-    
-    if(ret_val == MED_OK)
-    {
-        ((FILE*)fd)->ref_cnt = 0 ;
-        ret_val2 = vfs_rmNodeFromTree((FILE*)fd);
-        if ( ret_val2 != MED_OK )
+        ret_val = mvEntry(path, newpath, (FILE*)fd,VFS_TYPE_FILE);
+        if(ret_val == MED_OK)
         {
-            printk("[mvfile] error removing node |%s| (err=%d)\n", path,-ret_val2);
-            return ret_val2;
+            ((FILE*)fd)->ref_cnt = 0 ;
+            ret_val2 = vfs_rmNodeFromTree((FILE*)fd);
+            if ( ret_val2 != MED_OK )
+            {
+                printk("[mvfile] error removing node |%s| (err=%d)\n", path,-ret_val2);
+                close(fd);
+                return ret_val2;
+            }
         }
     }
-    
-    return ret_val;    
+    else /* CP */
+    {
+        ret_val = cpEntry(path, newpath, (FILE*)fd);
+    }
+    close(fd);
+    return ret_val;
+}
+
+MED_RET_T mvfile(char* path, char* newpath)
+{
+    return cpMvFile(path,newpath,1);   
+}
+
+MED_RET_T cpfile(char* path,char* newpath)
+{
+    return cpMvFile(path,newpath,0);
 }
 
 MED_RET_T mvdir(char* path,char* newpath)

@@ -12,6 +12,7 @@
 
 #include <lib/string.h>
 #include <sys_def/colordef.h>
+#include <sys_def/stdfs.h>
 
 #include <kernel/kernel.h>
 #include <kernel/evt.h>
@@ -19,129 +20,30 @@
 #include <gfx/graphics.h>
 #include <gfx/kfont.h>
 
+#include <driver/lcd.h>
+#include <driver/hardware.h>
+
 #define CELL_SPACE        3
 #define CELL_DIST         1
 #define NB_CELL_PER_LINE  3
-#define TOT_WIDTH         320
-#define TOT_HEIGHT        240
+#define TOT_WIDTH         SCREEN_WIDTH
+#define TOT_HEIGHT        SCREEN_HEIGHT
 #define BG_COLOR          COLOR_WHITE
 #define TXT_COLOR         COLOR_BLUE
 #define SEL_COLOR         COLOR_BLACK
 #define BLK_COLOR         COLOR_DARK_GRAY
-#define MAX_CHAR_DISP     20
+#define TXT_BG_COLOR      COLOR_LIGHT_YELLOW
 
 PALETTE pal[2] = {BG_COLOR, TXT_COLOR};
 
-unsigned char leftArrow_DA[13][8] =
-    { {0, 0, 0, 0, 0, 0, 0, 0},
-      {0, 0, 0, 0, 1, 1, 0, 0},
-      {0, 0, 0, 1, 1, 0, 0, 0},
-      {0, 0, 1, 1, 0, 0, 0, 0},
-      {0, 1, 1, 0, 0, 0, 0, 0},
-      {1, 1, 1, 1, 1, 1, 1, 1},
-      {1, 1, 1, 1, 1, 1, 1, 1},
-      {0, 1, 1, 0, 0, 0, 0, 0},
-      {0, 0, 1, 1, 0, 0, 0, 0},
-      {0, 0, 0, 1, 1, 0, 0, 0},
-      {0, 0, 0, 0, 1, 1, 0, 0},
-      {0, 0, 0, 0, 0, 0, 0, 0},
-      {0, 0, 0, 0, 0, 0, 0, 0}
-    };
-
-SPRITE leftArrow_SP = {(unsigned int) leftArrow_DA, 8, 13, 1, 1};
-
-unsigned char rightArrow_DA[13][8] =
-    { {0, 0, 0, 0, 0, 0, 0, 0},
-      {0, 0, 1, 1, 0, 0, 0, 0},
-      {0, 0, 0, 1, 1, 0, 0, 0},
-      {0, 0, 0, 0, 1, 1, 0, 0},
-      {0, 0, 0, 0, 0, 1, 1, 0},
-      {1, 1, 1, 1, 1, 1, 1, 1},
-      {1, 1, 1, 1, 1, 1, 1, 1},
-      {0, 0, 0, 0, 0, 1, 1, 0},
-      {0, 0, 0, 0, 1, 1, 0, 0},
-      {0, 0, 0, 1, 1, 0, 0, 0},
-      {0, 0, 1, 1, 0, 0, 0, 0},
-      {0, 0, 0, 0, 0, 0, 0, 0},
-      {0, 0, 0, 0, 0, 0, 0, 0}
-    };
-
-SPRITE rightArrow_SP = {(unsigned int) rightArrow_DA, 8, 13, 1, 1};
-
-char char_horiz[6][NB_CELL_PER_LINE][2]=
-{
-    /* TOP */
-    { "a", "b", "c" },
-    { "d", "e", "f" },
-    { "g", "h", "i" },
-    /* BOTTOM */
-    { "", " ", "" },
-    { "", "", "" },
-    { "", "", "" }
-};
-
-char char_vert[6][NB_CELL_PER_LINE][2]=
-{
-    /* LEFT */
-    { "j", "k", "l" },
-    { "m", "n", "o" },
-    { "p", "q", "r" },
-    /* RIGHT */
-    { "s", "t", "u" },
-    { "v", "w", "x" },
-    { "y", "z", "_" }
-};
-
-SPRITE * spec_horiz[6][NB_CELL_PER_LINE]=
-{
-    /* TOP */
-    { NULL, NULL, NULL },
-    { NULL, NULL, NULL },
-    { NULL, NULL, NULL },
-    /* BOTTOM */
-    { NULL, NULL, NULL },
-    { NULL, NULL, NULL },
-    { NULL, NULL, NULL }
-};
-
-SPRITE * spec_vert[6][NB_CELL_PER_LINE]=
-{
-    /* LEFT */
-    { NULL, NULL, NULL },
-    { NULL, NULL, NULL },
-    { NULL, NULL, NULL },
-    /* RIGHT */
-    { NULL, NULL, NULL },
-    { NULL, NULL, NULL },
-    { NULL, NULL, NULL }
-};
-
 void leftCursor(void);
 void rightCursor(void);
+void delCursor(void);
+void shiftCursor(void);
+void majCursor(void);
+void numPage(void);
 
-void (*action_horiz[6][NB_CELL_PER_LINE])=
-{
-    /* TOP */
-    { NULL, NULL, NULL },
-    { NULL, NULL, NULL },
-    { NULL, NULL, NULL },
-    /* BOTTOM */
-    { leftCursor, NULL, rightCursor },
-    { NULL, NULL, NULL },
-    { NULL, NULL, NULL }
-};
-
-void (*action_vert[6][NB_CELL_PER_LINE])=
-{
-    /* TOP */
-    { NULL, NULL, NULL },
-    { NULL, NULL, NULL },
-    { NULL, NULL, NULL },
-    /* BOTTOM */
-    { NULL, NULL, NULL },
-    { NULL, NULL, NULL },
-    { NULL, NULL, NULL }
-};
+#include "virtKbd_inc.h"
 
 int bg_txt_colors[3] = 
 {
@@ -157,39 +59,66 @@ int mode=1;
 int elem=2;
 int cur_index=0;
 int str_len=0;
-char cur_str[MAX_CHAR_DISP+1];
-int txt_x,txt_y;
+int modify_str=1;
+char cur_str[MAX_PATH];
+int txt_x,txt_y,txt_w,txt_max_char;
+int page,shift;
+int paramVirtKbd;
 
-void calcCoord(void)
+void calcCoord(int txt_on_top)
 {
     int h=0,w=0,x,y;
     gfx_getStringSize("M", &w, &h);
     /* horizontal lines coordinates */
-    x=(TOT_WIDTH-(NB_CELL_PER_LINE*(w+CELL_SPACE)-CELL_SPACE+2*CELL_DIST))/2;
+    x=(TOT_WIDTH-(NB_CELL_PER_LINE*(w+CELL_SPACE)-CELL_SPACE+2*CELL_DIST))/2; /* coord X is the same for all Horzi */
+    y=(TOT_HEIGHT-(NB_CELL_PER_LINE*(h+CELL_SPACE)-CELL_SPACE+2*CELL_DIST))/2; /* coord Y is the same for all Verti */
     coord_horiz[0][0]=coord_horiz[1][0]=coord_horiz[2][0]=coord_horiz[3][0]=coord_horiz[4][0]=coord_horiz[5][0]=x;
     
+    if(txt_on_top)
+        coord_horiz[0][1]=CELL_DIST+2+h+4*CELL_DIST+CELL_SPACE;
+    else
     coord_horiz[0][1]=CELL_DIST+1;
+
     coord_horiz[1][1]=coord_horiz[0][1]+h+CELL_SPACE;
     coord_horiz[2][1]=coord_horiz[1][1]+h+CELL_SPACE;
     
+    /* starting Y from bottom */
     coord_horiz[5][1]=TOT_HEIGHT-1-CELL_DIST-h;
     coord_horiz[4][1]=coord_horiz[5][1]-CELL_SPACE-h;
     coord_horiz[3][1]=coord_horiz[4][1]-CELL_SPACE-h;
-//     
+    
+    if(txt_on_top && (coord_horiz[2][1]+h+CELL_SPACE)>coord_horiz[3][1])
+    {
+        coord_horiz[2][1]=coord_horiz[3][1]-CELL_SPACE-h;
+        coord_horiz[1][1]=coord_horiz[2][1]-CELL_SPACE-h;
+        coord_horiz[0][1]=coord_horiz[1][1]-CELL_SPACE-h;
+    }
+      
     /* vertical lines coordinates */
     coord_vert[0][0]=CELL_DIST+1;
     coord_vert[1][0]=coord_vert[0][0]+w+CELL_SPACE;
     coord_vert[2][0]=coord_vert[1][0]+w+CELL_SPACE;
     
-    coord_vert[5][0]=TOT_WIDTH-1-CELL_DIST-w;
+    coord_vert[5][0]=TOT_WIDTH-1-CELL_DIST-CELL_SPACE-w;
     coord_vert[4][0]=coord_vert[5][0]-CELL_SPACE-w;
     coord_vert[3][0]=coord_vert[4][0]-CELL_SPACE-w;
-    
-    y=(TOT_HEIGHT-(NB_CELL_PER_LINE*(h+CELL_SPACE)-CELL_SPACE+2*CELL_DIST))/2;    
+     
     coord_vert[0][1]=coord_vert[1][1]=coord_vert[2][1]=coord_vert[3][1]=coord_vert[4][1]=coord_vert[5][1]=y;
     
-    txt_x=(TOT_WIDTH-w*MAX_CHAR_DISP)/2;
-    txt_y=(TOT_HEIGHT-h)/2;
+    if(txt_on_top)
+    {
+        txt_x=2*CELL_DIST+1;
+        txt_y=2*CELL_DIST+1;
+        txt_w=TOT_WIDTH-4*CELL_DIST-2;
+    }
+    else
+    {    
+        txt_x=coord_vert[2][0]+w+CELL_SPACE+2*CELL_DIST;
+        txt_y=(TOT_HEIGHT-h)/2;
+        txt_w=coord_vert[3][0]-txt_x-2*CELL_DIST;
+    }
+    
+    txt_max_char=txt_w/w;
 }
 
 void drawHoriz(int pos)
@@ -198,16 +127,17 @@ void drawHoriz(int pos)
     gfx_getStringSize("M", &w, &h);
     for(i=0;i<NB_CELL_PER_LINE;i++)
     {
-        if(char_horiz[pos][i][0] || spec_horiz[pos][i])
-            gfx_fillRect(bg_txt_colors[i],coord_horiz[pos][0]+i*(w+CELL_SPACE),coord_horiz[pos][1],w+2*CELL_DIST,h+2*CELL_DIST);
-        if(char_horiz[pos][i][0])
-            gfx_putS(TXT_COLOR,bg_txt_colors[i],coord_horiz[pos][0]+i*(w+CELL_SPACE)+CELL_DIST,
-                    coord_horiz[pos][1]+CELL_DIST,char_horiz[pos][i]);
+        if(char_horiz[page][pos][i] || spec_horiz[page][pos][i])
+            gfx_fillRect(bg_txt_colors[i],coord_horiz[pos][0]+i*(w+CELL_SPACE),
+                         coord_horiz[pos][1],w+2*CELL_DIST,h+2*CELL_DIST);
+        if(char_horiz[page][pos][i])
+            gfx_putC(TXT_COLOR,bg_txt_colors[i],coord_horiz[pos][0]+i*(w+CELL_SPACE)+CELL_DIST,
+                     coord_horiz[pos][1]+CELL_DIST,char_horiz[page][pos][i]);
         else
-            if(spec_horiz[pos][i])
+            if(spec_horiz[page][pos][i])
             {
                 pal[0]=bg_txt_colors[i];
-                gfx_drawSprite ((PALETTE*)&pal, spec_horiz[pos][i], coord_horiz[pos][0]+i*(w+CELL_SPACE)+CELL_DIST,
+                gfx_drawSprite ((PALETTE*)&pal, spec_horiz[page][pos][i], coord_horiz[pos][0]+i*(w+CELL_SPACE)+CELL_DIST,
                         coord_horiz[pos][1]+CELL_DIST);
             }
     }
@@ -219,16 +149,16 @@ void drawVert(int pos)
     gfx_getStringSize("M", &w, &h);
     for(i=0;i<NB_CELL_PER_LINE;i++)
     {
-        if(char_vert[pos][i][0] || spec_vert[pos][i])
+        if(char_vert[page][pos][i] || spec_vert[page][pos][i])
             gfx_fillRect(bg_txt_colors[i],coord_vert[pos][0],coord_vert[pos][1]+i*(h+CELL_SPACE),w+2*CELL_DIST,h+2*CELL_DIST);
-        if(char_vert[pos][i][0])
-            gfx_putS(TXT_COLOR,bg_txt_colors[i],coord_vert[pos][0]+CELL_DIST,
-                    coord_vert[pos][1]+i*(h+CELL_SPACE)+CELL_DIST,char_vert[pos][i]);
+        if(char_vert[page][pos][i])
+            gfx_putC(TXT_COLOR,bg_txt_colors[i],coord_vert[pos][0]+CELL_DIST,
+                     coord_vert[pos][1]+i*(h+CELL_SPACE)+CELL_DIST,char_vert[page][pos][i]);
         else
-            if(spec_vert[pos][i])
+            if(spec_vert[page][pos][i])
             {
                 pal[0]=bg_txt_colors[i];
-                gfx_drawSprite ((PALETTE*)&pal, spec_vert[pos][i],coord_vert[pos][0]+i*(w+CELL_SPACE)+CELL_DIST,
+                gfx_drawSprite ((PALETTE*)&pal, spec_vert[page][pos][i],coord_vert[pos][0]+i*(w+CELL_SPACE)+CELL_DIST,
                         coord_vert[pos][1]+CELL_DIST);
             }
     }
@@ -238,7 +168,8 @@ void drawTxtZone(void)
 {
     int h=0,w=0;
     gfx_getStringSize("M", &w, &h);
-    gfx_drawRect(BLK_COLOR,txt_x-2*CELL_DIST,txt_y-2*CELL_DIST,MAX_CHAR_DISP*w+4*CELL_DIST,h+4*CELL_DIST+2);
+    gfx_fillRect(TXT_BG_COLOR,txt_x-2*CELL_DIST,txt_y-2*CELL_DIST,txt_w+4*CELL_DIST,h+4*CELL_DIST+2);
+    gfx_drawRect(BLK_COLOR,txt_x-2*CELL_DIST,txt_y-2*CELL_DIST,txt_w+4*CELL_DIST,h+4*CELL_DIST+2);
     /* +2 => space for the cursor*/
 }
 
@@ -274,7 +205,7 @@ void gfx_putSelect(int color)
 {
     int h=0,w=0;
     gfx_getStringSize("M", &w, &h);
-    printk("[putCursor] %s %s %d\n",color==COLOR_WHITE?"WHITE":"BLUE",mode==1?"HORIZ":"VERT",elem);
+    //printk("[putCursor] %s %s %d\n",color==COLOR_WHITE?"WHITE":"BLUE",mode==1?"HORIZ":"VERT",elem);
     if(mode) // horizontal
     {
         gfx_drawRect(color,coord_horiz[elem][0],coord_horiz[elem][1],NB_CELL_PER_LINE*(w+CELL_SPACE)-CELL_SPACE+2*CELL_DIST,
@@ -304,6 +235,56 @@ void leftCursor(void)
     }
 }
 
+void delCursor(void)
+{
+    printk("cur %d len %d\n",cur_index,str_len);
+    if(cur_index==str_len)
+        return;
+    cur_str[str_len]='\0';
+    strcpy(&cur_str[cur_index],&cur_str[cur_index+1]);
+    drawTxtZone();
+    gfx_putS(TXT_COLOR,TXT_BG_COLOR,txt_x,txt_y,cur_str);
+    putCursor(SEL_COLOR);
+}
+
+void shiftCursor(void)
+{
+    if(page==0)        
+    {
+        majCursor();
+        shift=2;
+    }
+    else
+        majCursor();
+}
+
+void majCursor(void)
+{
+    if(page==2)
+        page=1;
+    else
+        page=page==0?1:0;
+    shift=0;
+    drawPage();
+    drawBtn();
+    drawTxtZone();
+    gfx_putS(TXT_COLOR,TXT_BG_COLOR,txt_x,txt_y,cur_str);    
+    gfx_putSelect(SEL_COLOR);  
+    putCursor(SEL_COLOR);
+}
+
+void numPage(void)
+{
+    page=page==2?0:2;
+    shift=0;
+    drawPage();
+    drawBtn();
+    drawTxtZone();
+    gfx_putS(TXT_COLOR,TXT_BG_COLOR,txt_x,txt_y,cur_str);    
+    gfx_putSelect(SEL_COLOR);  
+    putCursor(SEL_COLOR);
+}
+
 void rightCursor(void)
 {
     if(cur_index<str_len)
@@ -319,17 +300,19 @@ void virtKbdEvtHandler(int evt_hanlder)
     int h=0,w=0;
     int stopLoop=0;
     int char_num=0;
-    char * str;
+    char str;
     void (*routine)(void);
     gfx_getStringSize("M", &w, &h);
     char evt=0;
     
+    modify_str=1;
+    
     while(!stopLoop)
     {
-        evt = evt_getHandler(evt_hanlder);
+        evt = evt_getStatus(evt_hanlder);
         if(!evt)
             continue;
-        char_num=0;    
+        char_num=0;   
         switch (evt) {        
             case BTN_DOWN:
                 if(mode)
@@ -404,26 +387,28 @@ void virtKbdEvtHandler(int evt_hanlder)
                 }
                 break;
             case BTN_OFF:
-                if(str_len+1==MAX_CHAR_DISP)
+                modify_str=0;
+            case BTN_ON:
+                if(str_len+1==txt_max_char)
                     str_len++;
                 cur_str[str_len]='\0';
                 /* get out of here */            
                 stopLoop=1;
-                break;        
+                break;     
             case BTN_F3:
                 char_num++;
             case BTN_F2:
                 char_num++;
             case BTN_F1:
-                if(cur_index<MAX_CHAR_DISP)
+                if(cur_index<txt_max_char)
                 {
-                    str=mode==1?char_horiz[elem][char_num]:char_vert[elem][char_num];
-                    if(str[0])
+                    str=mode==1?char_horiz[page][elem][char_num]:char_vert[page][elem][char_num];
+                    if(str)
                     {
                         putCursor(BG_COLOR);
-                        gfx_putS(TXT_COLOR,BG_COLOR,txt_x+cur_index*w,txt_y,str);
-                        cur_str[cur_index]=str[0];
-                        if(cur_index+1!=MAX_CHAR_DISP)
+                        gfx_putC(TXT_COLOR,TXT_BG_COLOR,txt_x+cur_index*w,txt_y,str);
+                        cur_str[cur_index]=str;
+                        if(cur_index+1!=txt_max_char)
                         {
                             if(cur_index==str_len)
                                 str_len++;
@@ -437,7 +422,7 @@ void virtKbdEvtHandler(int evt_hanlder)
                         {
                             if(action_horiz[elem][char_num])
                             {
-                                routine=action_horiz[elem][char_num];
+                                routine=action_horiz[page][elem][char_num];
                                 routine();
                             }
                         }
@@ -445,12 +430,17 @@ void virtKbdEvtHandler(int evt_hanlder)
                         {
                             if(action_vert[elem][char_num])
                             {
-                                routine=action_vert[elem][char_num];
+                                routine=action_vert[page][elem][char_num];
                                 routine();
                             }
                         }
                     }
                 }
+                
+                if(shift==1)
+                    majCursor();
+                if(shift==2)
+                    shift--;                
                 break;
         }
     }    
@@ -458,19 +448,56 @@ void virtKbdEvtHandler(int evt_hanlder)
 
 void iniSprite(void)
 {
-    spec_horiz[3][0]=&leftArrow_SP;
-    spec_horiz[3][2]=&rightArrow_SP;
+    spec_horiz[0][4][0]=spec_horiz[1][4][0]=spec_horiz[2][4][0]=&leftArrow_SP;
+    spec_horiz[0][4][1]=spec_horiz[1][4][1]=spec_horiz[2][4][1]=&del_SP;
+    spec_horiz[0][4][2]=spec_horiz[1][4][2]=spec_horiz[2][4][2]=&rightArrow_SP;
+    spec_horiz[0][5][0]=spec_horiz[1][5][0]=spec_horiz[2][5][0]=&upArrow_SP;
+    spec_horiz[0][5][2]=spec_horiz[1][5][2]=spec_horiz[2][5][2]=&up2Arrow_SP;
+    spec_horiz[0][5][1]=spec_horiz[1][5][1]=spec_horiz[2][5][1]=&num_SP;
 }
 
-void virtKbd(int evt_hanlder)
+int defaultVirtKbdLY(void)
 {
+    switch(CURRENT_ARCH)
+    {
+        case AV3XX_ARCH:
+        case AV4XX_ARCH:
+        case PMA_ARCH:
+        case AV5XX_ARCH:
+            return 0;
+        break;
+        case GMINI4XX_ARCH:
+        case AV1XX_ARCH:
+        case JBMM_ARCH:
+        case GMINI402_ARCH:
+            return 1;
+    }   
+}
+
+
+
+void virtKbd(int evt_handler,char * str)
+{
+    mode=1;
+    elem=4;
+    cur_index=0;
+    modify_str=1;
+    page=0;
+    shift=0;
     gfx_fontSet(STD8X13);
-    calcCoord();
+    str_len=strlen(str);
+    strcpy(cur_str,str);
+    
+    calcCoord(paramVirtKbd);
+    
     iniSprite();
     drawPage();
     drawBtn();
     drawTxtZone();
+    gfx_putS(TXT_COLOR,TXT_BG_COLOR,txt_x,txt_y,cur_str);    
     gfx_putSelect(SEL_COLOR);  
     putCursor(SEL_COLOR);
-    virtKbdEvtHandler(evt_hanlder);
+    virtKbdEvtHandler(evt_handler);
+    if(modify_str)
+        strcpy(str,cur_str);
 }

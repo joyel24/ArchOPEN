@@ -50,16 +50,22 @@ MED_RET_T vfs_mount(char * mount_path,int disk, int partition_num)
 {
     int ret_val;
     struct vfs_node * root_node;
+    struct vfs_node * dot_node;
     struct vfs_mountPoint * mountPoint;
     
     struct vfs_pathname VFS_Path;
     struct vfs_pathname VFS_Name;
+    struct vfs_pathname VFS_dot;
+    char * dot_str="..";
     char path_str[MAX_PATH];
     char name_str[MAX_PATH];
   
     char * mount_str;
     int is_root=0;
     struct vfs_node * res=NULL;
+    
+    VFS_dot.str=dot_str;
+    VFS_dot.length=strlen(dot_str);
     
     strcpy(path_str,mount_path);
     VFS_Path.str=path_str;
@@ -153,7 +159,14 @@ MED_RET_T vfs_mount(char * mount_path,int disk, int partition_num)
         mount_str=kmalloc(VFS_Name.length+1);
         vfs_pathNameDup(&VFS_Name,&root_node->name,mount_str);        
         vfs_nodeAddChild(res,root_node);
-        #warning we should also add . and .. folder in non root-dir mount point
+        dot_node=(struct vfs_node *)kmalloc(sizeof(struct vfs_node));
+        vfs_nodeInitChild(mountPoint,root_node,&VFS_dot,dot_node,VFS_TYPE_DIR);
+        dot_node->children=res;
+        VFS_dot.str[1]=0;
+        VFS_dot.length=strlen(dot_str);
+        dot_node=(struct vfs_node *)kmalloc(sizeof(struct vfs_node));
+        vfs_nodeInitChild(mountPoint,root_node,&VFS_dot,dot_node,VFS_TYPE_DIR);
+        dot_node->children=root_node;
     }
     
     ret_val=fat_loadDir(root_node);

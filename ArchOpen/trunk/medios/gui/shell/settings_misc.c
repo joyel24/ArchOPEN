@@ -21,6 +21,7 @@
 #include <gui/button.h>
 #include <gui/icons.h>
 #include <gui/checkbox.h>
+#include <gui/virtKbd.h>
 
 #include <gui/settings_misc.h>
 
@@ -36,6 +37,7 @@ WIDGETLIST menuList;
 CHECKBOX FmRemote;
 CHECKBOX ExtSpkr;
 CHECKBOX develFct;
+CHECKBOX virtKbdLY;
 
 int stop_misc_set;
 
@@ -88,6 +90,12 @@ void okBtnMisc_click(BUTTON b)
             SPKR_OFF();
         }
         cfg_writeInt(cfg,"ExtSpkr",ExtSpkr->checked);
+    }
+    
+    if(virtKbdLY->checked != paramVirtKbd)
+    {
+        paramVirtKbd=virtKbdLY->checked;
+        cfg_writeInt(cfg,"VkbdLY",paramVirtKbd);
     }
     
     cfg_writeFile(cfg,"/medios/medios.cfg");
@@ -171,6 +179,14 @@ void misc_setting(void)
         y+=lineH;
     }
     
+    virtKbdLY=checkbox_create();
+    virtKbdLY->caption="Text at top";
+    virtKbdLY->font=MISC_GUIFONT;
+    virtKbdLY->setRect(virtKbdLY,x,y,8,8);
+    virtKbdLY->checked=has_develFct;
+    y+=lineH;
+    
+    menuList->addWidget(menuList,virtKbdLY);
     
     gfx_getStringSize("OK",&sepW,&sepH);
     
@@ -210,9 +226,9 @@ void misc_loadPref(void)
 {
     CFG_DATA * cfg;
     int needWrite=0;
-       
-    cfg=cfg_readFile("/medios/medios.cfg");
            
+    cfg=cfg_readFile("/medios/medios.cfg");
+               
     if(!cfg)
     {
         printk("Can't open cfg file\n");
@@ -227,6 +243,8 @@ void misc_loadPref(void)
         if(SPKR_AVAILABLE())
             cfg_writeInt(cfg,"ExtSpkr",0);
         cfg_writeInt(cfg,"develFct",0);
+        paramVirtKbd=defaultVirtKbdLY();
+        cfg_writeInt(cfg,"VkbdLY",paramVirtKbd);        
         needWrite=1;   
     }
     else
@@ -276,6 +294,18 @@ void misc_loadPref(void)
                 needWrite=1;
             }
         }
+        
+        if(cfg_itemExists(cfg,"VkbdLY"))
+        {
+            paramVirtKbd=cfg_readInt(cfg,"VkbdLY");
+        }
+        else
+        {
+            paramVirtKbd=defaultVirtKbdLY();
+            cfg_writeInt(cfg,"VkbdLY",paramVirtKbd);            
+            needWrite=1;
+        }
+        
         
     }
     if(needWrite) cfg_writeFile(cfg,"/medios/medios.cfg");
