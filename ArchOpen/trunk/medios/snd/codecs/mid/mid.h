@@ -1,6 +1,4 @@
 /*
-*   include/kernel/libmath.h
-*
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
 *
@@ -10,14 +8,7 @@
 * KIND, either express of implied.
 */
 
-
-#ifndef __LIBMATH_H
-#define __LIBMATH_H
-
-double math_cos(double);
-double cos(double);
-double math_sqrt(double);
-double sqrt(double);
-double math_tan(double);
-double tan(double);
+#ifndef __MID_H
+#define __MID_H
+extern size_t allocMem;
 #endif

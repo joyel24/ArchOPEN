@@ -35,7 +35,7 @@ void         graphics32_DrawHLine         (unsigned int color, int x, int y, int
 void         graphics32_DrawVLine         (unsigned int color, int x, int y, int height, struct graphicsBuffer * buff);
 void         graphics32_DrawHorizLine (unsigned int color, int width,unsigned int * offset);
 void         graphics32_DrawString    (struct graphicsFont * font, unsigned int color,unsigned int bg_color, int x, int y,
-                                            unsigned char * s, struct graphicsBuffer * buff);
+                                            unsigned char * s, int n, struct graphicsBuffer * buff);
 
 struct graphics_operations g32ops =  {
     clearScreen       : graphics32_clearScreen,
@@ -377,7 +377,7 @@ void graphics32_DrawChar(struct graphicsFont * font, unsigned int color, unsigne
     }   
 }
 
-void graphics32_DrawString(struct graphicsFont * font, unsigned int color, unsigned int bg_color, int x, int y, unsigned char * s, struct graphicsBuffer * buff)
+void graphics32_DrawString(struct graphicsFont * font, unsigned int color, unsigned int bg_color, int x, int y, unsigned char * s, int n, struct graphicsBuffer * buff)
 {
     #if 0
     int i,val,j,k;
@@ -431,11 +431,14 @@ void graphics32_DrawString(struct graphicsFont * font, unsigned int color, unsig
         dest+=buff->width;
     }     
     #endif
-    while(*s && x<(buff->width-font->width))
+    if(n==-1) n=1000;
+        
+    while(*s && x<(buff->width-font->width) && n)
     {
         graphics32_DrawChar(font,color,bg_color,x,y, *s, buff);
         x+=font->width;
         s++;
+        n--;
     }
 }
 

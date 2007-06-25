@@ -63,7 +63,7 @@ void          (*drawChar)         (struct graphicsFont * font, unsigned int colo
 void          (*drawSprite)       (unsigned int * palette, SPRITE * sprite, unsigned int trsp, int x, int y, struct graphicsBuffer * buff);
 void          (*drawBITMAP)       (BITMAP * bitmap, unsigned int trsp, int x, int y, struct graphicsBuffer * buff);
 void          (*drawResizedBITMAP)(BITMAP * bitmap, int x, int y, int xinc, int yinc , struct graphicsBuffer * buff);
-void          (*drawString)       (struct graphicsFont * font, unsigned int color,unsigned int bg_color, int x, int y, unsigned char * s, struct graphicsBuffer * buff);
+void          (*drawString)       (struct graphicsFont * font, unsigned int color,unsigned int bg_color, int x, int y, unsigned char * s, int n, struct graphicsBuffer * buff);
 void          (*scrollWindowVert) (unsigned int bgColor, int x, int y, int width, int height, int scroll, int UP, struct graphicsBuffer * buff);
 void          (*scrollWindowHoriz)(unsigned int bgColor, int x, int y, int width, int height, int scroll, int RIGHT, struct graphicsBuffer * buff);
 void          (*drawHLine)        (unsigned int color, int x, int y, int width, struct graphicsBuffer * buff);
@@ -101,6 +101,7 @@ void  gfx_drawRect             (unsigned int color, int x, int y, int width, int
 void  gfx_fillRect             (unsigned int color, int x, int y, int width, int height);
 void  gfx_drawLine             (unsigned int color, int x1, int y1, int x2, int y2);
 void  gfx_putS                 (unsigned int color, unsigned int bg_color, int x, int y, unsigned char *s);
+void  gfx_putnS                (unsigned int color, unsigned int bg_color, int x, int y, int n, unsigned char *s);
 void  gfx_getStringSize        (unsigned char *str, int *w, int *h);
 void  gfx_putC                 (unsigned int color, unsigned int bg_color, int x, int y, unsigned char s);
 void  gfx_drawSprite           (unsigned int * palette, SPRITE * sprite, int x, int y);

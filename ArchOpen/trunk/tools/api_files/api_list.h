@@ -117,6 +117,7 @@ int # float_nesf2 # float a, float b
 #k_inc#lib/libmath.h
 double # math_cos # double a
 double # math_sqrt # double a
+double # math_tan  # double a
 
 #k_inc#fs/stdfs.h
 #api_inc#sys_def/stdfs.h
@@ -163,6 +164,7 @@ void   # gfx_drawRect              # unsigned int color, int x, int y, int width
 void   # gfx_fillRect              # unsigned int color, int x, int y, int width, int height
 void   # gfx_drawLine              # unsigned int color, int x1, int y1, int x2, int y2
 void   # gfx_putS                  # unsigned int color, unsigned int bg_color, int x, int y, unsigned char *s
+void   # gfx_putnS                 # unsigned int color, unsigned int bg_color, int x, int y, int n, unsigned char *s
 void   # gfx_getStringSize         # unsigned char *str, int *w, int *h
 void   # gfx_putC                  # unsigned int color, unsigned int bg_color, int x, int y, unsigned char s
 void   # gfx_drawSprite            # unsigned int * palette, SPRITE * sprite, int x, int y

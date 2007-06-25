@@ -38,7 +38,7 @@ void         graphics8_DrawHLine         (unsigned int color, int x, int y, int 
 void         graphics8_DrawVLine         (unsigned int color, int x, int y, int height, struct graphicsBuffer * buff);
 void         graphics8_DrawHorizLine (unsigned int color, int width,unsigned char * offset);
 void         graphics8_DrawString    (struct graphicsFont * font, unsigned int color,unsigned int bg_color, int x, int y,
-                                            unsigned char * s, struct graphicsBuffer * buff);
+                                            unsigned char * s, int n, struct graphicsBuffer * buff);
 
 struct graphics_operations g8ops =  {
     clearScreen       : graphics8_clearScreen,
@@ -379,7 +379,7 @@ void graphics8_DrawChar(struct graphicsFont * font,unsigned int color,unsigned i
     }   
 }
 
-void graphics8_DrawString(struct graphicsFont * font, unsigned int color,unsigned int bg_color, int x, int y, unsigned char * s, struct graphicsBuffer * buff)
+void graphics8_DrawString(struct graphicsFont * font, unsigned int color,unsigned int bg_color, int x, int y, unsigned char * s, int n, struct graphicsBuffer * buff)
 {
 #if 1
     int i,j,k,shift,index;
@@ -389,7 +389,9 @@ void graphics8_DrawString(struct graphicsFont * font, unsigned int color,unsigne
     unsigned int palette[2]={bg_color,color};
     unsigned char * line_end=(getOffset(buff->width,y,buff,unsigned char))-font->width;
 
-    while(*s && org<line_end)
+    if(n==-1) n=1000;
+    
+    while(*s && org<line_end && n)
     {
         src=font->table[(int)*s];
         dest=org;
@@ -415,6 +417,7 @@ void graphics8_DrawString(struct graphicsFont * font, unsigned int color,unsigne
         }
         s++;
         org+=font->width;
+        n--;
     }
 #else
     int i,val,j,k;

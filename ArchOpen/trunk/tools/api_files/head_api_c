@@ -65,6 +65,7 @@ int __nesf2 (float a, float b) { return float_nesf2(a,b); }
 
 double cos(double a) { return math_cos(a); }
 double sqrt(double a) { return math_sqrt(a); }
+double tan(double a) { return math_tan(a); }
 
 unsigned char * _ctype;
 

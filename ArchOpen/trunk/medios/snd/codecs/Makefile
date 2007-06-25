@@ -1,6 +1,6 @@
 include $(MEDIOS_SRC_PATH)/Makefile.conf
 
-SUBDIRS=wav tremor wavpack mad musepack
+SUBDIRS=wav tremor wavpack mad musepack mid
 SUBDIRS_CLEAN=$(MEDIOS_SRC_PATH)/codec
 
 all: codec_dir subdirs

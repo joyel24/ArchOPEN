@@ -515,7 +515,18 @@ void gfx_putS(unsigned int color, unsigned int bg_color, int x, int y, unsigned 
     RECT_COORD_CHECK(x,y,fnt->width,fnt->height,"putS");
 
     buffers[current_plane]->gops->drawString(fnt,color,bg_color,
-                            x,y,s,buffers[current_plane]);
+                            x,y,s,-1,buffers[current_plane]);
+}
+
+void gfx_putnS(unsigned int color, unsigned int bg_color, int x, int y, int n,unsigned char *s)
+{
+    FONT fnt=fnt_fontFromId(current_font);
+
+    // does not check string length, but it's checked in the gop
+    RECT_COORD_CHECK(x,y,fnt->width,fnt->height,"putS");
+
+    buffers[current_plane]->gops->drawString(fnt,color,bg_color,
+                                             x,y,s,n,buffers[current_plane]);
 }
 
 void gfx_getStringSize(unsigned char *str, int *w, int *h)
