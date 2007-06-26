@@ -186,6 +186,8 @@ CODEC_INFO * codec_new(){
     info->globalInfo.description="";
     info->globalInfo.seekSupported=false;
     info->globalInfo.trackLoop=NULL;
+    info->globalInfo.tagRequest=NULL;
+    info->globalInfo.noTimeAdvance=false;
     info->next=NULL;
 
     // handle linked list
@@ -387,14 +389,22 @@ bool codec_getElapsed(int * elapsed){
     if(!codec_loopRunning) return false;
 
     if(elapsed){
-        int pos;
-        PLAYLIST_ITEM * item;
-        
-        item=buffer_getActiveItem();
+        if(codec_current->globalInfo.noTimeAdvance){
 
-        pos=MAX(output_readPos-codec_startOutPos,0);
+            *elapsed=codec_timeDelta;
 
-        *elapsed=codec_timeDelta+(long long)pos*HZ/(item->tag.sampleRate*((item->tag.stereo)?4:2));
+        }else{
+
+            int pos;
+            PLAYLIST_ITEM * item;
+    
+            item=buffer_getActiveItem();
+    
+            pos=MAX(output_readPos-codec_startOutPos,0);
+    
+            *elapsed=codec_timeDelta+(long long)pos*HZ/(item->tag.sampleRate*((item->tag.stereo)?4:2));
+
+        }
     }
 
     return true;

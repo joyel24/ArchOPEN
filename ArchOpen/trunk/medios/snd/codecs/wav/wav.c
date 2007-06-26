@@ -116,7 +116,7 @@ void wav_tagRequest(char * name,TAG * tag){
                     size=wav_findChunk("data",false,f);
                     if(size>=0){
                         tag->badFile=false;
-                        tag->length=size*HZ/fmt.avgBytesPerSec;
+                        tag->length=(long long)size*HZ/fmt.avgBytesPerSec;
                     }
                 }
             }

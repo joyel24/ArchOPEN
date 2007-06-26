@@ -14,3 +14,4 @@
 #include <math.h>
 double math_cos(double a) { return cos(a); }
 double math_sqrt(double a) { return sqrt(a); }
+double math_tan(double a) { return tan(a); }

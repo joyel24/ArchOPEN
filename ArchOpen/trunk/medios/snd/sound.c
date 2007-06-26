@@ -64,8 +64,11 @@ void sound_play(bool discard){
     sound_state=SS_PLAYING;
 
     buffer_setActiveItem(sound_activeItem);
-    codec_setCodecFor(sound_activeItem->name);
-    codec_trackStart();
+
+    if(codec_setCodecFor(sound_activeItem->name)){
+
+        codec_trackStart();
+    }
 }
 
 void sound_prevTrack(bool discard){
