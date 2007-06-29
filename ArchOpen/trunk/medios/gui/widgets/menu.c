@@ -102,6 +102,13 @@ void menu_init(MENU m){
     m->fastRepaint=false;
     m->menuList=NULL;
     m->parentMenu=NULL;
+    m->hasScrollBar=0;
+    
+    m->scrollBar.border_color=COLOR_BLACK;
+    m->scrollBar.bg_color=COLOR_WHITE;
+    m->scrollBar.fg_color=COLOR_BLUE;
+    m->scrollBar.orientation=VERTICAL;
+    m->scrollBar.width=8;
 }
 
 bool menu_handleEvent(MENU m,int evt){
@@ -160,7 +167,7 @@ void menu_paint(MENU m){
         bi=MIN(m->itemCount-1,m->topIndex+m->visibleCount-1);
 
         if(ti<0 || ti>=m->itemCount || bi<0 || bi>m->itemCount){
-            printk("[widget] menu_paint sanity error!\n");
+            printk("[widget] menu_paint sanity error! (ti=%d,cnt=%d,bi=%d)\n",ti,m->itemCount,bi);
             return;
         }
 
@@ -169,6 +176,16 @@ void menu_paint(MENU m){
             mi=m->items[i];
             mi->paint(mi);
         }
+        
+        // repaint scrollbar
+        if(m->hasScrollBar)
+        {
+            m->scrollBar.x=m->x+m->width-m->scrollBar.width;
+            m->scrollBar.y=m->y;
+            m->scrollBar.height=m->height;
+            draw_scrollBar(&m->scrollBar,m->itemCount,m->topIndex,m->topIndex+m->visibleCount);
+        }
+        
     }
 }
 

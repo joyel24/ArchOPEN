@@ -19,6 +19,7 @@ else
     rm -f medios/api/api.c
     rm -f include/api.h
     rm -f medios/kernel/api_fct_list.h
+    rm -f medios/include/kernel/version_svn.h
     rm -f *.lds *.conf *.out
     rm -Rf lib
     rm -Rf codec

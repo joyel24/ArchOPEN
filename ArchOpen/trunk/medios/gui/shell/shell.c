@@ -314,14 +314,19 @@ void shell_main(){
     if (shellMenu_init()){
 
         // init status line
+        printk("[shell] Status line init\n");
         statusLine_init();
 
         // init player & playlist
+        printk("[shell] Player init\n");
         player_init();
+        printk("[shell] Playlist init\n");
         playlistMenu_init();
 
         shell_isInitialized=true;
 
+        printk("[shell] Initial paint\n");
+        
         // initial paint
         shell_restore();
 

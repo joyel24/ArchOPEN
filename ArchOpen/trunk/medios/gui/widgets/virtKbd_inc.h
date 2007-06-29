@@ -84,6 +84,25 @@ unsigned char up2Arrow_DA[13][8] =
 
 SPRITE up2Arrow_SP = {(unsigned int) up2Arrow_DA, 8, 13, 1, 1};
 
+unsigned char up2ArrowInv_DA[13][8] =
+{ 
+    {1, 1, 1, 0, 0, 1, 1, 1},
+    {1, 1, 0, 0, 0, 0, 1, 1},
+    {1, 0, 0, 0, 0, 0, 0, 1},
+    {0, 0, 1, 0, 0, 1, 0, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {1, 1, 1, 0, 0, 1, 1, 1},
+    {1, 1, 1, 0, 0, 1, 1, 1},
+    {1, 1, 1, 0, 0, 1, 1, 1},
+    {1, 1, 1, 0, 0, 1, 1, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {1, 1, 1, 1, 1, 1, 1, 1},
+    {0, 0, 0, 0, 0, 0, 0, 0}
+};
+
+SPRITE up2ArrowInv_SP = {(unsigned int) up2ArrowInv_DA, 8, 13, 1, 1};
+
 unsigned char del_DA[13][8] =
 { 
     {0, 0, 0, 1, 1, 0, 0, 0},
@@ -103,6 +122,44 @@ unsigned char del_DA[13][8] =
 
 SPRITE del_SP = {(unsigned int) del_DA, 8, 13, 1, 1};
 
+unsigned char delInv_DA[13][8] =
+{ 
+    {1, 1, 1, 0, 0, 1, 1, 1},
+    {1, 1, 0, 0, 0, 0, 1, 1},
+    {1, 0, 0, 1, 1, 0, 0, 1},
+    {0, 0, 1, 1, 1, 1, 0, 0},
+    {0, 1, 1, 1, 1, 0, 0, 0},
+    {0, 1, 1, 1, 0, 0, 1, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 1, 0, 0, 1, 1, 1, 0},
+    {0, 0, 0, 1, 1, 1, 1, 0},
+    {1, 0, 1, 1, 1, 1, 0, 1},
+    {1, 0, 0, 1, 1, 0, 0, 1},
+    {1, 1, 0, 0, 0, 0, 1, 1},
+    {1, 1, 1, 0, 0, 1, 1, 1}
+};
+
+SPRITE delInv_SP = {(unsigned int) delInv_DA, 8, 13, 1, 1};
+
+unsigned char sup_DA[13][8] =
+{ 
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 1, 0, 0, 0},
+    {0, 0, 0, 1, 1, 0, 0, 1},
+    {0, 0, 1, 1, 0, 0, 0, 1},
+    {0, 1, 1, 0, 0, 0, 0, 1},
+    {1, 1, 1, 1, 1, 1, 0, 1},
+    {1, 1, 1, 1, 1, 1, 0, 1},
+    {0, 1, 1, 0, 0, 0, 0, 1},
+    {0, 0, 1, 1, 0, 0, 0, 1},
+    {0, 0, 0, 1, 1, 0, 0, 1},
+    {0, 0, 0, 0, 1, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0}
+};
+
+SPRITE supSP = {(unsigned int) sup_DA, 8, 13, 1, 1};
+        
 unsigned char num_DA[13][8] =
 { 
     {0, 0, 0, 0, 1, 1, 0, 0},
@@ -121,6 +178,63 @@ unsigned char num_DA[13][8] =
 };
 
 SPRITE num_SP = {(unsigned int) num_DA, 8, 13, 1, 1};
+
+unsigned char numInv_DA[13][8] =
+{ 
+    {1, 1, 1, 1, 0, 0, 1, 1},
+    {1, 1, 1, 0, 1, 1, 0, 1},
+    {1, 0, 1, 1, 1, 1, 0, 1},
+    {0, 0, 1, 1, 1, 0, 1, 1},
+    {1, 0, 1, 1, 0, 1, 1, 1},
+    {1, 0, 1, 0, 0, 0, 0, 1},
+    {1, 0, 1, 1, 1, 1, 1, 1},
+    {1, 0, 1, 1, 1, 1, 1, 1},
+    {1, 1, 1, 1, 1, 0, 0, 1},
+    {1, 1, 1, 1, 1, 1, 1, 0},
+    {1, 1, 1, 1, 1, 0, 0, 1},
+    {1, 1, 1, 1, 1, 1, 1, 0},
+    {1, 1, 1, 1, 1, 0, 0, 1}
+};
+
+SPRITE numInv_SP = {(unsigned int) numInv_DA, 8, 13, 1, 1};
+
+unsigned char ins_DA[13][8] =
+{ 
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 1, 0, 0, 1, 0, 0},
+    {1, 0, 1, 1, 0, 1, 0, 0},
+    {0, 0, 1, 0, 1, 1, 0, 0},
+    {1, 0, 1, 0, 0, 1, 0, 0},
+    {1, 0, 0, 0, 0, 0, 0, 0},
+    {1, 0, 0, 0, 0, 1, 1, 1},
+    {1, 0, 0, 0, 0, 1, 0, 0},
+    {1, 0, 0, 0, 0, 0, 1, 0},
+    {0, 0, 0, 0, 0, 1, 1, 1}
+};
+
+SPRITE ins_SP = {(unsigned int) ins_DA, 8, 13, 1, 1};
+
+unsigned char insInv_DA[13][8] =
+{ 
+    {1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 1, 0, 1, 1, 0, 1, 1},
+    {0, 1, 0, 0, 1, 0, 1, 1},
+    {1, 1, 0, 1, 0, 0, 1, 1},
+    {0, 1, 0, 1, 1, 0, 1, 1},
+    {0, 1, 1, 1, 1, 1, 1, 1},
+    {0, 1, 1, 1, 1, 0, 0, 0},
+    {0, 1, 1, 1, 1, 0, 1, 1},
+    {0, 1, 1, 1, 1, 1, 0, 1},
+    {1, 1, 1, 1, 1, 0, 0, 0}
+};
+
+SPRITE insInv_SP = {(unsigned int) insInv_DA, 8, 13, 1, 1};
 
 char char_horiz[3][6][NB_CELL_PER_LINE]= {
     {
@@ -263,9 +377,9 @@ void (*action_horiz[3][6][NB_CELL_PER_LINE])= {
         { NULL, NULL, NULL },
         { NULL, NULL, NULL },
         /* BOTTOM */
-        { NULL, NULL, NULL },
-        { leftCursor, delCursor, rightCursor },
-        { shiftCursor, numPage, majCursor }
+        { NULL, numPage, NULL },
+        { leftCursor, shiftCursor, rightCursor },
+        { insCursor, delCursor, supCursor }
     },
     {
         /* TOP */
@@ -273,9 +387,9 @@ void (*action_horiz[3][6][NB_CELL_PER_LINE])= {
         { NULL, NULL, NULL },
         { NULL, NULL, NULL },
         /* BOTTOM */
-        { NULL, NULL, NULL },
-        { leftCursor, delCursor, rightCursor },
-        { shiftCursor, numPage, majCursor }
+        { NULL, numPage, NULL },
+        { leftCursor, shiftCursor, rightCursor },
+        { insCursor, delCursor, supCursor }
     },
     {
         /* TOP */
@@ -283,9 +397,9 @@ void (*action_horiz[3][6][NB_CELL_PER_LINE])= {
         { NULL, NULL, NULL },
         { NULL, NULL, NULL },
         /* BOTTOM */
-        { NULL, NULL, NULL },
-        { leftCursor, delCursor, rightCursor },
-        { shiftCursor, numPage, majCursor }
+        { NULL, numPage, NULL },
+        { leftCursor, shiftCursor, rightCursor },
+        { insCursor, delCursor, supCursor }
     }
 };
 

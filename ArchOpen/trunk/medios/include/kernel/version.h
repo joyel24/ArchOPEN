@@ -10,7 +10,11 @@
 #ifndef __VERSION_H
 #define __VERSION_H
 
-#define VER_MAJOR    2
-#define VER_MINOR    1
+#include <kernel/version_svn.h>
+
+#if defined(BUILD_RELEASE) || !defined(VERSION_NUMBER)
+#undef VERSION_NUMBER
+#define VERSION_NUMBER    "2.1"
+#endif
 
 #endif

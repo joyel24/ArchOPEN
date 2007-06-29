@@ -179,7 +179,7 @@ void kernel_start (void)
 #endif
 
     /* print banner on uart */
-    printk("MediOS %d.%d - kernel loading\n\n",VER_MAJOR,VER_MINOR);
+    printk("MediOS " VERSION_NUMBER " - kernel loading\n\n");
 
     printk("Initial SP: %08x, kernel end: %08x, size in IRAM: %x/%x  Malloc start: %08x, size: %x\n",get_sp(),
         (unsigned int)&_end_kernel,

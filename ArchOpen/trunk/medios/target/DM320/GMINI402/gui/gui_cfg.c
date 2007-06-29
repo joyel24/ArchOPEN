@@ -34,7 +34,7 @@ struct statusLine_data lineData = {
     ver_x:52,
     ver_y:5,
     ver_color:COLOR_DARK_BLUE,
-    module_x:88,
+    module_x:100,
     module_y:4,
     pwr_x:142,
     pwr_y:4,

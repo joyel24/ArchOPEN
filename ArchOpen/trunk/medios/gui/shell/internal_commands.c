@@ -60,6 +60,7 @@ static bool intCmd_doPlaylist(char * param);
 static bool intCmd_doReloadMedios(char * param);
 static bool intCmd_doReloadMediosFile(char * param);
 static bool intCmd_doFlashDump(char * param);
+static bool intCmd_doHalt(char * param);
 
 typedef struct{
     char * command;
@@ -110,6 +111,10 @@ INTERNAL_COMMAND intCmd_commands[] = {
     {
         command:  "flashDump",
         function: intCmd_doFlashDump
+    },
+    {
+        command:  "haltDevice",
+        function: intCmd_doHalt
     },
     /* should always be the last entry */
     {
@@ -372,3 +377,8 @@ static bool intCmd_doFlashDump(char * param){
     return true;
 }
 
+static bool intCmd_doHalt(char * param){
+    //show playlist
+    halt_device();
+    return true;
+}

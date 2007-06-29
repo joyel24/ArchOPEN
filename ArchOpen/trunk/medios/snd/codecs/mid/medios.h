@@ -33,7 +33,7 @@ void selectInputFile();
 
 void * getenv(const char * s);
 int fprintf(int f,const char * s,...);
-double atof(const char *str);
+double atof(char *str);
 
 #define	_U	01
 #define	_L	02

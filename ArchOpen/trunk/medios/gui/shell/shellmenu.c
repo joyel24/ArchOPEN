@@ -303,6 +303,8 @@ static bool shellMenu_build(){
         item=item->next;
     }
 
+    printk("[shell menu] menu build\n");
+    
     return true;
 }
 

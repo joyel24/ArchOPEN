@@ -21,6 +21,7 @@
 #include <gui/chooser.h>
 #include <gui/button.h>
 #include <gui/icons.h>
+#include <gui/msgBox.h>
 #include <gui/settings_energy.h>
 
 #include <driver/lcd.h>
@@ -46,6 +47,9 @@ void okBtnEnergy_click(BUTTON b)
     int i,j;
     char tmpStr[50];
     /* saving to cfg file */
+    
+    msgBox_info("Saving Settings");
+    
     cfg=cfg_readFile("/medios/medios.cfg");
     if(!cfg)
     {

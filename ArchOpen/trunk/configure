@@ -85,6 +85,7 @@ CONFIGURE_BOOT_WITH_CONSOLE=-1
 CONFIGURE_HAVE_DBUG=-1
 CONFIGURE_HAVE_ST_RTC=-1
 CONFIGURE_HAVE_TIME=-1
+CONFIGURE_IS_RELEASE=-1
 
 if [ "$1" == "-d" ]; then
 CONFIGURE_TARGET_DEVICE="$2"
@@ -125,6 +126,10 @@ TARGET_OK=0
 if [ "$1" != "-d" ]; then
 CONFIG_QUERY_YN $HAS_DEFAULT "Use default config?" "y"
 HAS_DEFAULT=$?
+fi
+
+if [ $HAS_DEFAULT == "1" ]; then
+CONFIGURE_IS_RELEASE="0"
 fi
 
 if [ $CONFIGURE_TARGET_DEVICE == "1" ]; then
@@ -321,6 +326,9 @@ CONFIGURE_HAVE_EVT=$?
 CONFIG_QUERY_YN $CONFIGURE_BOOT_WITH_CONSOLE "BOOT WITH CONSOLE?" "n"
 CONFIGURE_BOOT_WITH_CONSOLE=$?
 
+CONFIG_QUERY_YN $CONFIGURE_IS_RELEASE "Build a release?" "n"
+CONFIGURE_IS_RELEASE=$?
+
 echo "-----------------------------------------"
 
 #we have all of our user input lets generate Makefile.conf
@@ -342,6 +350,7 @@ cat ./Makefile.conf.template | sed > ./Makefile.conf \
  -e "s,%CONFIGURE_HAVE_CF%,${CONFIGURE_HAVE_CF},g" \
  -e "s,%CONFIGURE_HAVE_TIME%,${CONFIGURE_HAVE_TIME},g" \
  -e "s,%CONFIGURE_HAVE_ST_RTC%,${CONFIGURE_HAVE_ST_RTC},g" \
+ -e "s,%CONFIGURE_IS_RELEASE%,${CONFIGURE_IS_RELEASE},g" \
  -e "s,%CONFIGURE_HAVE_DBUG%,${CONFIGURE_HAVE_DBUG},g"
 
 #did everything work?

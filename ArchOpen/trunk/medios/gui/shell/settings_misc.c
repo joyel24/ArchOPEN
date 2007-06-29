@@ -22,6 +22,7 @@
 #include <gui/icons.h>
 #include <gui/checkbox.h>
 #include <gui/virtKbd.h>
+#include <gui/msgBox.h>
 
 #include <gui/settings_misc.h>
 
@@ -51,7 +52,7 @@ void okBtnMisc_click(BUTTON b)
     CFG_DATA * cfg;
     /* opening config file */
     
-    
+    msgBox_info("Saving Settings");
     
     cfg=cfg_readFile("/medios/medios.cfg");
     if(!cfg)

@@ -139,6 +139,8 @@ void okBtnClk_click(BUTTON b)
         mdelay(1000);
     }
     
+    msgBox_info("Saving Settings");
+    
     /* saving to cfg file */
     cfg=cfg_readFile("/medios/medios.cfg");
     if(!cfg)

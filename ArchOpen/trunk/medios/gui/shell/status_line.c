@@ -206,8 +206,6 @@ void drawGui(void)
 {
     int w = 0;
     int h = 0;
-    char medios_ver[10];
-
     gfx_fontSet(STD6X9);
 
     gfx_getStringSize("M", &w, &h);
@@ -221,8 +219,7 @@ void drawGui(void)
     gfx_drawLine(COLOR_LIGHT_GREY,lineData.x+0,lineData.y+h+7,lineData.w-1,h+7);
 
     /* show version */
-    sprintf(medios_ver,"%d.%d",VER_MAJOR,VER_MINOR);
-    gfx_putS(lineData.ver_color,lineData.bg_color,lineData.ver_x,lineData.ver_y,medios_ver);
+    gfx_putS(lineData.ver_color,lineData.bg_color,lineData.ver_x,lineData.ver_y,VERSION_NUMBER);
 
     /* and time, and battery */
     drawTime();

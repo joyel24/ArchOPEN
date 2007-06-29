@@ -72,7 +72,7 @@ void reload_firmware(void)
 }
 #ifndef NO_MEDIOS_RELOAD
 #ifdef RELOAD_CP_BASE
-__attribute__((section(".fwuncomp_code"))) reload_mediosStart(char * buffer, int size)
+__attribute__((section(".fwuncomp_code"))) void reload_mediosStart(char * buffer, int size)
 {
     void (*firmware_start)(void)=(void (*)(void))buffer;
     int i;

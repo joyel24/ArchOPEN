@@ -355,7 +355,6 @@ void printName(struct dir_entry * dEntry,int pos,int clear,int selected,struct b
 void printLongName(int pos,int relPos,int selected,struct browser_data *bdata)
 {
     int             H,X,Y;
-    char            c;
     int             color=COLOR_BLACK;
     int             select_color=COLOR_BLUE;
 
@@ -402,11 +401,7 @@ void printLongName(int pos,int relPos,int selected,struct browser_data *bdata)
     if(bdata->list[pos].cur_name==bdata->list[pos].name)
         bdata->list[pos].inc=1;
 
-    c=bdata->list[pos].cur_name[bdata->max_entry_length];
-    bdata->list[pos].cur_name[bdata->max_entry_length]=0;
-    gfx_putS(color, select_color,X+BROWSER_ICON_WIDTH, Y,bdata->list[pos].cur_name);
-    
-    bdata->list[pos].cur_name[bdata->max_entry_length]=c;
+    gfx_putnS(color, select_color,X+BROWSER_ICON_WIDTH, Y,bdata->max_entry_length,bdata->list[pos].cur_name);
 }
 
 void printAllName(struct browser_data *bdata)

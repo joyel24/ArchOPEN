@@ -1,0 +1,24 @@
+which svn &> /dev/null
+if [ $? -eq 0 ]
+then
+echo -n "#define VERSION_NUMBER \"" > tmp.h
+svnversion -n . >> tmp.h
+echo "\"" >> tmp.h
+else
+echo "//No SVN Version" > tmp.h
+echo "" >> tmp.h
+fi
+
+if [ -f $1 ]
+then
+    cmp -s $1 tmp.h
+
+    if [ $? -eq 1 ]
+    then
+        mv tmp.h $1
+    else
+        rm tmp.h
+    fi
+else
+    mv tmp.h $1
+fi

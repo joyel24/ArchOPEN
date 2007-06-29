@@ -16,6 +16,7 @@
 
 #include <gui_user/widget.h>
 #include <gui_user/widgetlist.h>
+#include <gui/scrollbar.h>
 
 // forward declaration needed because MENU_ITEM has a MENU member and vice-versa
 typedef struct MENU_STRUCT * MENU;
@@ -59,6 +60,8 @@ typedef struct {
     int visibleCount;                  \
     bool fastRepaint;                  \
     WIDGETLIST menuList;               \
+    int hasScrollBar;                  \
+    struct scroll_bar scrollBar;       \
     MENU parentMenu;
 
 

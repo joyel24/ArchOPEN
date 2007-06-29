@@ -20,6 +20,7 @@
 #include <gui/msgBox.h>
 #include <gui/shell.h>
 #include <gui/virtKbd.h>
+#include <gui/scrollbar.h>
 
 #include <kernel/evt.h>
 #include <kernel/kernel.h>
@@ -133,7 +134,7 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                 if(fullname[0]==0)
                     break;
                 snprintf(fullname2,PATHLEN,"%s/%s",curBdata->path[1]==0?"":curBdata->path,fullname);
-                printk("create %s\n",fullname2);
+                printk("create |%s|\n",fullname2);
                 sprintf(fullname3,"Create: %s",fullname);
                 if(msgBox_show(fullname,"Are you sure?",
                    MSGBOX_TYPE_YESNO, MSGBOX_ICON_QUESTION,evt_handler) != MSGBOX_YES)
@@ -405,12 +406,13 @@ void browser_mkMenu(struct browser_data * bdata)
     // menuList
     menuList=widgetList_create();
     menuList->ownWidgets=true;
-    
+        
     contMenu=widgetMenu_create();
     contMenu->setRect(contMenu,contM_X+5,contM_Y+5,contM_W-10,contM_H-10);
     contMenu->ownItems=true; // the menu will handle items destroy
     contMenu->onClick=(MENU_CLICKEVENT)contMenu_onClick;
     contMenu->menuList=menuList;
+    contMenu->hasScrollBar=1;
     menuList->addWidget(menuList,contMenu);
 
     /*0*/
@@ -421,6 +423,7 @@ void browser_mkMenu(struct browser_data * bdata)
     contMenu->addItem(contMenu,mi);
     miTab[i++]=mi;
             
+    
     /*1*/
     mi=widgetMenuItem_create();
     mi->caption="Create Folder";
@@ -468,9 +471,7 @@ void browser_mkMenu(struct browser_data * bdata)
     mi->widgetWidth=0;
     contMenu->addItem(contMenu,mi);
     miTab[i++]=mi;
-    
-    printk("|%s|%s|",bdata->dual->path,bdata->path);
-    
+        
     if(bdata->is_dual && bdata->dual_mode != 0 && strcmp(bdata->path,bdata->dual->path))
     {
         /*7*/
@@ -489,9 +490,8 @@ void browser_mkMenu(struct browser_data * bdata)
         contMenu->addItem(contMenu,mi);
         miTab[i++]=mi;
     }
-        
-    printk("Contextual Menu Created (nb sel:%d, type:%s)\n",nbSelected(bdata),
-           selected_entry->type==TYPE_FILE?"File":"Folder");
+            
+    printk("Contextual Menu Created\n");
 }
 
 void browser_contMenu(struct browser_data * bdata)
@@ -501,12 +501,13 @@ void browser_contMenu(struct browser_data * bdata)
     browser_ContM_exit=0;
     curBdata=bdata;
     
+    
     browser_mkMenu(bdata);
     
     menuList->setFocusedWidget(menuList,contMenu);
     menuList->focusedWidget->paint(menuList->focusedWidget);
     printk("Initial Draw\n");
-    
+        
     do{
         event=evt_getStatus(evt_handler);
         if (!event) continue; // no new events

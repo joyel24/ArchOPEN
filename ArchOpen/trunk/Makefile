@@ -10,6 +10,10 @@ all: medios_shell
 mk_api_file:
 	@make -C tools/api_files/ --no-print-directory
 
+mk_version:
+	@chmod 777 ./tools/version/mkVersion
+	@./tools/version/mkVersion medios/include/kernel/version_svn.h
+
 incdir:
 	@make -C medios/include/target --no-print-directory incdir
 	@make -C medios/include/target/chip --no-print-directory incdir
@@ -19,7 +23,7 @@ mk_build_tools:
                 
 medios_shell: medios.bin medios.wav medios.avi
         
-medios.bin: incdir mk_api_file mk_build_tools subdirs
+medios.bin: incdir mk_version mk_api_file mk_build_tools subdirs
 	@echo '-----   Linking medios.bin 1/2'
 	@chmod 777 ./tools/lds_files/create_lds
 	@./tools/lds_files/create_lds init
@@ -30,7 +34,7 @@ medios.bin: incdir mk_api_file mk_build_tools subdirs
 	@$(OBJCOPY) -O binary medios.elf medios.bin
 	@$(ADDSIZE) medios.bin
 
-medios_lib: incdir mk_api_file
+medios_lib: incdir mk_version mk_api_file
 	@make -C $(MEDIOS_SRC_PATH)/medios --no-print-directory -s medios_lib
 
 aoboy: APP_NAME = aoboy

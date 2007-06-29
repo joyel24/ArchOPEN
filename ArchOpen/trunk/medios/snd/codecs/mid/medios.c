@@ -59,7 +59,7 @@ void getchar(){
    has not been tested well.  It may have been tested for nothing except
    that it compiles.  */
 
-double atof (const char *str){
+double atof (char *str){
   char **ptr=NULL;
   char *p;
   
