@@ -10,7 +10,9 @@
 #ifndef __VERSION_H
 #define __VERSION_H
 
-#include <kernel/version_svn.h>
+//#include <kernel/version_svn.h>
+
+#define BUILD_RELEASE
 
 #if defined(BUILD_RELEASE) || !defined(VERSION_NUMBER)
 #undef VERSION_NUMBER
