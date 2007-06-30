@@ -107,4 +107,6 @@ void ata_stopTmrFct       (void);
 
 void ide_intAction        (int irq,struct pt_regs * regs);
 
+void ata_printIdentify    (int disk);
+
 #endif

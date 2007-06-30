@@ -56,7 +56,7 @@ void do_pwd(unsigned char ** params);
 void do_cd(unsigned char ** params);
 void do_ls(unsigned char ** params);
 void do_cat(unsigned char ** params);
-
+void do_diskFullInfo(unsigned char ** params);
 /* cmd line internal functions */
 void init_cmd_line(void);
 void cmd_line_enable(void);

@@ -36,6 +36,9 @@ void printk_init(void);
 void printk_uartEnable(void);
 void printk_uartDisable(void);
 
+void str_swapChar(char * txt,int size);
+void str_findEnd(char * txt,int size);
+
 extern unsigned long tick;
 
 extern unsigned int _end_kernel;

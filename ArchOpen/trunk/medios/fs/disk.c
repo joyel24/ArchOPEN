@@ -221,14 +221,14 @@ struct hd_info_s * disk_readInfo(int disk,int just_print)
     if(ata_rwData(disk,0,sector,1,ATA_DO_IDENT,ATA_WITH_DMA)<0)
         goto main_exit;        
     strncpy(disk_info->serial, &sector[20], 20);
-    dd_swapChar(disk_info->serial,20);
-    dd_findEnd(disk_info->serial,20);
+    str_swapChar(disk_info->serial,20);
+    str_findEnd(disk_info->serial,20);
     strncpy(disk_info->firmware, &sector[46], 8);
-    dd_swapChar(disk_info->firmware,8);
-    dd_findEnd(disk_info->firmware,8);
+    str_swapChar(disk_info->firmware,8);
+    str_findEnd(disk_info->firmware,8);
     strncpy(disk_info->model, &sector[54], 40);
-    dd_swapChar(disk_info->model,40);
-    dd_findEnd(disk_info->model,40);
+    str_swapChar(disk_info->model,40);
+    str_findEnd(disk_info->model,40);
     disk_info->multi_sector = sector[94] & 0x7f ;
     disk_info->partition_list=NULL;
     disk_info->has_multi_sector=(sector[119] & 0x1);
@@ -314,34 +314,4 @@ char * disk_getName(int id)
     return disk_name[id];
 }
 
-void dd_swapChar(char * txt,int size)
-{
-    int i;
-    for(i=0;i<size/2;i++)
-    {
-            char c=txt[2*i];
-            txt[2*i]=txt[2*i+1];
-            txt[2*i+1]=c;
-    }
-}
 
-void dd_findEnd(char * txt,int size)
-{
-    int i,j;
-    /* find first real char */
-    for(i=0;i<size;i++)
-        if(txt[i]!=' ')
-            break;
-    /* remove head space */
-    for(j=i;j<size;j++)
-    {
-        if(txt[j]==' ')
-        {
-            txt[j-i]=0;
-            break;
-         }
-         txt[j-i]=txt[j];
-    }
-    if(txt[j-i]!=0)
-        txt[j-i]=0;
-}

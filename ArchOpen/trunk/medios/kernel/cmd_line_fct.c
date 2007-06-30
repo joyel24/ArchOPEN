@@ -211,6 +211,12 @@ struct cmd_line_s cmd_tab[] = {
         help_str   : "cat FILE_NAME: print FILE_NAME content",
         cmd_action : do_cat,
         nb_args    : 1
+    },    
+    {
+        cmd        : "diskFullInfo",
+        help_str   : "diskInfo DISK: print identify info for DISK",
+        cmd_action : do_diskFullInfo,
+        nb_args    : 1
     },
     /* this has to be the last entry */
     {
@@ -429,7 +435,7 @@ void do_gioGetState (unsigned char ** params)
     printk("Gio 0x%x is %s (DIR=%s)\n",gio,GIO_IS_SET(gio)?"set":"not set",GIO_GET_DIR(gio)?"IN":"OUT");
 }
 
-void do_diskInfo (unsigned char ** params)
+void do_diskInfo(unsigned char ** params)
 {
     int disk = atoi (params[0]);
     printk("disk=%d\n",disk);
@@ -584,4 +590,12 @@ void do_cat(unsigned char ** params)
         }
         printk("\n");
     }
+}
+
+void do_diskFullInfo(unsigned char ** params)
+{
+    int disk=atoi (params[0]);
+    if(disk!=0 && disk!=1)
+        return;
+    ata_printIdentify(disk);
 }

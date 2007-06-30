@@ -140,3 +140,35 @@ void printk_init(void)
     printk_printing = false;
     printk_uartEnable();
 }
+
+void str_swapChar(char * txt,int size)
+{
+    int i;
+    for(i=0;i<size/2;i++)
+    {
+        char c=txt[2*i];
+        txt[2*i]=txt[2*i+1];
+        txt[2*i+1]=c;
+    }
+}
+
+void str_findEnd(char * txt,int size)
+{
+    int i,j;
+    /* find first real char */
+    for(i=0;i<size;i++)
+        if(txt[i]!=' ')
+            break;
+    /* remove head space */
+    for(j=i;j<size;j++)
+    {
+        if(txt[j]==' ')
+        {
+            txt[j-i]=0;
+            break;
+        }
+        txt[j-i]=txt[j];
+    }
+    if(txt[j-i]!=0)
+        txt[j-i]=0;
+}
