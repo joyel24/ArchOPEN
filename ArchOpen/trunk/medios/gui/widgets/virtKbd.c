@@ -490,13 +490,14 @@ void virtKbdEvtHandler(int evt_hanlder)
             case BTN_F2:
                 char_num++;
             case BTN_F1:
+                str=mode==1?char_horiz[page][elem][char_num]:char_vert[page][elem][char_num];
                 if(str)
                 {
                     org=cur_str-my_str;
                     putCursor(TXT_BG_COLOR );
                     if(ins && cur_index!=str_len)
                     {
-                        if(strlen!=(MAX_PATH-1))
+                        if(str_len!=(MAX_PATH-1))
                         {
                             char * ptr=my_str+str_len;
                             while(ptr>=(my_str+cur_index))
