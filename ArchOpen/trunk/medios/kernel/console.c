@@ -26,8 +26,10 @@
 
 #include <gfx/graphics.h>
 #include <gfx/kfont.h>
-
 #include <gfx/screens.h>
+
+#include <fs/stdfs.h>
+
 
 #define CON_RING_BUFFER(pos) (con_buffer[(pos)%CON_BUFFER_SIZE])
 #define CON_RING_COLORBUFFER(pos) (con_colorBuffer[(pos)%CON_BUFFER_SIZE])
@@ -255,6 +257,21 @@ void con_screenSwitch()
   con_screenUpdate();
 }
 
+void con_flushToDisk(void)
+{
+#warning we should add a test on disk INIT
+   int fd=open("/dbgFlush.log",O_WRONLY|O_CREAT);
+   int size;
+   size=con_bufferEnd<CON_BUFFER_SIZE?con_bufferEnd:CON_BUFFER_SIZE;
+   if (fd<0){
+       printk("[FlushLog] can't open file /dbgFlush.log !\n");
+       return;
+   }
+   size=write(fd,con_buffer,size);
+   printk("[FlushLog] wrote %d bytes\n",size);
+   close(fd);
+}
+
 int con_handleBtn(int btn)
 {
     switch(btn+1)
@@ -271,6 +288,9 @@ int con_handleBtn(int btn)
             break;
         case BTN_DOWN:
             con_screenScroll(1);
+            break;
+        case BTN_F3:
+            con_flushToDisk();
             break;
         default:
             /* other keys : post the event */
