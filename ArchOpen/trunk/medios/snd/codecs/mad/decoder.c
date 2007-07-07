@@ -284,7 +284,7 @@ enum mad_flow check_message(struct mad_decoder *decoder)
   }
 
   if (message)
-    free(message);
+    kfree(message);
 
   return result;
 }
@@ -554,7 +554,7 @@ int mad_decoder_run(struct mad_decoder *decoder, enum mad_decoder_mode mode)
 
   result = run(decoder);
 
-  free(decoder->sync);
+  kfree(decoder->sync);
   decoder->sync = 0;
 
   return result;

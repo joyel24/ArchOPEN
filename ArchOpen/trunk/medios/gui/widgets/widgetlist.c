@@ -39,7 +39,7 @@ void widgetList_destroy(WIDGETLIST l){
     l->clearWidgets(l);
 
     // free items list
-    free(l->widgets);
+    kfree(l->widgets);
 
     widget_destroy((WIDGET)l);
 }

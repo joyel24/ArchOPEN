@@ -13,6 +13,7 @@
 void* # malloc   # long size
 void* # realloc  # void *buffer, long newsize
 void  # free     # void *buf
+void  # kfree    # void *buf
 void* # calloc   # unsigned int nmemb,unsigned int size
 
 #k_inc#kernel/timer.h
@@ -48,11 +49,12 @@ int # FW_isConnected  # void
 
 #k_inc#kernel/evt.h
 #api_inc#sys_def/evt.h
-int          # evt_getHandler     # unsigned int mask
-MED_RET_T    # evt_freeHandler    # int num_evt_pipe
-int          # evt_getStatus      # int num_evt_pipe
-MED_RET_T    # evt_getFullStatus  # int num_evt_pipe, struct evt_t * evt
-const char * # getBtnName         # int btn
+int          # evt_getHandler        # unsigned int mask
+MED_RET_T    # evt_freeHandler       # int num_evt_pipe
+int          # evt_getStatus         # int num_evt_pipe
+MED_RET_T    # evt_getFullStatus     # int num_evt_pipe, struct evt_t * evt
+int          # evt_getStatusBlocking # int num_evt_pipe
+const char * # getBtnName            # int btn
 
 #k_inc#driver/buttons.h
 #api_inc#sys_def/buttons.h

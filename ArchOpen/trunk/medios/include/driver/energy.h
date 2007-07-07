@@ -33,6 +33,8 @@ void hd_stopTimer(void);
 
 void energy_chgMode(int power_mode);
 
+void energy_lowPower(void);
+
 void energy_loadPref(void);
 void energy_init(void);
 

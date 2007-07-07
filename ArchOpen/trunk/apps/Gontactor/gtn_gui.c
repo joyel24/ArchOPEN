@@ -46,7 +46,7 @@ void pose(void)
 	eventHandler = evt_getHandler(BTN_CLASS);
 
 	while(1){
-		event=evt_getStatus(eventHandler);
+        event=evt_getStatusBlocking(eventHandler);
 		if (!event) continue; // no new events
 
 		switch(event){
@@ -107,7 +107,7 @@ void showpal(void)
 		sprintf(text,"%3d",cur);
 		gfx_putS(COLOR_BLACK,COLOR_WHITE,190,8,text);
 		while(!redraw){
-			event=evt_getStatus(eventHandler);
+            event=evt_getStatusBlocking(eventHandler);
 			if (!event) continue; // no new events
 
 			switch(event){

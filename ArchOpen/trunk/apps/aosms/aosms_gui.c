@@ -332,7 +332,7 @@ void gui_execute(){
     menuList->focusedWidget->paint(menuList->focusedWidget);
 
     do{
-        event=evt_getStatus(gui_eventHandler);
+        event=evt_getStatusBlocking(gui_eventHandler);
         if (!event) continue; // no new events
 
         menuList->handleEvent(menuList,event);

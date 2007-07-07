@@ -58,7 +58,7 @@ void app_main(int argc,char * * argv)
 		
 		if(!started)
 		{
-			evt=evt_getStatus(evt_handler);
+            evt=evt_getStatusBlocking(evt_handler);
 			if(evt!=NO_EVENT)
 			{
 				int w,h;
@@ -72,7 +72,7 @@ void app_main(int argc,char * * argv)
 		}
 		else
 		{
-			evt=evt_getStatus(evt_handler);		
+            evt=evt_getStatusBlocking(evt_handler);		
 			
 			
 			for(i=0;i<16;i++) { new_disp[i]=0;}

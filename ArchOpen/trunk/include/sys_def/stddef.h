@@ -30,6 +30,7 @@
 
 void exit(int retcode);
 
+/* HZ : number of tick per second*/
 #define HZ 100
 
 #endif

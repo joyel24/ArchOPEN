@@ -377,7 +377,7 @@ void clock_setting(void)
     menuList->paint(menuList);
     
     do{
-        event=evt_getStatus(evtHandle);
+        event=evt_getStatusBlocking(evtHandle);
         if (!event) continue; // no new events
         switch(event)
         {

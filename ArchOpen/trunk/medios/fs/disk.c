@@ -9,9 +9,6 @@
 * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 * KIND, either express of implied.
 *
-* Part of this code is from Rockbox project
-* Copyright (C) 2002 by Bj�n Stenberg
-*
 */
 
 #include <sys_def/stddef.h>
@@ -78,10 +75,15 @@ MED_RET_T disk_add(int disk)
     }
     
     /* getting info on disk */
-    disk_info[disk]=disk_readInfo(disk,0);
-    if(!disk_info[disk])
+    if(ata_initDisk(disk)!=MED_OK)
     {
-        printk("[Disk-add] Error: can't setup disk %s\n",disk_name[disk]);
+        printk("[Disk-add] Error: can't setup disk %s (error in ata_initDisk)\n",disk_name[disk]);
+        return -MED_ERROR;
+    }
+    
+    if((ret_val=disk_readPartition(disk))!=MED_OK)
+    {
+        printk("[Disk-add] Error: can't setup disk %s (error in readPartition)\n",disk_name[disk]);
         return -MED_ERROR;
     }
     
@@ -93,7 +95,7 @@ MED_RET_T disk_add(int disk)
         disk_info[HD_DISK]->partition_list[0].start=0;
         lastPartition=1;
     }
-        
+    
     /* main disk => mount PART0 on root folder */
     if(disk==HD_DISK)
     {
@@ -127,7 +129,7 @@ MED_RET_T disk_add(int disk)
             printk("[Disk-add] Info: won't mount %s part %d: not active\n",disk_name[disk],part_num);
         }
     }
-            
+           
     return MED_OK;   
 }
 
@@ -203,56 +205,43 @@ MED_RET_T disk_init(void)
     return ret_val;
 }
 
-struct hd_info_s * disk_readInfo(int disk,int just_print)
+MED_RET_T disk_readPartition(int disk)
 {
     int i,j;
+    MED_RET_T ret_val;
+    struct partition_info * part_info;
     unsigned char * sector=(unsigned char *)kmalloc(sizeof(unsigned char)*SECTOR_SIZE);
     if(!sector)
-        return NULL;
-    struct hd_info_s * disk_info = (struct hd_info_s *)kmalloc(sizeof(struct hd_info_s));
-    if(!disk_info)
-        goto exit_error1;
-    /* let's assume we have only 4 partitions */
-    struct partition_info * part_info = (struct partition_info *)kmalloc(4*sizeof(struct partition_info));
-    if(!part_info)
-        goto exit_error2;
-    //disk_info->partition_list=part_info;
-    /* identify disk */
-    if(ata_rwData(disk,0,sector,1,ATA_DO_IDENT,ATA_WITH_DMA)<0)
-        goto main_exit;        
-    strncpy(disk_info->serial, &sector[20], 20);
-    str_swapChar(disk_info->serial,20);
-    str_findEnd(disk_info->serial,20);
-    strncpy(disk_info->firmware, &sector[46], 8);
-    str_swapChar(disk_info->firmware,8);
-    str_findEnd(disk_info->firmware,8);
-    strncpy(disk_info->model, &sector[54], 40);
-    str_swapChar(disk_info->model,40);
-    str_findEnd(disk_info->model,40);
-    disk_info->multi_sector = sector[94] & 0x7f ;
-    disk_info->partition_list=NULL;
-    disk_info->has_multi_sector=(sector[119] & 0x1);
+    {
+        printk("[disk_readPartition] can't malloc sector\n");
+        return -MED_ENOMEM;
+    }
     
-    printk("[DISK] reading %s info\n     %s\n     %s|%s\n     %d sectors per ata request (%s-%d)\n",
-                disk_name[disk],
-                disk_info->model,
-                disk_info->firmware,disk_info->serial,disk_info->multi_sector,
-                disk_info->has_multi_sector?"Valid":"Not Valid",disk_info->has_multi_sector);
-                
-    //print_data(sector,512);
+    /* let's assume we have only 4 partitions */
+    part_info = (struct partition_info *)kmalloc(4*sizeof(struct partition_info));
+    if(!part_info)
+    {
+        printk("[disk_readPartition] can't malloc part info\n");
+        kfree(sector);
+        return -MED_ENOMEM;
+    }
     
     /* Read MBR */
-    if(ata_rwData(disk,0,sector,1,ATA_DO_READ,ATA_WITH_DMA)<0) /* read 1 sector at LBA 0 */
-        goto main_exit;
+    if((ret_val=ata_rwData(disk,0,sector,1,ATA_DO_READ,ATA_WITH_DMA))<0) /* read 1 sector at LBA 0 */
+    {
+        printk("[disk_readPartition] error doing ata_RW (%d)\n",-ret_val);
+        kfree(sector);
+        kfree(part_info);
+        return -MED_EIO;
+    }
 
-    
-    //print_data(sector,512);
-        
     /* check that the boot sector is initialized */
     if ( (sector[510] != 0x55) ||
          (sector[511] != 0xaa)) {
         printk("Bad boot sector signature\n");
-        goto main_exit;
+        kfree(sector);
+        kfree(part_info);
+        return -MED_ERROR;
     }
 
     /* parse partitions */
@@ -287,26 +276,11 @@ struct hd_info_s * disk_readInfo(int disk,int just_print)
     }
     
     /* adding part_info to disk structure */
-    disk_info->partition_list=part_info;
+    disk_info[disk]->partition_list=part_info;
     
     kfree(sector);
     
-    if(just_print)
-    {
-        kfree(part_info);
-        kfree(disk_info);
-        return NULL;
-    }
-    else    
-        return disk_info;
-/* if something goes wrong exit here freeing what should be free*/    
-main_exit:
-    kfree(part_info);
-exit_error2:    
-    kfree(disk_info);
-exit_error1:
-    kfree(sector);
-    return NULL;
+    return MED_OK;
 }
 
 char * disk_getName(int id)

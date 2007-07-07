@@ -89,8 +89,8 @@ void uart_init(void)
     UART_0_Pipe=&UART_PIPES[0];
     UART_1_Pipe=&UART_PIPES[1];
 
-    UART_0_Pipe->nOUT = UART_0_Pipe->nIN = 0;
-    UART_1_Pipe->nOUT = UART_1_Pipe->nIN = 0;  
-
+    pipeInit(UART_0_Pipe);
+    pipeInit(UART_1_Pipe);
+    
     arch_uart_init();
 }

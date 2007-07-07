@@ -164,7 +164,7 @@ int game_pause(void)
     
     while(1)
     {
-        evt=evt_getStatus(evt_handler);        
+        evt=evt_getStatusBlocking(evt_handler);        
         if(evt==NO_EVENT)
             continue;
         switch(evt)
@@ -252,7 +252,7 @@ int game_init(void)
             redraw=0;
         }
         
-        evt=evt_getStatus(evt_handler);
+        evt=evt_getStatusBlocking(evt_handler);
         if(evt==NO_EVENT)
             continue;
 
@@ -317,7 +317,7 @@ void eventHandlerLoop(void)
     
     while(!stop)
     {
-        evt=evt_getStatus(evt_handler);
+        evt=evt_getStatusBlocking(evt_handler);
         if(evt!=NO_EVENT)
         {
             switch(evt)

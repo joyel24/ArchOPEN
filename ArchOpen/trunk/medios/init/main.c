@@ -81,42 +81,6 @@ extern int app_main(int argc, char * argv[]);
 unsigned int _svc_IniStack = IRAM_SIZE;
 unsigned int _sys_IniStack = IRAM_SIZE-SVC_STACK_SIZE;
 
-#if 1
-
-int ok=0;
-
-void tst_1(void)
-{
-    int fd=open("/test1.bin",O_RDWR);
-    fd=open("/test2.bin",O_RDWR);
-    fd=open("/test3.bin",O_RDWR);
-    vfs_PrintOpenList();
-    ok=1;    
-    printk("exit\n");
-}
-
-
-void tst_fct(void)
-{
-    THREAD_INFO *th1;
-    int pid1;
-    ok=0;
-    printk("Start\n");    
-    vfs_PrintOpenList();
-    printk("Ini\n");    
-    pid1=thread_startFct(&th1,tst_1,"Test1",THREAD_STATE_DISABLE,PRIO_MED,THREAD_USE_OTHER_STACK);   
-    thread_ps();
-    thread_enable(pid1);
-    printk("GO\n");
-    while(!ok) /*nothing*/;
-    printk("done\n");
-    vfs_PrintOpenList();
-    printk("loop\n");
-    while(1) /*nothing*/;
-}
-#endif
-
-
 void kernel_thread(void)
 {
 #ifdef BUILD_LIB
@@ -130,6 +94,7 @@ void kernel_thread(void)
         printk("[init] ------ Halting\n");
         for(;;);
     }
+        
 #ifndef BUILD_LIB    
     sound_init();
 #endif
@@ -137,16 +102,17 @@ void kernel_thread(void)
     misc_loadPref();
     
     /* boot info */
+#if 0    
     printk("SP: %08x\n",get_sp());
     irq_print();
     tmr_print();
     thread_ps();
-
+#endif
+    
 #ifdef BUILD_LIB
     app_main(1,&stdalone);
     reload_firmware();
 #endif
-            
          
     shell_main();
 
@@ -189,13 +155,20 @@ void kernel_start (void)
         (unsigned int)MALLOC_SIZE);
 
     printk("Chip rev : %x\n",inw(BUS_REVR));
+    printk("Current Cpu mode : %x\n",readCPUMode());
     
     if(thread_init(kernel_thread)!=MED_OK)
     {
-        /* no KERNEL thread => loop */
-        printk("CAN'T BOOT\n");
+        printk("no kernel thread CAN'T BOOT\n");
         for(;;);
     }
+    
+    /* add cmd pipe thread */
+    if(thread_startFct(NULL,kernel_cmdPipeFct,"cmdPipeFct",THREAD_STATE_ENABLE,PRIO_LOW,THREAD_USE_OTHER_STACK)<0)
+    {
+        printk("no cmdPipe thread CAN'T BOOT\n");
+        for(;;);
+    }  
     
     /* init the watchdog timer */
     wdt_init();

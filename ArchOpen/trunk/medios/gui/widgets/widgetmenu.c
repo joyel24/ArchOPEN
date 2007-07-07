@@ -371,7 +371,7 @@ bool widgetMenu_cfgSave(WIDGETMENU m,char * filename){
         }
     }
 
-    free(s);
+    kfree(s);
 
     // update or write cfg file
     if (!cfg_writeFile(data,filename)){

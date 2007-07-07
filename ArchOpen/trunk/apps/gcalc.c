@@ -443,7 +443,7 @@ void app_main(int argc,char ** argv)
     printf("\nbefore loop\n");
 
     while(!stop){
-        event=evt_getStatus(eventHandler);
+        event=evt_getStatusBlocking(eventHandler);
         if (!event) continue; // no new events
 
         switch(event){

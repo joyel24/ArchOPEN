@@ -549,7 +549,7 @@ void eventHandlerLoop(void)
 	int evt_handler=evt_getHandler(BTN_CLASS);
     while(!stop)
     {
-		evt=evt_getStatus(evt_handler);
+        evt=evt_getStatusBlocking(evt_handler);
 		if(evt==NO_EVENT)
 			continue;
 		if(!end)

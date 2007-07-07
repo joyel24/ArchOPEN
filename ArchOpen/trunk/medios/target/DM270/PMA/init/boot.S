@@ -8,10 +8,13 @@
 .section ".text.init.arch"
 .global entry_code
 entry_code:
-
-   /* av4 init */
+    b real_entry_code
+    .asciz "MEDIOS0"
+    .word 0
+real_entry_code:
+   /* PMA init */ 
     mov r7,pc
-    sub r7,r7,#8
+    sub r7,r7,#24
 
     /* copy everything to the sdram start */
     msr cpsr_c, #0xDF /* Disable IRQ+FIQ and set SYS mode */

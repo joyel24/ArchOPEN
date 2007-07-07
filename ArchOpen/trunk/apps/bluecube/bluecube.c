@@ -145,7 +145,7 @@ void mainLoop(int eventHandler)
     prevTick=tmr_getMicroTick();
 
     while(!bDone){
-        event=evt_getStatus(eventHandler);
+        event=evt_getStatusBlocking(eventHandler);
 
         if(event) processEvt(event);
 

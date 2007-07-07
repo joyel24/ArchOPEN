@@ -243,7 +243,7 @@ void gui_execute(){
     menu->paint(menu);
 
     do{
-        event=evt_getStatus(gui_eventHandler);
+        event=evt_getStatusBlocking(gui_eventHandler);
         if (!event) continue; // no new events
 
         menu->handleEvent(menu,event);

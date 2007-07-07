@@ -47,7 +47,7 @@ void app_main(int argc,char * * argv)
     redraw();
     while(!stop)
     {
-        evt=evt_getStatus(evt_handler);
+        evt=evt_getStatusBlocking(evt_handler);
         if(evt==NO_EVENT)
             continue;
 

@@ -19,6 +19,20 @@
 #include <driver/cpld.h>
 #include <driver/ata.h>
 
+#include <fs/disk.h>
+
+extern int cur_disk;
+
+int ATA_INB(int reg) {
+    int __res;
+    if(reg==IDE_ALTSTATUS) {
+        outb(OMAP_HD_ALTS_ERR_REQUEST,OMAP_REQUEST_BASE);
+        while(inb(OMAP_REQUEST_BASE));
+    }
+    return inb(reg);
+}
+
+
 void arch_ata_resetHD(void)
 {
     // outb(OMAP_HD_POWER_UP_REQUEST,OMAP_REQUEST_BASE);
@@ -52,12 +66,5 @@ void arch_ata_selectCF(void)
 void arch_ata_init(void)
 {
   outb(OMAP_HD_INIT_REQUEST,OMAP_REQUEST_BASE);
-  while(inb(OMAP_REQUEST_BASE));
-  arch_ata_powerUpHD();
-  arch_ata_resetHD();
+  while(inb(OMAP_REQUEST_BASE));  
 }
-
-void arch_ide_intAction(int irq,struct pt_regs * regs)
-{
-}
-

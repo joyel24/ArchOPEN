@@ -60,7 +60,7 @@ static void shell_loop(){
     int event;
 
     for(;;){
-        event=evt_getStatus(shell_eventHandler);
+        event=evt_getStatusBlocking(shell_eventHandler);
         if (event==NO_EVENT){ // no new events
             yield();
             continue;
@@ -261,7 +261,7 @@ bool shell_execute(char * command,char * param){
                 }
             }
 
-            free(ext);
+            kfree(ext);
 
         }
     }
@@ -276,7 +276,7 @@ bool shell_execute(char * command,char * param){
         shell_restore();
     }
 
-    free(s);
+    kfree(s);
 
     return retval;
 }
@@ -296,7 +296,7 @@ void shell_restore(){
 
 void shell_main(){
 
-    gfx_initGraphics();
+    gfx_initGraphics();    
     gfx_clearScreen(COLOR_WHITE);
 
     icon_init();
@@ -309,7 +309,6 @@ void shell_main(){
     if(!shell_parseHandlers(SHELL_HANDLERS_FILE)){
         printk("[shell] error reading handlers file\n");
     }
-
     // init shell menu
     if (shellMenu_init()){
 
@@ -331,7 +330,7 @@ void shell_main(){
         shell_restore();
 
         screens_show(SCREEN_GFX);
-
+        printk("nb Tick needed for boot %d\n",tick);
         // main loop (never returns)
         shell_loop();
 
@@ -359,15 +358,14 @@ void shell_close(){
         h=shell_firstHandler;
         while(h!=NULL){
             // free strings
-            if(h->ext!=NULL) free(h->ext);
-            if(h->handler!=NULL) free(h->handler);
-    
+            if(h->ext!=NULL) kfree(h->ext);
+            if(h->handler!=NULL) kfree(h->handler);
             // get next item pointer before freeing item
             prev=h;
     
             h=h->next;
     
-            free(prev);
+            kfree(prev);
         }
     }
 }

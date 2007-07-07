@@ -136,8 +136,8 @@ MED_RET_T med_loadParam(int argc,char**argv)
     if(argc)
     {
         for(i=0;i<argc;i++)
-            free(cpy_argv[i]);
-        free(cpy_argv);
+            kfree(cpy_argv[i]);
+        kfree(cpy_argv);
     }
     
     return MED_OK;
@@ -472,19 +472,19 @@ MED_RET_T med_loadMed(char*fName,med_t * medInfo,int file_offset)
     cache_invalidate(CACHE_ALL);
 
     /* freeing tmp malloc/struct */
-    free(sections_name);
-    free(section_list);
+    kfree(sections_name);
+    kfree(section_list);
         
     return ret_val;
 
 exit_point3:       
-    free(medInfo->sdram_start);
+    kfree(medInfo->sdram_start);
     printk("sdram freed\n"); 
 exit_point2:
-    free(sections_name);
+    kfree(sections_name);
     printk("sections_name freed\n"); 
 exit_point1:
-    free(section_list);
+    kfree(section_list);
     printk("sections_name freed\n");
 exit_point:
     close(fd);

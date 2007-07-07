@@ -161,7 +161,7 @@ int thread_startFct(THREAD_INFO ** ret_thread,void * entry_fct,char * name,int e
         
     pid=thread_create(&fct_thread,entry_fct,(void*)thread_exit,0,NULL,0,stack_type,bottom,prio,name,
                        NULL,0,(unsigned long)NULL);
-    printk("Fct thread created with pid %d\n",pid);
+//    printk("Fct thread created with pid %d\n",pid);
     if(ret_thread)
         *ret_thread=fct_thread;
     fct_thread->state=enable==THREAD_STATE_ENABLE?THREAD_STATE_ENABLE:THREAD_STATE_DISABLE;
@@ -208,10 +208,10 @@ int thread_create(THREAD_INFO ** ret_thread,void * entry_fct,void * exit_fct,
         if(!newThread->saveStack)
         {
             printk("No mem left for stack save (needs %x,top=%x,btm=%x)\n",stack_size,stack_top,stack_bottom);
-            free(newThread);
+            kfree(newThread);
             return -MED_ENOMEM;
         }
-        printk("Save stack malloc, size = %x\n",stack_size);
+//        printk("Save stack malloc, size = %x\n",stack_size);
     }
     else
     {
@@ -224,7 +224,7 @@ int thread_create(THREAD_INFO ** ret_thread,void * entry_fct,void * exit_fct,
             if(!newThread->stackBottom)
             {
                 printk("No mem left for task's stack: %s\n",name!=NULL?name:"NO NAME");
-                free(newThread);
+                kfree(newThread);
                 return -MED_ENOMEM;
             }
         }
@@ -257,11 +257,11 @@ int thread_create(THREAD_INFO ** ret_thread,void * entry_fct,void * exit_fct,
     newThread->regs[16]=(unsigned long)entry_fct; //PC=entry of thread
 
     thread_insert(newThread);
-
+/*
     printk("new thread created at %x, stack malloc at %x (top=%x), entry=%x exit=%x mode=%x\n",
         newThread,newThread->stackBottom,newThread->regs[14],
         (unsigned long)entry_fct,(unsigned long)exit_fct,THREAD_INIT_CPSR);
-
+*/
     if(ret_thread)
         *ret_thread=newThread;
 
@@ -722,6 +722,33 @@ void thread_listFree(THREAD_INFO * thread,int res_id)
     {
         thread->ressources[res_id].clean_fct((void*)((unsigned int)ptr-thread->ressources[res_id].offset));
     }
+}
+
+/***********************************************************************************
+************************************************************************************
+lock functions, spinlock/mutex ...
+************************************************************************************
+***********************************************************************************/
+
+void spinLock_ini(struct spinLock * lock)
+{
+    lock->lock=0;
+}
+
+void spinLock_lock(struct spinLock * lock)
+{
+    while(THREAD_SWAPB(&lock->lock,1))
+        yield();
+}
+
+void spinLock_unlock(struct spinLock * lock)
+{
+    lock->lock=0;
+}
+
+int spinLock_isLocked(struct spinLock * lock)
+{
+    return (lock->lock==1);   
 }
 
 /***********************************************************************************

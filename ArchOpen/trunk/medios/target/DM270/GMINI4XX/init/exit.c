@@ -28,6 +28,9 @@
 #include <driver/cache.h>
 
 #include <gfx/graphics.h>
+#include <gfx/screens.h>
+
+#include <gui/splash.h>
 
 typedef struct{
     unsigned char magic[4];
@@ -109,5 +112,6 @@ __attribute__((section(".fwuncomp_code"))) void arch_reload_firmware(void){
 
 void arch_HaltMsg(void)
 {
-
+    splash_setString("Shutting down");
+    screens_show(SCREEN_SPLASH);
 }

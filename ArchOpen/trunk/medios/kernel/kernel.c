@@ -14,6 +14,13 @@
 
 #include <driver/hardware.h>
 #include <driver/lcd.h>
+#include <driver/ata.h>
+
+#include <kernel/thread.h>
+#include <kernel/pipes.h>
+#include <kernel/irq.h>
+
+#include <init/exit.h>
 
 MED_RET_T errno=0;
 
@@ -32,3 +39,53 @@ MED_RET_T getErrno(void)
 {
     return errno;
 }
+
+int readCPUMode(void)
+{
+    int val;
+    asm volatile(
+            "mrs %0,cpsr \n"
+    :"=r" (val));
+
+    return (val&0x1F);
+}
+
+struct pipe kernel_cmdPipe;
+
+void kernel_doCmd(int cmd)
+{
+    pipeWrite(&kernel_cmdPipe,&cmd,sizeof(int));
+}
+     
+void kernel_cmdPipeFct(void)
+{
+    int cmd;
+    pipeInitWithThread(&kernel_cmdPipe,THREAD_SELF());
+    
+    while(1)
+    {
+        if(!pipe_hasBytes(&kernel_cmdPipe))
+        {
+            __cli();
+            THREAD_SELF()->state=THREAD_BLOCKED_BY_PIPE;
+            yield();
+            __sti();
+        }
+        else
+        {
+            pipeRead(&kernel_cmdPipe,&cmd,sizeof(int));
+            switch(cmd)
+            {
+                case CMD_ATA_SLEEP:
+                    ata_StopHD(HD_DISK);
+                    break;
+                case CMD_HALT_DEVICE:
+                    halt_device();
+                    break;
+                default:
+                    printk("UKN cmd: %d\n",cmd);   
+            }
+        }
+    }
+}
+

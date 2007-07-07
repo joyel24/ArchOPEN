@@ -42,9 +42,9 @@ void cleanList(struct browser_data * bdata)
     {
         for (i = 0; i < bdata->listused; i++)
             if(bdata->list[i].name)
-                free(bdata->list[i].name);
+                kfree(bdata->list[i].name);
 
-        free(bdata->list);
+        kfree(bdata->list);
     }
 
     bdata->list=NULL;
@@ -90,7 +90,7 @@ int addEntry(struct browser_data * bdata,char * name,int type,int size)
             return 0;
         }
         memcpy(newlist, bdata->list, sizeof(struct dir_entry) * bdata->listsize);
-        free(bdata->list);
+        kfree(bdata->list);
         bdata->list=newlist;
         bdata->listsize += LISTSIZE;
     }

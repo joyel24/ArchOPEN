@@ -550,7 +550,7 @@ void draw_edit_text_menu(int modif){
         draw_edit_field();
         while(finish==0)
         {
-                evt=evt_getStatus(evt_handler);
+                evt=evt_getStatusBlocking(evt_handler);
                 switch(evt)
                 {
                 case BTN_F1:
@@ -665,7 +665,7 @@ void draw_edit_advancement_menu(){
         draw_text("-press left to decrease by 1%-press right to increase by 1%-press down to decrease by 10%-press up to increase by 10%-press f2 to go back to default");
         while(finish==0)
         {
-                evt=evt_getStatus(evt_handler);
+                evt=evt_getStatusBlocking(evt_handler);
                 switch(evt)
                 {
                 case BTN_F1:
@@ -735,7 +735,7 @@ void draw_edit_priority_menu(){
         draw_text("-press left to decrease priority-press right to increase priority-press down to set to low-press up to set to urgent-press f2 to go back to default");
         while(!finish)
         {
-                evt=evt_getStatus(evt_handler);
+                evt=evt_getStatusBlocking(evt_handler);
                 switch(evt)
                 {
                 case BTN_F1:
@@ -833,7 +833,7 @@ void draw_edit_menu(){
         draw_rect_edit_menu(sel);
         while(!quit_edit_menu)
         {
-                evt=evt_getStatus(evt_handler);
+                evt=evt_getStatusBlocking(evt_handler);
                 switch(evt)
                 {
                 case BTN_UP:
@@ -1151,7 +1151,7 @@ void really_delete_task(){
         draw_infobox(tmpstring,"f1 = Yes  f3 = No");
         while(delete)
         {
-                evt=evt_getStatus(evt_handler);
+                evt=evt_getStatusBlocking(evt_handler);
                 switch(evt)
                 {
                 case BTN_F1:
@@ -1354,7 +1354,7 @@ void draw_intro(){
         gfx_fillRect(color[0],0,40,LCD_WIDTH,30);
                 i=LCD_WIDTH;
                 while( i>0-(length*w) && !stop){
-                        evt=evt_getStatus(evt_handler);
+                        evt=evt_getStatusBlocking(evt_handler);
                         switch(evt){
                                 case BTN_LEFT:
                                 case BTN_RIGHT:
@@ -1419,7 +1419,7 @@ void app_main(int argc, char ** argv)
 	
 		while( !stop_app)
 		{
-			evt=evt_getStatus(evt_handler);
+			evt=evt_getStatusBlocking(evt_handler);
 				switch(evt)
 				{
 					case BTN_LEFT:

@@ -297,7 +297,7 @@ int winLoose_screen(char * msg)
     msgBox_info(msg);
     while(1)
     {
-        evt=evt_getStatus(evt_handler);
+        evt=evt_getStatusBlocking(evt_handler);
         if(evt==NO_EVENT)
             continue;
         if(evt==BTN_OFF)
@@ -439,7 +439,7 @@ void eventLoop()
     
     while(!stop_othello)
     {
-        evt=evt_getStatus(evt_handler);
+        evt=evt_getStatusBlocking(evt_handler);
         if(evt==NO_EVENT)
             continue;
         if(evt==ACTION_UP && cursorMoveMode==0)

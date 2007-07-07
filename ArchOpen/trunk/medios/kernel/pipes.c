@@ -20,11 +20,18 @@ void pipeWrite(struct pipe * pPipe, void* _pData, unsigned long nBytes)
     int i;
     unsigned char* pData = (unsigned char*)_pData;
     if(pPipe)
+    {
         for (i=0;i<nBytes;i++)
         {
                 pPipe->buffer[pPipe->nIN ++] = pData[i];
                 pPipe->nIN &= PIPE_SIZE_MASK;
         }
+        
+        if(pPipe->myThread &&  pPipe->myThread->state==THREAD_BLOCKED_BY_PIPE)
+        {
+            pPipe->myThread->state=THREAD_STATE_ENABLE;
+        }
+    }    
 }
 
 void pipeRead(struct pipe* pPipe, void* _pData, unsigned long nBytes)
@@ -37,3 +44,21 @@ void pipeRead(struct pipe* pPipe, void* _pData, unsigned long nBytes)
                 pPipe->nOUT &= PIPE_SIZE_MASK;
         }
 }
+
+int pipe_hasBytes(struct pipe* pPipe)
+{
+    return (pPipe->nIN != pPipe->nOUT);
+}
+
+void pipeInit(struct pipe* pPipe)
+{
+    pPipe->nIN = pPipe->nOUT = 0;
+    pPipe->myThread = NULL;
+}
+
+void pipeInitWithThread(struct pipe* pPipe,THREAD_INFO * ptr)
+{
+    pipeInit(pPipe);
+    pPipe->myThread = ptr;
+}
+

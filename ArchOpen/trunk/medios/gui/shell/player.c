@@ -254,7 +254,7 @@ void player_eventLoop(){
 
         // handle events
 
-        event=evt_getStatus(player_eventHandler);
+        event=evt_getStatusBlocking(player_eventHandler);
         if (!event){ // no new events
             yield();
             continue;

@@ -33,6 +33,7 @@ MED_RET_T evt_freeHandler(int num_evt_pipe);
 void evt_send(struct evt_t * evt);                
 int  evt_getStatus(int num_evt_pipe);        
 MED_RET_T evt_getFullStatus(int num_evt_pipe, struct evt_t * evt);
+int evt_getStatusBlocking(int num_evt_pipe);
 int evt_purgeHandler(int num_evt_pipe);
 void evt_init(void);
 const char * getBtnName(int btn); 

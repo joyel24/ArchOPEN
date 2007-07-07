@@ -17,6 +17,7 @@
 #include <driver/usb_fw.h>
 
 #include <fs/stdfs.h>
+#include <fs/disk.h>
 
 #include <init/exit.h>
 
@@ -46,14 +47,16 @@ void halt_device(void)
     powering_off=1;
 
     printk("[exit] device halt\n");
-
+    arch_HaltMsg();
+    
     medios_close();
 
-    printk("[exit] medios cleanup done\n");
+    printk("[exit] medios cleanup done\n");    
     
-    arch_HaltMsg();
-
-    ata_stopHD(ATA_FORCE_STOP); /* we need to call halt_hd later to unmount all partitions */
+    if(disk_rmAll()!=MED_OK)
+        printk("WARN: was not able to umount\n");
+    if(ata_StopHD(HD_DISK)!=MED_OK)
+       printk("WARN: was not able to stop HDD\n");
 
     udelay(100);
     printk("[exit] ready to halt\n");

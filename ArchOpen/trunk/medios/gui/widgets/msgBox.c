@@ -49,7 +49,7 @@ int msgBox_evtHandler(int evt_hanlder)
     char evt=0;
     while(!stopBoxLoop)
     {
-        evt = evt_getStatus(evt_hanlder);
+        evt = evt_getStatusBlocking(evt_hanlder);
         if(evt==NO_EVENT)
             continue;
 

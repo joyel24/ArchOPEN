@@ -72,7 +72,7 @@ WavpackContext *WavpackOpenFileInput (read_stream infile, char *error)
 
         if (bcount == (uint32_t) -1) {
             strcpy (error, "not compatible with this version of WavPack file!");
-            free(wpc);
+            kfree(wpc);
             return NULL;
         }
 
@@ -82,7 +82,7 @@ WavpackContext *WavpackOpenFileInput (read_stream infile, char *error)
         if (!unpack_init (wpc)) {
             strcpy (error, wpc->error_message [0] ? wpc->error_message :
                 "not compatible with this version of WavPack file!");
-            free(wpc);
+            kfree(wpc);
             return NULL;
         }
     }
@@ -120,7 +120,7 @@ WavpackContext *WavpackOpenFileInput (read_stream infile, char *error)
 
 void WavpackClose (WavpackContext *wpc)
 {
-    free(wpc);
+    kfree(wpc);
 }
 
 // This function obtains general information about an open file and returns

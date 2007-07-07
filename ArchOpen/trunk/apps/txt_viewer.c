@@ -759,7 +759,7 @@ void menu_execute(int evt_handler){
 
     do
     {
-        event=evt_getStatus(evt_handler);
+        event=evt_getStatusBlocking(evt_handler);
         if (!event) continue; // no new events
 
         menu->handleEvent(menu,event);
@@ -814,7 +814,7 @@ void app_main(int argc,char ** argv)
 
     while (!stop)
 	 {
-        while((evt=evt_getStatus(evt_handler))>0)
+        while((evt=evt_getStatusBlocking)>0)
         {
             switch(evt)
             {

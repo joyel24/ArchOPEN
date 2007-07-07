@@ -7,7 +7,7 @@
 #ifndef COLORDEF_DSC25_H
 #define COLORDEF_DSC25_H
 
-#define COLOR_TRSP         3
+#define COLOR_TRSP         0
 #define COLOR_WHITE        15
 #define COLOR_BLACK        0
 #define COLOR_DARK_BLUE    1

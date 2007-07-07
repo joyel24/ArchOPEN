@@ -107,7 +107,7 @@ struct browser_data * browser_NewDualBrowse(void)
     ptr->dual=(struct browser_data *)malloc(sizeof(struct browser_data));
     if(!ptr->dual)
     {
-        free(ptr);
+        kfree(ptr);
         return NULL;
     }
     iniBrowserData(ptr->dual);
@@ -127,10 +127,10 @@ void browser_disposeBrowse(struct browser_data * bdata)
     if(bdata->is_dual)
     {
         cleanList(bdata->dual);
-        free(bdata->dual);
+        kfree(bdata->dual);
     }
     cleanList(bdata);
-    free(bdata);
+    kfree(bdata);
     
 }
 

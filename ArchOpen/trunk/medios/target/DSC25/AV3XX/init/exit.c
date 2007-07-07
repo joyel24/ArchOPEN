@@ -26,31 +26,24 @@
 #include <fs/disk.h>
 
 #include <gfx/graphics.h>
+#include <gfx/screens.h>
+
+#include <gui/splash.h>
 
 void reset_device(void);
 
 void arch_reload_firmware(void)
 {
     printk("about to reboot\n");
-    ata_softReset(HD_DISK);
-    ata_stopHD(ATA_FORCE_STOP); /* we need to call halt_hd later to unmount all partitions */
+    if(disk_rmAll()!=MED_OK)
+        printk("WARN: was not able to umount\n");
+    if(ata_StopHD(HD_DISK)!=MED_OK)
+        printk("WARN: was not able to stop HDD\n");
     reset_device();
 }
 
 void arch_HaltMsg(void)
 {
-    int h,w;
-    char * msg = "Halting device";
-    
-    
-    gfx_openGraphics();
-    
-    gfx_clearScreen(COLOR_WHITE);
-    
-    gfx_fontSet(STD8X13);
-    
-    gfx_getStringSize(msg,&w,&h);
-    
-    
-    gfx_putS(COLOR_RED,COLOR_WHITE,(SCREEN_WIDTH-w)/2,(SCREEN_HEIGHT-h)/2,msg);
+    splash_setString("Shutting down");
+    screens_show(SCREEN_SPLASH);    
 }

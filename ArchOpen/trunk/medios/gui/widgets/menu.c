@@ -73,7 +73,7 @@ void menu_destroy(MENU m){
     m->clearItems(m);
 
     // free items list
-    free(m->items);
+    kfree(m->items);
 
     widget_destroy((WIDGET)m);
 }

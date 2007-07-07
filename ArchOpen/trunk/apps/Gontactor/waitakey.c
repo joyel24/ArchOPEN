@@ -38,7 +38,7 @@ int waitakey(void)
 
 	event=0;
 	while(!event){
-		event=evt_getStatus(eventHandler);
+        event=evt_getStatusBlocking(eventHandler);
 		if (!event) continue; // no new events
 
 		switch(event){
@@ -121,7 +121,7 @@ int waitakey2(Scrolltext_list *stl)
 			//~ free(FILE);
 			
 		}
-		event=evt_getStatus(eventHandler);
+        event=evt_getStatusBlocking(eventHandler);
 		if (!event) continue; // no new events
 
 		switch(event){

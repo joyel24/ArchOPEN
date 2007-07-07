@@ -509,7 +509,7 @@ void browser_contMenu(struct browser_data * bdata)
     printk("Initial Draw\n");
         
     do{
-        event=evt_getStatus(evt_handler);
+        event=evt_getStatusBlocking(evt_handler);
         if (!event) continue; // no new events
         menuList->handleEvent(menuList,event);
     }while(event!=BTN_OFF && !browser_ContM_exit);

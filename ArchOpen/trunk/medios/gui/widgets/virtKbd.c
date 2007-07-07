@@ -399,7 +399,7 @@ void virtKbdEvtHandler(int evt_hanlder)
     
     while(!stopLoop)
     {
-        evt = evt_getStatus(evt_hanlder);
+        evt = evt_getStatusBlocking(evt_hanlder);
         if(!evt)
             continue;
         char_num=0;   

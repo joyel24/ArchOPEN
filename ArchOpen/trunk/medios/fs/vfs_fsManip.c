@@ -288,12 +288,12 @@ MED_RET_T cpEntry(char* path,char* newpath,struct vfs_node * fd)
             printk("Wrote less than expected\n");
             close(fd_dest);
             rmfile(newpath);
-            free(buffer);
+            kfree(buffer);
             return -MED_EIO;
         }
     }
     
-    free(buffer);
+    kfree(buffer);
     close(fd_dest);
     
     if(size>0)

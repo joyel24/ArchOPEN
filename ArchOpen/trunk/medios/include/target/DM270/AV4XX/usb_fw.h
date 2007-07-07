@@ -18,14 +18,15 @@
 #include <driver/gio.h>
 #include <driver/cpld.h>
 
+#include <fs/disk.h>
+
 /** USB state **/
 
                     
 #define kusbIsConnected()                 (GIO_IS_SET(GIO_USB_CONNECTED))
 
 #define USB_enable(){                                      \
-    ata_powerUpHD();                                       \
-    ata_reset();                                           \
+    ata_doPowerOn(HD_DISK);                                \
     mdelay(10);                                            \
     outw(1,0x0250000e);                                    \
     CPLD_CLEAR_PORT2(CPLD_FX2_WAKEUP);                     \

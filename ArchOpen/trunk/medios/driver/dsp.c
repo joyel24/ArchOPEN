@@ -18,9 +18,17 @@
 
 #include <kernel/malloc.h>
 
+//#define DSP_PRINT
+
+#ifdef DEBUG_DSP
+#define DSP_PRINT(s...)   printk(s)
+#else
+#define DSP_PRINT(s...)
+#endif
+
 void dsp_on ()
 {
-	printk ("[dsp] Enabled...\n");
+	DSP_PRINT ("[dsp] Enabled...\n");
 #if 0
     outw (inw(MOD1_REG) & 0x9FFF, MOD1_REG);
 	outw (inw(MOD1_REG) | 0x6000, MOD1_REG);
@@ -31,7 +39,7 @@ void dsp_on ()
 
 void dsp_off ()
 {
-	printk ("[dsp] Disabled...\n");
+	DSP_PRINT ("[dsp] Disabled...\n");
 #if 0
 	outw (inw(MOD1_REG) & 0x9FFF, MOD1_REG);
 	outw (inw(MOD2_REG) & 0xFF1F, MOD2_REG);
@@ -47,14 +55,14 @@ void dsp_clear ()
 
 void dsp_reset ()
 {
-	printk ("[dsp] Resetting...\n");
+	DSP_PRINT ("[dsp] Resetting...\n");
 	outw (inw (HPIBCTL) & (0xFFFFFFFF - 256), HPIBCTL);
 	outw (inw (HPIBCTL) | 256, HPIBCTL);
 }
 
 void dsp_run ()
 {
-	printk ("[dsp] Sending INT0...\n");
+	DSP_PRINT ("[dsp] Sending INT0...\n");
 	outw (inw (HPIBCTL) & (0xFFFFFFFF - 128), HPIBCTL);
 	outw (inw (HPIBCTL) | 128, HPIBCTL);
 }
@@ -64,10 +72,10 @@ MED_RET_T dsp_loadProgramFromHDD (char* pszFilename)
 	unsigned char * pDSPCode = 0;
 	int fDSPCode = open (pszFilename, O_RDONLY);
 	int nSize;
-	printk ("[dsp] Loading program from hdd into sdram...\n");
+	DSP_PRINT ("[dsp] Loading program from hdd into sdram...\n");
 	if (fDSPCode < 0)
 	{
-		printk ("[dsp] Program not loaded.\n");
+		DSP_PRINT ("[dsp] Program not loaded.\n");
 		return -MED_ENOENT;
 	}
 	else
@@ -76,7 +84,7 @@ MED_RET_T dsp_loadProgramFromHDD (char* pszFilename)
 		nSize = filesize (fDSPCode);
 		pDSPCode = malloc (nSize);
 		nReaded = read (fDSPCode, pDSPCode, nSize);
-		printk ("[dsp] Program loaded into sdram (%d bytes)\n", nReaded);
+		DSP_PRINT ("[dsp] Program loaded into sdram (%d bytes)\n", nReaded);
 		close (fDSPCode);
 	}
 
@@ -88,14 +96,14 @@ MED_RET_T dsp_loadProgramFromHDD (char* pszFilename)
 
 MED_RET_T dsp_loadProgramFromMemory (void* pDSPCode, int nSize)
 {
-	printk ("[dsp] Loading program into dsp...\n");
+	DSP_PRINT ("[dsp] Loading program into dsp...\n");
 
 	dsp_on ();
 	dsp_reset ();
 	dsp_clear ();
 
 	COFF_FILHDR* phdr = (COFF_FILHDR*)pDSPCode;
-	printk ("[dsp] %i sections found...\r\n", phdr->f_nscns);
+	DSP_PRINT ("[dsp] %i sections found...\r\n", phdr->f_nscns);
 
 	int pos = sizeof(COFF_FILHDR) + phdr->f_opthdr + 2;
 
@@ -122,11 +130,11 @@ MED_RET_T dsp_loadProgramFromMemory (void* pDSPCode, int nSize)
 
 		if (!nVirtAddress || !nSectSize)
 		{
-			printk ("[dsp] Skipping invalid section...\n");
+			DSP_PRINT ("[dsp] Skipping invalid section...\n");
 			continue;
 		}
 
-		printk ("[dsp] Loading section %s (addr: 0x%.8X, size: 0x%.4X words)...\n",
+		DSP_PRINT ("[dsp] Loading section %s (addr: 0x%.8X, size: 0x%.4X words)...\n",
 			sec_name,
 			nVirtAddress,
 			nSectSize);
@@ -149,7 +157,7 @@ MED_RET_T dsp_loadProgramFromMemory (void* pDSPCode, int nSize)
 		}
 	}
 
-	printk ("[dsp] Program loaded.\n");
+	DSP_PRINT ("[dsp] Program loaded.\n");
 	return MED_OK;
 }
 

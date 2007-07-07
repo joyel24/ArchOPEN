@@ -132,8 +132,8 @@ MED_RET_T vfs_mount(char * mount_path,int disk, int partition_num)
     if(!mountPoint)
     {
         fat_unmount(root_node,0);
-        free(root_node->custom_data);
-        free(root_node);
+        kfree(root_node->custom_data);
+        kfree(root_node);
         printk("[vfs_mount] malloc error creating mountPoint\n");
         return -MED_ENOMEM;
     }

@@ -86,7 +86,7 @@ void mid_trackLoop(){
 
   red=buffer_read(dataBuf, buffer_getActiveItem()->fileSize);
   midi_ptr = WildMidi_OpenBuffer(dataBuf, red);
-  free(dataBuf);
+  kfree(dataBuf);
   printf("\n#memLeak2=%d\n", allocMem);
   if(midi_ptr == NULL) {
     //WildMidi_Shutdown();

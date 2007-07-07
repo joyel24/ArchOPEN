@@ -105,7 +105,7 @@ void mad_frame_finish(struct mad_frame *frame)
   mad_header_finish(&frame->header);
 
   if (frame->overlap) {
-    free(frame->overlap);
+    kfree(frame->overlap);
     frame->overlap = 0;
   }
 }

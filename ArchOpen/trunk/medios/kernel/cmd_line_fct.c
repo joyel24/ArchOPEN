@@ -29,6 +29,7 @@
 #include <driver/cpld.h>
 #include <driver/fm_remote.h>
 #include <driver/ata.h>
+#include <driver/energy.h>
 
 #include <fs/stdfs.h>
 #include <fs/vfs.h>
@@ -70,6 +71,12 @@ struct cmd_line_s cmd_tab[] = {
         cmd        : "halt",
         help_str   : "Halts the device",
         cmd_action : do_halt,
+        nb_args    : 0
+    },
+    {
+        cmd        : "sleep",
+        help_str   : "Put device in sleep mode",
+        cmd_action : do_sleep,
         nb_args    : 0
     },
     {
@@ -137,13 +144,7 @@ struct cmd_line_s cmd_tab[] = {
         help_str   : "Print state of gio GIO: gioGetState GIO STATE",
         cmd_action : do_gioGetState,
         nb_args    : 1
-    },
-    {
-        cmd        : "diskInfo",
-        help_str   : "Print info on disk D: diskInfo D",
-        cmd_action : do_diskInfo,
-        nb_args    : 1
-    },
+    },    
     {
         cmd        : "cpldRead",
         help_str   : "Read cpld port N: cpldRead N",
@@ -247,7 +248,12 @@ void do_run (unsigned char ** params)
 
 void do_halt (unsigned char ** params)
 {
-    halt_device();
+    kernel_doCmd(CMD_HALT_DEVICE);
+}
+
+void do_sleep(unsigned char ** params)
+{
+    energy_lowPower();
 }
 
 void do_reload (unsigned char ** params)
@@ -435,15 +441,6 @@ void do_gioGetState (unsigned char ** params)
     printk("Gio 0x%x is %s (DIR=%s)\n",gio,GIO_IS_SET(gio)?"set":"not set",GIO_GET_DIR(gio)?"IN":"OUT");
 }
 
-void do_diskInfo(unsigned char ** params)
-{
-    int disk = atoi (params[0]);
-    printk("disk=%d\n",disk);
-    if(disk !=0 && disk !=1)
-        return;
-    disk_readInfo(disk,1);
-}
-
 void do_cpldRead (unsigned char ** params)
 {
     int portNum=atoi (params[0]);
@@ -460,7 +457,11 @@ void do_cpldWrite (unsigned char ** params)
 
 void do_hdSleep (unsigned char ** params)
 {
-    ata_stopHD(ATA_FORCE_STOP);
+    int drive=atoi (params[0]);
+    if(drive==HD_DISK || drive==CF_DISK)
+    {
+        ata_StopHD(drive);
+    }
 }
 
 void do_mount (unsigned char ** params)

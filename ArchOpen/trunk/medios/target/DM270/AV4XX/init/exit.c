@@ -29,6 +29,9 @@
 #include <driver/cpld.h>
 
 #include <gfx/graphics.h>
+#include <gfx/screens.h>
+
+#include <gui/splash.h>
 
 #include <init/exit.h>
 
@@ -78,7 +81,7 @@ __attribute__((section(".fwuncomp_code"))) void arch_reload_firmware(void){
     if(CPLD_VER==0x5)
     {
         printk("Reload not supported atm => halt\n");
-        halt_device();
+        kernel_doCmd(CMD_HALT_DEVICE);
     }
     else
     {
@@ -119,5 +122,6 @@ __attribute__((section(".fwuncomp_code"))) void arch_reload_firmware(void){
 
 void arch_HaltMsg(void)
 {
-
+    splash_setString("Shutting down");
+    screens_show(SCREEN_SPLASH);
 }

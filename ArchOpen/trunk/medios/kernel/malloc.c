@@ -161,7 +161,7 @@ void * internalRealloc(void *buf,unsigned int size,int isKernel)
     osize -= sizeof(struct bhead);
     /* Copy the data */
     memcpy((char *) nbuf, (char *) buf,(MemSize) ((size < osize) ? size : osize));
-    free(buf);
+    kfree(buf);
     return nbuf;
 }
 

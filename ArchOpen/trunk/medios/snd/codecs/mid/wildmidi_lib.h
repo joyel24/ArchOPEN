@@ -227,7 +227,7 @@ void myFree(void* x);
 //#define realloc(y, x) myRealloc(y, x)
 //#define calloc(x1, x2) myCalloc(x1, x2)
 //#define malloc(x) myMalloc(x)
-//#define free(x) myFree(x)
+//#define kfree(x) myFree(x)
 #endif //DEBUGMEM
 
 #endif //__WILDMIDI_LIB__

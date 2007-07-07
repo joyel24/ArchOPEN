@@ -65,7 +65,7 @@ __IRAM_CODE void output_dspInterrupt(int irq,struct pt_regs * regs){
         printf("dsp> %s\n",str);
 
         dspCom->hasDbgMsg=0;
-        free(str);
+        kfree(str);
     }
 
     // the dsp requests a decoding
@@ -293,5 +293,5 @@ void output_stop(void)
 
     output_enableAudioOutput(false);
 
-    free(output_buffer);
+    kfree(output_buffer);
 }

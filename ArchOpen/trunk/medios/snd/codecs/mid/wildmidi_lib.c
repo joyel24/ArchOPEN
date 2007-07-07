@@ -5036,7 +5036,7 @@ void myFree(void* x) {
   if(x!=NULL){
     //printf("_4");
     allocMem-=sizeof(x);
-    free(x);
+    kfree(x);
     //printf("_%d\n", allocMem);
   }
 }

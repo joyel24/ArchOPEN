@@ -49,8 +49,15 @@ extern unsigned int _sdend_end;
 
 extern int has_develFct;
 
+int readCPUMode(void);
 
 #define SWAB16(x) (x)
 #define SWAB32(x) (x)
+
+void kernel_doCmd(int cmd);
+void kernel_cmdPipeFct(void);
+
+#define CMD_HALT_DEVICE 1
+#define CMD_ATA_SLEEP   2
 
 #endif

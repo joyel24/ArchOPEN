@@ -135,14 +135,14 @@ void cfg_clear(CFG_DATA * data){
 
         // clear items data
         for(i=0;i<data->count;++i){
-            free(data->items[i].name);
+            kfree(data->items[i].name);
             if (!data->items[i].dummy) free(data->items[i].value);
         }
 
-        free(data->items);
+        kfree(data->items);
     }
 
-    free(data);
+    kfree(data);
 }
 
 CFG_DATA * cfg_newFile(){
@@ -184,7 +184,7 @@ CFG_DATA * cfg_readFile(char * filename){
 
     if (read(f,filedata,size)!=size){
         printk("[cfg] read error!\n");
-        free(filedata);
+        kfree(filedata);
         close(f);
         return NULL;
     }
@@ -261,7 +261,7 @@ CFG_DATA * cfg_readFile(char * filename){
         }while(i<size);
     }
 
-    free(filedata);
+    kfree(filedata);
 
     return data;
 }
@@ -300,7 +300,7 @@ bool cfg_writeFile(CFG_DATA * data, char * filename){
             if (write(f,line,strlen(line))!=strlen(line)){
                 printk("[cfg] write error!\n");
                 close(f);
-                free(line);
+                kfree(line);
                 return false;
             }
         }
@@ -310,7 +310,7 @@ bool cfg_writeFile(CFG_DATA * data, char * filename){
     truncate(f,lseek(f,0,SEEK_CUR));
 
     close(f);
-    free(line);
+    kfree(line);
 
     return true;
 }

@@ -100,7 +100,7 @@ int gui_list_bend(List_bend *list, int sel)
 		waitforakey=1;
 		while(waitforakey)
 		{
-			event=evt_getStatus(eventHandler);
+            event=evt_getStatusBlocking(eventHandler);
 			if (!event) continue; // no new events
 
 			switch(event){

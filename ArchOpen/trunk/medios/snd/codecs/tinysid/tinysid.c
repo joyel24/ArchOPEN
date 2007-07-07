@@ -155,7 +155,7 @@ void tinysid_trackLoop(){
     }while(codec_mustContinue());
 
 
- 	free(data);
+ 	kfree(data);
 }
 
 

@@ -89,29 +89,29 @@ static void codec_findCodecs(){
             if(entry->type!=VFS_TYPE_FILE)
             {
                 printk("discard: '%s' not a file\n",entry->d_name);
-                free(fname);
+                kfree(fname);
                 continue;
             }
             fd=open(fname,O_RDONLY);
             if(fd<0)
             {
                 printk("Error opening file: %d\n",-fd);
-                free(fname);
+                kfree(fname);
                 continue; 
             }
             /* is is a codec file ?*/
             if(read(fd,header,4)!=4)
             {
                 printk("Can't read Header\n");
-                free(fname);
+                kfree(fname);
                 close(fd);
                 continue;
             }
             
             if(strncmp(header,"CDEC",4))
             {
-                printk("Not a codec file\n");
-                free(fname);
+                printk("Not a codec file: %s\n",fname);
+                kfree(fname);
                 close(fd);
                 continue;   
             }
@@ -123,7 +123,7 @@ static void codec_findCodecs(){
             if(read(fd,(void*)&item_size,1)!=1)
             {
                 printk("Can't read name size\n");
-                free(fname);
+                kfree(fname);
                 close(fd);
                 codec_remove(cInfo);
                 continue;
@@ -133,7 +133,7 @@ static void codec_findCodecs(){
             if(read(fd,cInfo->name,item_size)!=item_size)
             {
                 printk("Can't read name\n");
-                free(fname);
+                kfree(fname);
                 close(fd);
                 codec_remove(cInfo);
                 continue;
@@ -143,7 +143,7 @@ static void codec_findCodecs(){
             {
                 printk("Can't read extension list size\n");
                 free(fname);
-                free(cInfo->name);
+                kfree(cInfo->name);
                 close(fd);
                 codec_remove(cInfo);
                 continue;
@@ -154,8 +154,8 @@ static void codec_findCodecs(){
             {
                 printk("Can't read extension list\n");
                 free(fname);
-                free(cInfo->name);
-                free(cInfo->extensions);
+                kfree(cInfo->name);
+                kfree(cInfo->extensions);
                 close(fd);
                 codec_remove(cInfo);
                 continue;
@@ -223,7 +223,7 @@ bool codec_remove(CODEC_INFO * info){
         codec_last=prev;
     }
 
-    free(info);
+    kfree(info);
 
     return true;
 }
@@ -298,7 +298,7 @@ CODEC_INFO * codec_findCodecFor(char * name){
     if(!found)
         info=NULL;
     
-    free(ext);
+    kfree(ext);
 
     return info;
 }

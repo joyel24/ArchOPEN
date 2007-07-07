@@ -379,7 +379,7 @@ void widgetListHandleEvents(){
     widgetList->paint(widgetList);
 
     do{
-        event=evt_getStatus(eventHandler);
+        event=evt_getStatusBlocking(eventHandler);
         if (!event) continue; // no new events
 
         if (event==BTN_F1){
@@ -406,7 +406,7 @@ void mainMenuHandleEvents(){
     menuList->focusedWidget->paint(menuList->focusedWidget);
 
     do{
-        event=evt_getStatus(eventHandler);
+        event=evt_getStatusBlocking(eventHandler);
         if (!event) continue; // no new events
 
         menuList->handleEvent(menuList,event);

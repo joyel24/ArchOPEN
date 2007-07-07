@@ -782,7 +782,7 @@ void eventHandlerLoop(void)
 
 	while(!stop)
 	{
-		evt=evt_getStatus(evt_handler);
+        evt=evt_getStatusBlocking(evt_handler);
 		if(evt==NO_EVENT)
 			continue;
 			

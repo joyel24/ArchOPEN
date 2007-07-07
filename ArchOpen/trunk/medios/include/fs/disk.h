@@ -48,7 +48,9 @@ struct hd_info_s {
 	char model [41];
     unsigned long size;
     int multi_sector;
-    int has_multi_sector;
+    int has_security_features;
+    int pio_mode;
+    unsigned int features_support[3];
     struct partition_info * partition_list;
 };
 
@@ -64,6 +66,8 @@ MED_RET_T disk_addAll(void);
 
 char * disk_getName(int id);
 
-struct hd_info_s * disk_readInfo(int disk,int just_print);
+MED_RET_T disk_readPartition(int disk);
+
+extern char * disk_name[];
 
 #endif

@@ -11,6 +11,7 @@
 */
 
 #include <sys_def/stddef.h>
+#include <sys_def/colordef.h>
 
 #include <kernel/kernel.h>
 
@@ -19,10 +20,12 @@
 
 #include <gfx/graphics.h>
 #include <gfx/screens.h>
+#include <gfx/kfont.h>
 
 #include <gui/splash.h>
 
 extern struct graphics_operations g32ops;
+extern struct graphics_operations g8ops;
 
 struct graphicsBuffer splash_gfxStruct = {
     offset             : 0,
@@ -37,22 +40,59 @@ struct graphicsBuffer splash_gfxStruct = {
     gops               : &g32ops
 };
 
+
+struct graphicsBuffer splash_gfxBmapStruct = {
+    offset             : 0,
+    state              : OSD_SPLASH_BMAP_CFG,
+    enable             : 1,
+    width              : SCREEN_WIDTH,
+    real_width         : SCREEN_REAL_WIDTH,
+    height             : SCREEN_HEIGHT,
+    x                  : SCREEN_ORIGIN_X,
+    y                  : SCREEN_ORIGIN_Y,
+    bitsPerPixel       : 8,
+};
+
 struct screen_data splash_screenData = {
     show:splash_show,
     palette:NULL
 };
 
 extern char splash_img[SCREEN_REAL_WIDTH*4*SCREEN_HEIGHT];
+extern char screen_BMAP2[SCREEN_WIDTH*SCREEN_HEIGHT+40];
 
 void splash_init(void)
 {
     splash_gfxStruct.offset=(unsigned int)splash_img;
+    gfx_initComponent(BMAP2,&splash_gfxBmapStruct,(unsigned int)screen_BMAP2);
     screens_add(&splash_screenData,SCREEN_SPLASH);
 }
 
+char * splashStr="Loading...";
+
 void splash_show(void)
-{
-   
+{  
     /* reconfigure & restore Video plane */
-    gfx_restoreComponent(VID1,&splash_gfxStruct);    
+    int w,h;
+    gfx_restoreComponent(VID1,&splash_gfxStruct);
+    if(splashStr)
+    {
+        gfx_restoreComponent(BMAP2,&splash_gfxBmapStruct);
+        gfx_fontSet(STD8X13);    
+        gfx_getStringSize(splashStr,&w,&h);
+        gfx_planeSetSize(BMAP2,w+4,h+4,8);
+        osd_setComponentSize(OSD_BITMAP2, 2*(w+4), h+4);
+        osd_setComponentSourceWidth(OSD_BITMAP2, (splash_gfxBmapStruct.width/32));
+        osd_setComponentPosition(OSD_BITMAP2,SCREEN_ORIGIN_X,SCREEN_ORIGIN_Y+SCREEN_HEIGHT-h-4);
+        g8ops.clearScreen(COLOR_BLACK,&splash_gfxBmapStruct);
+        g8ops.drawString(fnt_fontFromId(STD8X13),COLOR_WHITE,COLOR_BLACK,
+                         2,2,splashStr,-1,&splash_gfxBmapStruct);
+        gfx_planeShow(BMAP2);
+        osd_setComponentConfig(OSD_BITMAP2,OSD_SPLASH_BMAP_CFG|OSD_COMPONENT_ENABLE(OSD_BITMAP2));
+    }
+}
+
+void splash_setString(char * str)
+{
+    splashStr=str;
 }

@@ -219,7 +219,7 @@ static void tag_parseFunctions(char * format, char * output,int length){
                         function=NULL;
                         for(i=0;i<10;++i){
                             if(params[i]!=NULL){
-                                free(params[i]);
+                                kfree(params[i]);
                             }
                             params[i]=NULL;
                         }
@@ -241,7 +241,7 @@ static void tag_parseFunctions(char * format, char * output,int length){
 
     *op='\0';
 
-    free(localFormat);
+    kfree(localFormat);
 }
 
 void tag_parse(PLAYLIST_ITEM * item, char * format, char * output,int length){
@@ -253,7 +253,7 @@ void tag_parse(PLAYLIST_ITEM * item, char * format, char * output,int length){
 
     tag_parseFunctions(temp,output,length);
 
-    free(temp);
+    kfree(temp);
 }
 
 void tag_clear(TAG * tag){
@@ -272,10 +272,10 @@ void tag_clear(TAG * tag){
 }
 
 void tag_free(TAG * tag){
-    if(tag->title!=NULL) free(tag->title);
-    if(tag->artist!=NULL) free(tag->artist);
-    if(tag->album!=NULL) free(tag->album);
-    if(tag->genre!=NULL) free(tag->genre);
-    if(tag->track!=NULL) free(tag->track);
-    if(tag->date!=NULL) free(tag->date);
+    if(tag->title!=NULL) kfree(tag->title);
+    if(tag->artist!=NULL) kfree(tag->artist);
+    if(tag->album!=NULL) kfree(tag->album);
+    if(tag->genre!=NULL) kfree(tag->genre);
+    if(tag->track!=NULL) kfree(tag->track);
+    if(tag->date!=NULL) kfree(tag->date);
 }

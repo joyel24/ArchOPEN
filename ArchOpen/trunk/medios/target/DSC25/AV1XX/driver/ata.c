@@ -49,10 +49,3 @@ void arch_ata_init(void)
 //    outb(0x8,IDE_CONTROL);          /* enabling ints */
 //    enable_irq(IRQ_IDE);
 }
-
-void arch_ide_intAction(int irq,struct pt_regs * regs)
-{
-//    printk("get IDE irq: %d\n",irq);
-}
-
-

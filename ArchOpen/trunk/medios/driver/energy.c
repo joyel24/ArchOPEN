@@ -189,7 +189,22 @@ void hd_sleep_fct(void)
     power_mode=getPowerMode();
        
     if(timer_status[HD_TIMER][power_mode])
-        ata_stopHD(ATA_DELAY_STOP);
+    {
+        kernel_doCmd(CMD_ATA_SLEEP);
+    }
+}
+
+void energy_lowPower(void)
+{
+    tmr_stop(&lcdOnOff_timer);
+    lcd_disable();
+    if(FM_is_connected())
+        FM_lightsOFF();
+    if(!kusb_fw_status)
+    {
+        tmr_stop(&hd_timer);
+        kernel_doCmd(CMD_ATA_SLEEP);
+    }
 }
 
 void energy_chgMode(int power_mode)

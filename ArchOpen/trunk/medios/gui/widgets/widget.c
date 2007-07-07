@@ -31,7 +31,7 @@ WIDGET widget_create(){
 
 void widget_destroy(WIDGET w){
     // free widget memory
-    free(w);
+    kfree(w);
 }
 
 void widget_init(WIDGET w){

@@ -26,6 +26,7 @@
 #include <driver/usb_fw.h>
 #include <driver/buttons.h>
 #include <driver/lcd.h>
+#include <driver/energy.h>
 
 #include <fs/disk.h>
 #include <fs/vfs.h>
@@ -61,6 +62,9 @@ static bool intCmd_doReloadMedios(char * param);
 static bool intCmd_doReloadMediosFile(char * param);
 static bool intCmd_doFlashDump(char * param);
 static bool intCmd_doHalt(char * param);
+static bool intCmd_doLowPower(char * param);
+
+static bool intCmd_doTest(char * param);
 
 typedef struct{
     char * command;
@@ -68,6 +72,10 @@ typedef struct{
 } INTERNAL_COMMAND;
 
 INTERNAL_COMMAND intCmd_commands[] = {
+    {
+        command:  "test",
+        function: intCmd_doTest
+    },
     {
         command:  "browser",
         function: intCmd_doBrowser
@@ -115,6 +123,10 @@ INTERNAL_COMMAND intCmd_commands[] = {
     {
         command:  "haltDevice",
         function: intCmd_doHalt
+    },
+    {
+        command:  "sleepDevice",
+        function: intCmd_doLowPower
     },
     /* should always be the last entry */
     {
@@ -253,8 +265,7 @@ static bool intCmd_doUsbMode(char * param){
             disableUsbFw();
             usbMode=0;
             mdelay(10);
-            ata_powerDownHD();
-            ata_reset();
+            ata_hardReset(HD_DISK);
             vfs_init();
             disk_addAll();            
             
@@ -378,7 +389,23 @@ static bool intCmd_doFlashDump(char * param){
 }
 
 static bool intCmd_doHalt(char * param){
-    //show playlist
+    //kernel_doCmd(CMD_HALT_DEVICE);
     halt_device();
     return true;
 }
+
+static bool intCmd_doLowPower(char * param)
+{
+    energy_lowPower();
+    /* let's wait all key released */
+    __cli();
+    while(arch_btn_readHardware()!=0x0) /*nothing*/;
+    __sti();
+    return true;
+}
+
+static bool intCmd_doTest(char * param)
+{    
+    return true;
+}
+

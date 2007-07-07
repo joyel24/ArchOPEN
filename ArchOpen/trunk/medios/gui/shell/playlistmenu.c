@@ -147,7 +147,7 @@ void playlistMenu_eventLoop(){
     tmr_start(&playlistMenu_timer);
 
     do{
-        event=evt_getStatus(playlistMenu_eventHandler);
+        event=evt_getStatusBlocking(playlistMenu_eventHandler);
         if (!event){ // no new events
             yield();
             continue;

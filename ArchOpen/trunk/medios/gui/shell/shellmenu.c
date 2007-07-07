@@ -384,17 +384,17 @@ void shellMenu_close(){
     item=shellMenu_firstItem;
     while(item!=NULL){
         // free strings
-        if (item->name!=NULL) free(item->name);
-        if (item->param!=NULL) free(item->param);
-        if (item->command!=NULL) free(item->command);
-        if (item->icon!=NULL) free(item->icon);
+        if (item->name!=NULL) kfree(item->name);
+        if (item->param!=NULL) kfree(item->param);
+        if (item->command!=NULL) kfree(item->command);
+        if (item->icon!=NULL) kfree(item->icon);
 
         // get next item pointer before freeing item
         prev=item;
 
         item=item->next;
 
-        free(prev);
+        kfree(prev);
     }
     
 }

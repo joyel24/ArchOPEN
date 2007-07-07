@@ -26,6 +26,7 @@
 #define THREAD_STATE_DISABLE     1
 #define THREAD_BLOCKED_BY_ATA      2
 #define THREAD_BLOCKED_BY_DMA      3
+#define THREAD_BLOCKED_BY_PIPE     4
 
 /*#define THREAD_DISABLE_STATE  0
 #define THREAD_ENABLE_STATE   1*/
@@ -156,5 +157,25 @@ void thread_listPrintAll(int res_id);
 void thread_listPrintPtr(int res_id,THREAD_INFO * thread);
 void thread_ps(void);
 void thread_printInfo(THREAD_INFO * thread);
+
+#define THREAD_SWAPB(PTR,VAL)    \
+    ({                           \
+        long tmp;                \
+        asm volatile(            \
+            "swpb %0, %1, [%2]\n"\
+        : "=r" (tmp)             \
+        : "r" (VAL), "r" (PTR)   \
+        );                       \
+        tmp;                     \
+})
+
+struct spinLock {
+    int lock;
+};
+
+void spinLock_ini(struct spinLock * lock);
+void spinLock_lock(struct spinLock * lock);
+void spinLock_unlock(struct spinLock * lock);
+int spinLock_isLocked(struct spinLock * lock);
 
 #endif

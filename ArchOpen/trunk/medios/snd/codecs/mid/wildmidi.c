@@ -230,7 +230,7 @@ mid2wav(int argc, char **argv){
 
   if(midi_ptr == NULL) {
     if(output_buffer != NULL)
-      free(output_buffer);
+      kfree(output_buffer);
     WildMidi_Shutdown();
     return 0;
   }
@@ -239,7 +239,7 @@ mid2wav(int argc, char **argv){
       
   if (wm_info == NULL) {
     if(output_buffer != NULL)
-      free(output_buffer);
+      kfree(output_buffer);
     WildMidi_Close(midi_ptr);
     WildMidi_Shutdown();
     return 0;
@@ -311,7 +311,7 @@ mid2wav(int argc, char **argv){
   close_output();
   
   if(output_buffer != NULL)
-    free(output_buffer);
+    kfree(output_buffer);
   return 0;
 }
 

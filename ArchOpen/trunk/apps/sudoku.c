@@ -190,7 +190,7 @@ int navigate_grid(bool *helper,bool *clear){
     res=-2;
 
     do{
-        evt=evt_getStatus(evt_handler);
+        evt=evt_getStatusBlocking(evt_handler);
 
         if(!first){
             if(!evt) continue;
@@ -308,7 +308,7 @@ int choose_number(){
     first=true;
 
     do{
-        evt=evt_getStatus(evt_handler);
+        evt=evt_getStatusBlocking(evt_handler);
 
         if(!first){
             if(!evt) continue;
@@ -434,7 +434,7 @@ void game_loop(){
             msgBox_info("You win");
             while(1)
             {
-                evt=evt_getStatus(evt_handler);
+                evt=evt_getStatusBlocking(evt_handler);
                 if(evt==NO_EVENT)
                     continue;
                 if(evt==BTN_ON || evt==BTN_OFF)
@@ -527,7 +527,7 @@ bool menu_execute(){
 
     do
     {
-        event=evt_getStatus(evt_handler);
+        event=evt_getStatusBlocking(evt_handler);
         if (!event) continue; // no new events
 
         menu->handleEvent(menu,event);
@@ -602,7 +602,7 @@ void welcome_screen(){
 
     gfx_putS(COLOR_BLACK,COLOR_WHITE,0,screen_height-10,     "Press a key to continue...");
 
-    while(!evt_getStatus(evt_handler));
+    while(!evt_getStatusBlocking(evt_handler));
 }
 
 void app_main(int argc,char* argv)
@@ -1056,7 +1056,7 @@ bool generate()
         gfx_fillRect(COLOR_LIGHT_BLUE,3+(screen_width-5)*(81-count)/(81-difficulty),(screen_height-28)/2,(screen_width-5)/(81-difficulty)+1,28);
 
         //off pressing
-        if(evt_getStatus(evt_handler)==BTN_OFF) return false;
+        if(evt_getStatusBlocking(evt_handler)==BTN_OFF) return false;
 
 		tries++;
 		ran = rand()%81;

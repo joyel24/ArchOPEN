@@ -22,6 +22,7 @@
 void arch_ata_resetHD(void)
 {
     CPLD_CLEAR_PORT1(CPLD_HD_RESET);
+    mdelay(10);
     CPLD_SET_PORT1(CPLD_HD_RESET);
 }
 
@@ -46,12 +47,5 @@ void arch_ata_selectCF(void)
 
 void arch_ata_init(void)
 {
-     arch_ata_powerUpHD();
-     arch_ata_resetHD();
+    
 }
-
-void arch_ide_intAction(int irq,struct pt_regs * regs)
-{
-}
-
-

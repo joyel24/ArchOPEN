@@ -340,7 +340,7 @@ void buffer_stop(void)
         yield();
     }
 
-    free(buffer_data);
+    kfree(buffer_data);
     thread_disable(buffer_thread->pid);
 }
 

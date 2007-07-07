@@ -59,7 +59,7 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
     
     while(!stop)
     {
-        evt = evt_getStatus(evt_handler);
+        evt = evt_getStatusBlocking(evt_handler);
         
         if(mainBdata->txt_scroll_speed>0 
            && prev_tick+mainBdata->txt_scroll_speed<tmr_getTick())

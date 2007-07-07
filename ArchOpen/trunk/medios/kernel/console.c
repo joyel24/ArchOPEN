@@ -260,7 +260,7 @@ void con_screenSwitch()
 void con_flushToDisk(void)
 {
 #warning we should add a test on disk INIT
-   int fd=open("/dbgFlush.log",O_WRONLY|O_CREAT);
+   int fd=open("/dbgFlush.log",O_WRONLY|O_CREAT|O_TRUNC);
    int size;
    size=con_bufferEnd<CON_BUFFER_SIZE?con_bufferEnd:CON_BUFFER_SIZE;
    if (fd<0){
@@ -280,7 +280,7 @@ int con_handleBtn(int btn)
             con_screenVisible=false;            
             screens_show(screens_main());
             break;
-        case BTN_OFF:
+        case BTN_F2: /* not using OFF in ordre to HALT in console */
             con_clear();
             break;
         case BTN_UP:

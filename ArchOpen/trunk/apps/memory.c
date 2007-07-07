@@ -155,7 +155,7 @@ void settings_screen()
     gfx_putS(COLOR_BLACK, BG_COLOR, 10,y, tmp);
     
     do{
-        event=evt_getStatus(evt_handler);
+        event=evt_getStatusBlocking(evt_handler);
         if (!event) continue; // no new events
         switch(event)
         {
@@ -312,7 +312,7 @@ void eventHandlerLoop(void)
     int stop=0;
     while(!stop)
     {
-        evt=evt_getStatus(evt_handler);
+        evt=evt_getStatusBlocking(evt_handler);
         if(evt==NO_EVENT)
             continue;
         if(evt==ACTION_EXIT)

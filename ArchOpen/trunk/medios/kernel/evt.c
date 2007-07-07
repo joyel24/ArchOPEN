@@ -14,6 +14,7 @@
 #include <sys_def/errors.h>
 
 #include <kernel/io.h>
+#include <kernel/irq.h>
 #include <kernel/kernel.h>
 #include <kernel/malloc.h>
 #include <kernel/pipes.h>
@@ -39,11 +40,11 @@ int evt_getHandler(unsigned int mask)
     if(i==NB_EVT_PIPES)
         return -MED_EMOBJ;
 
-    evt_pipe_tab[i].evt_pipe.nIN = evt_pipe_tab[i].evt_pipe.nOUT = 0;
+    pipeInitWithThread(&(evt_pipe_tab[i].evt_pipe),THREAD_SELF());
     evt_pipe_tab[i].used = 1;
     evt_pipe_tab[i].mask = mask;
       
-    printk("[evt handling] register: %d (mask=%x)\n",i,mask);
+//    printk("[evt handling] register: %d (mask=%x)\n",i,mask);
     return i;
 }
 
@@ -54,7 +55,7 @@ MED_RET_T evt_freeHandler(int num_evt_pipe)
         if(evt_pipe_tab[num_evt_pipe].used!=1)
             return -MED_ENBUSY;
         evt_pipe_tab[num_evt_pipe].used = 0;
-        printk("[evt handling] UNregister: %d\n",num_evt_pipe);
+ //       printk("[evt handling] UNregister: %d\n",num_evt_pipe);
     }
     else
         return -MED_EINVAL;    
@@ -104,13 +105,37 @@ int evt_getStatus(int num_evt_pipe)
     return evt.evt;
 }
 
+int evt_getStatusBlocking(int num_evt_pipe)
+{
+    struct evt_t evt;
+    if(num_evt_pipe >= 0 && num_evt_pipe < NB_EVT_PIPES)
+    {
+        if(evt_pipe_tab[num_evt_pipe].used!=1)
+            return -MED_ENBUSY;
+        evt.evt=0;
+        evt.evt_class=0;
+        evt.data=0;
+        while(!pipe_hasBytes(&evt_pipe_tab[num_evt_pipe].evt_pipe))
+        {
+            __cli();
+            THREAD_SELF()->state=THREAD_BLOCKED_BY_PIPE;
+            yield();
+            __sti();
+        }
+        pipeRead(&(evt_pipe_tab[num_evt_pipe].evt_pipe), &evt, sizeof(struct evt_t));
+        return evt.evt;
+    }
+    printk("Bad handler: %d\n",num_evt_pipe);
+    return -MED_EINVAL;
+}
+
 int evt_purgeHandler(int num_evt_pipe)
 {
     if(num_evt_pipe >= 0 && num_evt_pipe < NB_EVT_PIPES)
     {
         if(evt_pipe_tab[num_evt_pipe].used!=1)
             return -MED_ENBUSY;
-        evt_pipe_tab[num_evt_pipe].evt_pipe.nIN=evt_pipe_tab[num_evt_pipe].evt_pipe.nOUT=0;    
+        pipeInitWithThread(&(evt_pipe_tab[num_evt_pipe].evt_pipe),THREAD_SELF());
     }
     else
         return -MED_EINVAL;    
@@ -132,7 +157,7 @@ void evt_init(void)
     int i;
     for(i=0;i<NB_EVT_PIPES;i++)
     {
-        evt_pipe_tab[i].evt_pipe.nIN=evt_pipe_tab[i].evt_pipe.nOUT=0;
+        pipeInit(&(evt_pipe_tab[i].evt_pipe));
         evt_pipe_tab[i].used=0;
     }
     

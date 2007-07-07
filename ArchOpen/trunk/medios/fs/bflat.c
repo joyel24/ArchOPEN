@@ -141,7 +141,7 @@ MED_RET_T load_bflat (char * fname)
     if(ret<text_len)
     {
         printk("[load_bflat] can't read text section (ret=%d)\n",ret);
-        free((void*)text_pos);
+        kfree((void*)text_pos);
         close(fd_bflat);
         return -MED_EIO;
     }
@@ -153,7 +153,7 @@ MED_RET_T load_bflat (char * fname)
     if(ret<(data_len+header.reloc_count*sizeof(unsigned long)))
     {
         printk("[load_bflat] can't read data+remoc section (ret=%d)\n",ret);
-        free((void*)text_pos);
+        kfree((void*)text_pos);
         close(fd_bflat);
         return -MED_EIO;
     }
@@ -223,7 +223,7 @@ MED_RET_T load_bflat (char * fname)
     do_bkpt();
     ret = run_flat(0,NULL);
 
-    free((void*)text_pos);
+    kfree((void*)text_pos);
     
     return MED_OK;
 }

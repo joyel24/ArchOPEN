@@ -70,13 +70,13 @@ int error_box(int error)
 		//bdd_read errors
 		case 18:
 		{
-			sprintf(tmp,"Erreur d'ouverture du fichier de la base de données.\n");
+			sprintf(tmp,"Erreur d'ouverture du fichier de la base de donnï¿½es.\n");
 			ret_val=1;
 			break;
 		}
 		case 17:
 		{
-			sprintf(tmp,"Structure invalide du fichier de la base de données.\n");
+			sprintf(tmp,"Structure invalide du fichier de la base de donnï¿½es.\n");
 			ret_val=1;
 			break;
 		}
@@ -150,7 +150,7 @@ void draw_box(char * txt)
 	event=0;
 	
 	while(!event){
-		event=evt_getStatus(eventHandler);
+        event=evt_getStatusBlocking(eventHandler);
 	}
 
 	evt_freeHandler(eventHandler);	

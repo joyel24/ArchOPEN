@@ -92,11 +92,11 @@ bool playlist_remove(PLAYLIST_ITEM * item){
     }
 
     // free data
-    if(item->name!=NULL) free(item->name);
+    if(item->name!=NULL) kfree(item->name);
 
     tag_free(&item->tag);
 
-    free(item);
+    kfree(item);
     
     return true;
 }
@@ -210,7 +210,7 @@ bool playlist_addFolder(char * name,bool recurse){
     }
 
     closedir(dir);
-    free(fname);
+    kfree(fname);
 
     //find fake dir items, call addFolder on them then delete them
 
@@ -319,9 +319,9 @@ bool playlist_addM3UPlaylist(char * name){
         pos=strtok_r(NULL,"\r\n",&context);
     }
 
-    free(item);
-    free(path);
-    free(data);
+    kfree(item);
+    kfree(path);
+    kfree(data);
 
     return true;
 }

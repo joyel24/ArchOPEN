@@ -71,12 +71,11 @@ __IRAM_CODE void btn_chkPress(void)
         nb_off_press++;
         if(nb_off_press>MAX_OFF)
         {
-#if 0
             if(!powering_off)
-#endif
             {
                 printk("[OFF button] => halt\n");
                 halt_device();
+                kernel_doCmd(CMD_HALT_DEVICE);
             }
         }
     }
@@ -89,6 +88,8 @@ __IRAM_CODE void btn_chkPress(void)
         if(!lcd_enabled())
         {
             lcd_keyPress();
+            /* wait for release */
+            while(arch_btn_readHardware()!=0x0) /*nothing*/;
         }
         else
         {

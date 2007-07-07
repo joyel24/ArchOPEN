@@ -60,7 +60,7 @@ MED_RET_T csv_newFile(char * filename)
     if(read(fd,buffer,size)!=size)
     {
         printk("[csv|newFile] Error redaing file\n");
-        free(buffer);
+        kfree(buffer);
         return -MED_EIO;
     }
     
@@ -74,7 +74,7 @@ MED_RET_T csv_end(void)
 {
     if(fileIsOpen)
     {
-        free(buffer);
+        kfree(buffer);
     }
     else
     {
@@ -218,7 +218,7 @@ MED_RET_T csv_readLine(void * data,char * formatStr, char sepChar)
         /* we get an error, freeing everything*/
         for(i=0;i<nbElem;i++)
             if(strArray[i])
-                free(strArray[i]);
+                kfree(strArray[i]);
         if(ret_val!=-MED_EOF)
             printk("[csv|readLine] Exiting after error %d in line2Array\n",-ret_val);
         return ret_val;
@@ -233,7 +233,7 @@ MED_RET_T csv_readLine(void * data,char * formatStr, char sepChar)
                *((unsigned int*)data)=atoi(strArray[i]);
                data+=4;
                /*need to free string*/
-               free(strArray[i]);
+               kfree(strArray[i]);
                break;
            case 's':
                *((char **)data)=strArray[i];
@@ -244,15 +244,15 @@ MED_RET_T csv_readLine(void * data,char * formatStr, char sepChar)
                /* freeing all strings*/
                for(j=0;j<i;i++)
                    if(formatStr[i]=='s')
-                       free(strArray[j]);
+                       kfree(strArray[j]);
                for(;j<nbElem;j++)
                    free(strArray[j]);
-               free(strArray);
+               kfree(strArray);
                return -MED_EINVAL;
         }
    }
    /* we can free the srting array */
-   free(strArray);
+   kfree(strArray);
    return MED_OK;    
 }
 

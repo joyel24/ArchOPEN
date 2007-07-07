@@ -192,7 +192,7 @@ ICON icon_load(char * filename)
 out:
     /* close file */
     close(infile);
-    free(tmpF);
+    kfree(tmpF);
     
     return ptr;
     
@@ -204,7 +204,7 @@ err2:
     kfree(name);        
 err1:
     close(infile);
-    free(tmpF);
+    kfree(tmpF);
     return NULL;
 }
 
