@@ -45,8 +45,14 @@
 
 #define CACHE_INVALIDATE(mode) {                                               \
     if (mode&CACHE_CODE){                                                      \
+        int __mode;                                                            \
+                                                                               \
+        __mode=inw(CACHE_SETUP);                                               \
+                                                                               \
         outw(CACHE_STP_CLEAR,CACHE_SETUP);                                     \
         while(inw(CACHE_SETUP)&CACHE_STP_CLEAR) /* wait */;                    \
+                                                                               \
+        outw(__mode,CACHE_SETUP);                                              \
     }                                                                          \
 }
 
