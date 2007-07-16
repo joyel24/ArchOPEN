@@ -28,8 +28,8 @@ unsigned int swi_handler (
 	unsigned long nParam3,        
 	unsigned long nCmd)
 {
-        //printk("%x %x %x\n",nParam1,nParam2,nParam3);
-        //do_bkpt();
+        /*printk("%x %x %x\n",nParam1,nParam2,nParam3);
+        do_bkpt();*/
         if(nCmd == nAPI_INIAPI)
         {
             int i=0;

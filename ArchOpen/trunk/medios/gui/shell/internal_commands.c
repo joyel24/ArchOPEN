@@ -40,10 +40,9 @@
 #include <gui/msgBox.h>
 
 #include <gui/settings_time.h>
-
 #include <gui/settings_energy.h>
-
 #include <gui/settings_misc.h>
+#include <gui/settings_lang.h>
 
 #include <gui/player.h>
 #include <gui/playlistmenu.h>
@@ -56,6 +55,7 @@ static bool intCmd_doUsbMode(char * param);
 static bool intCmd_doTimeSetting(char * param);
 static bool intCmd_doEnergySetting(char * param);
 static bool intCmd_doMiscSetting(char * param);
+static bool intCmd_doLangSetting(char * param);
 static bool intCmd_doPlayer(char * param);
 static bool intCmd_doPlaylist(char * param);
 static bool intCmd_doReloadMedios(char * param);
@@ -107,6 +107,10 @@ INTERNAL_COMMAND intCmd_commands[] = {
     {
         command:  "set_misc",
         function: intCmd_doMiscSetting
+    },
+    {
+        command:  "chg_lang",
+        function: intCmd_doLangSetting
     },
     {
         command:  "player",
@@ -306,6 +310,11 @@ static bool intCmd_doMiscSetting(char * param){
     return true;
 }
 
+static bool intCmd_doLangSetting(char * param){
+    lang_setting();
+    return true;
+}
+
 static bool intCmd_doPlayer(char * param){
     char * ext;
     char * p;
@@ -405,7 +414,26 @@ static bool intCmd_doLowPower(char * param)
 }
 
 static bool intCmd_doTest(char * param)
-{    
+{
+    DIR * lang_folder;
+    struct dirent * entry;
+    int i;
+    lang_folder=opendir("/medios/icons");
+    if(lang_folder)
+    {
+        printk("First read = full read\n");
+        i=0;
+        while((entry=readdir(lang_folder))!=NULL)
+            printk("%d: %s\n",i++,entry->d_name);
+        rewinddir(lang_folder);
+        printk("Second read = full read\n");
+        i=0;
+        while((entry=readdir(lang_folder))!=NULL)
+            printk("%d: %s\n",i++,entry->d_name);
+        closedir(lang_folder);
+    }
+    else
+        printk("Can't open folder\n");
     return true;
 }
 

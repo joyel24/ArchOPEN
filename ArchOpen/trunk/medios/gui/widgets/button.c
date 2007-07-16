@@ -44,6 +44,7 @@ void button_init(BUTTON b){
     b->handleEvent=(WIDGET_EVENTHANDLER)button_handleEvent;
     b->paint=(WIDGET_PAINTHANDLER)button_paint;
     b->onClick=NULL;
+    b->clickOnRightLeft=1;
 
     // properties
     b->caption="Button";
@@ -57,7 +58,11 @@ bool button_handleEvent(BUTTON b,int evt){
 
     switch(evt){
         case BTN_LEFT:
+            if(!b->clickOnRightLeft)
+                break;
         case BTN_RIGHT:
+            if(!b->clickOnRightLeft)
+                break;
         case WIDGET_ACTION_BTN:
             if (b->onClick!=NULL) b->onClick(b);
             break;

@@ -35,6 +35,14 @@
 
 #include "ata_featuresList.h"
 
+#ifdef HAVE_DBUG
+#define ATA_USE_POLL
+#define ATA_NO_MULTY
+#endif
+
+//#define ATA_USE_POLL
+//#define ATA_NO_MULTY
+
 int ata_sectorBuffer[SECTOR_SIZE];
 
 THREAD_INFO * ata_RW_thread;
@@ -68,14 +76,19 @@ int ata_rwData(int disk,unsigned int lba,void * inData,int inCount,int cmd,int u
     
     block_size=SECTOR_SIZE;
     unaligned=((unsigned long)inData)&0x03;
-    
+#ifndef ATA_USE_POLL    
     if(readCPUMode()==0x13)
+#endif
     {
         //printk("Not using INT for DMA\n");
         useInt=0;
         ata_RW_thread=NULL;
     }
     
+#ifdef ATA_NO_MULTY
+    use_multiple=0;
+#endif
+
     /* use a temporary buffer for unaligned read or writes */
     if (unaligned)
     {
@@ -759,7 +772,8 @@ MED_RET_T ata_initDisk(int disk)
         return -MED_ERROR;
     }
     disk_info[disk]=diskData;
-    
+
+#ifndef HAVE_DBUG    
     if((ret_val=ata_setFeatures(disk))!=MED_OK)
     {   
         printk("[ata_initDisk] error doing setFeatures (%d)\n",-ret_val);
@@ -782,6 +796,7 @@ MED_RET_T ata_initDisk(int disk)
         disk_info[disk]=NULL;
         return -MED_ERROR;
     }
+#endif
     printk("[ata_initDisk] done\n");
     return MED_OK;
 }

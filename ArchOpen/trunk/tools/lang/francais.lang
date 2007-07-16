@@ -1,0 +1,14 @@
+STRLNG_SPLASH_LOADING # Chargement...
+STRLNG_SPLASH_SHUTDOWN # Arret de l'appareil
+STRLNG_DEFAULT # Defaut
+STRLNG_LANG_SETTINGS # Parametre de langue
+STRLNG_BROWSE # Naviguer
+STRLNG_OK # Ok
+STRLNG_CANCEL # Annuler
+STRLNG_LOAD_LANG # Chgmnt de la langue
+STRLNG_SAVE_SETTINGS # Sauvegarde parametre
+STRLNG_ERROR_LOADING # Erreur en chargeant %s
+STRLNG_MISSING_FOLDER # Dossier manquant
+STRLNG_CHOOSE_FILE # Choisissez un fichier %s
+STRLNG_OTHER # Autre...
+STRLNG_NRJ_SETTINGS # Parametre d'energie

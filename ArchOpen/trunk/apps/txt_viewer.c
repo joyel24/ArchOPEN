@@ -814,7 +814,7 @@ void app_main(int argc,char ** argv)
 
     while (!stop)
 	 {
-        while((evt=evt_getStatusBlocking)>0)
+        while((evt=evt_getStatusBlocking())>0)
         {
             switch(evt)
             {

@@ -107,6 +107,9 @@ int evt_getStatus(int num_evt_pipe)
 
 int evt_getStatusBlocking(int num_evt_pipe)
 {
+#ifdef HAVE_DBUG
+    return evt_getStatus(num_evt_pipe);
+#else
     struct evt_t evt;
     if(num_evt_pipe >= 0 && num_evt_pipe < NB_EVT_PIPES)
     {
@@ -127,6 +130,7 @@ int evt_getStatusBlocking(int num_evt_pipe)
     }
     printk("Bad handler: %d\n",num_evt_pipe);
     return -MED_EINVAL;
+#endif
 }
 
 int evt_purgeHandler(int num_evt_pipe)

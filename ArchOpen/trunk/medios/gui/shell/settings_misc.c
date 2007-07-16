@@ -184,7 +184,7 @@ void misc_setting(void)
     }
     
     virtKbdLY=checkbox_create();
-    virtKbdLY->caption="Text at top";
+    virtKbdLY->caption="Kbd, text at top";
     virtKbdLY->font=MISC_GUIFONT;
     virtKbdLY->setRect(virtKbdLY,x,y,8,8);
     virtKbdLY->checked=paramVirtKbd;

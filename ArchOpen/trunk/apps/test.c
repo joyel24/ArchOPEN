@@ -13,20 +13,23 @@
 
 #include <api.h>
 #include <sys_def/arch.h>
-
+#include <sys_def/lang.h>
 
 void app_main(int argc,char* argv)
 {
     int ver,w,h,i;
     char res[256];
 
-    printf("in test\n");
+    printf("In test: %s\n",lang_getStr(STRLNG_OTHER));
     
     ver=getArch();
     getResolution(&w,&h);
-    printf("We are on %s\n resolution is: (%d,%d)\n",ver==AV3XX_ARCH?"AV3XX":ver==GMINI4XX_ARCH?"Gmini4xx":"UKN ARCH",
+    printf("We are on %s\n resolution is: (%d,%d)\n",ver==AV3XX_ARCH?"AV3XX":ver==GMINI4XX_ARCH?"Gmini4xx":
+            ver==AV4XX_ARCH?"Av4xx":"UKN ARCH",
         w,h
     );
+    
+    
     
     for(i=0;i<2;i++)
     {

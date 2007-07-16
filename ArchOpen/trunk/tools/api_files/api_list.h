@@ -16,6 +16,9 @@ void  # free     # void *buf
 void  # kfree    # void *buf
 void* # calloc   # unsigned int nmemb,unsigned int size
 
+#k_inc#kernel/lang.h
+char* #lang_getStr # int id
+
 #k_inc#kernel/timer.h
 unsigned int # tmr_getTick   # void
 unsigned int # tmr_getMicroTick   # void

@@ -1,0 +1,24 @@
+# create files
+
+awk 'BEGIN{FS="[\t ]*#[\t ]*"} \
+NF==0{next} \
+{print "    " $1 ","}' $1 > lang_h.tmp
+
+cat ./script/head_lang_h lang_h.tmp ./script/tail_lang_h > tmp.h
+
+if [ -f $2 ]
+then
+
+    cmp -s $2 tmp.h
+
+    if [ $? -eq 1 ]
+    then
+        mv tmp.h $2
+    else
+        rm tmp.h
+    fi
+else
+    mv tmp.h $2
+fi
+
+rm -f lang_h.tmp

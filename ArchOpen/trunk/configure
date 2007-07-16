@@ -86,11 +86,13 @@ CONFIGURE_HAVE_DBUG=-1
 CONFIGURE_HAVE_ST_RTC=-1
 CONFIGURE_HAVE_TIME=-1
 CONFIGURE_IS_RELEASE=-1
+CONFIGURE_TARGET_LANG=-1
 
 if [ "$1" == "-d" ]; then
 CONFIGURE_TARGET_DEVICE="$2"
-echo "Using default value for target $2"
+echo "Using default value for target $2 lang: English"
 HAS_DEFAULT=1
+CONFIGURE_TARGET_LANG="1"
 else
 # check if the file this script generates exists so we don't overwrite something
 if [ -f "./Makefile.conf" ]
@@ -119,6 +121,9 @@ fi
 if [ "$1" != "-d" ]; then
 CONFIG_QUERY_MULTI $CONFIGURE_TARGET_DEVICE "AV3XX GMINI4XX AV1XX JBMM GMINI402 AV4XX PMA AV5XX" "Please pick a target device" "1"
 CONFIGURE_TARGET_DEVICE=$?
+
+CONFIG_QUERY_MULTI $CONFIGURE_TARGET_LANG "English Francais" "Please pick the default lang" "1"
+CONFIGURE_TARGET_LANG=$?
 fi
 
 TARGET_OK=0
@@ -308,13 +313,24 @@ if [ $TARGET_OK == 0 ]; then
 	exit
 fi
 
-echo "Configuring for $CONFIGURE_TARGET_DEVICE"
-
+CONFIGURE_TARGET_LANG_NAME="X"
+if [ $CONFIGURE_TARGET_LANG == "1" ]; then
+    CONFIGURE_TARGET_LANG_NAME="english"
+fi
+if [ $CONFIGURE_TARGET_LANG == "2" ]; then
+    CONFIGURE_TARGET_LANG_NAME="francais"
+fi
+if [ $CONFIGURE_TARGET_LANG == "X" ]; then
+    echo ""
+    echo "Bad value for lang"
+    exit
+fi
+echo "Configuring for $CONFIGURE_TARGET_DEVICE - $CONFIGURE_TARGET_LANG_NAME"
 # this section of the script asks all of the yes or no querys, they are of the following format:
 # CONFIG_QUERY_YN $variable_to_set "question to ask" "default answer"
 # variable_to_set=$?
 
-CONFIG_QUERY_YN $CONFIGURE_HAVE_DBUG "Build with emu2 breakpoints support? (disable this on Gmini402)" "n"
+CONFIG_QUERY_YN $CONFIGURE_HAVE_DBUG "Build with emu2 support? (adds bkpt for some arch)" "n"
 CONFIGURE_HAVE_DBUG=$?
 
 CONFIG_QUERY_YN $CONFIGURE_CHK_USB_FW "CHK_USB_FW? note: if you choose no, HD timer might mess with USB when USB is plugged and enable" "y"
@@ -326,8 +342,8 @@ CONFIGURE_HAVE_EVT=$?
 CONFIG_QUERY_YN $CONFIGURE_BOOT_WITH_CONSOLE "BOOT WITH CONSOLE?" "n"
 CONFIGURE_BOOT_WITH_CONSOLE=$?
 
-CONFIG_QUERY_YN $CONFIGURE_IS_RELEASE "Build a release?" "n"
-CONFIGURE_IS_RELEASE=$?
+#CONFIG_QUERY_YN $CONFIGURE_IS_RELEASE "Build a release?" "n"
+#CONFIGURE_IS_RELEASE=$?
 
 echo "-----------------------------------------"
 
@@ -351,6 +367,7 @@ cat ./Makefile.conf.template | sed > ./Makefile.conf \
  -e "s,%CONFIGURE_HAVE_TIME%,${CONFIGURE_HAVE_TIME},g" \
  -e "s,%CONFIGURE_HAVE_ST_RTC%,${CONFIGURE_HAVE_ST_RTC},g" \
  -e "s,%CONFIGURE_IS_RELEASE%,${CONFIGURE_IS_RELEASE},g" \
+ -e "s,%CONFIGURE_TARGET_LANG_NAME%,${CONFIGURE_TARGET_LANG_NAME},g" \
  -e "s,%CONFIGURE_HAVE_DBUG%,${CONFIGURE_HAVE_DBUG},g"
 
 #did everything work?

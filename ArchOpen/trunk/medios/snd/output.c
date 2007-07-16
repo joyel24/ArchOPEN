@@ -284,7 +284,9 @@ void output_start(void)
 
 void output_init()
 {
+#ifndef HAVE_DBUG
     output_initDsp();
+#endif
 }
 
 void output_stop(void)

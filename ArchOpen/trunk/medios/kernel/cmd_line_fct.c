@@ -24,6 +24,7 @@
 #include <kernel/timer.h>
 #include <kernel/io.h>
 #include <kernel/list.h>
+#include <kernel/lang.h>
 
 #include <driver/gio.h>
 #include <driver/cpld.h>
@@ -35,6 +36,44 @@
 #include <fs/vfs.h>
 #include <fs/vfs_node.h>
 #include <fs/fat.h>
+
+/* cmd list */
+
+void do_help(unsigned char ** params);
+void do_mem (unsigned char ** params);
+void do_run (unsigned char ** params);
+void do_tasks (unsigned char ** params);
+void do_halt (unsigned char ** params);
+void do_sleep(unsigned char ** params);
+void do_reload (unsigned char ** params);
+void print_handler_info (unsigned char ** params);
+void do_memory_dump (unsigned char ** params);
+void do_reg_print (unsigned char ** params);
+void do_in (unsigned char ** params);
+void do_out (unsigned char ** params);
+void do_ps (unsigned char ** params);
+void do_kill (unsigned char ** params);
+void do_ThreadState (unsigned char ** params);
+void do_ThreadInfo (unsigned char ** params);
+void do_ThreadNice (unsigned char ** params);
+void do_gioDir (unsigned char ** params);
+void do_gioSetState (unsigned char ** params);
+void do_gioGetState (unsigned char ** params);
+void do_cpldRead (unsigned char ** params);
+void do_cpldWrite (unsigned char ** params);
+void do_hdSleep (unsigned char ** params);
+void do_mount (unsigned char ** params);
+void do_umount (unsigned char ** params);
+#ifdef HAVE_ST_RTC
+void do_rtcGet (unsigned char ** params);
+void do_rtcSet (unsigned char ** params);
+#endif
+void do_pwd(unsigned char ** params);
+void do_cd(unsigned char ** params);
+void do_ls(unsigned char ** params);
+void do_cat(unsigned char ** params);
+void do_diskFullInfo(unsigned char ** params);
+void do_loadLand(unsigned char ** params);
 
 struct cmd_line_s cmd_tab[] = {
     {
@@ -217,6 +256,12 @@ struct cmd_line_s cmd_tab[] = {
         cmd        : "diskFullInfo",
         help_str   : "diskInfo DISK: print identify info for DISK",
         cmd_action : do_diskFullInfo,
+        nb_args    : 1
+    },
+    {
+        cmd        : "loadLng",
+        help_str   : "loadLng lng_file: load a new language file",
+        cmd_action : do_loadLand,
         nb_args    : 1
     },
     /* this has to be the last entry */
@@ -599,4 +644,9 @@ void do_diskFullInfo(unsigned char ** params)
     if(disk!=0 && disk!=1)
         return;
     ata_printIdentify(disk);
+}
+
+void do_loadLand(unsigned char ** params)
+{
+    lang_loadFile(params[0]);
 }

@@ -71,5 +71,4 @@ unsigned char * _ctype;
 
 void ini_api(void)
 {
-    _ctype = (unsigned char*)api_getFctPtr("_ctype");
-    
+    _ctype = (char*)api_getFctPtr("_ctype");

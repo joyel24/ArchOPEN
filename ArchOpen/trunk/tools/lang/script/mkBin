@@ -1,0 +1,6 @@
+# create all bin files from lang
+
+for file in *.lang; do
+name=`basename $file .lang`
+./script/genBin $file ${name}.lng ./script/lang_version
+done

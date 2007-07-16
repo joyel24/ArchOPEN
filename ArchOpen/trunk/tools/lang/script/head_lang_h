@@ -1,5 +1,5 @@
 /*
-*   include/gui/splash.h
+*   sys_def/lang_data.h
 *
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -10,13 +10,12 @@
 * KIND, either express of implied.
 */
 
-#ifndef __SPLASH_H
-#define __SPLASH_H
+/*************************************
+Automatically generated during build
+**************************************/
 
-#include <kernel/lang.h>
+#ifndef __LANG_DATA_H
+#define __LANG_DATA_H
 
-void splash_init(void);
-void splash_show(void);
-void splash_setString(char * str);
-
-#endif
+/* ID list */
+enum {

@@ -157,6 +157,14 @@ MED_RET_T vfs_dirClose(struct vfs_node * fd)
     return MED_OK;
 }
 
+MED_RET_T rewinddir(DIR * fd)
+{
+    if(!fd->opened || !fd->children)
+        return -MED_EINVAL;
+    fd->curNode=NULL;
+    return MED_OK;
+}
+
 struct dirent * readdir(DIR * fd)
 {
     struct dirent * entry;

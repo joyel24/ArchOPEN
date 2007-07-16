@@ -34,6 +34,7 @@ extern int      rename    (const char* path, const char* newname);
 DIR * opendir(char * pathname);
 MED_RET_T closedir(DIR * fd);
 struct dirent * readdir(DIR * fd);
+MED_RET_T rewinddir(DIR * fd);
 
 /* file/dir ops */
 MED_RET_T mkdir(char *name, int mode);

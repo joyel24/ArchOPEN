@@ -1,0 +1,14 @@
+STRLNG_SPLASH_LOADING # Loading...
+STRLNG_SPLASH_SHUTDOWN # Shutting down
+STRLNG_DEFAULT # Default
+STRLNG_LANG_SETTINGS # Lang Settings
+STRLNG_BROWSE # Browse
+STRLNG_OK # Ok
+STRLNG_CANCEL # Cancel
+STRLNG_LOAD_LANG # Loading Language
+STRLNG_SAVE_SETTINGS # Save Settings
+STRLNG_ERROR_LOADING # Error loading %s
+STRLNG_MISSING_FOLDER # Missing Folder
+STRLNG_CHOOSE_FILE # Choose %s file
+STRLNG_OTHER # Other...
+STRLNG_NRJ_SETTINGS # Energy settings

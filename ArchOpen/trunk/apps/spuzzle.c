@@ -785,7 +785,7 @@ void eventHandlerLoop(void)
         evt=evt_getStatusBlocking(evt_handler);
 		if(evt==NO_EVENT)
 			continue;
-			
+        printf("evt=%s\n",getBtnName(evt));
 		oldx = x;
 		oldy = y;
 		

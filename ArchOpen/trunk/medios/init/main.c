@@ -29,6 +29,7 @@
 #include <kernel/thread.h>
 #include <kernel/cmd_line.h>
 #include <kernel/evt.h>
+#include <kernel/lang.h>
 
 #include <fs/bflat.h>
 #include <fs/med.h>
@@ -73,6 +74,7 @@
 #include <gui/shell.h>
 #include <gui/splash.h>
 #include <gui/settings_misc.h>
+#include <gui/settings_lang.h>
 
 #ifdef BUILD_LIB
 extern int app_main(int argc, char * argv[]);
@@ -100,6 +102,7 @@ void kernel_thread(void)
 #endif
     energy_loadPref();
     misc_loadPref();
+    lang_loadLang();
     
     /* boot info */
 #if 0    
@@ -181,7 +184,9 @@ void kernel_start (void)
     cpld_init();
     
     lcd_init();
-
+    
+    lang_init();
+    
     init_cmd_line();
 
 #ifdef HAVE_EVT

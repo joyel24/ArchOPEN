@@ -21,42 +21,6 @@ struct cmd_line_s {
     int    nb_args;
 };
 
-/* cmd list */
-
-void do_help(unsigned char ** params);
-void do_mem (unsigned char ** params);
-void do_run (unsigned char ** params);
-void do_tasks (unsigned char ** params);
-void do_halt (unsigned char ** params);
-void do_sleep(unsigned char ** params);
-void do_reload (unsigned char ** params);
-void print_handler_info (unsigned char ** params);
-void do_memory_dump (unsigned char ** params);
-void do_reg_print (unsigned char ** params);
-void do_in (unsigned char ** params);
-void do_out (unsigned char ** params);
-void do_ps (unsigned char ** params);
-void do_kill (unsigned char ** params);
-void do_ThreadState (unsigned char ** params);
-void do_ThreadInfo (unsigned char ** params);
-void do_ThreadNice (unsigned char ** params);
-void do_gioDir (unsigned char ** params);
-void do_gioSetState (unsigned char ** params);
-void do_gioGetState (unsigned char ** params);
-void do_cpldRead (unsigned char ** params);
-void do_cpldWrite (unsigned char ** params);
-void do_hdSleep (unsigned char ** params);
-void do_mount (unsigned char ** params);
-void do_umount (unsigned char ** params);
-#ifdef HAVE_ST_RTC
-void do_rtcGet (unsigned char ** params);
-void do_rtcSet (unsigned char ** params);
-#endif
-void do_pwd(unsigned char ** params);
-void do_cd(unsigned char ** params);
-void do_ls(unsigned char ** params);
-void do_cat(unsigned char ** params);
-void do_diskFullInfo(unsigned char ** params);
 /* cmd line internal functions */
 void init_cmd_line(void);
 void cmd_line_enable(void);

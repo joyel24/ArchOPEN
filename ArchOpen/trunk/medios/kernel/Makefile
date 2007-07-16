@@ -1,7 +1,7 @@
 include $(MEDIOS_SRC_PATH)/Makefile.conf
 
 SRC = irq.c malloc.c pipes.c printk.c timer.c trap_fct.c swi.c kdelay.c kernel.c \
-      delay.S trap.S thread.c cmd_line.c cmd_line_fct.c console.c
+      delay.S trap.S thread.c cmd_line.c cmd_line_fct.c console.c lang.c lang_data.S
 
 
 ifeq ($(HAVE_EVT),1)
@@ -14,6 +14,7 @@ else
 	SRC += bkpt_dummy.c
 endif
 
+lang_data.o : lang_data.bin
 
 all: do_build
 

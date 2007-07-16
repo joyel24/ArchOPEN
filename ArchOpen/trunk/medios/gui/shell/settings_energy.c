@@ -12,6 +12,7 @@
 
 #include <kernel/kernel.h>
 #include <kernel/evt.h>
+#include <kernel/lang.h>
 
 #include <gfx/kfont.h>
 
@@ -159,8 +160,8 @@ void energy_setting(void)
     minX+=3; 
        
     gfx_fontSet(STD8X13);
-    gfx_getStringSize("Energy Settings",&w,&h);
-    gfx_putS(COLOR_DARK_GREY,COLOR_WHITE,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,"Energy Settings");
+    gfx_getStringSize(getLangStr(STRLNG_NRJ_SETTINGS),&w,&h);
+    gfx_putS(COLOR_DARK_GREY,COLOR_WHITE,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,getLangStr(STRLNG_NRJ_SETTINGS));
     
     gfx_fontSet(ENERGY_GUIFONT);    
     gfx_getStringSize("NEVER",&maxW,&lineH);    

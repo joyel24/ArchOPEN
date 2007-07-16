@@ -34,6 +34,14 @@ mkdir ${distribPath}
 mkdir ${distribPath}/medios
 mkdir ${distribPath}/medios/apps
 mkdir ${distribPath}/medios/codec
+mkdir ${distribPath}/medios/lang
+
+cd ~/archopen_src/build/trunk
+cp -f ../av3xx.conf ./Makefile.conf
+make mk_lang
+cp -f tools/lang/*.lng ${distribPath}/medios/lang
+cd ~/archopen_src
+
 cp -Rf build/trunk/tools/medios_files/* ${distribPath}/medios/
 
 cd ${distribPath}

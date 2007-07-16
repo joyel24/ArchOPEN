@@ -111,6 +111,6 @@ __attribute__((section(".fwuncomp_code"))) void arch_reload_firmware(void){
 
 void arch_HaltMsg(void)
 {
-    splash_setString("Shutting down");
+    splash_setString(getLangStr(STRLNG_SPLASH_SHUTDOWN));
     screens_show(SCREEN_SPLASH);
 }

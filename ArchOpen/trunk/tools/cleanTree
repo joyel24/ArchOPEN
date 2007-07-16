@@ -16,8 +16,11 @@ else
 	make -C apps/ clean
     make -C tools/bin2exploit clean
     make -C tools/buildTools clean
+    rm -f tools/lang/*.lng
     rm -f medios/api/api.c
     rm -f include/api.h
+    rm -f include/sys_def/lang.h
+    rm -f medios/kernel/lang_data.bin
     rm -f medios/kernel/api_fct_list.h
     rm -f medios/include/kernel/version_svn.h
     rm -f *.lds *.conf *.out

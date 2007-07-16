@@ -22,6 +22,7 @@
     WIDGET_MEMBERS                     \
                                        \
     BUTTON_CLICKEVENT onClick;         \
+    int clickOnRightLeft;              \
     char * caption;
 
 typedef void(*BUTTON_CLICKEVENT)(void *);
