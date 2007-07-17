@@ -61,12 +61,11 @@ zip -r9 ${basePath}/${zipDistrib} *
 cd ${basePath}
 
 echo ${zipDistrib}
-unzip -l ${zipDistrib}
 echo "--" 
 
 #zipping bin and arch spec file (wav,bin,avi)
 mv codec medios
-zip -r9 ${zipFile} medios.${ext} medios.bin medios/codec/
+zip -r9 ${zipFile} medios.${ext} medios.bin medios/codec/ medios/lang/
 rm -Rf medios/codec
 
 # ok everything is ready we can send

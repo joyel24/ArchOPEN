@@ -26,5 +26,6 @@ else
     rm -f *.lds *.conf *.out
     rm -Rf lib
     rm -Rf codec
+    rm -Rf lang
     $0 ./;
 fi

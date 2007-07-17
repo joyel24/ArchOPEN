@@ -6,11 +6,15 @@ LANG_B_DEST="../../medios/kernel/lang_data.bin"
 
 SUBDIRS_CLEAN_OBJS=*.lng
 
-all:
+all: lang_dir
 	@echo "Creating lang files"
 	@chmod 777 ./script/genSource
 	@chmod 777 ./script/genBin
 	@chmod 777 ./script/mkBin
 	@./script/genSource $(BASE_FILE) $(LANG_H_DEST)
 	@./script/mkBin
-	@cp ./$(MEDIOS_LANG).lng $(LANG_B_DEST)
+	@cp -f ./$(MEDIOS_LANG).lng $(LANG_B_DEST)
+	@cp -f ./*.lng $(MEDIOS_SRC_PATH)/lang
+	
+lang_dir:
+	@mkdir -p $(MEDIOS_SRC_PATH)/lang
