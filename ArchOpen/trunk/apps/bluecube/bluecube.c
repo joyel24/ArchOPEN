@@ -145,14 +145,18 @@ void mainLoop(int eventHandler)
     prevTick=tmr_getMicroTick();
 
     while(!bDone){
-        event=evt_getStatusBlocking(eventHandler);
-
-        if(event) processEvt(event);
+        event=evt_getStatus(eventHandler);
 
         if(tmr_getMicroTick()-prevTick>=TICK_INTERVAL){
             Game_Loop();
 
             prevTick=tmr_getMicroTick();
+        }
+
+        if(event){
+            processEvt(event);
+        }else{
+            yield();
         }
     }
 }

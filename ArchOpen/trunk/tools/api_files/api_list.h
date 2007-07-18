@@ -353,3 +353,6 @@ PLAYLIST_ITEM * # buffer_getActiveItem #
 void    #  irq_changeHandler # int irq_num,void(*fct)(int irq,struct pt_regs * regs)
 void    #  irq_enable        # int irq
 void    #  irq_disable       # int irq
+
+#k_inc#kernel/thread.h
+unsigned long   #  yield #

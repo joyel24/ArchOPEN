@@ -59,9 +59,9 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
     
     while(!stop)
     {
-        evt = evt_getStatusBlocking(evt_handler);
-        
-        if(mainBdata->txt_scroll_speed>0 
+        evt = evt_getStatus(evt_handler);
+
+        if(mainBdata->txt_scroll_speed>0
            && prev_tick+mainBdata->txt_scroll_speed<tmr_getTick())
         {
             for (i = mainBdata->pos; i < mainBdata->listused && i < mainBdata->pos+mainBdata->nb_disp_entry; i++)
@@ -76,9 +76,12 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
             }
             prev_tick=tmr_getTick();
         }
-        
+
         if(!evt)
+        {
+            yield();
             continue;
+        }
         
         switch(evt)
         {

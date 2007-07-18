@@ -317,7 +317,16 @@ void eventHandlerLoop(void)
     
     while(!stop)
     {
-        evt=evt_getStatusBlocking(evt_handler);
+        evt=evt_getStatus(evt_handler);
+
+        game();
+        if(collision_done)
+        {
+            gfx_clearScreen(COLOR_BLACK);
+            if(!game_init())
+                stop=1;
+        }
+
         if(evt!=NO_EVENT)
         {
             switch(evt)
@@ -350,12 +359,9 @@ void eventHandlerLoop(void)
                     break;
             }
         }
-        game();
-        if(collision_done)
+        else
         {
-            gfx_clearScreen(COLOR_BLACK);
-            if(!game_init())
-                stop=1;
+            yield();
         }
     }
     printf("out evt loop\n");

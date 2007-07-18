@@ -190,9 +190,9 @@ int navigate_grid(bool *helper,bool *clear){
     res=-2;
 
     do{
-        evt=evt_getStatusBlocking(evt_handler);
-
         if(!first){
+            evt=evt_getStatusBlocking(evt_handler);
+
             if(!evt) continue;
 
             pos=(y1*3+y2)*9+x1*3+x2;
@@ -308,9 +308,9 @@ int choose_number(){
     first=true;
 
     do{
-        evt=evt_getStatusBlocking(evt_handler);
-
         if(!first){
+            evt=evt_getStatusBlocking(evt_handler);
+    
             if(!evt) continue;
 
             switch(evt){
@@ -1056,7 +1056,7 @@ bool generate()
         gfx_fillRect(COLOR_LIGHT_BLUE,3+(screen_width-5)*(81-count)/(81-difficulty),(screen_height-28)/2,(screen_width-5)/(81-difficulty)+1,28);
 
         //off pressing
-        if(evt_getStatusBlocking(evt_handler)==BTN_OFF) return false;
+        if(evt_getStatus(evt_handler)==BTN_OFF) return false;
 
 		tries++;
 		ran = rand()%81;
