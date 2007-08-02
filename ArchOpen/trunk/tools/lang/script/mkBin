@@ -2,5 +2,5 @@
 
 for file in *.lang; do
 name=`basename $file .lang`
-./script/genBin $file ${name}.lng ./script/lang_version
+./script/genBin $file ${name}.lng ./script/lang_version ./script/bin_tail
 done

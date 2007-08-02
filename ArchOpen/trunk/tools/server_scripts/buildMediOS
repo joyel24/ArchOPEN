@@ -65,8 +65,9 @@ echo "--"
 
 #zipping bin and arch spec file (wav,bin,avi)
 mv codec medios
+mv lang medios
 zip -r9 ${zipFile} medios.${ext} medios.bin medios/codec/ medios/lang/
-rm -Rf medios/codec
+rm -Rf medios/codec medios/lang
 
 # ok everything is ready we can send
 mvFtp builds $reportFile $makeResult $zipFile $zipDistrib

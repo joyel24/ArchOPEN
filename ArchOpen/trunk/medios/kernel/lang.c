@@ -41,7 +41,7 @@ MED_RET_T lang_loadLng(char * ptr,int size)
     
     //print_data(ptr,10);
     
-    ptr+=4;
+    ptr+=4; // skipping LNG header + 1 char of invisible header 
     
     for(i=0;i<STRLNG_LAST_ENTRY;i++)
     {
@@ -53,7 +53,17 @@ MED_RET_T lang_loadLng(char * ptr,int size)
             langString[id]=ptr;
         }
         else
-            printk("[lang_loadLng] bad id: %d for %s\n",id,ptr);
+        {
+            if(id==0xFFFF)
+            {
+                printk("[lang_loadLng] End of buildin_lng reached (%d/%d) ==> found end magic id\n",i,STRLNG_LAST_ENTRY);
+                break;
+            }
+            else
+            {
+                printk("[lang_loadLng] bad id: %d for %s\n",id,ptr);
+            }
+        }
         while(ptr<end && *ptr) ptr++;
         if(ptr==end)
         {
@@ -111,7 +121,7 @@ MED_RET_T lang_loadFile(char * fName)
     }
     size=read(fd,buffer,size);
     close(fd);
-    printk("[lang_loadFile] Read %d bytes\n");
+    printk("[lang_loadFile] Read %d bytes\n",size);
     if(lang_loadLng(buffer,size)!=MED_OK)
         return -MED_ERROR;
 /* NOTE: on error should reload previous lang */

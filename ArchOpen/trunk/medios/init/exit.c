@@ -97,7 +97,10 @@ MED_RET_T reload_medios(char * fname)
     int size,i,binSize;
     char * filedata;
     char header[18];
+    
+#ifndef RELOAD_CP_BASE    
     void (*firmware_start)(void);
+#endif
     
     printk("[exit] reload Medios from disk\n");
     

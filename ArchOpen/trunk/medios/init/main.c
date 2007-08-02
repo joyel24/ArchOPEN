@@ -139,13 +139,6 @@ void kernel_start (void)
     
     gfx_init();
     con_init();
-    splash_init();
-    
-#ifdef BOOT_WITH_CONSOLE
-    screens_show(SCREEN_CONSOLE);
-#else
-    screens_show(SCREEN_SPLASH);
-#endif
 
     /* print banner on uart */
     printk("MediOS " VERSION_NUMBER " - kernel loading\n\n");
@@ -159,6 +152,16 @@ void kernel_start (void)
 
     printk("Chip rev : %x\n",inw(BUS_REVR));
     printk("Current Cpu mode : %x\n",readCPUMode());
+    
+    lang_init();
+    
+    splash_init();
+    
+#ifdef BOOT_WITH_CONSOLE
+    screens_show(SCREEN_CONSOLE);
+#else
+    screens_show(SCREEN_SPLASH);
+#endif
     
     if(thread_init(kernel_thread)!=MED_OK)
     {
@@ -185,7 +188,7 @@ void kernel_start (void)
     
     lcd_init();
     
-    lang_init();
+    
     
     init_cmd_line();
 
