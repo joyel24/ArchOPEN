@@ -49,7 +49,7 @@ void okBtnEnergy_click(BUTTON b)
     char tmpStr[50];
     /* saving to cfg file */
     
-    msgBox_info("Saving Settings");
+    msgBox_info(getLangStr(STRLNG_SAVE_SETTINGS));
     
     cfg=cfg_readFile("/medios/medios.cfg");
     if(!cfg)
@@ -116,8 +116,8 @@ void energy_setting(void)
         
     char tmpStr[30];
        
-    char * valFormStr_1[10]={"10s","20s","30s","40s","50s","60s","70s","80s","90s","never"};
-    char * valFormStr_2[10]={"1min","2min","3min","4min","5min","6min","7min","8min","9min","never"};
+    char * valFormStr_1[10]={"10s","20s","30s","40s","50s","60s","70s","80s","90s",getLangStr(STRLNG_NRJ_NEVER)};
+    char * valFormStr_2[10]={"1min","2min","3min","4min","5min","6min","7min","8min","9min",getLangStr(STRLNG_NRJ_NEVER)};
     
     int evtHandle;
     int event;
@@ -164,7 +164,7 @@ void energy_setting(void)
     gfx_putS(COLOR_DARK_GREY,COLOR_WHITE,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,getLangStr(STRLNG_NRJ_SETTINGS));
     
     gfx_fontSet(ENERGY_GUIFONT);    
-    gfx_getStringSize("NEVER",&maxW,&lineH);    
+    gfx_getStringSize(getLangStr(STRLNG_NRJ_NEVER),&maxW,&lineH);    
     lineH=(lineH+4);
     
     gfx_getStringSize("HALT",&label_offset,NULL);
@@ -181,9 +181,9 @@ void energy_setting(void)
     
     for(j=0;j<2;j++)
     {
-        gfx_putS(COLOR_BLUE,COLOR_WHITE,x,y,j==0?"On battery:":"On DC conn:");
+        gfx_putS(COLOR_BLUE,COLOR_WHITE,x,y,j==0?getLangStr(STRLNG_NRJ_ON_BATTERY):getLangStr(STRLNG_NRJ_ON_DC));
         y+=lineH;
-        gfx_getStringSize(j==0?"On battery:":"On DC conn:",&w,&h);
+        gfx_getStringSize(j==0?getLangStr(STRLNG_NRJ_ON_BATTERY):getLangStr(STRLNG_NRJ_ON_DC),&w,&h);
         gfx_drawLine(COLOR_BLACK,x-1,y-2,x+w+1,y-2);
         y+=2;
         for(i=0;i<3;i++)

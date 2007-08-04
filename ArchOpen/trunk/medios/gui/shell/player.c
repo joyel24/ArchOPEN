@@ -14,6 +14,7 @@
 #include <kernel/thread.h>
 #include <kernel/malloc.h>
 #include <kernel/timer.h>
+#include <kernel/lang.h>
 
 #include <driver/lcd.h>
 #include <driver/buttons.h>
@@ -132,13 +133,13 @@ void player_refresh(bool full){
 
         switch(sound_state){
             case SS_STOPPED:
-                player_stateLabel->caption="Stopped";
+                player_stateLabel->caption=getLangStr(STRLNG_PLAYER_STOPPED);
                 break;
             case SS_PLAYING:
-                player_stateLabel->caption="Playing";
+                player_stateLabel->caption=getLangStr(STRLNG_PLAYER_PLAYING);
                 break;
             case SS_PAUSED:
-                player_stateLabel->caption="Paused";
+                player_stateLabel->caption=getLangStr(STRLNG_PLAYER_PAUSED);
                 break;
         }
 

@@ -19,6 +19,8 @@
 #include <kernel/kernel.h>
 #include <kernel/malloc.h>
 #include <kernel/delay.h>
+#include <kernel/console.h>
+#include <kernel/lang.h>
 
 #include <init/exit.h>
 
@@ -234,7 +236,7 @@ static bool intCmd_doUsbMode(char * param){
         if(usb_isConnected() || FW_isConnected())
         {
 
-            msgBox_show("MediOS - USB mode","Switching to USB mode",MSGBOX_TYPE_INFO,MSGBOX_ICON_INFORMATION,-1);
+            msgBox_show(getLangStr(STRLNG_USB_MODE),getLangStr(STRLNG_USB_SWITCHING),MSGBOX_TYPE_INFO,MSGBOX_ICON_INFORMATION,-1);
             
             // stop sound player if playing
             sound_stop();
@@ -251,7 +253,7 @@ static bool intCmd_doUsbMode(char * param){
 
             usbMode=1;
             mdelay(10);
-            msgBox_show("MediOS - USB mode","Press F3 or unplug cable to exit",MSGBOX_TYPE_INFO,
+            msgBox_show(getLangStr(STRLNG_USB_MODE),getLangStr(STRLNG_USB_UNPLUG),MSGBOX_TYPE_INFO,
                 MSGBOX_ICON_INFORMATION,-1);
 
             /* wait for key unpress */
@@ -264,7 +266,7 @@ static bool intCmd_doUsbMode(char * param){
                 evt=evt_getStatus(eh);
             }while(evt!=BTN_F3 && evt!=EVT_USB_OUT);
 
-            msgBox_show("MediOS - USB mode","Leaving USB mode",MSGBOX_TYPE_INFO,MSGBOX_ICON_INFORMATION,-1);
+            msgBox_show(getLangStr(STRLNG_USB_MODE),getLangStr(STRLNG_USB_LEAVING),MSGBOX_TYPE_INFO,MSGBOX_ICON_INFORMATION,-1);
             mdelay(10);
             disableUsbFw();
             usbMode=0;
@@ -286,7 +288,7 @@ static bool intCmd_doUsbMode(char * param){
         }
         else
         {
-            msgBox_show("MediOS - USB mode","USB cable is not connected",MSGBOX_TYPE_OK,MSGBOX_ICON_EXCLAMATION,eh);
+            msgBox_show(getLangStr(STRLNG_USB_MODE),getLangStr(STRLNG_USB_NOT_CONNECTED),MSGBOX_TYPE_OK,MSGBOX_ICON_EXCLAMATION,eh);
         }
 
         evt_freeHandler(eh);

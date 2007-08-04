@@ -13,6 +13,7 @@
 #include <kernel/kernel.h>
 #include <kernel/evt.h>
 #include <kernel/delay.h>
+#include <kernel/lang.h>
 
 #include <gfx/kfont.h>
 
@@ -139,7 +140,7 @@ void okBtnClk_click(BUTTON b)
         mdelay(1000);
     }
     
-    msgBox_info("Saving Settings");
+    msgBox_info(getLangStr(STRLNG_SAVE_SETTINGS));
     
     /* saving to cfg file */
     cfg=cfg_readFile("/medios/medios.cfg");
@@ -232,8 +233,8 @@ void clock_setting(void)
     minX+=3;   
     
     gfx_fontSet(STD8X13);
-    gfx_getStringSize("Clock settings",&w,&h);
-    gfx_putS(COLOR_DARK_GREY,COLOR_WHITE,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,"Clock settings");
+    gfx_getStringSize(getLangStr(STRLNG_CLOCK_SETTINGS),&w,&h);
+    gfx_putS(COLOR_DARK_GREY,COLOR_WHITE,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,getLangStr(STRLNG_CLOCK_SETTINGS));
     
     gfx_fontSet(TIME_DATE_GUIFONT);
     minX=(LCD_WIDTH-minX-(maxW+24))/2+minX;

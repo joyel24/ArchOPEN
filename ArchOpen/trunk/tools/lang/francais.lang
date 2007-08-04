@@ -6,9 +6,68 @@ STRLNG_BROWSE # Naviguer
 STRLNG_OK # Ok
 STRLNG_CANCEL # Annuler
 STRLNG_LOAD_LANG # Chgmnt de la langue
-STRLNG_SAVE_SETTINGS # Sauvegarde parametre
+STRLNG_SAVE_SETTINGS # Sauvegarde des parametre
 STRLNG_ERROR_LOADING # Erreur en chargeant %s
 STRLNG_MISSING_FOLDER # Dossier manquant
 STRLNG_CHOOSE_FILE # Choisissez un fichier %s
 STRLNG_OTHER # Autre...
 STRLNG_NRJ_SETTINGS # Parametre d'energie
+STRLNG_NRJ_ON_BATTERY # Sur Batterie :
+STRLNG_NRJ_ON_DC # Sur Secteur :
+STRLNG_NRJ_NEVER # jamais
+STRLNG_CLOCK_SETTINGS # Date et Heure
+STRLNG_MISC_SETTINGS # Parametres Divers
+STRLNG_MISC_SPEAKER # Activer haut-parleur
+STRLNG_MISC_DEV # Fonction de Dev
+STRLNG_MISC_REMOTE # Activer Telco
+STRLNG_BROWSER_MOVE_FILE # Deplacer Fichier
+STRLNG_BROWSER_MOVE_FOLDER # Deplacer Dossier
+STRLNG_BROWSER_MOVE_SELECTED # Deplacer Selection
+STRLNG_BROWSER_MOVING_FILE # Deplacement des fichiers
+STRLNG_BROWSER_MOVING_FOLDER # Deplacement des dossiers
+STRLNG_BROWSER_ERROR_MOVING # Erreur de deplacement du dossier
+STRLNG_BROWSER_IS_SUBFOLDER # Tentative de deplacer un sous-dossier
+STRLNG_BROWSER_RENAME_FILE # Renommer Fichier
+STRLNG_BROWSER_RENAME_FOLDER # Renommer Dossier
+STRLNG_BROWSER_RENAMING_FILE # Renommage du Fichier
+STRLNG_BROWSER_OPEN_FILE # Ouvrir Fichier
+STRLNG_BROWSER_OPEN_FOLDER # Ouvrir Dossier
+STRLNG_BROWSER_COPY_FILE # Copier Fichier
+STRLNG_BROWSER_COPY_FOLDER # Copier Dossier
+STRLNG_BROWSER_COPY_SELECTED # Copier Selection
+STRLNG_BROWSER_COPYING_FILE # Copie du Fichier
+STRLNG_BROWSER_COPYING_FOLDER # Copie du Dossier
+STRLNG_BROWSER_COPYING_SELECTED # Copie de la Selection
+STRLNG_BROWSER_CREATE_FOLDER # Creer dossier
+STRLNG_BROWSER_CREATING_FOLDER # Creation du dossier
+STRLNG_BROWSER_CREATE_NAME # Creer: %s
+STRLNG_BROWSER_NEW_NAME # Nouveau nom: %s
+STRLNG_BROWSER_RENAME # Renommer %s
+STRLNG_BROWSER_DELETE_FILE # Supprimer Fichier
+STRLNG_BROWSER_DELETE_FOLDER # Supprimer Dossier
+STRLNG_BROWSER_DELETE_SELECTED # Supprimer Selection
+STRLNG_BROWSER_DELETING_FILE # Suppression du Fichier
+STRLNG_BROWSER_DELETING_FOLDER # Suppression du Dossier
+STRLNG_BROWSER_DELETING_SELECTED # Suppression de la Selection
+STRLNG_BROWSER_SURE # Etes vous sur ?
+STRLNG_BROWSER_FILE_INFO # Infos Fichier
+STRLNG_BROWSER_FOLDER_INFO # Infos Dossier
+STRLNG_BROWSER_SELECT_FILE # Selectionner Fichier
+STRLNG_BROWSER_SELECT_FOLDER # Selectionner Dossier
+STRLNG_BROWSER_UNSELECT_ALL # Tout Deselectionner
+STRLNG_BROWSER_SELECT_ALL  # Tout Selectionner
+STRLNG_BROWSER_NOT_EMPTY # Dossier Non Vide
+STRLNG_ERROR_RETVAL # Erreur (%d)
+STRLNG_ERROR # Erreur
+STRLNG_MSGBOX_YES # Oui (F1)
+STRLNG_MSGBOX_NO #  Non (F2)
+STRLNG_MSGBOX_CANCEL_F2 # Annuler (F2)
+STRLNG_MSGBOX_CANCEL_F3 # Annuler (F3)
+STRLNG_USB_MODE # MediOS - USB mode
+STRLNG_USB_SWITCHING # Passage en Mode USB
+STRLNG_USB_LEAVING # Leaving USB mode 
+STRLNG_USB_UNPLUG # Appuyez sur F3 ou debranchez le cable pour quitter
+STRLNG_USB_NOT_CONNECTED # Le cable USB n'est pas connecte
+STRLNG_PLAYER_STOPPED # Stop
+STRLNG_PLAYER_PLAYING # Lecture
+STRLNG_PLAYER_PAUSED # Pause

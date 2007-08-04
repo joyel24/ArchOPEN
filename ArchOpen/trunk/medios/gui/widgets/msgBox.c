@@ -13,6 +13,7 @@
 #include <lib/string.h>
 #include <sys_def/colordef.h>
 #include <sys_def/font.h>
+#include <kernel/lang.h>
 
 #include <kernel/evt.h>
 
@@ -260,11 +261,11 @@ void msgBox_draw(unsigned char* caption, unsigned char* msg, int type, int icon,
                     POS_Y(MSGBOX_HEIGHT-20), BUTTON_WIDTH, BUTTON_HEIGHT);
     
                 if(i == 0)
-                    strcpy(strButtonText,"Yes(F1)");
+                    strcpy(strButtonText,getLangStr(STRLNG_MSGBOX_YES));
                 else if (i == 1)
-                    strcpy(strButtonText,"No(F2)");
+                    strcpy(strButtonText,getLangStr(STRLNG_MSGBOX_NO));
                 else
-                    strcpy(strButtonText,"Cancel(F3)");
+                    strcpy(strButtonText,getLangStr(STRLNG_MSGBOX_CANCEL_F3));
     
                 gfx_getStringSize(strButtonText, &w_buttonText, &h_buttonText);
                 buttonTextOffsetX = (BUTTON_WIDTH/2)-(w_buttonText/2);
@@ -288,16 +289,16 @@ void msgBox_draw(unsigned char* caption, unsigned char* msg, int type, int icon,
                 if(i == 0)
                 {
                     if(type == MSGBOX_TYPE_YESNO)
-                        strcpy(strButtonText,"Yes(F1)");
+                        strcpy(strButtonText,getLangStr(STRLNG_MSGBOX_YES));
                     else
                         strcpy(strButtonText,"Ok(F1)");
                 }
                 else
                 {
                     if(type == MSGBOX_TYPE_YESNO)
-                        strcpy(strButtonText,"No(F2)");
+                        strcpy(strButtonText,getLangStr(STRLNG_MSGBOX_NO));
                     else
-                        strcpy(strButtonText,"Cancel(F2)");
+                        strcpy(strButtonText,getLangStr(STRLNG_MSGBOX_CANCEL_F2));
                 }
     
                 gfx_getStringSize(strButtonText, &w_buttonText, &h_buttonText);

@@ -12,6 +12,7 @@
 
 #include <kernel/kernel.h>
 #include <kernel/evt.h>
+#include <kernel/lang.h>
 
 #include <gfx/kfont.h>
 
@@ -52,7 +53,7 @@ void okBtnMisc_click(BUTTON b)
     CFG_DATA * cfg;
     /* opening config file */
     
-    msgBox_info("Saving Settings");
+    msgBox_info(getLangStr(STRLNG_SAVE_SETTINGS));
     
     cfg=cfg_readFile("/medios/medios.cfg");
     if(!cfg)
@@ -137,9 +138,9 @@ void misc_setting(void)
     minX+=5; 
        
     gfx_fontSet(STD8X13);
-    gfx_getStringSize("Misc Settings",&w,&h);
+    gfx_getStringSize(getLangStr(STRLNG_MISC_SETTINGS),&w,&h);
     lineH=h+5;
-    gfx_putS(COLOR_DARK_GREY,COLOR_WHITE,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,"Misc Settings");
+    gfx_putS(COLOR_DARK_GREY,COLOR_WHITE,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,getLangStr(STRLNG_MISC_SETTINGS));
     
     x=minX;    
     y=ICON_Y+2*lineH;
@@ -153,7 +154,7 @@ void misc_setting(void)
     // standardMenu
     
     FmRemote=checkbox_create();
-    FmRemote->caption="Enable FM remote";
+    FmRemote->caption=getLangStr(STRLNG_MISC_REMOTE);
     FmRemote->font=MISC_GUIFONT;
     FmRemote->setRect(FmRemote,x,y,8,8);
     FmRemote->checked=FM_getState();
@@ -163,7 +164,7 @@ void misc_setting(void)
     menuList->addWidget(menuList,FmRemote);
     
     develFct=checkbox_create();
-    develFct->caption="Enable Dev Fction";
+    develFct->caption=getLangStr(STRLNG_MISC_DEV);
     develFct->font=MISC_GUIFONT;
     develFct->setRect(develFct,x,y,8,8);
     develFct->checked=has_develFct;
@@ -175,7 +176,7 @@ void misc_setting(void)
     if(SPKR_AVAILABLE())
     {
         ExtSpkr=checkbox_create();
-        ExtSpkr->caption="Enable speaker";
+        ExtSpkr->caption=getLangStr(STRLNG_MISC_SPEAKER);
         ExtSpkr->font=MISC_GUIFONT;
         ExtSpkr->setRect(ExtSpkr,x,y,8,8);
         ExtSpkr->checked=SPKR_STATE();

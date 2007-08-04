@@ -24,6 +24,7 @@
 
 #include <kernel/evt.h>
 #include <kernel/kernel.h>
+#include <kernel/lang.h>
 
 #include <driver/lcd.h>
 
@@ -135,15 +136,15 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                     break;
                 snprintf(fullname2,PATHLEN,"%s/%s",curBdata->path[1]==0?"":curBdata->path,fullname);
                 printk("create |%s|\n",fullname2);
-                sprintf(fullname3,"Create: %s",fullname);
-                if(msgBox_show(fullname,"Are you sure?",
+                sprintf(fullname3,getLangStr(STRLNG_BROWSER_CREATE_NAME),fullname);
+                if(msgBox_show(fullname,getLangStr(STRLNG_BROWSER_SURE),
                    MSGBOX_TYPE_YESNO, MSGBOX_ICON_QUESTION,evt_handler) != MSGBOX_YES)
                     break;
                 ret_val=mkdir(fullname2,0);
                 if(ret_val!=MED_OK)
                 {
-                    sprintf(fullname,"Error (%d)",-ret_val);
-                    msgBox_show(fullname,"Creating folder", 
+                    sprintf(fullname,getLangStr(STRLNG_ERROR_RETVAL),-ret_val);
+                    msgBox_show(fullname,getLangStr(STRLNG_BROWSER_CREATING_FOLDER), 
                                 MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler);
                     printk("Error: %d - while creating folder\n",-ret_val);
                     break;
@@ -151,7 +152,7 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                 browser_loadFoler(curBdata,NULL);
                 break;
             case 2: /*Delete*/
-                if(msgBox_show("Delete selected files","Are you sure?",
+                if(msgBox_show(getLangStr(STRLNG_BROWSER_DELETE_SELECTED),getLangStr(STRLNG_BROWSER_SURE),
                    MSGBOX_TYPE_YESNO, MSGBOX_ICON_QUESTION,evt_handler) != MSGBOX_YES)
                     break;
                 
@@ -169,8 +170,8 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                             ret_val=rmfile(fullname);
                             if(ret_val!=MED_OK)
                             {
-                                sprintf(fullname,"Error (%d)",-ret_val);
-                                msgBox_show(fullname,"Removing file", 
+                                sprintf(fullname,getLangStr(STRLNG_ERROR_RETVAL),-ret_val);
+                                msgBox_show(fullname,getLangStr(STRLNG_BROWSER_DELETING_FILE), 
                                         MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler);
                                 printk("Error: %d - Stopping rm loop\n",-ret_val);
                                 break;
@@ -184,12 +185,12 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                             {
                                 if(ret_val==-MED_ENOTEMPTY)
                                     
-                                    msgBox_show("Error","Folder isn't empty", 
+                                    msgBox_show(getLangStr(STRLNG_ERROR),getLangStr(STRLNG_BROWSER_NOT_EMPTY), 
                                         MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler);
                                 else
                                 {
-                                    sprintf(fullname,"Error (%d)",-ret_val);
-                                    msgBox_show(fullname,"Removing Folder", 
+                                    sprintf(fullname,getLangStr(STRLNG_ERROR_RETVAL),-ret_val);
+                                    msgBox_show(fullname,getLangStr(STRLNG_BROWSER_DELETING_FOLDER), 
                                         MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler);
                                 }
                                 printk("Error: %d - Stopping rm loop\n",-ret_val);
@@ -228,8 +229,8 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                 printk("Rename %s to %s\n",fullname,fullname2);
                 if(strcmp(fullname,fullname2)!=0)
                 {
-                    sprintf(fullname4,"New name: %s",fullname3);
-                    sprintf(fullname3,"Rename %s",selected_entry->name);
+                    sprintf(fullname4,getLangStr(STRLNG_BROWSER_NEW_NAME),fullname3);
+                    sprintf(fullname3,getLangStr(STRLNG_BROWSER_RENAME),selected_entry->name);
                     if(msgBox_show(fullname3,fullname4,
                        MSGBOX_TYPE_YESNO, MSGBOX_ICON_QUESTION,evt_handler) != MSGBOX_YES)
                         break;
@@ -239,8 +240,8 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                         ret_val=mvdir(fullname,fullname2);
                     if(ret_val!=MED_OK)
                     {
-                        sprintf(fullname,"Error (%d)",-ret_val);
-                        msgBox_show(fullname,"Renaming File", 
+                        sprintf(fullname,getLangStr(STRLNG_ERROR_RETVAL),-ret_val);
+                        msgBox_show(fullname,getLangStr(STRLNG_BROWSER_RENAMING_FILE), 
                                     MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler);
                         printk("Error: %d - while renaming\n",-ret_val);
                     }
@@ -276,7 +277,7 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                     break;
                 }
                 
-                if(msgBox_show("Copy selected files","Are you sure?",
+                if(msgBox_show(getLangStr(STRLNG_BROWSER_COPYING_SELECTED),getLangStr(STRLNG_BROWSER_SURE),
                    MSGBOX_TYPE_YESNO, MSGBOX_ICON_QUESTION,evt_handler) != MSGBOX_YES)
                     break;
                 
@@ -298,8 +299,8 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                             ret_val=cpfile(fullname,fullname2);
                             if(ret_val!=MED_OK)
                             {
-                                sprintf(fullname,"Error (%d)",-ret_val);
-                                msgBox_show(fullname,"Copying File", 
+                                sprintf(fullname,getLangStr(STRLNG_ERROR_RETVAL),-ret_val);
+                                msgBox_show(fullname,getLangStr(STRLNG_BROWSER_COPYING_FILE), 
                                             MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler);
                                 printk("Error: %d - Stopping copy loop\n",-ret_val);
                                 break;
@@ -324,7 +325,7 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                     break;
                 }
                 
-                if(msgBox_show("Move selected files","Are you sure?",
+                if(msgBox_show(getLangStr(STRLNG_BROWSER_MOVE_SELECTED),getLangStr(STRLNG_BROWSER_SURE),
                    MSGBOX_TYPE_YESNO, MSGBOX_ICON_QUESTION,evt_handler) != MSGBOX_YES)
                     break;
                 
@@ -345,8 +346,8 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                             ret_val=mvfile(fullname,fullname2);
                             if(ret_val!=MED_OK)
                             {
-                                sprintf(fullname,"Error (%d)",-ret_val);
-                                msgBox_show(fullname,"Moving File", 
+                                sprintf(fullname,getLangStr(STRLNG_ERROR_RETVAL),-ret_val);
+                                msgBox_show(fullname,getLangStr(STRLNG_BROWSER_MOVING_FILE), 
                                             MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler);
                                 printk("Error: %d - Stopping move loop\n",-ret_val);
                                 break;
@@ -360,8 +361,8 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                                 ret_val=mvdir(fullname,fullname2);
                                 if(ret_val!=MED_OK)
                                 {
-                                    sprintf(fullname,"Error (%d)",-ret_val);
-                                    msgBox_show(fullname,"Moving Folder", 
+                                    sprintf(fullname,getLangStr(STRLNG_ERROR_RETVAL),-ret_val);
+                                    msgBox_show(fullname,getLangStr(STRLNG_BROWSER_MOVING_FOLDER), 
                                             MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler);   
                                     printk("Error: %d - Stopping rm loop\n",-ret_val);
                                     break;
@@ -369,7 +370,7 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
                             }
                             else
                             {
-                                msgBox_show("Error moving folder","Trying to move a subfolder", 
+                                msgBox_show(getLangStr(STRLNG_BROWSER_ERROR_MOVING),getLangStr(STRLNG_BROWSER_IS_SUBFOLDER), 
                                             MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR,evt_handler); 
                                 printk("trying to move a subfolder!!!\n");
                                 break;
@@ -417,7 +418,7 @@ void browser_mkMenu(struct browser_data * bdata)
 
     /*0*/
     mi=widgetMenuItem_create();
-    mi->caption=selected_entry->type==TYPE_FILE?"File Info":"Folder Info";
+    mi->caption=selected_entry->type==TYPE_FILE?getLangStr(STRLNG_BROWSER_FILE_INFO):getLangStr(STRLNG_BROWSER_FOLDER_INFO);
     mi->foreColor=MENU_COLOR;
     mi->widgetWidth=0;
     contMenu->addItem(contMenu,mi);
@@ -426,7 +427,7 @@ void browser_mkMenu(struct browser_data * bdata)
     
     /*1*/
     mi=widgetMenuItem_create();
-    mi->caption="Create Folder";
+    mi->caption=getLangStr(STRLNG_BROWSER_CREATE_FOLDER);
     mi->foreColor=MENU_COLOR;
     mi->widgetWidth=0;
     contMenu->addItem(contMenu,mi);
@@ -434,7 +435,7 @@ void browser_mkMenu(struct browser_data * bdata)
 
     /*2*/
     mi=widgetMenuItem_create();
-    mi->caption=nbSelected(bdata)>0?"Delete selected":(selected_entry->type==TYPE_FILE?"Delete file":"Delete Folder");
+    mi->caption=nbSelected(bdata)>0?getLangStr(STRLNG_BROWSER_DELETE_SELECTED):(selected_entry->type==TYPE_FILE?getLangStr(STRLNG_BROWSER_DELETE_FILE):getLangStr(STRLNG_BROWSER_DELETE_FOLDER));
     mi->foreColor=MENU_COLOR;
     mi->widgetWidth=0;
     contMenu->addItem(contMenu,mi);
@@ -442,7 +443,7 @@ void browser_mkMenu(struct browser_data * bdata)
 
     /*3*/
     mi=widgetMenuItem_create();
-    mi->caption=selected_entry->type==TYPE_FILE?"Select file":"Select Folder";
+    mi->caption=selected_entry->type==TYPE_FILE?getLangStr(STRLNG_BROWSER_SELECT_FILE):getLangStr(STRLNG_BROWSER_SELECT_FOLDER);
     mi->foreColor=MENU_COLOR;
     mi->widgetWidth=0;
     contMenu->addItem(contMenu,mi);
@@ -450,7 +451,7 @@ void browser_mkMenu(struct browser_data * bdata)
 
     /*4*/
     mi=widgetMenuItem_create();
-    mi->caption=nbSelected(curBdata)==curBdata->listused?"Unselect All":"Select All";
+    mi->caption=nbSelected(curBdata)==curBdata->listused?getLangStr(STRLNG_BROWSER_UNSELECT_ALL):getLangStr(STRLNG_BROWSER_SELECT_ALL);
     mi->foreColor=MENU_COLOR;
     mi->widgetWidth=0;
     contMenu->addItem(contMenu,mi);
@@ -458,7 +459,7 @@ void browser_mkMenu(struct browser_data * bdata)
 
     /*5*/
     mi=widgetMenuItem_create();
-    mi->caption=selected_entry->type==TYPE_FILE?"Rename file":"Rename Folder";
+    mi->caption=selected_entry->type==TYPE_FILE?getLangStr(STRLNG_BROWSER_RENAME_FILE):getLangStr(STRLNG_BROWSER_RENAME_FOLDER);
     mi->foreColor=MENU_COLOR;
     mi->widgetWidth=0;
     contMenu->addItem(contMenu,mi);
@@ -466,7 +467,7 @@ void browser_mkMenu(struct browser_data * bdata)
 
     /*6*/
     mi=widgetMenuItem_create();
-    mi->caption=selected_entry->type==TYPE_FILE?"Open file":"Open Folder";
+    mi->caption=selected_entry->type==TYPE_FILE?getLangStr(STRLNG_BROWSER_OPEN_FILE):getLangStr(STRLNG_BROWSER_OPEN_FILE);
     mi->foreColor=MENU_COLOR;
     mi->widgetWidth=0;
     contMenu->addItem(contMenu,mi);
@@ -476,7 +477,7 @@ void browser_mkMenu(struct browser_data * bdata)
     {
         /*7*/
         mi=widgetMenuItem_create();
-        mi->caption=nbSelected(bdata)>0?"Copy selected":(selected_entry->type==TYPE_FILE?"Copy file":"Copy Folder");
+        mi->caption=nbSelected(bdata)>0?getLangStr(STRLNG_BROWSER_COPY_SELECTED):(selected_entry->type==TYPE_FILE?getLangStr(STRLNG_BROWSER_COPY_FILE):getLangStr(STRLNG_BROWSER_COPY_FOLDER));
         mi->foreColor=MENU_COLOR;
         mi->widgetWidth=0;
         contMenu->addItem(contMenu,mi);
@@ -484,7 +485,7 @@ void browser_mkMenu(struct browser_data * bdata)
 
         /*8*/
         mi=widgetMenuItem_create();
-        mi->caption=nbSelected(bdata)>0?"Move selected":(selected_entry->type==TYPE_FILE?"Move file":"Move Folder");
+        mi->caption=nbSelected(bdata)>0?getLangStr(STRLNG_BROWSER_MOVE_SELECTED):(selected_entry->type==TYPE_FILE?getLangStr(STRLNG_BROWSER_MOVE_FILE):getLangStr(STRLNG_BROWSER_MOVE_FOLDER));
         mi->foreColor=MENU_COLOR;
         mi->widgetWidth=0;
         contMenu->addItem(contMenu,mi);
