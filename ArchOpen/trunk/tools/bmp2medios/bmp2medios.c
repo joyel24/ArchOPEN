@@ -58,7 +58,13 @@ int get_nearest(unsigned char r,unsigned char g,unsigned char b)
     long min_val=0x7fffffffL;;
     long new_val;
     int i;
-    for(i=0;i<256;i++)
+    
+    /* DB0073 (219,000,115) */
+    
+    if(r==0xfe && g==0xfe && b==0xfe)
+        return 0;
+    
+    for(i=1;i<256;i++)
     {
         new_val=dist_3D(r,g,b,gui_pal[i][0],gui_pal[i][1],gui_pal[i][2]);
         if(new_val==0)

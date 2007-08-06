@@ -81,7 +81,7 @@ void button_paint(BUTTON b){
 
     widget_paint((WIDGET)b);
 
-    color=(b->focused)?b->focusColor:b->backColor;
+    color=(b->focused)?b->focusColor:b->fillColor;
 
     // frame
     x=b->x+b->margin;

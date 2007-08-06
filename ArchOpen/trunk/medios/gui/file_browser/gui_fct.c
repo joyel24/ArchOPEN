@@ -225,7 +225,7 @@ void redrawBrowser(struct browser_data *bdata)
 {
     gfx_fontSet(bdata->font);
     /*clear whole screen */
-    gfx_fillRect(COLOR_WHITE,
+    gfx_fillRect(COLOR_TRSP,
                  bdata->x_start,bdata->y_start,
                  bdata->width,bdata->height);
     
@@ -241,7 +241,7 @@ void redrawBrowser(struct browser_data *bdata)
 void clearBrowser(struct browser_data *bdata)
 {
     cleanList(bdata);
-    gfx_fillRect(COLOR_WHITE,bdata->x_start,bdata->y_start,bdata->width,bdata->height);
+    gfx_fillRect(COLOR_TRSP,bdata->x_start,bdata->y_start,bdata->width,bdata->height);
     clear_status(bdata);
 }
 
@@ -277,7 +277,7 @@ void printName(struct dir_entry * dEntry,int pos,int clear,int selected,struct b
         cp = dEntry->name;
 
     if(clear)
-        gfx_fillRect(COLOR_WHITE, X, Y , W, H);
+        gfx_fillRect(COLOR_TRSP, X, Y , W, H);
     
     switch(dEntry->type)
     {
@@ -309,7 +309,7 @@ void printName(struct dir_entry * dEntry,int pos,int clear,int selected,struct b
                 case BIN_TYPE:
                 case UKN_TYPE:
                 default:
-                    gfx_fillRect(COLOR_WHITE, X+2, Y, 8, 8); /* no icon */
+                    gfx_fillRect(COLOR_TRSP, X+2, Y, 8, 8); /* no icon */
                     break;
             }
             break;
@@ -328,11 +328,11 @@ void printName(struct dir_entry * dEntry,int pos,int clear,int selected,struct b
             if(dEntry->selected)
                 select_color=COLOR_ORANGE;
             else
-                select_color= COLOR_WHITE;
+                select_color= COLOR_TRSP;
         }
     }
     else
-        select_color= COLOR_WHITE;            
+        select_color= COLOR_TRSP;            
     
 //    printk("s=%d c=%d %s\n",bdata->is_dual,select_color,dEntry->name);
 
@@ -389,11 +389,11 @@ void printLongName(int pos,int relPos,int selected,struct browser_data *bdata)
             if(bdata->list[pos].selected)
                 select_color=COLOR_ORANGE;
             else
-                select_color= COLOR_WHITE;
+                select_color= COLOR_TRSP;
         }
     }
     else
-        select_color= COLOR_WHITE;
+        select_color= COLOR_TRSP;
     bdata->list[pos].cur_name+=bdata->list[pos].inc;
     if((bdata->list[pos].cur_name+bdata->max_entry_length) >=
         (bdata->list[pos].name+bdata->list[pos].name_size))
@@ -422,10 +422,10 @@ void printAllName(struct browser_data *bdata)
     for (i = pos; i < bdata->listused && i < pos+bdata->nb_disp_entry; i++)
         printName(&bdata->list[i], i-pos,1,(i-pos)==nselect,bdata);
 
-    /*gfx_fillRect(COLOR_WHITE,X, Y+(i-pos)*H, W,H);
+    /*gfx_fillRect(COLOR_TRSP,X, Y+(i-pos)*H, W,H);
     We should replace this with one call to gfx_fillRect !! */
     for(;i<pos+bdata->nb_disp_entry;i++)
-        gfx_fillRect(COLOR_WHITE,X, Y+(i-pos)*H, W,H);
+        gfx_fillRect(COLOR_TRSP,X, Y+(i-pos)*H, W,H);
     
 }
 

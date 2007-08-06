@@ -1,6 +1,5 @@
 #include <api.h>
 #include <sys_def/int_timer.h>
-#include <target/chip/osd.h>
 
 #include "gfx.h"
 #include "splash_320x240.h"
@@ -78,8 +77,11 @@ int app_main(int argc, char * * argv)
     gfx_planeSetPos(VID1,x_ori,y_ori);
     gfx_planeSetPos(BMAP1,x_ori,y_ori);
 
-    gfx_planeSetState(BMAP1,(gfx_planeGetState(BMAP1) & 0xFFC7) | OSD_BITMAP_0TRANS | OSD_BITMAP_A0);
-    gfx_planeSetState(BMAP2,(gfx_planeGetState(BMAP2) & 0xFFC7) | OSD_BITMAP_0TRANS | OSD_BITMAP_A0);
+
+    gfx_planeSetState(BMAP1,(gfx_planeGetState(BMAP1) & 0xFFC7) | osd_getTrspBit() 
+            | osd_getBlendFactorBit(0));
+    gfx_planeSetState(BMAP2,(gfx_planeGetState(BMAP2) & 0xFFC7) | osd_getTrspBit() 
+            | osd_getBlendFactorBit(0));
 
     set_timer_status(LCD_TIMER,TIMER_MODE_BAT,MODE_DISABLE);
     set_timer_status(LCD_TIMER,TIMER_MODE_DC,MODE_DISABLE);
@@ -168,7 +170,7 @@ startb:
     start:
 
     gfx_setPlane(BMAP1);
-    gfx_clearScreen(COLOR_BLACK);
+    gfx_clearScreen(COLOR_TRSP);
     gfx_putS(0x2F,0x01, 18, screen_y-14, "Score:");
     gfx_putS(0x2F,0x01, 18 /*188*/, /*screen_y-14*/1, "Level:");
     sprintf(buf,"%d",score);

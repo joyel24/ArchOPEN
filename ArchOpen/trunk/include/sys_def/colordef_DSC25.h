@@ -9,7 +9,7 @@
 
 #define COLOR_TRSP         0
 #define COLOR_WHITE        15
-#define COLOR_BLACK        0
+#define COLOR_BLACK        3
 #define COLOR_DARK_BLUE    1
 #define COLOR_DARK_GREEN   80
 #define COLOR_DARK_RED     4

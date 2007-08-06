@@ -141,10 +141,14 @@ void energy_setting(void)
     }
     printk("\n");
     
-    gfx_clearScreen(COLOR_WHITE);
+    gfx_clearScreen(COLOR_TRSP);
     
     
     evtHandle = evt_getHandler(BTN_CLASS|GUI_CLASS);
+    if(evtHandle<0)
+    {
+        printk("Can't get evt handler\n");   
+    }
     
     logo=icon_get("energy");
     if(!logo)
@@ -161,7 +165,7 @@ void energy_setting(void)
        
     gfx_fontSet(STD8X13);
     gfx_getStringSize(getLangStr(STRLNG_NRJ_SETTINGS),&w,&h);
-    gfx_putS(COLOR_DARK_GREY,COLOR_WHITE,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,getLangStr(STRLNG_NRJ_SETTINGS));
+    gfx_putS(COLOR_DARK_GREY,COLOR_TRSP,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,getLangStr(STRLNG_NRJ_SETTINGS));
     
     gfx_fontSet(ENERGY_GUIFONT);    
     gfx_getStringSize(getLangStr(STRLNG_NRJ_NEVER),&maxW,&lineH);    
@@ -181,7 +185,7 @@ void energy_setting(void)
     
     for(j=0;j<2;j++)
     {
-        gfx_putS(COLOR_BLUE,COLOR_WHITE,x,y,j==0?getLangStr(STRLNG_NRJ_ON_BATTERY):getLangStr(STRLNG_NRJ_ON_DC));
+        gfx_putS(COLOR_BLUE,COLOR_TRSP,x,y,j==0?getLangStr(STRLNG_NRJ_ON_BATTERY):getLangStr(STRLNG_NRJ_ON_DC));
         y+=lineH;
         gfx_getStringSize(j==0?getLangStr(STRLNG_NRJ_ON_BATTERY):getLangStr(STRLNG_NRJ_ON_DC),&w,&h);
         gfx_drawLine(COLOR_BLACK,x-1,y-2,x+w+1,y-2);
@@ -189,7 +193,7 @@ void energy_setting(void)
         for(i=0;i<3;i++)
         {
             sprintf(tmpStr,"%s",timer_type[i]);
-            gfx_putS(COLOR_BLUE,COLOR_WHITE,x,y,tmpStr);
+            gfx_putS(COLOR_BLUE,COLOR_TRSP,x,y,tmpStr);
             chooser_list[i+j*3]=chooser_create();
             chooser_list[i+j*3]->items=i==2?valFormStr_2:valFormStr_1;
             chooser_list[i+j*3]->itemCount=10;
@@ -254,4 +258,5 @@ void energy_setting(void)
     }while(event!=BTN_OFF && !stop_enrg_set); 
        
     menuList->destroy(menuList);
+    evt_freeHandler(evtHandle);
 }

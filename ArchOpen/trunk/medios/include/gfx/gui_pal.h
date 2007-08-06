@@ -1,9 +1,9 @@
 int gui_pal[256][3] = {
 	/* 16 EGA colors, arranged for direct predefined palette indexing*/
-	{ 0  , 0  , 0   },	/* black*/
+    { 254, 254, 254 },	/* TRSP = some kind of white */
 	{ 0  , 0  , 128 },	/* blue*/
 	{ 0  , 128, 0   },	/* green*/
-	{ 255, 255, 255 },	/* white used for trsp */
+	{ 0, 0, 0 },	/* BLACK */
 	{ 128, 0  , 0   },	/* red*/  /* COLOR_ACTIVECAPTION A*/
 	{ 128, 0  , 128 },	/* magenta*/ /* COLOR_ACTIVECAPTION B*/
 	{ 128, 64 , 0   },	/* adjusted brown*/
@@ -18,7 +18,7 @@ int gui_pal[256][3] = {
 	{ 255, 255, 255 },	/* white*/ /* 32 basic windows colors (first 8 are most important)*/	
 	{ 32 , 32 , 32  },	/* DKGRAY_BRUSH*/
 	{ 128, 128, 0   },	/* non-adjusted brown*/
-        { 223, 223, 223 },	/* COLOR_3DLIGHT B*/
+    { 223, 223, 223 },	/* COLOR_3DLIGHT B*/
 	{ 160, 160, 160 }, 	/* COLOR_3DLIGHT C*/
 	{ 234, 230, 221 },	/* COLOR_BTNHIGHLIGHT A*/
 	{ 213, 204, 187 },	/* COLOR_BTNFACE A*/

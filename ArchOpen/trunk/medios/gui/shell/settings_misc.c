@@ -118,11 +118,15 @@ void misc_setting(void)
     int minX,w,h,x,y,sepW,sepH,lineH;
     
     BUTTON mib;
-    gfx_clearScreen(COLOR_WHITE);
+    gfx_clearScreen(COLOR_TRSP);
     
     stop_misc_set=0;
     
     evtHandle = evt_getHandler(BTN_CLASS|GUI_CLASS);
+    if(evtHandle<0)
+    {
+        printk("Can't get evt handler\n");   
+    }
     
     logo=icon_get("misc");
     if(!logo)
@@ -140,7 +144,8 @@ void misc_setting(void)
     gfx_fontSet(STD8X13);
     gfx_getStringSize(getLangStr(STRLNG_MISC_SETTINGS),&w,&h);
     lineH=h+5;
-    gfx_putS(COLOR_DARK_GREY,COLOR_WHITE,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,getLangStr(STRLNG_MISC_SETTINGS));
+
+    gfx_putS(COLOR_DARK_GREY,COLOR_TRSP,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,getLangStr(STRLNG_MISC_SETTINGS));
     
     x=minX;    
     y=ICON_Y+2*lineH;
@@ -225,6 +230,7 @@ void misc_setting(void)
     }while(event!=BTN_OFF && !stop_misc_set); 
        
     menuList->destroy(menuList);
+    evt_freeHandler(evtHandle);
 }
 
 void misc_loadPref(void)

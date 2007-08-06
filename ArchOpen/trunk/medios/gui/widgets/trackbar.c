@@ -96,7 +96,7 @@ void trackbar_paint(TRACKBAR t){
 
     curw=t->height*TRACKBAR_CURSOR_RATIO;
 
-    color=(t->focused)?t->focusColor:t->backColor;
+    color=(t->focused)?t->focusColor:t->fillColor;
 
     // bar
     x=t->x+t->margin+curw/2;

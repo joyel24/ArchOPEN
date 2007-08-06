@@ -137,18 +137,11 @@
 /* BITMAP Configuration options */
 
 #define     OSD_BITMAP_HALFHEIGHT         0x0002      /* 0000000000000010 */
-#define     OSD_BITMAP_MERGEBACK          0x0000      /* 0000000000000100 */
-#define     OSD_BITMAP_0TRANS             0x0004
 
-#define     OSD_BITMAP_A_SHIFT            3
-#define     OSD_BITMAP_A0                 0x0000      /* 0000000000111000 */
-#define     OSD_BITMAP_A1                 0x0008
-#define     OSD_BITMAP_A2                 0x0010
-#define     OSD_BITMAP_A3                 0x0018
-#define     OSD_BITMAP_A4                 0x0020
-#define     OSD_BITMAP_A5                 0x0028
-#define     OSD_BITMAP_A6                 0x0030
-#define     OSD_BITMAP_A7                 0x0038
+#define     OSD_BITMAP_TRSP_ENABLE_SHIFT  2
+#define     OSD_BITMAP_BLEND_FACTOR_SHIFT 3
+#define     OSD_BITMAP_BLEND_FACTOR_MAX   7
+#define     OSD_BITMAP_BLEND_MASK         7
 
 #define     OSD_BITMAP_1BIT               0x0000      /* 0000000011000000 */
 #define     OSD_BITMAP_2BIT               0x0040

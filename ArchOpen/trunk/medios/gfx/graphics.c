@@ -102,7 +102,7 @@ struct graphicsBuffer VIDEO_1_ini = {
     offset             : 0,
     state              : OSD_VID_1_CFG,
     enable             : 0,
-    width              : SCREEN_WIDTH,
+    width              : SCREEN_WIDTH/2,
     real_width         : SCREEN_REAL_WIDTH,
     height             : SCREEN_HEIGHT,
     x                  : SCREEN_ORIGIN_X,

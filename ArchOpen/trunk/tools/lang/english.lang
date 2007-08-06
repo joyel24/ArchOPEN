@@ -8,10 +8,12 @@ STRLNG_CANCEL # Cancel
 STRLNG_LOAD_LANG # Loading Language
 STRLNG_SAVE_SETTINGS # Save Settings
 STRLNG_ERROR_LOADING # Error loading %s
+STRLNG_ERROR_LOADING_FILE # Error loading file
 STRLNG_MISSING_FOLDER # Missing Folder
 STRLNG_CHOOSE_FILE # Choose %s file
 STRLNG_OTHER # Other...
 STRLNG_NRJ_SETTINGS # Energy settings
+STRLNG_BGIMG_SETTINGS # Background Image
 STRLNG_NRJ_ON_BATTERY # On Battery :
 STRLNG_NRJ_ON_DC # On DC :
 STRLNG_NRJ_NEVER # never
@@ -71,3 +73,9 @@ STRLNG_USB_NOT_CONNECTED # USB cable is not connected
 STRLNG_PLAYER_STOPPED # Stopped
 STRLNG_PLAYER_PLAYING # Playing
 STRLNG_PLAYER_PAUSED # Paused
+STRLNG_BLENDING # Blending
+STRLNG_TRSPARENT # Transparent
+STRLNG_BG_SETTING # Background Settings
+STRLNG_BG_ENABLE # Enable background
+STRLNG_NO_FILE_SELECTED # No file selected
+STRLNG_LOAD_IMG # Loading image

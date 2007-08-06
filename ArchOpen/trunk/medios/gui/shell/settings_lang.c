@@ -36,6 +36,8 @@
 
 #define LANG_GUIFONT RADONWIDE
 
+#define MAX_NB_LANG   5
+
 WIDGETLIST menuList;  
 CHOOSER langList;
 
@@ -48,10 +50,10 @@ char lang_path[250];
 extern char * customLang;
 
 int nbLang;
-char ** langNameList;
+char * langNameList[MAX_NB_LANG];
 int evtHandle;
 
-void cleanLangList(char ** myList,int nb);
+void cleanLangList(int nb);
 void drawLangMenuBG(void);
 
 void cancelBtnLang_click(BUTTON b)
@@ -81,7 +83,7 @@ void okBtnLang_click(BUTTON b)
             snprintf(lang_path,MAX_PATH,getLangStr(STRLNG_ERROR_LOADING),langNameList[langList->index]);
             msgBox_show(getLangStr(STRLNG_LANG_SETTINGS),lang_path,
                         MSGBOX_TYPE_OK,MSGBOX_ICON_INFORMATION,evtHandle);
-            cleanLangList(langNameList,nbLang);
+            //cleanLangList(nbLang);            
         }
         
     }
@@ -97,7 +99,7 @@ void okBtnLang_click(BUTTON b)
         {
             printk("Can't create new cfg file\n");
             stop_lang_set=1;
-            cleanLangList(langNameList,nbLang);
+            cleanLangList(nbLang);
             return;
         }
     }
@@ -115,7 +117,7 @@ void okBtnLang_click(BUTTON b)
     }
     cfg_writeFile(cfg,"/medios/medios.cfg");
     cfg_clear(cfg);
-    cleanLangList(langNameList,nbLang);
+    cleanLangList(nbLang);
     stop_lang_set=1;
 }
 
@@ -133,37 +135,41 @@ void browserLang_click(BUTTON b)
     menuList->paint(menuList);
 }
 
-void cleanLangList(char ** myList,int nb)
+void cleanLangList(int nb)
 {
     int i;
-    if(nb==0 || myList==NULL)
+    if(nb<=1)
         return;
-    for(i=0;i<nb;i++)
-        kfree(myList[i]);
-    kfree(myList);   
+    for(i=1;i<nb;i++)
+    {
+        kfree(langNameList[i]);
+        langNameList[i]=NULL;
+    }   
 }
 
-char ** lang_createList(int * nb,int * maxW)
+void lang_createList(int * nb,int * maxW)
 {
     char * cur_lang;
-    char ** res;
     int nbLang=1;
     DIR * lang_folder;
     char header[3];
     int fd;
-    int w,h;
+    int w,h,i;
     int len;
-    struct dirent * entry;
-    res=(char**)malloc(sizeof(char**));
-    res[0]=(char*)malloc(strlen(getLangStr(STRLNG_DEFAULT)));
-    strcpy(res[0],getLangStr(STRLNG_DEFAULT));
-    gfx_getStringSize(res[0],&w,&h);
+    struct dirent * entry;    
+    
+    for(i=1;i<MAX_NB_LANG;i++)
+        langNameList[i]=NULL;
+    
+    langNameList[0]=getLangStr(STRLNG_DEFAULT);
+    gfx_getStringSize(langNameList[0],&w,&h);
     *maxW=w;
     
     lang_folder=opendir("/medios/lang");
+    
     if(lang_folder)
     {
-        while((entry=readdir(lang_folder))!=NULL)
+        while((entry=readdir(lang_folder))!=NULL && nbLang<MAX_NB_LANG)
         {
             if(entry->type!=VFS_TYPE_FILE)
                 continue;
@@ -185,17 +191,13 @@ char ** lang_createList(int * nb,int * maxW)
             
             nbLang++;
             len=(int)(strrchr(entry->d_name,'.')-(char*)entry->d_name);
-            cur_lang=(char*)malloc(len);
+            cur_lang=(char*)malloc(len+1);
             strncpy(cur_lang,entry->d_name,len);
             cur_lang[len]='\0';
             gfx_getStringSize(cur_lang,&w,&h);
             if(*maxW<w)
-                *maxW=w;
-            if(res==NULL)
-                res=(char**)malloc(sizeof(char**));
-            else
-                res=(char**)realloc(res,nbLang*sizeof(char**));
-            res[nbLang-1]=cur_lang;
+                *maxW=w;            
+            langNameList[nbLang-1]=cur_lang;
             close(fd);
         }
         printk("Found %d lang\n",nbLang);
@@ -203,12 +205,10 @@ char ** lang_createList(int * nb,int * maxW)
     }
     else
     {
-        cleanLangList(res,nbLang);
         printk("Can't open lang folder\n");
-        return NULL;
+        return ;
     }
     *nb=nbLang;
-    return res;
 }
 
 int minX;
@@ -218,7 +218,7 @@ int txt_x;
 void drawLangMenuBG(void)
 {
 
-    gfx_clearScreen(COLOR_WHITE);
+    gfx_clearScreen(COLOR_TRSP);
     gfx_fontSet(LANG_GUIFONT);
     gfx_drawBitmap(&logo->bmap_data,ICON_X,ICON_Y);
     minX = ICON_X + logo->bmap_data.width;
@@ -227,7 +227,7 @@ void drawLangMenuBG(void)
     gfx_drawLine(COLOR_LIGHT_BLUE,minX+5,5,minX+5,LCD_HEIGHT-5);
     minX+=7;
     gfx_fontSet(STD8X13);
-    gfx_putS(COLOR_DARK_GREY,COLOR_WHITE,txt_x,ICON_Y,getLangStr(STRLNG_LANG_SETTINGS));
+    gfx_putS(COLOR_DARK_GREY,COLOR_TRSP,txt_x,ICON_Y,getLangStr(STRLNG_LANG_SETTINGS));
 }
 
 void lang_setting(void)
@@ -238,15 +238,21 @@ void lang_setting(void)
 
     nbLang=0;
     evtHandle = evt_getHandler(BTN_CLASS|GUI_CLASS);
+    if(evtHandle<0)
+    {
+        printk("Can't get evt handler\n");   
+    }
+    
     gfx_fontSet(LANG_GUIFONT);
-    langNameList=lang_createList(&nbLang,&maxW);
+    lang_createList(&nbLang,&maxW);
+    /*
     if(!langNameList)
     {
         msgBox_show(getLangStr(STRLNG_MISSING_FOLDER),"Create /medios/lang and put lng file",
                     MSGBOX_TYPE_OK,MSGBOX_ICON_ERROR,evtHandle);
         return;
     }
-    
+    */
     if(nbLang==1)
     {
         msgBox_show(getLangStr(STRLNG_LANG_SETTINGS),"No lang file found",
@@ -348,6 +354,7 @@ void lang_setting(void)
     }while(event!=BTN_OFF && !stop_lang_set); 
        
     menuList->destroy(menuList);
+    evt_freeHandler(evtHandle);
 }
 
 void lang_loadLang(void)

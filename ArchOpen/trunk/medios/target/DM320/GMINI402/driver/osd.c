@@ -20,6 +20,7 @@
 
 void arch_osd_init(void)
 {
+    osd_setMainConfig(0x0000);
 	osd_setMainShift(SCREEN_LCD_SHIFT_X, SCREEN_LCD_SHIFT_Y);
 
 	outw(0x10,VIDENC_BASE+0x14); // LCD VSync

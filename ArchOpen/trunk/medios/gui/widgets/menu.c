@@ -105,7 +105,7 @@ void menu_init(MENU m){
     m->hasScrollBar=0;
     
     m->scrollBar.border_color=COLOR_BLACK;
-    m->scrollBar.bg_color=COLOR_WHITE;
+    m->scrollBar.bg_color=COLOR_TRSP;
     m->scrollBar.fg_color=COLOR_BLUE;
     m->scrollBar.orientation=VERTICAL;
     m->scrollBar.width=8;

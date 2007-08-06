@@ -161,7 +161,7 @@ bool gui_browse(){
 
   gfx_planeHide(VID1);
   gfx_setPlane(BMAP1);
-  gfx_clearScreen(COLOR_WHITE);
+  gfx_clearScreen(COLOR_TRSP);
   gfx_planeShow(BMAP1);
   
   //gui_showGuiPlane();

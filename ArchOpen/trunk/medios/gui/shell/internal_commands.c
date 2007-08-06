@@ -35,6 +35,7 @@
 #include <fs/stdfs.h>
 
 #include <gfx/graphics.h>
+#include <gfx/jpg.h>
 
 #include <gui/internal_commands.h>
 #include <gui/shell.h>
@@ -45,6 +46,7 @@
 #include <gui/settings_energy.h>
 #include <gui/settings_misc.h>
 #include <gui/settings_lang.h>
+#include <gui/settings_bgImg.h>
 
 #include <gui/player.h>
 #include <gui/playlistmenu.h>
@@ -65,8 +67,10 @@ static bool intCmd_doReloadMediosFile(char * param);
 static bool intCmd_doFlashDump(char * param);
 static bool intCmd_doHalt(char * param);
 static bool intCmd_doLowPower(char * param);
-
+static bool intCmd_doBgImgSetting(char * param);
 static bool intCmd_doTest(char * param);
+static bool intCmd_doCon_flushToDisk(char * param);
+static bool intCmd_doLoadJpg(char * param);
 
 typedef struct{
     char * command;
@@ -111,6 +115,10 @@ INTERNAL_COMMAND intCmd_commands[] = {
         function: intCmd_doMiscSetting
     },
     {
+        command:  "chg_bgImg",
+        function: intCmd_doBgImgSetting
+    },
+    {
         command:  "chg_lang",
         function: intCmd_doLangSetting
     },
@@ -133,6 +141,14 @@ INTERNAL_COMMAND intCmd_commands[] = {
     {
         command:  "sleepDevice",
         function: intCmd_doLowPower
+    },
+    {
+        command:  "flushConsole",
+        function: intCmd_doCon_flushToDisk
+    },
+    {
+        command:  "loadJpeg",
+        function: intCmd_doLoadJpg
     },
     /* should always be the last entry */
     {
@@ -439,3 +455,37 @@ static bool intCmd_doTest(char * param)
     return true;
 }
 
+bool intCmd_doBgImgSetting(char * param)
+{
+    bgImg_setting();
+    return true;   
+}
+
+bool intCmd_doCon_flushToDisk(char * param)
+{
+    con_flushToDisk();
+    return true;   
+}
+
+bool intCmd_doLoadJpg(char * param)
+{
+    int evt,evt_handler;
+    gfx_planeHide(BMAP1);
+    gfx_planeHide(BMAP2);
+    gfx_planeShow(VID1);  
+      
+    gfx_loadJpg(param,NULL);
+    
+    evt_handler=evt_getHandler(BTN_CLASS);
+    while(1)
+    {
+        evt=evt_getStatus(evt_handler);
+        if(evt==NO_EVENT)
+            continue;
+        if(evt==BTN_OFF)
+            break;
+    }
+    gfx_planeShow(BMAP1);
+    gfx_planeHide(VID1);
+    return true;
+}

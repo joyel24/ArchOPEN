@@ -158,7 +158,7 @@ void spinbox_paint(SPINBOX t){
     
     /* paint all spinbox */    
     str=STR_SPINBOX(t->nbDigits);
-    color=(t->focused)?t->focusColor:t->backColor;
+    color=(t->focused)?t->focusColor:t->fillColor;
     gfx_drawRect(color,t->x,t->y,valw,valh);
     snprintf(vs,10,str,t->value);
     gfx_putS(t->foreColor,t->backColor,t->x+2,t->y+2,vs);

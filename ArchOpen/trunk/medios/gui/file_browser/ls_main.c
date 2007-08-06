@@ -80,7 +80,7 @@ void iniBrowserData(struct browser_data * ptr)
     
     ptr->browser_scroll.border_color = COLOR_BLACK;
     ptr->browser_scroll.fg_color     = COLOR_BLUE;
-    ptr->browser_scroll.bg_color     = COLOR_WHITE;
+    ptr->browser_scroll.bg_color     = COLOR_TRSP;
     ptr->browser_scroll.orientation  = VERTICAL;   
     ptr->browser_scroll.width        = 8;
 }
@@ -151,13 +151,13 @@ void draw_file_size(struct browser_data *bdata, struct dir_entry * entry)
     by=bdata->y_start+bdata->height;
 
     /* erase previous drawing */
-    gfx_fillRect(COLOR_WHITE,browser_oldFileSizeX, by-10,bx-browser_oldFileSizeX,10);
+    gfx_fillRect(COLOR_TRSP,browser_oldFileSizeX, by-10,bx-browser_oldFileSizeX,10);
     if(entry->type == TYPE_FILE)
     {
         createSizeString(tmpS,entry->size);
         gfx_getStringSize(tmpS,&sw,&sh);
         browser_oldFileSizeX=bx-sw;
-        gfx_putS(COLOR_BLUE, COLOR_WHITE,browser_oldFileSizeX, by-10, tmpS);
+        gfx_putS(COLOR_BLUE, COLOR_TRSP,browser_oldFileSizeX, by-10, tmpS);
     }
 }
 
@@ -176,9 +176,9 @@ void draw_bottom_status(struct browser_data *bdata)
     
     createSizeString(tmpS,bdata->totSize);
 
-    gfx_fillRect(COLOR_WHITE,2, by-20,bx-4,20);
+    gfx_fillRect(COLOR_TRSP,2, by-20,bx-4,20);
 
-    gfx_putS(COLOR_BLUE, COLOR_WHITE,2, by-20,bdata->path);
+    gfx_putS(COLOR_BLUE, COLOR_TRSP,2, by-20,bdata->path);
 
 #if defined(GMINI4XX) || defined(AV1XX) || defined(JBMM) || defined(GMINI402)
     snprintf(tmp,100,"%d %s, %s",bdata->nbFile,bdata->nbFile>1?"files":"file",tmpS);
@@ -187,7 +187,7 @@ void draw_bottom_status(struct browser_data *bdata)
             bdata->nbDir,bdata->nbDir>1?"folders":"folder",tmpS);
 #endif
 
-    gfx_putS(COLOR_BLUE, COLOR_WHITE,2, by-10, tmp);    
+    gfx_putS(COLOR_BLUE, COLOR_TRSP,2, by-10, tmp);    
 }
 
 void clear_status(struct browser_data *bdata)
@@ -203,7 +203,7 @@ void clear_status(struct browser_data *bdata)
     by=bdata->y_start+bdata->height;
     
 
-    gfx_fillRect(COLOR_WHITE,2, by-20,bx-24,20);
+    gfx_fillRect(COLOR_TRSP,2, by-20,bx-24,20);
 }
 
 void createSizeString(char * str,int Isize)

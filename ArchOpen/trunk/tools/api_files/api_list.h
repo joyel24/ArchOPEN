@@ -356,3 +356,7 @@ void    #  irq_disable       # int irq
 
 #k_inc#kernel/thread.h
 unsigned long   #  yield #
+
+#k_inc#driver/osd.h
+int     # osd_getTrspBit         # void
+int     # osd_getBlendFactorBit  # int factor

@@ -113,7 +113,7 @@ void chooser_paint(CHOOSER c){
 
     widget_paint((WIDGET)c);
 
-    color=(c->focused)?c->focusColor:c->backColor;
+    color=(c->focused)?c->focusColor:c->fillColor;
 
     // text
     if(c->index>=0 && c->index<c->itemCount && c->items && c->items[c->index]){ // make sure everything is ok

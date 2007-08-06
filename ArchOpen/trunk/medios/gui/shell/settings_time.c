@@ -215,10 +215,14 @@ void clock_setting(void)
     if(now.tm_hour>12)
         isPm=1;
         
-    gfx_clearScreen(COLOR_WHITE);
+    gfx_clearScreen(COLOR_TRSP);
     
            
     evtHandle = evt_getHandler(BTN_CLASS|GUI_CLASS);
+    if(evtHandle<0)
+    {
+        printk("Can't get evt handler\n");   
+    }
     
     logo=icon_get("clock_icon");
     if(!logo)
@@ -234,7 +238,8 @@ void clock_setting(void)
     
     gfx_fontSet(STD8X13);
     gfx_getStringSize(getLangStr(STRLNG_CLOCK_SETTINGS),&w,&h);
-    gfx_putS(COLOR_DARK_GREY,COLOR_WHITE,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,getLangStr(STRLNG_CLOCK_SETTINGS));
+    gfx_putS(COLOR_DARK_GREY,COLOR_TRSP,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,getLangStr(STRLNG_CLOCK_SETTINGS));
+
     
     gfx_fontSet(TIME_DATE_GUIFONT);
     minX=(LCD_WIDTH-minX-(maxW+24))/2+minX;
@@ -394,4 +399,5 @@ void clock_setting(void)
         }
     }while(event!=BTN_OFF && !stop_clk_set);    
     menuList->destroy(menuList);
+    evt_freeHandler(evtHandle);
 }

@@ -14,6 +14,7 @@
 #define __STDFS_H
 
 #include <sys_def/stdfs.h>
+#include <sys_def/errors.h>
 
 /* file related */
 int       open(char * name,int flags);

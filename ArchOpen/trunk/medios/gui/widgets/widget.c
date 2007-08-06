@@ -53,6 +53,7 @@ void widget_init(WIDGET w){
     w->focused=false;
     w->foreColor=WIDGET_DEFAULT_FORECOLOR;
     w->backColor=WIDGET_DEFAULT_BACKCOLOR;
+    w->fillColor=WIDGET_DEFAULT_FILLCOLOR;
     w->focusColor=WIDGET_DEFAULT_FOCUSCOLOR;
     w->font=WIDGET_DEFAULT_FONT;
     w->tag=0;

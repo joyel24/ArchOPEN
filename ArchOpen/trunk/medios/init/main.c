@@ -75,6 +75,7 @@
 #include <gui/splash.h>
 #include <gui/settings_misc.h>
 #include <gui/settings_lang.h>
+#include <gui/settings_bgImg.h>
 
 #ifdef BUILD_LIB
 extern int app_main(int argc, char * argv[]);
@@ -103,6 +104,7 @@ void kernel_thread(void)
     energy_loadPref();
     misc_loadPref();
     lang_loadLang();
+    bgImg_loadPref();
     
     /* boot info */
 #if 0    

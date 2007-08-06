@@ -32,13 +32,28 @@ void osd_setComponentSize (int component, int width, int height);
 void osd_setComponentPosition (int component, int x, int y);
 void osd_setComponentSourceWidth (int component, int width);
 void osd_setComponentConfig (int component, int config);
-void osd_restorePlane(int component, unsigned int address, int x, int y, int w, int h, int bw, int bpp, int state,int enable);
+void osd_restorePlane(int component, unsigned int address, 
+                      int x, int y, int w, int h, 
+                      int bw, int bpp, int state,int enable);
+
 void osd_init();
 void arch_osd_init(void);
+
+int osd_getTrspBit(void);
+int osd_getBlendFactorBit(int factor);
 
 #define RGB2Y(r,g,b)  ((306*r + 601*g + 117*b) >> 10)
 #define RGB2Cb(r,g,b)  (((-173*r -339*g + 512*b) >> 10) + 128)
 #define RGB2Cr(r,g,b)  (((512*r - 429*g - 83*b) >> 10) + 128)
+
+#define OSD_BITMAP_BLEND_FACTOR(FACTOR)  ((FACTOR)<=OSD_BITMAP_BLEND_FACTOR_MAX? \
+                            ((FACTOR)<<OSD_BITMAP_BLEND_FACTOR_SHIFT):0)
+#define OSD_BITMAP_SET_BLEND_FACTOR(VAL,FACTOR) (((VAL)&(~(OSD_BITMAP_BLEND_MASK<<OSD_BITMAP_BLEND_FACTOR_SHIFT))) \
+                |OSD_BITMAP_BLEND_FACTOR(FACTOR))
+#define OSD_BITMAP_TRSP_ENABLE(VAL,STATE) ((STATE)==0? \
+                        (VAL)&(~(1<<OSD_BITMAP_TRSP_ENABLE_SHIFT)) : \
+                        (VAL)|(1<<OSD_BITMAP_TRSP_ENABLE_SHIFT))
+#define OSD_BITMAP_TRSP_ENABLE_BIT (1<<OSD_BITMAP_TRSP_ENABLE_SHIFT)
 
 #endif
 

@@ -30,6 +30,8 @@
 void con_clear();
 void con_screenUpdate();
 
+void con_flushToDisk(void);
+
 int con_handleBtn(int btn);
 
 void con_screenShow(void);

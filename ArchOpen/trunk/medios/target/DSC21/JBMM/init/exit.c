@@ -33,7 +33,7 @@ void arch_reload_firmware(void)
 {
     printk("about to reboot\n");
     ata_softReset(HD_DISK);
-    ata_stopHD(ATA_FORCE_STOP); /* we need to call halt_hd later to unmount all partitions */
+    ata_StopHD(HD_DISK); /* we need to call halt_hd later to unmount all partitions */
     reset_device();
 }
 
@@ -44,12 +44,12 @@ void arch_HaltMsg(void)
     
     gfx_openGraphics();
     
-    gfx_clearScreen(COLOR_WHITE);
+    gfx_clearScreen(COLOR_TRSP);
     
     gfx_fontSet(STD8X13);
     
     gfx_getStringSize(msg,&w,&h);
     
     
-    gfx_putS(COLOR_RED,COLOR_WHITE,(SCREEN_REAL_WIDTH-w)/2,(SCREEN_HEIGHT-h)/2,msg);
+    gfx_putS(COLOR_RED,COLOR_TRSP,(SCREEN_REAL_WIDTH-w)/2,(SCREEN_HEIGHT-h)/2,msg);
 }

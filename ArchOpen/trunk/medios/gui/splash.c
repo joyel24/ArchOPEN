@@ -85,8 +85,8 @@ void splash_show(void)
         osd_setComponentSize(OSD_BITMAP2, 2*(w+4), h+4);
         osd_setComponentSourceWidth(OSD_BITMAP2, (splash_gfxBmapStruct.width/32));
         osd_setComponentPosition(OSD_BITMAP2,SCREEN_ORIGIN_X,SCREEN_ORIGIN_Y+SCREEN_HEIGHT-h-4);
-        g8ops.clearScreen(COLOR_BLACK,&splash_gfxBmapStruct);
-        g8ops.drawString(fnt_fontFromId(STD8X13),COLOR_WHITE,COLOR_BLACK,
+        g8ops.clearScreen(COLOR_TRSP,&splash_gfxBmapStruct);
+        g8ops.drawString(fnt_fontFromId(STD8X13),COLOR_WHITE,COLOR_TRSP,
                          2,2,splashStr,-1,&splash_gfxBmapStruct);
         gfx_planeShow(BMAP2);
         osd_setComponentConfig(OSD_BITMAP2,OSD_SPLASH_BMAP_CFG|OSD_COMPONENT_ENABLE(OSD_BITMAP2));

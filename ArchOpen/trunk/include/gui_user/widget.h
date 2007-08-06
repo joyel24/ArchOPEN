@@ -27,7 +27,8 @@
 
 // default parameters
 #define WIDGET_DEFAULT_FORECOLOR COLOR_BLACK
-#define WIDGET_DEFAULT_BACKCOLOR COLOR_WHITE
+#define WIDGET_DEFAULT_BACKCOLOR COLOR_TRSP
+#define WIDGET_DEFAULT_FILLCOLOR COLOR_WHITE
 #define WIDGET_DEFAULT_FOCUSCOLOR COLOR_BLUE
 #define WIDGET_DEFAULT_MARGIN 0
 #define WIDGET_DEFAULT_FONT STD6X9
@@ -49,6 +50,7 @@
     bool focused;                      \
     int foreColor;                     \
     int backColor;                     \
+    int fillColor;                     \
     int focusColor;                    \
     int font;                          \
     union { int tag; void * data; };

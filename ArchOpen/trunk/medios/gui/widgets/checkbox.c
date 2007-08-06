@@ -78,7 +78,7 @@ void checkbox_paint(CHECKBOX c){
 
     widget_paint((WIDGET)c);
 
-    color=(c->focused)?c->focusColor:c->backColor;
+    color=(c->focused)?c->focusColor:c->fillColor;
 
     // box
     bs=c->height-2*c->margin;

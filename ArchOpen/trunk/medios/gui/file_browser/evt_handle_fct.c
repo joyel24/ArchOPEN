@@ -171,7 +171,7 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
                         }
                         else // not going up, scrolling
                         {
-                            gfx_scrollWindowVert(COLOR_WHITE,
+                            gfx_scrollWindowVert(COLOR_TRSP,
                                     bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0), 
                                     bdata->y_start,
                                     bdata->width-10, (h)*(bdata->nb_disp_entry), h,0);
@@ -227,7 +227,7 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
                             }
                             else // not going down, scrolling
                             {
-                                gfx_scrollWindowVert(COLOR_WHITE,
+                                gfx_scrollWindowVert(COLOR_TRSP,
                                         bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0),
                                         bdata->y_start,
                              bdata->width-10, (h)*(bdata->nb_disp_entry-1), h,1);

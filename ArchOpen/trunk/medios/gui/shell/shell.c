@@ -297,7 +297,7 @@ void shell_restore(){
 void shell_main(){
 
     gfx_initGraphics();    
-    gfx_clearScreen(COLOR_WHITE);
+    gfx_clearScreen(COLOR_TRSP);
 
     icon_init();
     msgBox_init();

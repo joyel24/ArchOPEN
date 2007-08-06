@@ -28,7 +28,7 @@
 #define NB_CELL_PER_LINE  3
 #define TOT_WIDTH         SCREEN_REAL_WIDTH
 #define TOT_HEIGHT        SCREEN_HEIGHT
-#define BG_COLOR          COLOR_WHITE
+#define BG_COLOR          COLOR_TRSP
 #define TXT_COLOR         COLOR_BLUE
 #define SEL_COLOR         COLOR_BLACK
 #define BLK_COLOR         COLOR_DARK_GRAY
@@ -209,7 +209,8 @@ void putSelect(int color)
     //printk("[putCursor] %s %s %d\n",color==COLOR_WHITE?"WHITE":"BLUE",mode==1?"HORIZ":"VERT",elem);
     if(mode) // horizontal
     {
-        gfx_drawRect(color,coord_horiz[elem][0],coord_horiz[elem][1],NB_CELL_PER_LINE*(w+CELL_SPACE)-CELL_SPACE+2*CELL_DIST,
+        gfx_drawRect(color,coord_horiz[elem][0],coord_horiz[elem][1],
+                     NB_CELL_PER_LINE*(w+CELL_SPACE)-CELL_SPACE+2*CELL_DIST,
                      h+2*CELL_DIST);
     }
     else    // vertical

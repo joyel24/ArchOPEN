@@ -8,10 +8,12 @@ STRLNG_CANCEL # Annuler
 STRLNG_LOAD_LANG # Chgmnt de la langue
 STRLNG_SAVE_SETTINGS # Sauvegarde des parametre
 STRLNG_ERROR_LOADING # Erreur en chargeant %s
+STRLNG_ERROR_LOADING_FILE # Error en chargeant le fichier
 STRLNG_MISSING_FOLDER # Dossier manquant
 STRLNG_CHOOSE_FILE # Choisissez un fichier %s
 STRLNG_OTHER # Autre...
 STRLNG_NRJ_SETTINGS # Parametre d'energie
+STRLNG_BGIMG_SETTINGS # Fond d'ecran
 STRLNG_NRJ_ON_BATTERY # Sur Batterie :
 STRLNG_NRJ_ON_DC # Sur Secteur :
 STRLNG_NRJ_NEVER # jamais
@@ -71,3 +73,9 @@ STRLNG_USB_NOT_CONNECTED # Le cable USB n'est pas connecte
 STRLNG_PLAYER_STOPPED # Stop
 STRLNG_PLAYER_PLAYING # Lecture
 STRLNG_PLAYER_PAUSED # Pause
+STRLNG_BLENDING # Fondu
+STRLNG_TRSPARENT # Transparence
+STRLNG_BG_SETTING # Param. fond d'ecran
+STRLNG_BG_ENABLE # Activer fond d'ecran
+STRLNG_NO_FILE_SELECTED # Aucun fichier select.
+STRLNG_LOAD_IMG # Chgmnt de l'image
