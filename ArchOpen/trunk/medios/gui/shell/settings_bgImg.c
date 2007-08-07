@@ -76,7 +76,10 @@ void chg_BG_enable(int state)
     if(state)
     {
         /*enable bg */
-        gfx_planeSetState(VID1,OSD_VID_1_CFG);        
+        gfx_planeSetState(VID1,OSD_VID_1_CFG);
+        /* activate parameters */
+        chg_blendMode(blendTrsp->index);
+        chg_blendFactor(trspVal->value);
         gfx_planeShow(VID1);
     }
     else
@@ -102,13 +105,15 @@ void chg_blendMode(int state)
             gfx_planeShow(BMAP1);
             break;
     }
+    trspVal->minimum=state==0?1:0;
+    if(trspVal->value==0 && state==0) trspVal->value=1;
     printk("Trsp enable: %x -> %x\n",curState,gfx_planeGetState(BMAP1));   
 }
 
 void chg_blendFactor(int factor)
 {
     int curState;
-    /* mod trsp according to trkBar->value */
+    /* mod trsp according to trkBar->value */    
     curState=gfx_planeGetState(BMAP1);
     gfx_planeSetState(BMAP1,OSD_BITMAP_SET_BLEND_FACTOR(curState,factor));
     gfx_planeShow(BMAP1);
@@ -292,7 +297,7 @@ void bgImg_setting(void)
             blendFactor>OSD_BITMAP_BLEND_FACTOR_MAX ? OSD_BITMAP_BLEND_FACTOR_MAX : blendFactor;
     trspVal=trackbar_create();
     trspVal->value=blendFactor;
-    trspVal->minimum=0;
+    trspVal->minimum=blendMode==0?1:0;
     trspVal->maximum=OSD_BITMAP_BLEND_FACTOR_MAX; /* mas is probably different on DSC21 */
     trspVal->increment=1;
     trspVal->setRect(trspVal,x,y,w+29,h+1); /* using same height and width as previous widget*/

@@ -6,7 +6,14 @@
 
 #include <sys_def/colordef.h>
 #include <kernel/io.h>
-#include <driver/osd.h>
+
+/* probably arch dependent !*/
+#define OSD_BASE                          0x30680
+#define OSD_BITMAP0_SHIFT_HORIZ           (OSD_BASE+0x20)   // Main shift horizontal
+#define OSD_BITMAP0_SHIFT_VERT            (OSD_BASE+0x22)   // Main shift vertical
+
+#define OSD_BITMAP0_X                     (OSD_BASE+0x34)   // Bitmap0 X
+#define OSD_BITMAP0_Y                     (OSD_BASE+0x36)   // Bitmap0 Y
 
 int main_x,main_y,bmap_x,bmap_y;
 

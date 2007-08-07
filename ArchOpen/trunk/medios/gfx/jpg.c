@@ -57,7 +57,7 @@ MED_RET_T gfx_loadJpg(char * filename,void(*progress_draw)(struct jpeg_decompres
     
     if(progress_draw)
     {
-        prog_mgr.progress_monitor=progress_draw;
+        prog_mgr.progress_monitor=(void(*)(struct jpeg_decompress_struct *))progress_draw;
         cinfo.progress=&prog_mgr;
     }
     

@@ -21,7 +21,7 @@ rm -Rf build/*
 
 echo "Cpy SRC folder"
 cp -Rf ArchOpen/trunk build/
-#cd build/trunk
+cd build/trunk
 echo "Clean SVN entry"
 rmSVN_folder
 cd ~/archopen_src

@@ -218,8 +218,10 @@ METHODDEF(void)
         {
             *(outptr+1)=*(inptr_Y++);
             *(outptr+3)=*(inptr_Y++);
-            *(outptr)=(*(inptr_Cb++) + *(inptr_Cb++))>>1;
-            *(outptr+2)=(*(inptr_Cr++) + *(inptr_Cr++))>>1;
+            *(outptr)  =*(inptr_Cb++);
+            *(outptr)  =(*(outptr)+ *(inptr_Cb++))>>1;
+            *(outptr+2)=*(inptr_Cr++);
+            *(outptr+2)=(*(outptr+2)+ *(inptr_Cr++))>>1;
             outptr+=4;
         
         }    
