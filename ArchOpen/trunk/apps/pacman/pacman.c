@@ -18,7 +18,6 @@ struct OBJECT{
     int last_dir;
 };
 
-
 int level=1;
 
 static unsigned int * screenDirect ;
@@ -49,6 +48,8 @@ int app_main(int argc, char * * argv)
     unsigned long * splash = splash_320x240_data;
     int prevTick;
 
+    printf("splash at %x\n",splash);
+    print_data((void*)splash,0x20);
 
     gfx_openGraphics();
 
@@ -76,8 +77,9 @@ int app_main(int argc, char * * argv)
     gfx_planeSetPos(BMAP2,x_ori+screen_x-96,y_ori+(screen_y-32)/2);
     gfx_planeSetPos(VID1,x_ori,y_ori);
     gfx_planeSetPos(BMAP1,x_ori,y_ori);
-
-
+    
+    gfx_planeSetState(VID1,0);
+    
     gfx_planeSetState(BMAP1,(gfx_planeGetState(BMAP1) & 0xFFC7) | osd_getTrspBit() 
             | osd_getBlendFactorBit(0));
     gfx_planeSetState(BMAP2,(gfx_planeGetState(BMAP2) & 0xFFC7) | osd_getTrspBit() 
@@ -97,7 +99,7 @@ int app_main(int argc, char * * argv)
 
     for(i=0;i<screen_y;i++){
         for(j=0;j<screen_x;j++){
-            screenDirect[screen_x*i+j] = splash[screen_x*i+j]|((splash[screen_x*i+j]>>8)<<24);
+            screenDirect[screen_x*i+j] = splash[screen_x*i+j] |((splash[screen_x*i+j]>>8)<<24);
         }
     }
 
