@@ -319,13 +319,15 @@ retry:
             if(i>count) i=count;
             xfer_size-=nbSector;            
         }
-    /*count loop finished */
+    /*NOTE: should see how to enable this for writing */
+#if 0 
         if(ata_waitForEndXfer()!=MED_OK)
         {
             ata_doSoftReset(disk);
             printk("[ata_rwData] Error doing softRest after bad EndOf Xfer\n");
             goto retry;
         }
+#endif
         break;
     }
     ret_val=MED_OK;

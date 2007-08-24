@@ -39,47 +39,65 @@
 
 #define BGIMG_GUIFONT RADONWIDE
 
-WIDGETLIST menuList;
-CHECKBOX hasBgImg;
-CHOOSER blendTrsp;
-TRACKBAR trspVal;
-BUTTON ok_btn;
-BUTTON cancel_btn;
-BUTTON brw_btn;
-LABEL  fName;
+static WIDGETLIST menuList;
+static CHECKBOX bgImg_disp_chk;
+static CHOOSER blendTrsp;
+static TRACKBAR trspVal;
+static BUTTON ok_btn;
+static BUTTON cancel_btn;
+static BUTTON brw_btn;
+static BUTTON discardFileImg_btn;
+static BUTTON discardBg_btn;
+static LABEL  fName;
 
-ICON logo;
+static ICON logo;
 
-int stop_bgImg_set;
-int minX,minY,lineH,txt_x;
+static int stop_bgImg_set;
+static int minX,minY,lineH,txt_x;
 
 #define ICON_X 5
 #define ICON_Y 5
 
+#define BG_FILENAME "/medios/bg.img"
+
 /* global param */
-char bg_img_path[250];
-int has_file=0;
-int enableBG=0;
+static char bg_img_path[250];
+static int has_file=0;
+static int needClean=0;
+
+int bgImg_enable=0;
 int blendMode=0;
 int blendFactor=0;
-int has_fileInt=0;
+int has_bgImg;
 
+static char * trspString[2];
 
-char * trspString[2];
+static int evtHandler;
 
-int evtHandler;
-
+void chg_blendMode(int mode);
+void chg_blendFactor(int factor);
 void drawBGMenuBG(void);
-
-void chg_BG_enable(int state)
+        
+void bgMenu_printState(char * cause,int full)
+{
+    printk("%s\n",cause);
+    printk("UI state:\n");
+    printk("Enable=%d, Has bg img=%d, mode=%s, factor=%d\n",bgImg_enable,has_bgImg,
+            blendMode?"trsp":"blend",blendFactor);
+    if(full)
+        printk("Has file=%d, Enable=%d, mode=%s, factor=%d, erase=%d\n",has_file,bgImg_disp_chk->checked,
+               blendTrsp->index?"trsp":"blend",trspVal->value,needClean);
+}
+        
+void chg_BG_enable(int state,int mode, int factor)
 {
     if(state)
     {
         /*enable bg */
         gfx_planeSetState(VID1,OSD_VID_1_CFG);
         /* activate parameters */
-        chg_blendMode(blendTrsp->index);
-        chg_blendFactor(trspVal->value);
+        chg_blendMode(mode); // blendTrsp->index
+        chg_blendFactor(factor); // trspVal->value
         gfx_planeShow(VID1);
     }
     else
@@ -89,10 +107,10 @@ void chg_BG_enable(int state)
     }
 }
 
-void chg_blendMode(int state)
+void chg_blendMode(int mode)
 {
     int curState=gfx_planeGetState(BMAP1);
-    switch(state)
+    switch(mode)
     {
         case 0:
             /* blending*/
@@ -105,9 +123,6 @@ void chg_blendMode(int state)
             gfx_planeShow(BMAP1);
             break;
     }
-    trspVal->minimum=state==0?1:0;
-    if(trspVal->value==0 && state==0) trspVal->value=1;
-    printk("Trsp enable: %x -> %x\n",curState,gfx_planeGetState(BMAP1));   
 }
 
 void chg_blendFactor(int factor)
@@ -117,43 +132,230 @@ void chg_blendFactor(int factor)
     curState=gfx_planeGetState(BMAP1);
     gfx_planeSetState(BMAP1,OSD_BITMAP_SET_BLEND_FACTOR(curState,factor));
     gfx_planeShow(BMAP1);
-    printk("Trsp factor: %x -> %x\n",curState,gfx_planeGetState(BMAP1));   
+}
+
+MED_RET_T loadSaveImg(int mode)
+{
+    int fd,cnt,i;
+    if(mode)
+        fd=open(BG_FILENAME,O_RDONLY);
+    else
+        fd=open(BG_FILENAME,O_RDWR | O_CREAT);
+    
+    if(fd<0)
+    { /* error => disable img + upodate cfg */
+        printk("[bgImg-menu] Can't open medios Background image %s\n",BG_FILENAME);
+        return -MED_ERROR;
+    }
+    else
+    {
+        cnt=0;
+        if(mode)
+        {
+            for(i=0;i<LCD_HEIGHT;i++)
+                cnt+=read(fd,(void*)gfx_planeGetBufferOffset(VID1)+i*LCD_WIDTH*2,LCD_WIDTH*2);
+        }
+        else
+        {
+            for(i=0;i<LCD_HEIGHT;i++)
+                cnt+=write(fd,(void*)gfx_planeGetBufferOffset(VID1)+i*LCD_WIDTH*2,LCD_WIDTH*2);
+        }
+        close(fd);
+        if(cnt<LCD_WIDTH*2*LCD_HEIGHT)
+        { /* error => disable img + upodate cfg */
+            printk("[bgImg-menu] %s only %d/%d bytes => discarding image\n",mode?"Read":"Wrote",
+                   cnt,LCD_WIDTH*LCD_HEIGHT*2);
+            rmfile(BG_FILENAME);
+            return -MED_ERROR;
+        }                    
+    }
+    return MED_OK;
 }
 
 void okBtnBgImg_click(BUTTON b)
 {
+    CFG_DATA * cfg;
     
-    /* saving bg Img if needed */
-        
+    msgBox_info(getLangStr(STRLNG_SAVE_SETTINGS));
+    
+    if(has_file)
+    {
+        has_bgImg=1;
+        if(loadSaveImg(0)!=MED_OK)
+        {
+            has_bgImg=0;
+            bgImg_enable=0;
+        }
+    }
+    else if(needClean)
+    {
+        bgImg_disp_chk->checked=0;
+        has_bgImg=0;
+        rmfile(BG_FILENAME);
+    }
+    
     stop_bgImg_set=1;
+    
+    cfg=cfg_readFile("/medios/medios.cfg");
+    if(!cfg)
+    {
+        printk("[bgImg-menu] Can't open cfg file\n");
+        cfg=cfg_newFile();
+        if(!cfg)
+        {
+            printk("[bgImg-menu] Can't create new cfg file\n");
+            return;
+        }
+    }
+    
+    /* setting the config */
+    
+    cfg_writeInt(cfg,"has_bgImg",has_bgImg);
+    
+    bgImg_enable= bgImg_disp_chk->checked?1:0;
+    cfg_writeInt(cfg,"bgImg_enable",bgImg_enable);
+    
+    blendMode=blendTrsp->index?1:0;
+    cfg_writeInt(cfg,"blendMode",blendMode);
+    
+    blendFactor=trspVal->value;
+    cfg_writeInt(cfg,"blendFactor",blendFactor);
+    
+    cfg_writeFile(cfg,"/medios/medios.cfg");
+    cfg_clear(cfg);
+    
+    stop_bgImg_set=1;
+    bgMenu_printState("After OK btn",1);
+}
+
+void bg_updtFocus(void)
+{
+    if(has_file || has_bgImg)
+        bgImg_disp_chk->canFocus=1;
+    else
+        bgImg_disp_chk->canFocus=0;
+    
+    if(needClean)
+       bgImg_disp_chk->canFocus=0;
+    
+    if(bgImg_disp_chk->checked)
+    {
+        trspVal->canFocus=1;
+        blendTrsp->canFocus=1;
+    }
+    else
+    {
+        trspVal->canFocus=0;
+        blendTrsp->canFocus=0;
+    }
+    
+    if(has_file)
+        discardFileImg_btn->canFocus=1;
+    else
+        discardFileImg_btn->canFocus=0;
+    
+    if(has_bgImg||has_file)
+        discardBg_btn->canFocus=1;
+    else
+        discardBg_btn->canFocus=0;
+    
+    if(needClean)
+    {
+       bgImg_disp_chk->canFocus=0;
+       discardBg_btn->canFocus=0;
+       discardFileImg_btn->canFocus=0;
+    }
+    
+    trspVal->paint(trspVal);
+    blendTrsp->paint(blendTrsp);
+    bgImg_disp_chk->paint(bgImg_disp_chk);
+    discardFileImg_btn->paint(discardFileImg_btn);
+    discardBg_btn->paint(discardBg_btn);
+    printk("Update focus called\n");
+}
+
+void exit_BgImg_Menu(void)
+{   
+    stop_bgImg_set=1;
+    if(has_bgImg)
+    {
+        if(loadSaveImg(1)!=MED_OK)
+        {
+            has_bgImg=0;
+            bgImg_enable=0;
+        }
+    }
+    chg_BG_enable(bgImg_enable,blendMode,blendFactor);  
 }
 
 void cancelBtnBgImg_click(BUTTON b)
 {
-    stop_bgImg_set=1;
-    if(!has_file)
-        bg_img_path[0]='\0';
-    chg_BG_enable(enableBG);
-    chg_blendMode(blendMode);
-    chg_blendFactor(blendFactor);
+      exit_BgImg_Menu();
+      bgMenu_printState("After cancel btn",1);
 }
 
-void bg_progressDraw(struct jpeg_decompress_struct *cinfo)
+void bg_progressDraw(j_common_ptr cinfo)
 {
     printk("%d\n", (cinfo->progress->pass_counter*100)/cinfo->progress->pass_limit);
+}
+
+void discardFileImgBtn_click(BUTTON b)
+{
+    if(has_file)
+    {
+        if(has_bgImg)
+        {
+            if(loadSaveImg(1)!=MED_OK)
+            {
+                has_bgImg=0;
+                bgImg_enable=0;
+                bgImg_disp_chk->checked=0;
+                chg_BG_enable(bgImg_enable,blendTrsp->index,trspVal->value);
+            }
+                
+        }
+        else
+        {
+            bgImg_disp_chk->checked=0;            
+            chg_BG_enable(bgImg_disp_chk->checked,blendTrsp->index,trspVal->value);
+        }
+        has_file=0;     
+        fName->caption=getLangStr(STRLNG_NO_FILE_SELECTED);
+        fName->paint(fName);
+        bg_updtFocus(); 
+        menuList->setFocusedWidget(menuList,brw_btn);  
+        bgMenu_printState("After rm file btn",1);
+    }
+}
+
+void discardBgBtn_click(BUTTON b)
+{
+    if(has_file)
+    {
+        has_file=0;     
+        fName->caption=getLangStr(STRLNG_NO_FILE_SELECTED);
+        fName->paint(fName);
+    }
+    needClean=1;
+    bgImg_disp_chk->checked=0;
+    chg_BG_enable(0,blendTrsp->index,trspVal->value);
+    bg_updtFocus();
+    menuList->setFocusedWidget(menuList,brw_btn);
+    bgMenu_printState("After rm bg btn",1);
 }
 
 void brwBtnBgImg_click(BUTTON b)
 {
     char * myPath=(char*)malloc(250*sizeof(char));
+    int evt;
     
     if(!myPath)
     {
-        printk("[brwBtnBgImg_click] Can't malloc path string\n");
+        printk("[bgImg-menu] Can't malloc path string\n");
         return;    
     }
     
-    if(!has_fileInt)
+    if(!has_file)
         strcpy(myPath,"/");
     else
     {
@@ -162,12 +364,12 @@ void brwBtnBgImg_click(BUTTON b)
         myPath[cp+1]='\0';
     }
     
-    printk("starting: %s\n",myPath);
+    printk("[bgImg-menu] starting: %s\n",myPath);
     
     if(browser_simpleBrowse(myPath,myPath)==MED_OK)
     {
         msgBox_info(getLangStr(STRLNG_LOAD_IMG));
-        printk("Choosen: %s\n",myPath);
+        printk("[bgImg-menu] Choosen: %s\n",myPath);
         if(gfx_loadJpg(myPath,bg_progressDraw)!=MED_OK)
         {
             msgBox_show(getLangStr(STRLNG_BG_SETTING),getLangStr(STRLNG_ERROR_LOADING_FILE),
@@ -177,35 +379,63 @@ void brwBtnBgImg_click(BUTTON b)
         {
             fName->caption=bg_img_path;
             strncpy(bg_img_path,myPath,250);
-            has_fileInt=1;
+            has_file=1;
+            needClean=0;
+            /* updating focus enable/disable*/
+            bgMenu_printState("before update",1);
+            bg_updtFocus();
+            menuList->setFocusedWidget(menuList,bgImg_disp_chk);
         }
-        free(myPath);
         drawBGMenuBG();
-        menuList->paint(menuList);
+        menuList->paint(menuList);   
+        evt_purgeHandler(evtHandler);
+        do {evt=evt_getStatus(evtHandler);} while(evt==BTN_OFF || evt==BTN_ON);
         evt_purgeHandler(evtHandler);
     }
+    free(myPath);
+    bgMenu_printState("After brw btn",1);
 }
 
-void hasBgImg_chg(CHECKBOX chk)
+void bgImg_disp_chk_chg(CHECKBOX chk)
 {
-    if(!has_fileInt && chk->checked)
+    if(!has_file && !has_bgImg && chk->checked)
     {
         chk->checked=0;
-        chk->paint(chk);
         return;    
     }    
-        
-    chg_BG_enable(chk->checked);
+                
+    chg_BG_enable(chk->checked,blendTrsp->index,trspVal->value);
+    trspVal->minimum=blendTrsp->index==0?1:0;
+    if(trspVal->value==0 && blendTrsp->index==0) trspVal->value=1;
+    
+    bg_updtFocus();
+    bgMenu_printState("After enable btn chk",1);
 }
 
 void blendTrsp_chg(CHOOSER chooseItem)
 {
-    chg_blendMode(chooseItem->index);
+    if(bgImg_disp_chk->checked)
+    {
+        chg_blendMode(chooseItem->index);        
+        trspVal->minimum=blendTrsp->index==0?1:0;
+        if(trspVal->value==0 && blendTrsp->index==0) 
+        {
+            trspVal->value=1;
+            chg_blendFactor(trspVal->value);
+        }
+        trspVal->paint(trspVal);
+        bgMenu_printState("After mode chg",1);
+    }
+    
 }
 
 void trspVal_chg(TRACKBAR trkBar)
 {
-    chg_blendFactor(trkBar->value);
+    if(bgImg_disp_chk->checked)
+    {
+        chg_blendFactor(trkBar->value);
+        bgMenu_printState("After focus mod",1);
+    }
 }
 
 void drawBGMenuBG(void)
@@ -228,12 +458,17 @@ void bgImg_setting(void)
     int event;
     int w,h,x,y,sepW,sepH,w1,h1;
     
-    stop_bgImg_set=0;   
+    stop_bgImg_set=0;  
+    bg_img_path[0]='\0';    
+    has_file=0; 
+    needClean=0;
+    
+    bgMenu_printState("Init menu",0);
     
     evtHandler = evt_getHandler(BTN_CLASS|GUI_CLASS);
     if(evtHandler<0)
     {
-        printk("Can't get evt handler\n");   
+        printk("[bgImg-menu] Can't get evt handler\n");   
     }
     
     trspString[0]=getLangStr(STRLNG_BLENDING);
@@ -260,26 +495,22 @@ void bgImg_setting(void)
     menuList=widgetList_create();
     menuList->ownWidgets=true;
     
-    enableBG=enableBG>0?1:0;
-
-    hasBgImg=checkbox_create();
-    hasBgImg->caption=getLangStr(STRLNG_BG_ENABLE);
-    hasBgImg->font=BGIMG_GUIFONT;
-    hasBgImg->setRect(hasBgImg,x,y,8,8);
-    hasBgImg->checked=enableBG;
-    hasBgImg->onChange=(CHECKBOX_CHANGEEVENT)hasBgImg_chg;
-    menuList->addWidget(menuList,hasBgImg);
-
+    bgImg_disp_chk=checkbox_create();
+    bgImg_disp_chk->caption=getLangStr(STRLNG_BG_ENABLE);
+    bgImg_disp_chk->font=BGIMG_GUIFONT;
+    bgImg_disp_chk->setRect(bgImg_disp_chk,x,y,8,8);
+    bgImg_disp_chk->checked=bgImg_enable;
+    bgImg_disp_chk->onChange=(CHECKBOX_CHANGEEVENT)bgImg_disp_chk_chg;
+    menuList->addWidget(menuList,bgImg_disp_chk);
+    if(!has_bgImg) bgImg_disp_chk->canFocus=0;
+    
     y+=lineH;
     
-    blendMode=blendMode>0?1:0;
-
     blendTrsp=chooser_create();
     blendTrsp->items = trspString;
     blendTrsp->itemCount=2;
     blendTrsp->index=blendMode;
     blendTrsp->font=BGIMG_GUIFONT;
-    
     gfx_getStringSize(trspString[0],&w,&h);
     gfx_getStringSize(trspString[1],&w1,&h1);    
     if(w1>w) w=w1;
@@ -290,13 +521,12 @@ void bgImg_setting(void)
     blendTrsp->orientation=WIDGET_ORIENTATION_HORIZ;
     blendTrsp->onChange=(CHOOSER_CHANGEEVENT)blendTrsp_chg;
     menuList->addWidget(menuList,blendTrsp);
-
+    if(!bgImg_enable) blendTrsp->canFocus=0;
+        
     y+=lineH;
     
-    blendFactor=blendFactor<0 ? 0 :
-            blendFactor>OSD_BITMAP_BLEND_FACTOR_MAX ? OSD_BITMAP_BLEND_FACTOR_MAX : blendFactor;
     trspVal=trackbar_create();
-    trspVal->value=blendFactor;
+    trspVal->value=(blendMode==0 && blendFactor==0)?1:blendFactor;
     trspVal->minimum=blendMode==0?1:0;
     trspVal->maximum=OSD_BITMAP_BLEND_FACTOR_MAX; /* mas is probably different on DSC21 */
     trspVal->increment=1;
@@ -304,6 +534,20 @@ void bgImg_setting(void)
     trspVal->font=BGIMG_GUIFONT;
     trspVal->onChange=(TRACKBAR_CHANGEEVENT)trspVal_chg;
     menuList->addWidget(menuList,trspVal);
+    if(!bgImg_enable) trspVal->canFocus=0;
+    
+    y+=lineH;
+    
+    gfx_getStringSize(getLangStr(STRLNG_DISCARD_BG_IMAGE),&sepW,&sepH);
+    
+    discardBg_btn=button_create();
+    discardBg_btn->caption=getLangStr(STRLNG_DISCARD_BG_IMAGE);
+    discardBg_btn->font=BGIMG_GUIFONT;
+    discardBg_btn->setRect(discardBg_btn,x,y,sepW+4,sepH+2);
+    discardBg_btn->clickOnRightLeft=0;
+    discardBg_btn->onClick=(BUTTON_CLICKEVENT)discardBgBtn_click;
+    menuList->addWidget(menuList,discardBg_btn);
+    if(!has_bgImg) discardBg_btn->canFocus=0;
     
     y+=lineH;
 
@@ -317,9 +561,19 @@ void bgImg_setting(void)
     menuList->addWidget(menuList,brw_btn);
     
     y+=lineH;
-
-    has_fileInt=has_file=has_file>0?1:0;
     
+    gfx_getStringSize(getLangStr(STRLNG_DISCARD_FILE_IMAGE),&sepW,&sepH);
+    discardFileImg_btn=button_create();
+    discardFileImg_btn->caption=getLangStr(STRLNG_DISCARD_FILE_IMAGE);
+    discardFileImg_btn->font=BGIMG_GUIFONT;
+    discardFileImg_btn->setRect(discardFileImg_btn,x,y,sepW+4,sepH+2);
+    discardFileImg_btn->clickOnRightLeft=0;
+    discardFileImg_btn->onClick=(BUTTON_CLICKEVENT)discardFileImgBtn_click;
+    menuList->addWidget(menuList,discardFileImg_btn);
+    discardFileImg_btn->canFocus=0;
+
+    y+=lineH;
+
     fName=label_create();
     fName->caption=has_file?bg_img_path:getLangStr(STRLNG_NO_FILE_SELECTED);
     fName->font=BGIMG_GUIFONT;
@@ -352,9 +606,14 @@ void bgImg_setting(void)
 
     // intial paint
     // set focus
-    menuList->setFocusedWidget(menuList,hasBgImg);
+    if(has_bgImg)
+        menuList->setFocusedWidget(menuList,bgImg_disp_chk);
+    else
+        menuList->setFocusedWidget(menuList,brw_btn);
     menuList->paint(menuList);
 
+    bgMenu_printState("Init done",1);
+    
     do{
         event=evt_getStatusBlocking(evtHandler);
         if (!event) continue; // no new events
@@ -366,22 +625,122 @@ void bgImg_setting(void)
             case BTN_DOWN:
                 menuList->changeFocus(menuList,WLD_NEXT);
                 break;
+            case BTN_OFF:
+                exit_BgImg_Menu();
+                break;
             default:
                 menuList->handleEvent(menuList,event);
                 break;
         }
     }while(event!=BTN_OFF && !stop_bgImg_set);
-
+    
     menuList->destroy(menuList);
     evt_freeHandler(evtHandler);
 }
 
 void bgImg_loadPref(void)
 {
-    bg_img_path[0]='\0';
-    has_file=0;
-    enableBG=0;
+    CFG_DATA * cfg;
+    int needWrite=0;
+    
+    /* init the global var, if something goes wrong, 
+    at least this has been done*/
+           
+    has_bgImg=0;
+    bgImg_enable=0;
     blendMode=1;
     blendFactor=OSD_BITMAP_BLEND_FACTOR_MAX/2;
+    
+    /* reading param from HDD */
+    cfg=cfg_readFile("/medios/medios.cfg");
+               
+    if(!cfg)
+    {
+        printk("[bgImg-init] Can't open cfg file\n");
+        /* creating default */
+        cfg=cfg_newFile();
+        if(!cfg)
+        {
+            printk("[bgImg-init] Can't create new cfg file\n");
+            return;
+        }
+        cfg_writeInt(cfg,"has_bgImg",0);
+        cfg_writeInt(cfg,"bgImg_enable",0);
+        cfg_writeInt(cfg,"blendMode",1);
+        cfg_writeInt(cfg,"blendFactor",OSD_BITMAP_BLEND_FACTOR_MAX/2);
+        needWrite=1;   
+    }
+    else
+    {
+        if(cfg_itemExists(cfg,"has_bgImg"))
+        {
+            has_bgImg=cfg_readInt(cfg,"has_bgImg");
+            if(has_bgImg)
+            {
+                if(loadSaveImg(1)!=MED_OK)
+                {
+                    printk("Load done\n");
+                    cfg_writeInt(cfg,"has_bgImg",0);
+                    has_bgImg=0;
+                    needWrite=1;  
+                }
+                else
+                    printk("Load failed\n");
+            }
+        }
+        else
+        {
+            cfg_writeInt(cfg,"has_bgImg",0);
+            needWrite=1;
+        }
+        
+        if(cfg_itemExists(cfg,"bgImg_enable"))
+        {
+            bgImg_enable=cfg_readInt(cfg,"bgImg_enable");
+            if(bgImg_enable & !has_bgImg)
+            {
+                cfg_writeInt(cfg,"bgImg_enable",0);
+                bgImg_enable=0;
+                needWrite=1;
+            }
+        }
+        else
+        {
+            cfg_writeInt(cfg,"bgImg_enable",0);
+            needWrite=1;
+        }
+        
+        if(cfg_itemExists(cfg,"blendMode"))
+        {
+            blendMode=cfg_readInt(cfg,"blendMode");
+        }
+        else
+        {
+            cfg_writeInt(cfg,"blendMode",1);
+            needWrite=1;
+        }
+        
+        if(cfg_itemExists(cfg,"blendFactor"))
+        {
+            blendFactor=cfg_readInt(cfg,"blendFactor");
+        }
+        else
+        {
+            cfg_writeInt(cfg,"blendFactor",OSD_BITMAP_BLEND_FACTOR_MAX/2);
+            needWrite=1;
+        }
+        
+        
+    }
+    
+    if(needWrite) cfg_writeFile(cfg,"/medios/medios.cfg");
+    cfg_clear(cfg);
+        
+    /* chging img state */
+    
+    chg_BG_enable(bgImg_enable,blendMode,blendFactor);
+    
+    bgMenu_printState("Loading cfg",0);
+    
 }
 

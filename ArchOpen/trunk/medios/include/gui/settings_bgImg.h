@@ -14,6 +14,11 @@
 #ifndef __SETTINGS_BGIMG_H
 #define __SETTINGS_BGIMG_H
 
+extern int has_bgImg;
+extern int bgImg_enable;
+extern int blendMode;
+extern int blendFactor;
+
 void bgImg_setting(void);
 void bgImg_loadPref(void);
 

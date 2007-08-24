@@ -79,3 +79,5 @@ STRLNG_BG_SETTING # Param. fond d'ecran
 STRLNG_BG_ENABLE # Activer fond d'ecran
 STRLNG_NO_FILE_SELECTED # Aucun fichier select.
 STRLNG_LOAD_IMG # Chgmnt de l'image
+STRLNG_DISCARD_FILE_IMAGE # Effacer nelle Img
+STRLNG_DISCARD_BG_IMAGE # Effacer Img fond

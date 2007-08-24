@@ -48,8 +48,9 @@ GCCFLAGS += -I$(MEDIOS_SRC_PATH)/medios/lib/jpeg-6b
 ASFLAGS  += --defsym $(SPLASH_TYPE)=1 --defsym $(TARGET_DEVICE)=1 --defsym $(CHIP_TYPE)=1
 ASFLAGS  +=-I$(MEDIOS_SRC_PATH)/include
 
-LDFLAGS =  -L/usr/local/toolchain_arm_nofpu/arm-linux-uclibc/lib/ -lfloat -lm -lgcc -L./ -lmedjpeg
-#LDFLAGS =  -L/home/christophe/toolchain_arm_nofpu/arm-linux-uclibc/lib/ -lfloat -lm -lgcc -L./ -lmedjpeg
+LDFLAGS =  -L/usr/local/toolchain_arm_nofpu/arm-linux-uclibc/lib/ -lfloat -lm -lgcc -L./ -ljpeg 
+#-lz 
+#LDFLAGS =  -L/home/christophe/toolchain_arm_nofpu/arm-linux-uclibc/lib/ -lfloat -lm -lgcc -L./ -ljpeg -lz
 
 BUILD_DIR = $(MEDIOS_SRC_PATH)/medios/build
 

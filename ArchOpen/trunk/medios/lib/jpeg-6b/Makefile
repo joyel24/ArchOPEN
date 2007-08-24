@@ -8,11 +8,6 @@ JPEG_LIB_VERSION = 62
 # to use jmemansi.o or jmemname.o if you have limited swap space.
 SYSDEPMEM= jmemnobs.o
 
-# library (.a) file creation command
-AR= arm-linux-ar rc
-# second step in .a creation (use "touch" if not needed)
-AR2= arm-linux-ranlib
-
 # End of configurable options.
 
 COMOBJECTS= jcomapi.o jutils.o jerror.o jmemmgr.o $(SYSDEPMEM)
@@ -26,12 +21,12 @@ DLIBOBJECTS= jdapimin.o jdapistd.o jdtrans.o jdatasrc.o \
 # These objectfiles are included in libjpeg.a
 MEDIOSOBJECTS= $(DLIBOBJECTS) $(COMOBJECTS)
 
-all:  libmedjpeg.a 
+all:  libjpeg.a
 
-libmedjpeg.a: $(MEDIOSOBJECTS)
-	@$(RM) -f libmedjpeg.a
-	@$(AR) libmedjpeg.a  $(MEDIOSOBJECTS)
-	@$(RANLIB) libmedjpeg.a
-	@cp libmedjpeg.a ../../../
+libjpeg.a: $(MEDIOSOBJECTS)
+	@$(RM) -f libjpeg.a
+	@$(AR) rc libjpeg.a  $(MEDIOSOBJECTS)
+	@$(RANLIB) libjpeg.a
+	@cp libjpeg.a ../../../
 
 include $(MEDIOS_SRC_PATH)/default.rule

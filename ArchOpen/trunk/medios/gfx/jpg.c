@@ -24,7 +24,7 @@
 
 extern struct graphicsBuffer VIDEO_1;
 
-MED_RET_T gfx_loadJpg(char * filename,void(*progress_draw)(struct jpeg_decompress_struct *cinfo))
+MED_RET_T gfx_loadJpg(char * filename,JMETHOD(void, progress_draw, (j_common_ptr)))
 {
    
     struct jpeg_decompress_struct cinfo;
@@ -57,7 +57,7 @@ MED_RET_T gfx_loadJpg(char * filename,void(*progress_draw)(struct jpeg_decompres
     
     if(progress_draw)
     {
-        prog_mgr.progress_monitor=(void(*)(struct jpeg_decompress_struct *))progress_draw;
+        prog_mgr.progress_monitor=progress_draw;
         cinfo.progress=&prog_mgr;
     }
     

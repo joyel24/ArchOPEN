@@ -16,6 +16,7 @@
 
 #include <sys_def/section_types.h>
 #include <sys_def/errors.h>
+#include <sys_def/types.h>
 
 #define SVC_STACK_SIZE 0x200
 

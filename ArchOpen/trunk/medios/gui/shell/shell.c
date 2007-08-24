@@ -36,6 +36,7 @@
 #include <gui/settings_energy.h>
 #include <gui/player.h>
 #include <gui/playlistmenu.h>
+#include <gui/settings_bgImg.h>
 
 #include <snd/codec.h>
 #include <snd/sound.h>
@@ -330,6 +331,7 @@ void shell_main(){
         shell_restore();
 
         screens_show(SCREEN_GFX);
+        bgImg_loadPref();
         printk("nb Tick needed for boot %d\n",tick);
         // main loop (never returns)
         shell_loop();

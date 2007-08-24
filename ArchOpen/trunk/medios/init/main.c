@@ -75,7 +75,6 @@
 #include <gui/splash.h>
 #include <gui/settings_misc.h>
 #include <gui/settings_lang.h>
-#include <gui/settings_bgImg.h>
 
 #ifdef BUILD_LIB
 extern int app_main(int argc, char * argv[]);
@@ -83,6 +82,36 @@ extern int app_main(int argc, char * argv[]);
 
 unsigned int _svc_IniStack = IRAM_SIZE;
 unsigned int _sys_IniStack = IRAM_SIZE-SVC_STACK_SIZE;
+
+#if 1
+
+#include <gfx/bmp.h>
+#include <fs/stdfs.h>
+
+void test(void)
+{
+    DIR * codec_folder;
+    struct dirent * entry;
+    char * fname;
+    codec_folder=opendir("/bmp/");
+    if(codec_folder)
+    {
+        while((entry=readdir(codec_folder))!=NULL)
+        {
+            if(entry->d_name[0]=='.')
+                continue;
+            fname=(char*)malloc(strlen(entry->d_name)+strlen("/bmp/")+1);
+            strcpy(fname,"/bmp/");
+            strcat(fname,entry->d_name);
+            gfx_loadBmp(fname);
+        }
+        closedir(codec_folder);
+    }
+    else
+        printk("Can't open folder\n");
+}
+
+#endif
 
 void kernel_thread(void)
 {
@@ -104,7 +133,6 @@ void kernel_thread(void)
     energy_loadPref();
     misc_loadPref();
     lang_loadLang();
-    bgImg_loadPref();
     
     /* boot info */
 #if 0    
@@ -113,7 +141,7 @@ void kernel_thread(void)
     tmr_print();
     thread_ps();
 #endif
-    
+    //test();
 #ifdef BUILD_LIB
     app_main(1,&stdalone);
     reload_firmware();

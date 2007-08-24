@@ -135,7 +135,11 @@ DIR * opendir(char * pathname)
 
 MED_RET_T closedir(DIR * fd)
 {
-    CHK_FD(fd);
+    if(!fd)
+        return -MED_EINVAL;
+    if(!fd->opened)
+        return -MED_EINVAL;
+    
     if(thread_listRm(THREAD_PTR_2_LIST(fd),DIR_RESSOURCE,THREAD_NO_FORCE)==MED_OK)
         return vfs_dirClose(fd);
     return -MED_ERROR;

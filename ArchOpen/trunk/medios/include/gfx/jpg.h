@@ -15,6 +15,6 @@
 
 #include <jpeglib.h>
 
-MED_RET_T gfx_loadJpg(char * filename,void(*progress_draw)(struct jpeg_decompress_struct *cinfo) );
+MED_RET_T gfx_loadJpg(char * filename,JMETHOD(void, progress_draw, (j_common_ptr)));
 
 #endif

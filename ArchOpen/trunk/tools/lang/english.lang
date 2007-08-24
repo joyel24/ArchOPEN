@@ -79,3 +79,5 @@ STRLNG_BG_SETTING # Background Settings
 STRLNG_BG_ENABLE # Enable background
 STRLNG_NO_FILE_SELECTED # No file selected
 STRLNG_LOAD_IMG # Loading image
+STRLNG_DISCARD_FILE_IMAGE # Remove new image
+STRLNG_DISCARD_BG_IMAGE # Remove bg image
