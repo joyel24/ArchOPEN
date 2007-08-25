@@ -83,7 +83,7 @@ extern int app_main(int argc, char * argv[]);
 unsigned int _svc_IniStack = IRAM_SIZE;
 unsigned int _sys_IniStack = IRAM_SIZE-SVC_STACK_SIZE;
 
-#if 1
+#if 0
 
 #include <gfx/bmp.h>
 #include <fs/stdfs.h>
