@@ -52,7 +52,8 @@ void osd_setBorderColor (int color)
 
 void osd_setMainConfig (int config)
 {
-	outw(((inw(OSD_CONF) & 0xFF) << 8) | config,OSD_CONF);
+    //outw(((inw(OSD_CONF) & 0xFF) << 8) | config,OSD_CONF);    
+    outw(config&0xFFFF,OSD_CONF);    
 }
 
 void osd_setMainShift (int horizontal,int vertical)
