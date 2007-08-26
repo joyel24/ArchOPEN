@@ -95,23 +95,23 @@ struct sidflt {
 };
 
 /* ------------------------ pseudo-constants (depending on mixing freq) */
-int  mixing_frequency;
-unsigned long  freqmul;
-int  filtmul;
-unsigned long  attacks [16];
-unsigned long  releases[16];
+__IRAM_DATA int  mixing_frequency;
+__IRAM_DATA unsigned long  freqmul;
+__IRAM_DATA int  filtmul;
+__IRAM_DATA unsigned long  attacks [16];
+__IRAM_DATA unsigned long  releases[16];
 
 /* ------------------------------------------------------------ globals */
-struct s6581 sid;
-struct sidosc osc[3];
-struct sidflt filter;
+__IRAM_DATA struct s6581 sid;
+__IRAM_DATA struct sidosc osc[3];
+__IRAM_DATA struct sidflt filter;
 
 /* ------------------------------------------------------ C64 Emu Stuff */
-unsigned char bval;
-unsigned short wval;
+__IRAM_DATA unsigned char bval;
+__IRAM_DATA unsigned short wval;
 /* -------------------------------------------------- Register & memory */
-unsigned char a,x,y,s,p;
-unsigned short pc;
+__IRAM_DATA unsigned char a,x,y,s,p;
+__IRAM_DATA unsigned short pc;
 
 unsigned char memory[65536];
 
@@ -142,7 +142,7 @@ static const float decayReleaseTimes[16] =
     1.50171551, 2.40243682, 3.00189298, 9.00721405, 15.010998, 24.0182111
 };
 
-static const int opcodes[256] = {
+__IRAM_DATA static int opcodes[256] = {
     brk,ora,xxx,xxx,xxx,ora,asl,xxx,php,ora,asl,xxx,xxx,ora,asl,xxx,
     bpl,ora,xxx,xxx,xxx,ora,asl,xxx,clc,ora,xxx,xxx,xxx,ora,asl,xxx,
     jsr,_and,xxx,xxx,bit,_and,rol,xxx,plp,_and,rol,xxx,bit,_and,rol,xxx,
@@ -162,7 +162,7 @@ static const int opcodes[256] = {
 };
 
 
-static const int modes[256] = {
+__IRAM_DATA static int modes[256] = {
     imp,indx,xxx,xxx,zp,zp,zp,xxx,imp,imm,acc,xxx,_abs,_abs,_abs,xxx,
     rel,indy,xxx,xxx,xxx,zpx,zpx,xxx,imp,absy,xxx,xxx,xxx,absx,absx,xxx,
     _abs,indx,xxx,xxx,zp,zp,zp,xxx,imp,imm,acc,xxx,_abs,_abs,_abs,xxx,
@@ -183,31 +183,31 @@ static const int modes[256] = {
 
 /* Routines for quick & dirty float calculation */
 
-static inline int quickfloat_ConvertFromInt(int i)
+__IRAM_CODE static inline int quickfloat_ConvertFromInt(int i)
 {
     return (i<<16);
 }
-static inline int quickfloat_ConvertFromFloat(float f)
+__IRAM_CODE static inline int quickfloat_ConvertFromFloat(float f)
 {
     return (int)(f*(1<<16));
 }
-static inline int quickfloat_Multiply(int a, int b)
+__IRAM_CODE static inline int quickfloat_Multiply(int a, int b)
 {
     return (a>>8)*(b>>8);
 }
-static inline int quickfloat_ConvertToInt(int i)
+__IRAM_CODE static inline int quickfloat_ConvertToInt(int i)
 {
     return (i>>16);
 }
 
 /* Get the bit from an unsigned long at a specified position */
-static inline unsigned char get_bit(unsigned long val, unsigned char b)
+__IRAM_CODE static inline unsigned char get_bit(unsigned long val, unsigned char b)
 {
     return (unsigned char) ((val >> b) & 1);
 }
 
 
-static inline int GenerateDigi(int sIn)
+__IRAM_CODE static inline int GenerateDigi(int sIn)
 {
     static int last_sample = 0;
     static int sample = 0;
@@ -286,7 +286,7 @@ void synth_init(unsigned long mixfrq)
 }
 
 /* render a buffer of n samples with the actual register contents */
-void synth_render (signed short *buffer, unsigned long len)
+__IRAM_CODE void synth_render (signed short *buffer, unsigned long len)
 {
     unsigned long bp;
     /* step 1: convert the not easily processable sid registers into some
@@ -487,12 +487,12 @@ void synth_render (signed short *buffer, unsigned long len)
 /*
 * C64 Mem Routines
 */
-static inline unsigned char getmem(unsigned short addr)
-{    
+__IRAM_CODE static inline unsigned char getmem(unsigned short addr)
+{
     return memory[addr];
 }
 
-static inline void setmem(unsigned short addr, unsigned char value)
+__IRAM_CODE static inline void setmem(unsigned short addr, unsigned char value)
 {
     if ((addr&0xfc00)==0xd400)
     {        
@@ -549,7 +549,7 @@ static inline void setmem(unsigned short addr, unsigned char value)
 /*
 * Poke a value into the sid register
 */
-void sidPoke(int reg, unsigned char val)
+__IRAM_CODE void sidPoke(int reg, unsigned char val)
 {
     int voice=0;
 
@@ -594,7 +594,7 @@ void sidPoke(int reg, unsigned char val)
     return;
 }
 
-static inline unsigned char getaddr(int mode)
+__IRAM_CODE static inline unsigned char getaddr(int mode)
 {
     unsigned short ad,ad2;  
     switch(mode)
@@ -647,7 +647,7 @@ static inline unsigned char getaddr(int mode)
     return 0;
 }
 
-static inline void setaddr(int mode, unsigned char val)
+__IRAM_CODE static inline void setaddr(int mode, unsigned char val)
 {
     unsigned short ad,ad2;
     switch(mode)
@@ -679,7 +679,7 @@ static inline void setaddr(int mode, unsigned char val)
 }
 
 
-static inline void putaddr(int mode, unsigned char val)
+__IRAM_CODE static inline void putaddr(int mode, unsigned char val)
 {
     unsigned short ad,ad2;
     switch(mode)
@@ -737,26 +737,26 @@ static inline void putaddr(int mode, unsigned char val)
 }
 
 
-static inline void setflags(int flag, int cond)
+__IRAM_CODE static inline void setflags(int flag, int cond)
 {
     if (cond) p|=flag;
     else p&=~flag;
 }
 
 
-static inline void push(unsigned char val)
+__IRAM_CODE static inline void push(unsigned char val)
 {
     setmem(0x100+s,val);
     if (s) s--;
 }
 
-static inline unsigned char pop(void)
+__IRAM_CODE static inline unsigned char pop(void)
 {
     if (s<0xff) s++;
     return getmem(0x100+s);
 }
 
-static inline void branch(int flag)
+__IRAM_CODE static inline void branch(int flag)
 {
     signed char dist;
     dist=(signed char)getaddr(imm);
@@ -782,7 +782,7 @@ void cpuResetTo(unsigned short npc, unsigned char na)
     pc=npc; 
 }
 
-static inline void cpuParse(void)
+__IRAM_CODE static inline void cpuParse(void)
 {
     unsigned char opc=getmem(pc++);
     int cmd=opcodes[opc];
@@ -1069,7 +1069,7 @@ static inline void cpuParse(void)
     }        
 }
 
-void cpuJSR(unsigned short npc, unsigned char na)
+__IRAM_CODE void cpuJSR(unsigned short npc, unsigned char na)
 {  
     a=na;
     x=0;

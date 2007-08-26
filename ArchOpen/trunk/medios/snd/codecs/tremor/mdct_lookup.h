@@ -14,11 +14,13 @@
  function: sin,cos lookup tables
 
  ********************************************************************/
-  
+
 #include "os_types.h"
 
+#include <api.h>
+
 /* {sin(2*i*PI/4096), cos(2*i*PI/4096)}, with i = 0 to 512 */
-static LOOKUP_T sincos_lookup0[1026] = {
+__IRAM_DATA static LOOKUP_T sincos_lookup0[1026] = {
   X(0x00000000), X(0x7fffffff), X(0x003243f5), X(0x7ffff621),
   X(0x006487e3), X(0x7fffd886), X(0x0096cbc1), X(0x7fffa72c),
   X(0x00c90f88), X(0x7fff6216), X(0x00fb5330), X(0x7fff0943),

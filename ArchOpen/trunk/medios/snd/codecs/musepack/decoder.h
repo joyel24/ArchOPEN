@@ -69,7 +69,8 @@ typedef struct mpc_decoder_t {
 
     mpc_uint32_t  dword; /// currently decoded 32bit-word
     mpc_uint32_t  pos;   /// bit-position within dword
-    mpc_uint32_t  Speicher[MPC_DECODER_MEMSIZE]; /// read-buffer
+//    mpc_uint32_t  Speicher[MPC_DECODER_MEMSIZE];
+    mpc_uint32_t  *Speicher; /// read-buffer
     mpc_uint32_t  Zaehler; /// actual index within read-buffer
 
     mpc_uint32_t  samples_to_skip;
@@ -93,14 +94,15 @@ typedef struct mpc_decoder_t {
     mpc_uint32_t  __r2; 
 
     // seeking
-    mpc_uint32_t  seeking_table[SEEKING_TABLE_SIZE];
+    mpc_uint32_t  * seeking_table;
     mpc_uint32_t  seeking_pwr;                // distance between 2 frames in seeking_table = 2^seeking_pwr
     mpc_uint32_t  seeking_table_frames;       // last frame in seaking table
     mpc_uint32_t  seeking_window;             // number of frames to look for scalefactors
 
     mpc_int32_t   SCF_Index_L [32] [3];
     mpc_int32_t   SCF_Index_R [32] [3];       // holds scalefactor-indices
-    QuantTyp      Q [32];                     // holds quantized samples
+//    QuantTyp      Q [32];                     // holds quantized samples
+    QuantTyp      *Q;
     mpc_int32_t   Res_L [32];
     mpc_int32_t   Res_R [32];                 // holds the chosen quantizer for each subband
     mpc_bool_t    DSCF_Flag_L [32];
@@ -112,10 +114,16 @@ typedef struct mpc_decoder_t {
     unsigned char SCF_shift[256];
 #endif
 
-    MPC_SAMPLE_FORMAT V_L[MPC_V_MEM + 960];
-    MPC_SAMPLE_FORMAT V_R[MPC_V_MEM + 960];
-    MPC_SAMPLE_FORMAT Y_L[36][32];
-    MPC_SAMPLE_FORMAT Y_R[36][32];
+//    MPC_SAMPLE_FORMAT V_L[MPC_V_MEM + 960];
+//    MPC_SAMPLE_FORMAT V_R[MPC_V_MEM + 960];
+    MPC_SAMPLE_FORMAT *V_L;
+    MPC_SAMPLE_FORMAT *V_R;
+
+//    MPC_SAMPLE_FORMAT Y_L[36][32];
+//    MPC_SAMPLE_FORMAT Y_R[36][32];
+    MPC_SAMPLE_FORMAT (*Y_L)[32];
+    MPC_SAMPLE_FORMAT (*Y_R)[32];
+
     MPC_SAMPLE_FORMAT SCF[256]; ///< holds adapted scalefactors (for clipping prevention)
     //@}
 

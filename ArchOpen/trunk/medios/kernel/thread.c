@@ -26,9 +26,12 @@
 #include <fs/vfs.h>
 #include <fs/vfs_pathname.h>
 #include <fs/vfs_node.h>
+#include <fs/med.h>
 
 #define SYS_STACK_TOP ((void*)IRAM_SIZE-SVC_STACK_SIZE)
-#define SYS_STACK_BTM ((void*)((char*)&_iram_end + 0x10))
+//#define SYS_STACK_BTM ((void*)((char*)&_iram_end + 0x10))
+//#define SYS_STACK_BTM (SYS_STACK_TOP-4096)
+#define SYS_STACK_BTM (med_iramTop+0x10)
 
 void thread_exit(void);
 
@@ -112,7 +115,7 @@ Thread creation
 * disable KERNEL thread
 * yield
 ***********************************/
-void thread_startMed(void * entry_fct,void * code_malloc,void * iram_top,char * name,char * path,int argc,char ** argv)
+void thread_startMed(void * entry_fct,void * code_malloc,void * iram_top,int stack_type,char * name,char * path,int argc,char ** argv)
 {
     THREAD_INFO * med_thread;
     struct vfs_node * path_node=NULL;
@@ -133,7 +136,7 @@ void thread_startMed(void * entry_fct,void * code_malloc,void * iram_top,char * 
         }
     }
     
-    pid=thread_create(&med_thread,entry_fct,(void*)thread_exit,code_malloc,NULL,0,THREAD_USE_SYS_STACK,
+    pid=thread_create(&med_thread,entry_fct,(void*)thread_exit,code_malloc,NULL,0,stack_type,
                        iram_top,PRIO_HIGH,name,path_node,(unsigned long)argc,(unsigned long)argv);
     if(pid<0)
     {
@@ -143,8 +146,8 @@ void thread_startMed(void * entry_fct,void * code_malloc,void * iram_top,char * 
     __cli();
     sysThread->state=THREAD_STATE_DISABLE;
     med_thread->state=THREAD_STATE_ENABLE;
-    yield();
     __sti();
+    yield();
 }
 
 /***********************************
@@ -388,10 +391,10 @@ int thread_doKill(THREAD_INFO * thread)
         printk("Error trying to kill idle thread\n");
         return 0;
     }
-    
+
     for(i=0;i<THREAD_NB_RES;i++)
         thread_listFree(thread,i);
-    
+
     __cli();
     ptr=threadCurrent;
     thread_remove(thread);
@@ -403,7 +406,10 @@ int thread_doKill(THREAD_INFO * thread)
     {
         kfree(thread->codeMalloc);
         sysThread->state=THREAD_STATE_ENABLE; /* be sure to enable KERNEL thread */
-        threadSysStack = NULL;
+        if(threadSysStack==thread)
+        {
+            threadSysStack = NULL;
+        }
     }
     kfree(thread);
     if(thread==ptr)
@@ -505,6 +511,7 @@ __IRAM_CODE void thread_nxt(void)
     THREAD_INFO * topThread=NULL;
     int has_top=0;
     int finished=0;
+    unsigned int sys_stack_size;
 
     idleThread->state=THREAD_STATE_DISABLE;
 
@@ -565,17 +572,21 @@ RQ: idleThread never considered as it is always disable here
         threadCurrent = topThread;
     }
 
+    sys_stack_size=(unsigned int)SYS_STACK_TOP-(unsigned int)SYS_STACK_BTM;
+
     if(threadSysStack != threadCurrent && threadSysStack->useSysStack == 1 && threadCurrent->useSysStack == 1)
     {
         /* saving prev sys stack */
         memcpy(threadSysStack->saveStack,threadSysStack->stackBottom,threadSysStack->stackSize);
-        memcpy(threadCurrent->stackBottom,threadCurrent->saveStack,threadCurrent->stackSize);
+        /* put as much stack space as we can in iram without overwriting iram code/data */
+        memcpy(SYS_STACK_BTM,threadCurrent->saveStack+threadCurrent->stackSize-sys_stack_size,sys_stack_size);
         threadSysStack=threadCurrent;
     }
 
     if(threadSysStack==NULL && threadCurrent->useSysStack == 1)
     {
-        memcpy(threadCurrent->stackBottom,threadCurrent->saveStack,threadCurrent->stackSize);
+        /* put as much stack space as we can in iram without overwriting iram code/data */
+        memcpy(SYS_STACK_BTM,threadCurrent->saveStack+threadCurrent->stackSize-sys_stack_size,sys_stack_size);
         threadSysStack=threadCurrent;
     }
 

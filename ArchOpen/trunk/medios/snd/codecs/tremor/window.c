@@ -53,9 +53,8 @@ const void *_vorbis_window(int type, int left){
 }
 
 void _vorbis_apply_window(ogg_int32_t *d,const void *window_p[2],
-			  long *blocksizes,
-			  int lW,int W,int nW){
-  
+                          long *blocksizes,
+                          int lW,int W,int nW){
   LOOKUP_T *window[2]={window_p[0],window_p[1]};
   long n=blocksizes[W];
   long ln=blocksizes[lW];
@@ -66,18 +65,9 @@ void _vorbis_apply_window(ogg_int32_t *d,const void *window_p[2],
 
   long rightbegin=n/2+n/4-rn/4;
   long rightend=rightbegin+rn/2;
-  
-  int i,p;
 
-  for(i=0;i<leftbegin;i++)
-    d[i]=0;
-
-  for(p=0;i<leftend;i++,p++)
-    d[i]=MULT31(d[i],window[lW][p]);
-
-  for(i=rightbegin,p=rn/2-1;i<rightend;i++,p--)
-    d[i]=MULT31(d[i],window[nW][p]);
-
-  for(;i<n;i++)
-    d[i]=0;
+  memset((void *)&d[0], 0, sizeof(ogg_int32_t)*leftbegin);
+  vect_mult_fw(&d[leftbegin], &window[lW][0], leftend-leftbegin);
+  vect_mult_bw(&d[rightbegin], &window[nW][rn/2-1], rightend-rightbegin);
+  memset((void *)&d[rightend], 0, sizeof(ogg_int32_t)*(n-rightend));
 }

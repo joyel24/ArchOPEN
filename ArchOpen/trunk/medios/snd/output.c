@@ -17,6 +17,7 @@
 #include <kernel/delay.h>
 #include <kernel/irq.h>
 #include <kernel/io.h>
+#include <kernel/timer.h>
 
 #include <driver/hardware.h>
 #include <driver/dsp.h>
@@ -36,6 +37,8 @@
 
 #define POS2OFF(x) ((x)%OUTPUT_BUFFER_SIZE)
 #define POS2PTR(x) (&output_buffer[POS2OFF(x)])
+
+//#define BENCHMARK_MODE
 
 static tDspCom * dspCom;
 
@@ -113,21 +116,19 @@ __IRAM_CODE void output_dspInterrupt(int irq,struct pt_regs * regs){
 }
 
 void output_initDsp(){
-    /*extern char _binary_apps_aodoom_dspcode_doom_dsp_out_start;
-    extern char _binary_apps_aodoom_dspcode_doom_dsp_out_end;
-    unsigned char * dspcode=&_binary_apps_aodoom_dspcode_doom_dsp_out_start;
-    int len=&_binary_apps_aodoom_dspcode_doom_dsp_out_end-&_binary_apps_aodoom_dspcode_doom_dsp_out_start;*/
 
     // dsp irq handler
     irq_changeHandler(IRQ_DSP,output_dspInterrupt);
     irq_enable(IRQ_DSP);
 
     *DSP_COM=0;
-#if 0
-    dsp_loadProgramFromMemory(dspcode,len);
-#else
-    dsp_loadProgramFromHDD("/medios/codec/snd_dsp.out");
-#endif
+
+    if(dsp_loadProgramFromHDD("/medios/codec/snd_dsp.out")!=MED_OK){
+
+        printk("[output] error: failed loading DSP program\n");
+
+        return;
+    }
 
     // setup dma
 #ifdef DM270
@@ -211,7 +212,15 @@ void output_enable(bool enabled){
     output_active=enabled;
 }
 
+#ifdef BENCHMARK_MODE
+int prevTime=0;
+int bytesWritten=0;
+#endif
+
 void output_write(void * buffer, int size){
+
+#ifndef BENCHMARK_MODE
+
     int free;
     int continuous;
 
@@ -248,6 +257,26 @@ void output_write(void * buffer, int size){
     }
 
     output_writePos+=size;
+
+#else
+
+    int t;
+    int ref;
+
+    bytesWritten+=size;
+    t=tmr_getTick();
+
+    if(t-prevTime>100){
+
+        ref=(t-prevTime)*2*output_sampleRate*(dspCom->stereo?2:1)/HZ;
+
+        printk("speed: %d%%\n",100*bytesWritten/ref);
+
+        bytesWritten=0;
+        prevTime=t;
+    }
+
+#endif
 }
 
 void output_discardBuffer(){

@@ -25,6 +25,13 @@
 #include "misc.h"
 #include "block.h"
 
+#define IRAM_PCM_END      2048
+#define CHANNELS          2          
+
+__IRAM_DATA static ogg_int32_t *ipcm_vect[CHANNELS];
+__IRAM_DATA static ogg_int32_t ipcm_buff[CHANNELS*IRAM_PCM_END];
+
+
 int vorbis_synthesis(vorbis_block *vb,ogg_packet *op,int decodep){
   vorbis_dsp_state     *vd=vb->vd;
   private_state        *b=(private_state *)vd->backend_state;
@@ -66,13 +73,22 @@ int vorbis_synthesis(vorbis_block *vb,ogg_packet *op,int decodep){
   if(decodep){
     /* alloc pcm passback storage */
     vb->pcmend=ci->blocksizes[vb->W];
-    vb->pcm=(ogg_int32_t **)_vorbis_block_alloc(vb,sizeof(*vb->pcm)*vi->channels);
-    for(i=0;i<vi->channels;i++)
-      vb->pcm[i]=(ogg_int32_t *)_vorbis_block_alloc(vb,vb->pcmend*sizeof(*vb->pcm[i]));
-    
+
+    if (vb->pcmend<=IRAM_PCM_END) {
+      /* use statically allocated iram buffer */
+      vb->pcm = ipcm_vect;
+      for(i=0; i<CHANNELS; i++)
+        vb->pcm[i] = &ipcm_buff[i*IRAM_PCM_END];
+    } else {
+      /* dynamic allocation (slower) */
+      vb->pcm=(ogg_int32_t **)_vorbis_block_alloc(vb,sizeof(*vb->pcm)*vi->channels);
+      for(i=0;i<vi->channels;i++)
+        vb->pcm[i]=(ogg_int32_t *)_vorbis_block_alloc(vb,vb->pcmend*sizeof(*vb->pcm[i]));
+    }
+
     /* unpack_header enforces range checking */
     type=ci->map_type[ci->mode_param[mode]->mapping];
-    
+
     return(_mapping_P[type]->inverse(vb,b->mode[mode]));
   }else{
     /* no pcm */

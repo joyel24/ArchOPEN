@@ -60,12 +60,12 @@ void sound_play(bool discard){
         output_discardBuffer();
     }
 
-    output_enable(true);
-    sound_state=SS_PLAYING;
-
     buffer_setActiveItem(sound_activeItem);
 
     if(codec_setCodecFor(sound_activeItem->name)){
+
+        output_enable(true);
+        sound_state=SS_PLAYING;
 
         codec_trackStart();
     }

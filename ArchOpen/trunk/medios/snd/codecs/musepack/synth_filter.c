@@ -51,7 +51,9 @@
 #endif
 
 
-static const MPC_SAMPLE_FORMAT  Di_opt [32] [16] = {
+__IRAM_DATA MPC_SAMPLE_FORMAT V_LOC[MPC_V_MEM + 960];
+
+__IRAM_DATA static MPC_SAMPLE_FORMAT  Di_opt [32] [16] = {
     { _(  0), _( -29), _( 213), _( -459), _( 2037), _(-5153), _(  6574), _(-37489), _(75038), _(37489), _(6574), _( 5153), _(2037), _( 459), _(213), _(29) },
     { _( -1), _( -31), _( 218), _( -519), _( 2000), _(-5517), _(  5959), _(-39336), _(74992), _(35640), _(7134), _( 4788), _(2063), _( 401), _(208), _(26) },
     { _( -1), _( -35), _( 222), _( -581), _( 1952), _(-5879), _(  5288), _(-41176), _(74856), _(33791), _(7640), _( 4425), _(2080), _( 347), _(202), _(24) },
@@ -88,7 +90,7 @@ static const MPC_SAMPLE_FORMAT  Di_opt [32] [16] = {
 
 #undef  _
 
-static void Calculate_New_V ( const MPC_SAMPLE_FORMAT * Sample, MPC_SAMPLE_FORMAT * V )
+__IRAM_CODE static void Calculate_New_V ( const MPC_SAMPLE_FORMAT * Sample, MPC_SAMPLE_FORMAT * V )
 {
     // Calculating new V-buffer values for left channel
     // calculate new V-values (ISO-11172-3, p. 39)
@@ -328,7 +330,7 @@ static void Calculate_New_V ( const MPC_SAMPLE_FORMAT * Sample, MPC_SAMPLE_FORMA
     V[49] =  V[47];
 }
 
-static void Synthese_Filter_float_internal(MPC_SAMPLE_FORMAT * OutData,MPC_SAMPLE_FORMAT * V,const MPC_SAMPLE_FORMAT * Y)
+__IRAM_CODE static void Synthese_Filter_float_internal(MPC_SAMPLE_FORMAT * OutData,MPC_SAMPLE_FORMAT * V,const MPC_SAMPLE_FORMAT * Y)
 {
     mpc_uint32_t n;
     for ( n = 0; n < 36; n++, Y += 32 ) {
@@ -340,8 +342,56 @@ static void Synthese_Filter_float_internal(MPC_SAMPLE_FORMAT * OutData,MPC_SAMPL
             mpc_int32_t           k;
             //mpc_int32_t           tmp;
 
-            
-            
+#if 1
+            for ( k = 0; k < 32; k++, V++ ) {
+                asm volatile (
+                    "ldmia %[D]!, { r0-r3 } \n\t"
+                    "ldr r4, [%[V]]         \n\t"
+                    "smull r5, r6, r0, r4   \n\t"
+                    "ldr r4, [%[V], #96*4]  \n\t"
+                    "smlal r5, r6, r1, r4   \n\t"
+                    "ldr r4, [%[V], #128*4] \n\t"
+                    "smlal r5, r6, r2, r4   \n\t"
+                    "ldr r4, [%[V], #224*4] \n\t"
+                    "smlal r5, r6, r3, r4   \n\t"
+
+                    "ldmia %[D]!, { r0-r3 } \n\t"
+                    "ldr r4, [%[V], #256*4] \n\t"
+                    "smlal r5, r6, r0, r4   \n\t"
+                    "ldr r4, [%[V], #352*4] \n\t"
+                    "smlal r5, r6, r1, r4   \n\t"
+                    "ldr r4, [%[V], #384*4] \n\t"
+                    "smlal r5, r6, r2, r4   \n\t"
+                    "ldr r4, [%[V], #480*4] \n\t"
+                    "smlal r5, r6, r3, r4   \n\t"
+
+                    "ldmia %[D]!, { r0-r3 } \n\t"
+                    "ldr r4, [%[V], #512*4] \n\t"
+                    "smlal r5, r6, r0, r4   \n\t"
+                    "ldr r4, [%[V], #608*4] \n\t"
+                    "smlal r5, r6, r1, r4   \n\t"
+                    "ldr r4, [%[V], #640*4] \n\t"
+                    "smlal r5, r6, r2, r4   \n\t"
+                    "ldr r4, [%[V], #736*4] \n\t"
+                    "smlal r5, r6, r3, r4   \n\t"
+
+                    "ldmia %[D]!, { r0-r3 } \n\t"
+                    "ldr r4, [%[V], #768*4] \n\t"
+                    "smlal r5, r6, r0, r4   \n\t"
+                    "ldr r4, [%[V], #864*4] \n\t"
+                    "smlal r5, r6, r1, r4   \n\t"
+                    "ldr r4, [%[V], #896*4] \n\t"
+                    "smlal r5, r6, r2, r4   \n\t"
+                    "ldr r4, [%[V], #992*4] \n\t"
+                    "smlal r5, r6, r3, r4   \n\t"
+                    "mov r4, r6, lsl #1     \n\t"
+                    "orr r4, r4, r5, lsr #31\n\t"
+                    "str r4, [%[Data]], #8  \n"
+                    : [Data] "+r" (Data), [D] "+r" (D)
+                    : [V] "r" (V)
+                    : "r0", "r1", "r2", "r3", "r4", "r5", "r6");
+            }
+#else
             for ( k = 0; k < 32; k++, D += 16, V++ ) {
                 *Data = MPC_SHL(
                     MPC_MULTIPLY_FRACT(V[  0],D[ 0]) + MPC_MULTIPLY_FRACT(V[ 96],D[ 1]) + MPC_MULTIPLY_FRACT(V[128],D[ 2]) + MPC_MULTIPLY_FRACT(V[224],D[ 3])
@@ -349,9 +399,10 @@ static void Synthese_Filter_float_internal(MPC_SAMPLE_FORMAT * OutData,MPC_SAMPL
                     + MPC_MULTIPLY_FRACT(V[512],D[ 8]) + MPC_MULTIPLY_FRACT(V[608],D[ 9]) + MPC_MULTIPLY_FRACT(V[640],D[10]) + MPC_MULTIPLY_FRACT(V[736],D[11])
                     + MPC_MULTIPLY_FRACT(V[768],D[12]) + MPC_MULTIPLY_FRACT(V[864],D[13]) + MPC_MULTIPLY_FRACT(V[896],D[14]) + MPC_MULTIPLY_FRACT(V[992],D[15])
                     , 2);
-                
+
                 Data += 2;
             }
+#endif
             V -= 32;//bleh
             OutData+=64;
         }
@@ -359,8 +410,29 @@ static void Synthese_Filter_float_internal(MPC_SAMPLE_FORMAT * OutData,MPC_SAMPL
 }
 
 void
-mpc_decoder_synthese_filter_float(mpc_decoder *d, MPC_SAMPLE_FORMAT* OutData) 
+mpc_decoder_synthese_filter_float(mpc_decoder *d, MPC_SAMPLE_FORMAT* OutData)
 {
+#if 1
+    /********* left channel ********/
+    memcpy(V_LOC + MPC_V_MEM, d->V_L, 960 * sizeof(MPC_SAMPLE_FORMAT) );
+
+    Synthese_Filter_float_internal(
+        OutData,
+        (MPC_SAMPLE_FORMAT *)(V_LOC + MPC_V_MEM),
+        (MPC_SAMPLE_FORMAT *)(d->Y_L [0]));
+
+    memcpy(d->V_L,V_LOC, MPC_V_MEM * sizeof(MPC_SAMPLE_FORMAT));
+
+    /******** right channel ********/
+    memcpy(V_LOC + MPC_V_MEM, d->V_R, 960 * sizeof(MPC_SAMPLE_FORMAT) );
+
+    Synthese_Filter_float_internal(
+        OutData + 1,
+        (MPC_SAMPLE_FORMAT *)(V_LOC + MPC_V_MEM),
+        (MPC_SAMPLE_FORMAT *)(d->Y_R [0]));
+
+    memcpy(d->V_R,V_LOC, MPC_V_MEM * sizeof(MPC_SAMPLE_FORMAT));
+#else
     /********* left channel ********/
     memmove(d->V_L + MPC_V_MEM, d->V_L, 960 * sizeof(MPC_SAMPLE_FORMAT) );
 
@@ -376,6 +448,7 @@ mpc_decoder_synthese_filter_float(mpc_decoder *d, MPC_SAMPLE_FORMAT* OutData)
         OutData + 1,
         (MPC_SAMPLE_FORMAT *)(d->V_R + MPC_V_MEM),
         (MPC_SAMPLE_FORMAT *)(d->Y_R [0]));
+#endif
 }
 
 /*******************************************/

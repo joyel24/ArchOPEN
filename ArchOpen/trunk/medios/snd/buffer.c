@@ -349,5 +349,5 @@ void buffer_init()
     buffer_thread=NULL;
     //create buffer thread
     thread_startFct(&buffer_thread,buffer_threadFunction,"Audio buffer",
-                     THREAD_STATE_DISABLE,PRIO_MED,THREAD_USE_OTHER_STACK);
+                     THREAD_STATE_DISABLE,PRIO_LOW,THREAD_USE_OTHER_STACK);
 }

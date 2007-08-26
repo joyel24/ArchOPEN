@@ -136,7 +136,7 @@ MED_RET_T thread_nice(THREAD_INFO * ptr,int prio);
 unsigned long yield(void);
 unsigned long yieldTo(THREAD_INFO * nxtThread);
 
-void thread_startMed(void * entry_fct,void * code_malloc,void * iram_top,char * name,
+void thread_startMed(void * entry_fct,void * code_malloc,void * iram_top,int stack_type,char * name,
                        char * path,int argc,char ** argv);
 int thread_startFct(THREAD_INFO ** ret_thread,void * entry_fct,char * name,
                     int enable,int prio,int stack_type);

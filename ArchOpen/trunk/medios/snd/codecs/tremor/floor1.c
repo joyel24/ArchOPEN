@@ -214,7 +214,7 @@ static int render_point(int x0,int x1,int y0,int y1,int x){
 #  define XdB(n) (n)
 #endif
 
-static const ogg_int32_t FLOOR_fromdB_LOOKUP[256]={
+__IRAM_DATA static ogg_int32_t FLOOR_fromdB_LOOKUP[256]={
   XdB(0x000000e5), XdB(0x000000f4), XdB(0x00000103), XdB(0x00000114),
   XdB(0x00000126), XdB(0x00000139), XdB(0x0000014e), XdB(0x00000163),
   XdB(0x0000017a), XdB(0x00000193), XdB(0x000001ad), XdB(0x000001c9),
@@ -307,7 +307,7 @@ static void render_line(int x0,int x1,int y0,int y1,ogg_int32_t *d){
   }
 }
 
-static void *floor1_inverse1(vorbis_block *vb,vorbis_look_floor *in){
+__IRAM_CODE static void *floor1_inverse1(vorbis_block *vb,vorbis_look_floor *in){
   vorbis_look_floor1 *look=(vorbis_look_floor1 *)in;
   vorbis_info_floor1 *info=look->vi;
   codec_setup_info   *ci=(codec_setup_info *)vb->vd->vi->codec_setup;
@@ -394,7 +394,7 @@ static void *floor1_inverse1(vorbis_block *vb,vorbis_look_floor *in){
   return(NULL);
 }
 
-static int floor1_inverse2(vorbis_block *vb,vorbis_look_floor *in,void *memo,
+__IRAM_CODE static int floor1_inverse2(vorbis_block *vb,vorbis_look_floor *in,void *memo,
 			  ogg_int32_t *out){
   vorbis_look_floor1 *look=(vorbis_look_floor1 *)in;
   vorbis_info_floor1 *info=look->vi;

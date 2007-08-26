@@ -15,7 +15,7 @@ MPC_SAMPLE_FORMAT dataBuf[MPC_DECODER_BUFFER_LENGTH];
 mpc_reader bufferReader;
 mpc_reader fileReader;
 
-mpc_decoder decoder;
+__IRAM_DATA mpc_decoder decoder;
 
 mpc_int32_t musepack_bufferRead(void *data, void *ptr, mpc_int32_t size){
 //    printf("[musepack] read %d\n",size);

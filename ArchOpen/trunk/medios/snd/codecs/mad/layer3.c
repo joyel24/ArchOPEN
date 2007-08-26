@@ -340,7 +340,7 @@ struct fixedfloat {
  *
  * root_table[3 + x] = 2^(x/4)
  */
-static
+__IRAM_DATA static
 mad_fixed_t const root_table[7] = {
   MAD_F(0x09837f05) /* 2^(-3/4) == 0.59460355750136 */,
   MAD_F(0x0b504f33) /* 2^(-2/4) == 0.70710678118655 */,
@@ -359,7 +359,7 @@ mad_fixed_t const root_table[7] = {
  * cs[i] =    1 / sqrt(1 + c[i]^2)
  * ca[i] = c[i] / sqrt(1 + c[i]^2)
  */
-static
+__IRAM_DATA static
 mad_fixed_t const cs[8] = {
   +MAD_F(0x0db84a81) /* +0.857492926 */, +MAD_F(0x0e1b9d7f) /* +0.881741997 */,
   +MAD_F(0x0f31adcf) /* +0.949628649 */, +MAD_F(0x0fbba815) /* +0.983314592 */,
@@ -367,7 +367,7 @@ mad_fixed_t const cs[8] = {
   +MAD_F(0x0fff964c) /* +0.999899195 */, +MAD_F(0x0ffff8d3) /* +0.999993155 */
 };
 
-static
+__IRAM_DATA static
 mad_fixed_t const ca[8] = {
   -MAD_F(0x083b5fe7) /* -0.514495755 */, -MAD_F(0x078c36d2) /* -0.471731969 */,
   -MAD_F(0x05039814) /* -0.313377454 */, -MAD_F(0x02e91dd1) /* -0.181913200 */,
@@ -382,7 +382,7 @@ mad_fixed_t const ca[8] = {
  * imdct_s[i/even][k] = cos((PI / 24) * (2 *       (i / 2) + 7) * (2 * k + 1))
  * imdct_s[i /odd][k] = cos((PI / 24) * (2 * (6 + (i-1)/2) + 7) * (2 * k + 1))
  */
-static
+__IRAM_DATA static
 mad_fixed_t const imdct_s[6][6] = {
 # include "imdct_s.dat"
 };
@@ -394,7 +394,7 @@ mad_fixed_t const imdct_s[6][6] = {
  *
  * window_l[i] = sin((PI / 36) * (i + 1/2))
  */
-static
+__IRAM_DATA static
 mad_fixed_t const window_l[36] = {
   MAD_F(0x00b2aa3e) /* 0.043619387 */, MAD_F(0x0216a2a2) /* 0.130526192 */,
   MAD_F(0x03768962) /* 0.216439614 */, MAD_F(0x04cfb0e2) /* 0.300705800 */,
@@ -425,7 +425,7 @@ mad_fixed_t const window_l[36] = {
  *
  * window_s[i] = sin((PI / 12) * (i + 1/2))
  */
-static
+__IRAM_DATA static
 mad_fixed_t const window_s[12] = {
   MAD_F(0x0216a2a2) /* 0.130526192 */, MAD_F(0x061f78aa) /* 0.382683432 */,
   MAD_F(0x09bd7ca0) /* 0.608761429 */, MAD_F(0x0cb19346) /* 0.793353340 */,
@@ -1530,6 +1530,9 @@ enum mad_error III_stereo(mad_fixed_t xr[2][576],
   return MAD_ERROR_NONE;
 }
 
+#if defined(FPM_ARM)
+void III_aliasreduce(mad_fixed_t xr[576], int lines);
+#else
 /*
  * NAME:	III_aliasreduce()
  * DESCRIPTION:	perform frequency line alias reduction
@@ -1568,6 +1571,7 @@ void III_aliasreduce(mad_fixed_t xr[576], int lines)
     }
   }
 }
+#endif
 
 # if defined(ASO_IMDCT)
 void III_imdct_l(mad_fixed_t const [18], mad_fixed_t [36], unsigned int);
@@ -2217,6 +2221,11 @@ void III_imdct_s(mad_fixed_t const X[18], mad_fixed_t z[36])
   }
 }
 
+#ifdef FPM_ARM
+void III_overlap(mad_fixed_t const output[36], mad_fixed_t overlap[18],
+		 mad_fixed_t sample[18][32], unsigned int sb);
+#else
+
 /*
  * NAME:	III_overlap()
  * DESCRIPTION:	perform overlap-add of windowed IMDCT outputs
@@ -2264,6 +2273,7 @@ void III_overlap(mad_fixed_t const output[36], mad_fixed_t overlap[18],
   }
 # endif
 }
+#endif
 
 /*
  * NAME:	III_overlap_z()

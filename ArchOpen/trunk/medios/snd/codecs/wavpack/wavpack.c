@@ -10,7 +10,7 @@
 
 #include "wavpack.h"
 
-int32_t dataBuf[DATA_BUFFER_SIZE];
+__IRAM_DATA int32_t dataBuf[DATA_BUFFER_SIZE];
 
 int file;
 
@@ -34,8 +34,8 @@ void wavpack_tagRequest(char * name,TAG * tag)
     if(file>=0)
     {
         size=filesize(file);
-        
-        wpc = WavpackOpenFileInput (wavpack_fileRead, error);
+
+        wpc = WavpackOpenFileInput (wavpack_fileRead, error, 0);
 
         if(wpc)
         {
@@ -70,7 +70,7 @@ void wavpack_trackLoop()
 
     item=buffer_getActiveItem();
 
-    wpc = WavpackOpenFileInput (buffer_read, error);
+    wpc = WavpackOpenFileInput (buffer_read, error, 1);
 
     if (!wpc)
     {
@@ -104,7 +104,7 @@ void wavpack_trackLoop()
             buffer_seek(pos,SEEK_SET);
 
             WavpackClose(wpc);
-            wpc = WavpackOpenFileInput (buffer_read, error);
+            wpc = WavpackOpenFileInput (buffer_read, error, 1);
 
             if (!wpc)
             {

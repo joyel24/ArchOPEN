@@ -257,7 +257,7 @@ int vorbis_synthesis_blockin(vorbis_dsp_state *v,vorbis_block *vb){
   vorbis_info *vi=v->vi;
   codec_setup_info *ci=(codec_setup_info *)vi->codec_setup;
   private_state *b=v->backend_state;
-  int i,j;
+  int j;
 
   if(v->pcm_current>v->pcm_returned  && v->pcm_returned!=-1)return(OV_EINVAL);
 
@@ -299,43 +299,37 @@ int vorbis_synthesis_blockin(vorbis_dsp_state *v,vorbis_block *vb){
     for(j=0;j<vi->channels;j++){
       /* the overlap/add section */
       if(v->lW){
-	if(v->W){
-	  /* large/large */
-	  ogg_int32_t *pcm=v->pcm[j]+prevCenter;
-	  ogg_int32_t *p=vb->pcm[j];
-	  for(i=0;i<n1;i++)
-	    pcm[i]+=p[i];
-	}else{
-	  /* large/small */
-	  ogg_int32_t *pcm=v->pcm[j]+prevCenter+n1/2-n0/2;
-	  ogg_int32_t *p=vb->pcm[j];
-	  for(i=0;i<n0;i++)
-	    pcm[i]+=p[i];
-	}
+        if(v->W){
+          /* large/large */
+          ogg_int32_t *pcm=v->pcm[j]+prevCenter;
+          ogg_int32_t *p=vb->pcm[j];
+          vect_add(pcm, p, n1);
+        }else{
+          /* large/small */
+          ogg_int32_t *pcm=v->pcm[j]+prevCenter+n1/2-n0/2;
+          ogg_int32_t *p=vb->pcm[j];
+          vect_add(pcm, p, n0);
+        }
       }else{
-	if(v->W){
-	  /* small/large */
-	  ogg_int32_t *pcm=v->pcm[j]+prevCenter;
-	  ogg_int32_t *p=vb->pcm[j]+n1/2-n0/2;
-	  for(i=0;i<n0;i++)
-	    pcm[i]+=p[i];
-	  for(;i<n1/2+n0/2;i++)
-	    pcm[i]=p[i];
-	}else{
-	  /* small/small */
-	  ogg_int32_t *pcm=v->pcm[j]+prevCenter;
-	  ogg_int32_t *p=vb->pcm[j];
-	  for(i=0;i<n0;i++)
-	    pcm[i]+=p[i];
-	}
+        if(v->W){
+          /* small/large */
+          ogg_int32_t *pcm=v->pcm[j]+prevCenter;
+          ogg_int32_t *p=vb->pcm[j]+n1/2-n0/2;
+          vect_add(pcm, p, n0);
+          vect_copy(&pcm[n0], &p[n0], n1/2-n0/2);
+        }else{
+          /* small/small */
+          ogg_int32_t *pcm=v->pcm[j]+prevCenter;
+          ogg_int32_t *p=vb->pcm[j];
+          vect_add(pcm, p, n0);
+        }
       }
       
       /* the copy section */
       {
-	ogg_int32_t *pcm=v->pcm[j]+thisCenter;
-	ogg_int32_t *p=vb->pcm[j]+n;
-	for(i=0;i<n;i++)
-	  pcm[i]=p[i];
+        ogg_int32_t *pcm=v->pcm[j]+thisCenter;
+        ogg_int32_t *p=vb->pcm[j]+n;
+        vect_copy(pcm, p, n);
       }
     }
     
@@ -354,8 +348,8 @@ int vorbis_synthesis_blockin(vorbis_dsp_state *v,vorbis_block *vb){
     }else{
       v->pcm_returned=prevCenter;
       v->pcm_current=prevCenter+
-	ci->blocksizes[v->lW]/4+
-	ci->blocksizes[v->W]/4;
+        ci->blocksizes[v->lW]/4+
+        ci->blocksizes[v->W]/4;
     }
 
   }
@@ -384,23 +378,23 @@ int vorbis_synthesis_blockin(vorbis_dsp_state *v,vorbis_block *vb){
       
       /* is this a short page? */
       if(b->sample_count>v->granulepos){
-	/* corner case; if this is both the first and last audio page,
-	   then spec says the end is cut, not beginning */
-	if(vb->eofflag){
-	  /* trim the end */
-	  /* no preceeding granulepos; assume we started at zero (we'd
-	     have to in a short single-page stream) */
-	  /* granulepos could be -1 due to a seek, but that would result
-	     in a long coun`t, not short count */
-	  
-	  v->pcm_current-=(b->sample_count-v->granulepos);
-	}else{
-	  /* trim the beginning */
-	  v->pcm_returned+=(b->sample_count-v->granulepos);
-	  if(v->pcm_returned>v->pcm_current)
-	    v->pcm_returned=v->pcm_current;
-	}
-	
+        /* corner case; if this is both the first and last audio page,
+           then spec says the end is cut, not beginning */
+        if(vb->eofflag){
+          /* trim the end */
+          /* no preceeding granulepos; assume we started at zero (we'd
+             have to in a short single-page stream) */
+          /* granulepos could be -1 due to a seek, but that would result
+             in a long coun`t, not short count */
+          
+          v->pcm_current-=(b->sample_count-v->granulepos);
+        }else{
+          /* trim the beginning */
+          v->pcm_returned+=(b->sample_count-v->granulepos);
+          if(v->pcm_returned>v->pcm_current)
+            v->pcm_returned=v->pcm_current;
+        }
+        
       }
       
     }
@@ -409,16 +403,16 @@ int vorbis_synthesis_blockin(vorbis_dsp_state *v,vorbis_block *vb){
     if(vb->granulepos!=-1 && v->granulepos!=vb->granulepos){
       
       if(v->granulepos>vb->granulepos){
-	long extra=v->granulepos-vb->granulepos;
-	
-	if(extra)
-	  if(vb->eofflag){
-	    /* partial last frame.  Strip the extra samples off */
-	    v->pcm_current-=extra;
-	  } /* else {Shouldn't happen *unless* the bitstream is out of
-	       spec.  Either way, believe the bitstream } */
+        long extra=v->granulepos-vb->granulepos;
+        
+        if(extra)
+          if(vb->eofflag){
+            /* partial last frame.  Strip the extra samples off */
+            v->pcm_current-=extra;
+          } /* else {Shouldn't happen *unless* the bitstream is out of
+               spec.  Either way, believe the bitstream } */
       } /* else {Shouldn't happen *unless* the bitstream is out of
-	   spec.  Either way, believe the bitstream } */
+           spec.  Either way, believe the bitstream } */
       v->granulepos=vb->granulepos;
     }
   }

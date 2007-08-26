@@ -11,6 +11,7 @@
 #ifndef __K_CODEC_H
 #define __K_CODEC_H
 
+#include <fs/med.h>
 #include <snd_user/codec.h>
 
 #define CODECS_DIR "/medios/codec/"
@@ -23,6 +24,8 @@ struct CODEC_INFO_STRUCT{
     char * extensions;
     bool loaded;
     int fOffset;
+
+    med_t medInfo;
 
     CODEC_GLOBAL_INFO globalInfo;
 

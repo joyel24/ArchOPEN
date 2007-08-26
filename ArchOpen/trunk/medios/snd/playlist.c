@@ -129,6 +129,8 @@ PLAYLIST_ITEM * playlist_addFile(char * name, PLAYLIST_ITEM * prevItem){
 
     if (item->tag.badFile){
 
+        printk("[playlist] bad file: %s\n",item->name);
+
         playlist_remove(item);
 
         return NULL;

@@ -71,6 +71,7 @@ typedef struct __section_t {
     char*           name;
     uint32_t        vaddr;
     char*           addr;
+    char*           load_addr;
     uint32_t        offset;
     uint32_t        size;
     int             type;
@@ -85,10 +86,14 @@ typedef struct __med_t {
     uint32_t entry;
     char * sdram_start;
     char * iram_ptr;
+    char * iram_sdram_start;
 } med_t;
+
+extern char * med_iramTop;
 
 MED_RET_T med_load(char * file_name);
 MED_RET_T med_loadParam(int argc,char**argv);
-MED_RET_T med_loadMed(char*fName,med_t * medInfo,int file_offset);
+MED_RET_T med_loadMed(char*fName,med_t * medInfo,int file_offset,int use_iram);
+void med_copyToIram(med_t * medInfo);
 
 #endif

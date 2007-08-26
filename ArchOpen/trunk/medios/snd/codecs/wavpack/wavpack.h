@@ -46,7 +46,7 @@ typedef unsigned int    uint;
 #define FALSE 0
 #define TRUE 1
 
-#define DATA_BUFFER_SIZE 4096
+#define DATA_BUFFER_SIZE 1024
 
 ////////////////////////////// WavPack Header /////////////////////////////////
 
@@ -254,6 +254,7 @@ typedef struct {
     uint32_t total_samples, crc_errors, first_flags;
     int open_flags, norm_offset, reduced_channels, lossy_blocks;
 
+    int in_iram;
 } WavpackContext;
 
 //////////////////////// function prototypes and macros //////////////////////
@@ -371,7 +372,7 @@ void float_values (WavpackStream *wps, int32_t *values, int32_t num_values);
 
 // wputils.c
 
-WavpackContext *WavpackOpenFileInput (read_stream infile, char *error);
+WavpackContext *WavpackOpenFileInput (read_stream infile, char *error, int in_iram);
 void WavpackClose (WavpackContext *wpc);
 
 int WavpackGetMode (WavpackContext *wpc);

@@ -298,7 +298,7 @@ static void decorr_mono_pass (struct decorr_pass *dpp, int32_t *buffer, int32_t 
 static void decorr_stereo_pass (struct decorr_pass *dpp, int32_t *buffer, int32_t sample_count);
 static void fixup_samples (WavpackStream *wps, int32_t *buffer, uint32_t sample_count);
 
-int32_t unpack_samples (WavpackContext *wpc, int32_t *buffer, uint32_t sample_count)
+__IRAM_CODE int32_t unpack_samples (WavpackContext *wpc, int32_t *buffer, uint32_t sample_count)
 {
     WavpackStream *wps = &wpc->stream;
     uint32_t flags = wps->wphdr.flags, crc = wps->crc, i;
@@ -411,7 +411,7 @@ int32_t unpack_samples (WavpackContext *wpc, int32_t *buffer, uint32_t sample_co
     return i;
 }
 
-static void decorr_stereo_pass (struct decorr_pass *dpp, int32_t *buffer, int32_t sample_count)
+__IRAM_CODE static void decorr_stereo_pass (struct decorr_pass *dpp, int32_t *buffer, int32_t sample_count)
 {
     int32_t delta = dpp->delta, weight_A = dpp->weight_A, weight_B = dpp->weight_B;
     int32_t *bptr, *eptr = buffer + (sample_count * 2), sam_A, sam_B;
@@ -627,7 +627,7 @@ static void decorr_stereo_pass_cont (struct decorr_pass *dpp, int32_t *buffer, i
 
 #endif
 
-static void decorr_mono_pass (struct decorr_pass *dpp, int32_t *buffer, int32_t sample_count)
+__IRAM_CODE static void decorr_mono_pass (struct decorr_pass *dpp, int32_t *buffer, int32_t sample_count)
 {
     int32_t delta = dpp->delta, weight_A = dpp->weight_A;
     int32_t *bptr, *eptr = buffer + sample_count, sam_A;
@@ -691,7 +691,7 @@ static void decorr_mono_pass (struct decorr_pass *dpp, int32_t *buffer, int32_t 
 // it is clipped and shifted in a single operation. Otherwise, if it's
 // lossless then the last step is to apply the final shift (if any).
 
-static void fixup_samples (WavpackStream *wps, int32_t *buffer, uint32_t sample_count)
+__IRAM_CODE static void fixup_samples (WavpackStream *wps, int32_t *buffer, uint32_t sample_count)
 {
     uint32_t flags = wps->wphdr.flags;
     int shift = (flags & SHIFT_MASK) >> SHIFT_LSB;

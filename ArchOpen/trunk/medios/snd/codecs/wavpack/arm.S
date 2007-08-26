@@ -22,7 +22,7 @@
  * 32-bit multiply-accumulate instruction and so will overflow with 24-bit
  * WavPack files.
  */
-        .text
+        .section ".core"
         .align
         .global         decorr_stereo_pass_cont_arm
 

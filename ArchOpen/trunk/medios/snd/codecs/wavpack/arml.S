@@ -25,7 +25,7 @@
  * instruction.
  */
 
-        .text
+        .section ".core"
         .align
         .global         decorr_stereo_pass_cont_arml
 

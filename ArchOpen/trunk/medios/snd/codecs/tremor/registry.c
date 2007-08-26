@@ -20,7 +20,7 @@
 #include "registry.h"
 #include "misc.h"
 
-
+#include <api.h>
 /* seems like major overkill now; the backend numbers will grow into
    the infrastructure soon enough */
 

@@ -85,11 +85,19 @@ void mpc_decoder_read_bitstream_sv7(mpc_decoder *d, mpc_bool_t seeking);
 mpc_bool_t mpc_decoder_seek_sample(mpc_decoder *d, mpc_int64_t destsample);
 void mpc_decoder_requantisierung(mpc_decoder *d, const mpc_int32_t Last_Band);
 
+mpc_uint32_t  Speicher[MPC_DECODER_MEMSIZE];
+MPC_SAMPLE_FORMAT Y_L[36][32];
+MPC_SAMPLE_FORMAT Y_R[36][32];
+MPC_SAMPLE_FORMAT V_L[MPC_V_MEM + 960];
+MPC_SAMPLE_FORMAT V_R[MPC_V_MEM + 960];
+QuantTyp Q [32];
+mpc_uint32_t seeking_table[SEEKING_TABLE_SIZE];
+
 //------------------------------------------------------------------------------
 // utility functions
 //------------------------------------------------------------------------------
 static mpc_int32_t f_read(mpc_decoder *d, void *ptr, mpc_int32_t size) 
-{ 
+{
     return d->r->read(d->r->data, ptr, size); 
 }
 
@@ -336,14 +344,14 @@ mpc_decoder_decode_internal(mpc_decoder *d, MPC_SAMPLE_FORMAT *buffer)
     d->DecodedFrames++;
 
     // cut off first MPC_DECODER_SYNTH_DELAY zero-samples
-    if (d->DecodedFrames == d->OverallFrames  && d->StreamVersion >= 6) {        
+    if (d->DecodedFrames == d->OverallFrames  && d->StreamVersion >= 6) {
         // reconstruct exact filelength
         mpc_int32_t  mod_block   = mpc_decoder_bitstream_read(d,  11);
         mpc_int32_t  FilterDecay;
 
         if (mod_block == 0) {
             // Encoder bugfix
-            mod_block = 1152;                    
+            mod_block = 1152;
         }
         FilterDecay = (mod_block + MPC_DECODER_SYNTH_DELAY) % MPC_FRAME_LENGTH;
 
@@ -374,8 +382,8 @@ mpc_decoder_decode_internal(mpc_decoder *d, MPC_SAMPLE_FORMAT *buffer)
         else {
             output_frame_length -= d->samples_to_skip;
             memmove(
-                buffer, 
-                buffer + d->samples_to_skip * 2, 
+                buffer,
+                buffer + d->samples_to_skip * 2,
                 output_frame_length * 2 * sizeof (MPC_SAMPLE_FORMAT));
             d->samples_to_skip = 0;
         }
@@ -386,8 +394,8 @@ mpc_decoder_decode_internal(mpc_decoder *d, MPC_SAMPLE_FORMAT *buffer)
 
 mpc_uint32_t mpc_decoder_decode(
     mpc_decoder *d,
-    MPC_SAMPLE_FORMAT *buffer, 
-    mpc_uint32_t *vbr_update_acc, 
+    MPC_SAMPLE_FORMAT *buffer,
+    mpc_uint32_t *vbr_update_acc,
     mpc_uint32_t *vbr_update_bits)
 {
     for(;;)
@@ -428,7 +436,7 @@ mpc_uint32_t mpc_decoder_decode(
 }
 
 void
-mpc_decoder_requantisierung(mpc_decoder *d, const mpc_int32_t Last_Band) 
+mpc_decoder_requantisierung(mpc_decoder *d, const mpc_int32_t Last_Band)
 {
     mpc_int32_t     Band;
     mpc_int32_t     n;
@@ -1146,6 +1154,14 @@ void mpc_decoder_setup(mpc_decoder *d, mpc_reader *r)
   mpc_decoder_init_huffman_sv6(d);
   mpc_decoder_init_huffman_sv7(d);
 #endif
+
+  d->Speicher = Speicher;
+  d->Y_L = Y_L;
+  d->Y_R = Y_R;
+  d->V_L = V_L;
+  d->V_R = V_R;
+  d->Q = Q;
+  d->seeking_table=seeking_table;
 }
 
 static mpc_uint32_t get_initial_fpos(mpc_decoder *d)

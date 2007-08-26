@@ -230,14 +230,22 @@ bool codec_remove(CODEC_INFO * info){
 
 
 bool codec_load(CODEC_INFO * info){
-    med_t medInfo;
+    int use_iram;
+
     if(info->loaded) return true;
-    
+
     //load codec
 
-    if(med_loadMed(info->filename,&medInfo,info->fOffset)==MED_OK){
+#ifdef DM320
+    // don't use DM320 iram, too small and not faster than sdram
+    use_iram=0;
+#else
+    use_iram=1;
+#endif
 
-        ((void (*)(CODEC_GLOBAL_INFO * info))medInfo.entry)(&info->globalInfo);
+    if(med_loadMed(info->filename,&info->medInfo,info->fOffset,use_iram)==MED_OK){
+
+        ((void (*)(CODEC_GLOBAL_INFO * info))info->medInfo.entry)(&info->globalInfo);
 
         printk("[codec] loaded codec %s, description=%s\n",info->name,info->globalInfo.description);
 
@@ -330,6 +338,9 @@ void codec_trackStart(){
     codec_startOutPos=output_writePos;
     codec_timeDelta=0;
     codec_seekRequested=false;
+
+    // we need to have codec iram stuff in iram before the track loop
+    med_copyToIram(&codec_current->medInfo);
 
     // set start request, wait for ack from thread if we're not in thread
     codec_startRequested=true;

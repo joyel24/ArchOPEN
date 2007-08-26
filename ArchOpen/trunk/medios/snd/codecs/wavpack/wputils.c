@@ -44,20 +44,26 @@ static uint32_t read_next_header (read_stream infile, WavpackHeader *wphdr);
 // large integer or floating point files (but always provides at least 24 bits
 // of resolution).
 
-//static WavpackContext wpc;
+__IRAM_DATA WavpackContext iram_wpc;
 
-WavpackContext *WavpackOpenFileInput (read_stream infile, char *error)
+WavpackContext *WavpackOpenFileInput (read_stream infile, char *error, int in_iram)
 {
     WavpackStream *wps;
     uint32_t bcount;
 
     WavpackContext * wpc;
 
-    wpc=malloc(sizeof(WavpackContext));
+    if(in_iram){
+        wpc=&iram_wpc;
+    }else{
+        wpc=malloc(sizeof(WavpackContext));
+    }
 
     memset(wpc,0,sizeof(WavpackContext));
-    
+
     wps = &(wpc->stream);
+
+    wpc->in_iram=in_iram;
 
     wpc->infile = infile;
     wpc->total_samples = (uint32_t) -1;
@@ -120,7 +126,7 @@ WavpackContext *WavpackOpenFileInput (read_stream infile, char *error)
 
 void WavpackClose (WavpackContext *wpc)
 {
-    kfree(wpc);
+    if (!wpc->in_iram) kfree(wpc);
 }
 
 // This function obtains general information about an open file and returns

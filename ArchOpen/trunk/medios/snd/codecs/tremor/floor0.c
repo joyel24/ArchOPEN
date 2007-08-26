@@ -46,9 +46,9 @@ typedef struct {
    16.16 format 
    returns in m.8 format */
 
-static long ADJUST_SQRT2[2]={8192,5792};
+__IRAM_DATA static long ADJUST_SQRT2[2]={8192,5792};
 STIN ogg_int32_t vorbis_invsqlook_i(long a,long e){
-  long i=(a&0x7fff)>>(INVSQ_LOOKUP_I_SHIFT-1); 
+  long i=(a&0x7fff)>>(INVSQ_LOOKUP_I_SHIFT-1);
   long d=a&INVSQ_LOOKUP_I_MASK;                              /*  0.10 */
   long val=INVSQ_LOOKUP_I[i]-                                /*  1.16 */
     ((INVSQ_LOOKUP_IDel[i]*d)>>INVSQ_LOOKUP_I_SHIFT);        /* result 1.16 */
@@ -63,7 +63,7 @@ STIN ogg_int32_t vorbis_fromdBlook_i(long a){
   int i=(-a)>>(12-FROMdB2_SHIFT);
   if(i<0) return 0x7fffffff;
   if(i>=(FROMdB_LOOKUP_SZ<<FROMdB_SHIFT))return 0;
-  
+
   return FROMdB_LOOKUP[i>>FROMdB_SHIFT] * FROMdB2_LOOKUP[i&FROMdB2_MASK];
 }
 
@@ -93,7 +93,7 @@ STIN ogg_int32_t vorbis_coslook2_i(long a){
   return(a);
 }
 
-static const int barklook[28]={
+__IRAM_DATA static int barklook[28]={
   0,100,200,301,          405,516,635,766,
   912,1077,1263,1476,     1720,2003,2333,2721,
   3184,3742,4428,5285,    6376,7791,9662,12181,
@@ -116,21 +116,21 @@ STIN ogg_int32_t toBARK(int n){
   }
 }
 
-static const unsigned char MLOOP_1[64]={
+__IRAM_DATA static unsigned char MLOOP_1[64]={
    0,10,11,11, 12,12,12,12, 13,13,13,13, 13,13,13,13,
   14,14,14,14, 14,14,14,14, 14,14,14,14, 14,14,14,14,
   15,15,15,15, 15,15,15,15, 15,15,15,15, 15,15,15,15,
   15,15,15,15, 15,15,15,15, 15,15,15,15, 15,15,15,15,
 };
 
-static const unsigned char MLOOP_2[64]={
+__IRAM_DATA static unsigned char MLOOP_2[64]={
   0,4,5,5, 6,6,6,6, 7,7,7,7, 7,7,7,7,
   8,8,8,8, 8,8,8,8, 8,8,8,8, 8,8,8,8,
   9,9,9,9, 9,9,9,9, 9,9,9,9, 9,9,9,9,
   9,9,9,9, 9,9,9,9, 9,9,9,9, 9,9,9,9,
 };
 
-static const unsigned char MLOOP_3[8]={0,1,2,2,3,3,3,3};
+__IRAM_DATA static unsigned char MLOOP_3[8]={0,1,2,2,3,3,3,3};
 
 void vorbis_lsp_to_curve(ogg_int32_t *curve,int *map,int n,int ln,
 			 ogg_int32_t *lsp,int m,
