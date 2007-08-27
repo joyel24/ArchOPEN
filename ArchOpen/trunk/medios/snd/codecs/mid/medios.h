@@ -1,11 +1,11 @@
 #ifndef __MEDIOS__
 #define __MEDIOS__
 
-#include "safe-ctype.h"
-
 extern char currentFile[256];
 
 void selectInputFile();
+
+#include "safe-ctype.h"
 
 #ifdef BUILD_STDALONE
 	#include <lib/string.h>
@@ -33,7 +33,6 @@ void selectInputFile();
 
 void * getenv(const char * s);
 int fprintf(int f,const char * s,...);
-double atof(char *str);
 
 #define	_U	01
 #define	_L	02

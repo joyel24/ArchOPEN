@@ -85,6 +85,18 @@ int ata_rwData(int disk,unsigned int lba,void * inData,int inCount,int cmd,int u
         ata_RW_thread=NULL;
     }
     
+    if(cmd==ATA_DO_WRITE)
+    {
+        use_multiple=0;
+        if(lba==0)
+        {
+            printk("[ata_rwData] Error trying to write lba 0\n");
+            ata_RW_thread=NULL;
+            spinLock_unlock(&ata_lock);
+            return 0;
+        }
+    }
+    
 #ifdef ATA_NO_MULTY
     use_multiple=0;
 #endif
@@ -109,6 +121,7 @@ int ata_rwData(int disk,unsigned int lba,void * inData,int inCount,int cmd,int u
             if((ret_val=ata_doPowerOn(disk))!=MED_OK)
             {
                 printk("[ata_rwData] error powering ON disk %d (err=%d)\n",disk,-ret_val);
+                ata_RW_thread=NULL;
                 spinLock_unlock(&ata_lock);
                 return 0;   
             }            
@@ -118,6 +131,7 @@ int ata_rwData(int disk,unsigned int lba,void * inData,int inCount,int cmd,int u
             if((ret_val=ata_doSoftReset(disk))!=MED_OK)
             {
                 printk("[ata_rwData] error doing softReset for disk %d (err=%d)\n",disk,-ret_val);
+                ata_RW_thread=NULL;
                 spinLock_unlock(&ata_lock);
                 return 0;   
             }  
@@ -214,6 +228,8 @@ retry:
             if(ata_waitForStartXfer()!=MED_OK)
             {
                 ret_val=0;
+                if(cmd==ATA_DO_WRITE)
+                    goto end;
                 ata_doSoftReset(disk);
                 goto retry;
             }
@@ -228,6 +244,9 @@ retry:
             if(use_multiple && xfer_size<nbSector)
                 block_size=xfer_size*SECTOR_SIZE;
     
+            if(cmd==ATA_DO_WRITE && use_multiple)
+                printk("Write in multiple mode\n");
+            
             status=ata_status();
             
             if(use_dma==ATA_WITH_DMA)
@@ -295,7 +314,7 @@ retry:
                 }
             }
             
-            if(status & (IDE_STATUS_BSY|IDE_STATUS_ERR|IDE_STATUS_DF))
+            if(cmd!=ATA_DO_WRITE && (status & (IDE_STATUS_BSY|IDE_STATUS_ERR|IDE_STATUS_DF)))
             {
                 if((ret_val=ata_doSoftReset(disk))!=MED_OK)
                 {
@@ -319,15 +338,15 @@ retry:
             if(i>count) i=count;
             xfer_size-=nbSector;            
         }
-    /*NOTE: should see how to enable this for writing */
-#if 0 
         if(ata_waitForEndXfer()!=MED_OK)
         {
-            ata_doSoftReset(disk);
+            ret_val=0;            
             printk("[ata_rwData] Error doing softRest after bad EndOf Xfer\n");
+            if(cmd==ATA_DO_WRITE)
+                goto end;
+            ata_doSoftReset(disk);
             goto retry;
         }
-#endif
         break;
     }
     ret_val=MED_OK;

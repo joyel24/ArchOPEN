@@ -78,6 +78,12 @@ void chg_blendMode(int mode);
 void chg_blendFactor(int factor);
 void drawBGMenuBG(void);
         
+#ifdef BGMENU_DEBUG
+#define BG_MENU_STATE(a,b) {bgMenu_printState((a),(b));}
+#else
+#define BG_MENU_STATE(a,b)
+#endif
+        
 void bgMenu_printState(char * cause,int full)
 {
     printk("%s\n",cause);
@@ -142,6 +148,8 @@ MED_RET_T loadSaveImg(int mode)
     else
         fd=open(BG_FILENAME,O_RDWR | O_CREAT);
     
+//    printk("VID screen: %x\n",gfx_planeGetBufferOffset(VID1));
+    
     if(fd<0)
     { /* error => disable img + upodate cfg */
         printk("[bgImg-menu] Can't open medios Background image %s\n",BG_FILENAME);
@@ -152,15 +160,18 @@ MED_RET_T loadSaveImg(int mode)
         cnt=0;
         if(mode)
         {
-            for(i=0;i<LCD_HEIGHT;i++)
-                cnt+=read(fd,(void*)gfx_planeGetBufferOffset(VID1)+i*LCD_WIDTH*2,LCD_WIDTH*2);
+            /*for(i=0;i<LCD_HEIGHT;i++)
+                cnt+=read(fd,(void*)gfx_planeGetBufferOffset(VID1)+i*LCD_WIDTH*2,LCD_WIDTH*2);*/
+            cnt=read(fd,(void*)gfx_planeGetBufferOffset(VID1),LCD_WIDTH*2*LCD_HEIGHT);
         }
         else
         {
-            for(i=0;i<LCD_HEIGHT;i++)
-                cnt+=write(fd,(void*)gfx_planeGetBufferOffset(VID1)+i*LCD_WIDTH*2,LCD_WIDTH*2);
+            /*for(i=0;i<LCD_HEIGHT;i++)
+               cnt+=write(fd,(void*)gfx_planeGetBufferOffset(VID1)+i*LCD_WIDTH*2,LCD_WIDTH*2);*/
+            cnt=write(fd,(void*)gfx_planeGetBufferOffset(VID1),LCD_WIDTH*2*LCD_HEIGHT);
         }
         close(fd);
+        
         if(cnt<LCD_WIDTH*2*LCD_HEIGHT)
         { /* error => disable img + upodate cfg */
             printk("[bgImg-menu] %s only %d/%d bytes => discarding image\n",mode?"Read":"Wrote",
@@ -183,6 +194,7 @@ void okBtnBgImg_click(BUTTON b)
         has_bgImg=1;
         if(loadSaveImg(0)!=MED_OK)
         {
+            printk("[bgImg-menu] Error writing img to disk\n");
             has_bgImg=0;
             bgImg_enable=0;
         }
@@ -225,7 +237,7 @@ void okBtnBgImg_click(BUTTON b)
     cfg_clear(cfg);
     
     stop_bgImg_set=1;
-    bgMenu_printState("After OK btn",1);
+    BG_MENU_STATE("After OK btn",1);
 }
 
 void bg_updtFocus(void)
@@ -271,7 +283,6 @@ void bg_updtFocus(void)
     bgImg_disp_chk->paint(bgImg_disp_chk);
     discardFileImg_btn->paint(discardFileImg_btn);
     discardBg_btn->paint(discardBg_btn);
-    printk("Update focus called\n");
 }
 
 void exit_BgImg_Menu(void)
@@ -291,12 +302,12 @@ void exit_BgImg_Menu(void)
 void cancelBtnBgImg_click(BUTTON b)
 {
       exit_BgImg_Menu();
-      bgMenu_printState("After cancel btn",1);
+      BG_MENU_STATE("After cancel btn",1);
 }
 
 void bg_progressDraw(j_common_ptr cinfo)
 {
-    printk("%d\n", (cinfo->progress->pass_counter*100)/cinfo->progress->pass_limit);
+    //printk("%d\n", (cinfo->progress->pass_counter*100)/cinfo->progress->pass_limit);
 }
 
 void discardFileImgBtn_click(BUTTON b)
@@ -324,7 +335,7 @@ void discardFileImgBtn_click(BUTTON b)
         fName->paint(fName);
         bg_updtFocus(); 
         menuList->setFocusedWidget(menuList,brw_btn);  
-        bgMenu_printState("After rm file btn",1);
+        BG_MENU_STATE("After rm file btn",1);
     }
 }
 
@@ -341,7 +352,7 @@ void discardBgBtn_click(BUTTON b)
     chg_BG_enable(0,blendTrsp->index,trspVal->value);
     bg_updtFocus();
     menuList->setFocusedWidget(menuList,brw_btn);
-    bgMenu_printState("After rm bg btn",1);
+    BG_MENU_STATE("After rm bg btn",1);
 }
 
 void brwBtnBgImg_click(BUTTON b)
@@ -382,7 +393,7 @@ void brwBtnBgImg_click(BUTTON b)
             has_file=1;
             needClean=0;
             /* updating focus enable/disable*/
-            bgMenu_printState("before update",1);
+            BG_MENU_STATE("before update",1);
             bg_updtFocus();
             menuList->setFocusedWidget(menuList,bgImg_disp_chk);
         }
@@ -393,7 +404,7 @@ void brwBtnBgImg_click(BUTTON b)
         evt_purgeHandler(evtHandler);
     }
     free(myPath);
-    bgMenu_printState("After brw btn",1);
+    BG_MENU_STATE("After brw btn",1);
 }
 
 void bgImg_disp_chk_chg(CHECKBOX chk)
@@ -409,7 +420,7 @@ void bgImg_disp_chk_chg(CHECKBOX chk)
     if(trspVal->value==0 && blendTrsp->index==0) trspVal->value=1;
     
     bg_updtFocus();
-    bgMenu_printState("After enable btn chk",1);
+    BG_MENU_STATE("After enable btn chk",1);
 }
 
 void blendTrsp_chg(CHOOSER chooseItem)
@@ -424,7 +435,7 @@ void blendTrsp_chg(CHOOSER chooseItem)
             chg_blendFactor(trspVal->value);
         }
         trspVal->paint(trspVal);
-        bgMenu_printState("After mode chg",1);
+        BG_MENU_STATE("After mode chg",1);
     }
     
 }
@@ -434,7 +445,7 @@ void trspVal_chg(TRACKBAR trkBar)
     if(bgImg_disp_chk->checked)
     {
         chg_blendFactor(trkBar->value);
-        bgMenu_printState("After focus mod",1);
+        BG_MENU_STATE("After focus mod",1);
     }
 }
 
@@ -463,7 +474,7 @@ void bgImg_setting(void)
     has_file=0; 
     needClean=0;
     
-    bgMenu_printState("Init menu",0);
+    BG_MENU_STATE("Init menu",0);
     
     evtHandler = evt_getHandler(BTN_CLASS|GUI_CLASS);
     if(evtHandler<0)
@@ -612,7 +623,7 @@ void bgImg_setting(void)
         menuList->setFocusedWidget(menuList,brw_btn);
     menuList->paint(menuList);
 
-    bgMenu_printState("Init done",1);
+    BG_MENU_STATE("Init done",1);
     
     do{
         event=evt_getStatusBlocking(evtHandler);
@@ -740,7 +751,7 @@ void bgImg_loadPref(void)
     
     chg_BG_enable(bgImg_enable,blendMode,blendFactor);
     
-    bgMenu_printState("Loading cfg",0);
+    BG_MENU_STATE("Loading cfg",0);
     
 }
 

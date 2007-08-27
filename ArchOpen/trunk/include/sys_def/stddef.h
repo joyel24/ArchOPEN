@@ -16,6 +16,7 @@
 #define __SYS_DEF_STDDEF_H
 
 #define NULL ((void*)0)
+#define EOF (-1)
 
 #define abs ABS
 #define min MIN

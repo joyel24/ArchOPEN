@@ -1,5 +1,5 @@
 /*
-*   kernel/target/arch_GMINI4XX/osd.c
+*   kernel/target/arch_AV5XX/osd.c
 *
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -20,7 +20,7 @@
 
 void arch_osd_init(void)
 {
-    osd_setMainConfig(0x0000);
+    //osd_setMainConfig(0x0000);
 	osd_setMainShift(SCREEN_LCD_SHIFT_X, SCREEN_LCD_SHIFT_Y);
 
 	outw(0x10,VIDENC_BASE+0x14); // LCD VSync

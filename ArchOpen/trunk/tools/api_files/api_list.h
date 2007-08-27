@@ -222,6 +222,8 @@ int    # vsprintf                  # char *buf, const char *fmt, va_list args
 int    # sprintf                   # char * buf, const char *fmt, ...
 int    # vsscanf                   # const char * buf, const char * fmt, va_list args
 int    # sscanf                    # const char * buf, const char * fmt, ...
+double # atof                      # char * str
+double # strtod                    # char * str, char ** ptr
 
 #k_inc#lib/random.h
 void   # srand                     # unsigned int seed
