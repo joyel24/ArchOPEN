@@ -142,13 +142,11 @@ void chg_blendFactor(int factor)
 
 MED_RET_T loadSaveImg(int mode)
 {
-    int fd,cnt,i;
+    int fd,cnt;
     if(mode)
         fd=open(BG_FILENAME,O_RDONLY);
     else
         fd=open(BG_FILENAME,O_RDWR | O_CREAT);
-    
-//    printk("VID screen: %x\n",gfx_planeGetBufferOffset(VID1));
     
     if(fd<0)
     { /* error => disable img + upodate cfg */
@@ -160,14 +158,10 @@ MED_RET_T loadSaveImg(int mode)
         cnt=0;
         if(mode)
         {
-            /*for(i=0;i<LCD_HEIGHT;i++)
-                cnt+=read(fd,(void*)gfx_planeGetBufferOffset(VID1)+i*LCD_WIDTH*2,LCD_WIDTH*2);*/
             cnt=read(fd,(void*)gfx_planeGetBufferOffset(VID1),LCD_WIDTH*2*LCD_HEIGHT);
         }
         else
         {
-            /*for(i=0;i<LCD_HEIGHT;i++)
-               cnt+=write(fd,(void*)gfx_planeGetBufferOffset(VID1)+i*LCD_WIDTH*2,LCD_WIDTH*2);*/
             cnt=write(fd,(void*)gfx_planeGetBufferOffset(VID1),LCD_WIDTH*2*LCD_HEIGHT);
         }
         close(fd);
@@ -500,7 +494,11 @@ void bgImg_setting(void)
     drawBGMenuBG();    
 
     x=minX+8;
-    y=minY=ICON_Y+2*lineH;
+    if(LCD_HEIGHT<240)        
+        y=minY=ICON_Y+lineH;
+    else
+        y=minY=ICON_Y+2*lineH;
+    
 
     // menuList
     menuList=widgetList_create();
