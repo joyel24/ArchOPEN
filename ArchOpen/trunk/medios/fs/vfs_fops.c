@@ -27,6 +27,64 @@
 
 extern struct vfs_mountPoint * root_mountPoint;
 
+int vfs_strToFlag(char * str)
+{
+    
+    
+    int read=0,write=0,append=0,plus=0;
+    int nbFlag;
+    int res=0;
+    while(*str)
+    {
+        if(*str=='r') read=1;
+        if(*str=='w') write=1;
+        if(*str=='a') append=1;
+        if(*str=='+') plus=1;
+        str++;
+    }
+  
+    if(plus)
+    {
+        if(write)
+        {
+            res = O_RDWR | O_TRUNC;
+        }
+        else if(read)
+        {
+            res = O_RDWR;  
+        }
+        else if(append)
+        {
+            res = O_RDWR | O_APPEND;
+        }                    
+    }
+    else
+    {
+        if(read && write)
+        {
+            res = O_RDWR | O_CREAT;
+        }
+        else if(read && append)
+        {
+            res = O_RDWR | O_APPEND | O_CREAT;
+        }
+        else if(read)
+        {
+            res = O_RDONLY;
+        }
+        else if(write)
+        {
+            res = O_WRONLY | O_CREAT;   
+        }
+        else if(append)
+        {
+            res = O_APPEND | O_WRONLY | O_CREAT;
+        }
+    }
+    
+    return res;       
+}
+
 int open(char * name,int flags)
 {
     MED_RET_T ret_val;

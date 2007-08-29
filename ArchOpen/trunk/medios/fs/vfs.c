@@ -256,10 +256,16 @@ MED_RET_T vfs_clearNodeTree(struct vfs_node * root)
     while(!LIST_IS_EMPTY(root->children))
     {
         ptr = root->children;
-        if(ptr->opened && ptr->dirty)
+        if(ptr->opened)
         {
-            fat_fileFlushCache(ptr);
-            printk("[vfs_clearNodeTree] %s opened => NEED a SYNC fction\n",ptr->name.str);
+            printk("[vfs_clearNodeTree] %s opened => closing it\n",ptr->name.str);
+            thread_listRm(THREAD_PTR_2_LIST(ptr),FILE_RESSOURCE,THREAD_NO_FORCE);
+            if(vfs_fileClose(ptr) != MED_OK)
+            {
+                printk("[vfs_clearNodeTree] %s close failed\n",ptr->name.str);
+                ptr->ref_cnt=0;
+            }
+            
         }
         
         if(ptr->type == VFS_TYPE_DIR)

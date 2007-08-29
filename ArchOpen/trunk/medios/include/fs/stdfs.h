@@ -17,6 +17,7 @@
 #include <sys_def/errors.h>
 
 /* file related */
+int       vfs_strToFlag(char * str);
 int       open(char * name,int flags);
 MED_RET_T close(int fdesc);
 MED_RET_T truncate(int fdesc, unsigned int size);
