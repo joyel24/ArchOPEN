@@ -814,137 +814,137 @@ void app_main(int argc,char ** argv)
 
     while (!stop)
 	 {
-        while((evt=evt_getStatusBlocking(evt_handler))>0)
+        evt=evt_getStatusBlocking(evt_handler);
+        if(evt==NO_EVENT)
+            continue;
+        switch(evt)
         {
-            switch(evt)
-            {
-                case BTN_OFF:
-                        viewer_exit();
-                        stop = 1;
-                        break;
+            case BTN_OFF:
+                    viewer_exit();
+                    stop = 1;
+                    break;
 
-                case BTN_UP:
-                        /* Page up */
-                        for (i = page_mode==OVERLAP? 1:0; i < display_lines; i++)
-                                viewer_scroll_up();
-                
-                        viewer_draw(col);
-                        DrawStatusLine(0);
-                        break;
-                
-                case BTN_DOWN:
-                        /* Page down */
-                        if (next_screen_ptr != NULL)
-                                screen_top_ptr = next_screen_to_draw_ptr;
-                
-                        viewer_draw(col);
-                        DrawStatusLine(0);
-                        break;
-                
-                case BTN_LEFT:
-                        if (view_mode == WIDE) {
-                                /* Screen left */
-                                col -= display_columns;
-                                col = col_limit(col);
-                        }
-                        else {   /* view_mode == NARROW */
-                                /* Top of file */
-                                viewer_top();
-                        }
-                
-                        viewer_draw(col);
-                        DrawStatusLine(0);
-                        break;
-                
-                case BTN_RIGHT:
-                        if (view_mode == WIDE) {
-                                /* Screen right */
-                                col += display_columns;
-                                col = col_limit(col);
-                        }
-                        else {   /* view_mode == NARROW */
-                                /* Bottom of file */
-                                viewer_bottom();
-                        }
-                
-                        viewer_draw(col);
-                        DrawStatusLine(0);
-                        break;
+            case BTN_UP:
+                    /* Page up */
+                    for (i = page_mode==OVERLAP? 1:0; i < display_lines; i++)
+                            viewer_scroll_up();
+            
+                    viewer_draw(col);
+                    DrawStatusLine(0);
+                    break;
+            
+            case BTN_DOWN:
+                    /* Page down */
+                    if (next_screen_ptr != NULL)
+                            screen_top_ptr = next_screen_to_draw_ptr;
+            
+                    viewer_draw(col);
+                    DrawStatusLine(0);
+                    break;
+            
+            case BTN_LEFT:
+                    if (view_mode == WIDE) {
+                            /* Screen left */
+                            col -= display_columns;
+                            col = col_limit(col);
+                    }
+                    else {   /* view_mode == NARROW */
+                            /* Top of file */
+                            viewer_top();
+                    }
+            
+                    viewer_draw(col);
+                    DrawStatusLine(0);
+                    break;
+            
+            case BTN_RIGHT:
+                    if (view_mode == WIDE) {
+                            /* Screen right */
+                            col += display_columns;
+                            col = col_limit(col);
+                    }
+                    else {   /* view_mode == NARROW */
+                            /* Bottom of file */
+                            viewer_bottom();
+                    }
+            
+                    viewer_draw(col);
+                    DrawStatusLine(0);
+                    break;
 
 #ifdef STATUS_LINE
-                case BTN_F1:
-                        /* Word-wrap mode: WRAP or CHOP */
-                        if (++word_mode == WORD_MODES)
-                                word_mode = 0;
+            case BTN_F1:
+                    /* Word-wrap mode: WRAP or CHOP */
+                    if (++word_mode == WORD_MODES)
+                            word_mode = 0;
 
-                        init_need_scrollbar();
+                    init_need_scrollbar();
 
-                        viewer_draw(col);
+                    viewer_draw(col);
 
-                        DrawStatusLine(1);
-                
-                        break;
-                
-                case BTN_F2:
-                        /* Line-paragraph mode: NORMAL, JOIN or EXPAND */
-                        if (++line_mode == LINE_MODES)
-                                line_mode = 0;
-                
-                        if (view_mode == WIDE)
-                                if (line_mode == JOIN)
-                                                if (++line_mode == LINE_MODES)
-                                                        line_mode = 0;
-                
-                        init_need_scrollbar();
-                
-                        viewer_draw(col);
-                
-                        DrawStatusLine(2);
-                
-                        break;
-                
-                case BTN_F3:
-                        /* View-width mode: NARROW or WIDE */
-                        if (line_mode == JOIN)
-                        {
-                                DrawStatusLine(3);
-                        }
-                        else
-                                if (++view_mode == VIEW_MODES)
-                                                view_mode = 0;
+                    DrawStatusLine(1);
+            
+                    break;
+            
+            case BTN_F2:
+                    /* Line-paragraph mode: NORMAL, JOIN or EXPAND */
+                    if (++line_mode == LINE_MODES)
+                            line_mode = 0;
+            
+                    if (view_mode == WIDE)
+                            if (line_mode == JOIN)
+                                            if (++line_mode == LINE_MODES)
+                                                    line_mode = 0;
+            
+                    init_need_scrollbar();
+            
+                    viewer_draw(col);
+            
+                    DrawStatusLine(2);
+            
+                    break;
+            
+            case BTN_F3:
+                    /* View-width mode: NARROW or WIDE */
+                    if (line_mode == JOIN)
+                    {
+                            DrawStatusLine(3);
+                    }
+                    else
+                            if (++view_mode == VIEW_MODES)
+                                            view_mode = 0;
 
-                        col = 0;
+                    col = 0;
 
-                        /***** Could do this after change of word-wrap mode
-                        * and after change of view-width mode, to normalize
-                        * view:
-                        if (screen_top_ptr > buffer + BUFFER_SIZE/2) {
-                                screen_top_ptr = find_prev_line(screen_top_ptr);
-                                screen_top_ptr = find_next_line(screen_top_ptr);
-                        }
-                        else {
-                                screen_top_ptr = find_next_line(screen_top_ptr);
-                                screen_top_ptr = find_prev_line(screen_top_ptr);
-                        }
-                        ***********/
+                    /***** Could do this after change of word-wrap mode
+                    * and after change of view-width mode, to normalize
+                    * view:
+                    if (screen_top_ptr > buffer + BUFFER_SIZE/2) {
+                            screen_top_ptr = find_prev_line(screen_top_ptr);
+                            screen_top_ptr = find_next_line(screen_top_ptr);
+                    }
+                    else {
+                            screen_top_ptr = find_next_line(screen_top_ptr);
+                            screen_top_ptr = find_prev_line(screen_top_ptr);
+                    }
+                    ***********/
 
-                        init_need_scrollbar();
+                    init_need_scrollbar();
 
-                        viewer_draw(col);
+                    viewer_draw(col);
 
-                        DrawStatusLine(4);
+                    DrawStatusLine(4);
 
-                        break;
+                    break;
 #else
-                case BTN_F1:
-                case BTN_F2:
-                case BTN_F3:
+            case BTN_F1:
+            case BTN_F2:
+            case BTN_F3:
 #endif
-                case BTN_ON:
-                        menu_execute(evt_handler);
-                        viewer_draw(col);
-                        break;
-            }
+            case BTN_ON:
+                    menu_execute(evt_handler);
+                    viewer_draw(col);
+                    break;
         }
     }
     evt_freeHandler(evt_handler);

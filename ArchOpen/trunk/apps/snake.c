@@ -31,10 +31,12 @@
 
 #define STATUS_Y (screenHeight-fontHeight)
 
+#define BOARD(X,Y) (board[(Y)*maxX+(X)])
+
 int screenWidth,screenHeight,fontHeight,arch;
 int maxX,maxY;
 
-static int board[100][100], snakelength;
+static int *board, snakelength;
 static unsigned int score=0;
 static int dir,frames,apple,level=1;
 int mode=1;
@@ -49,7 +51,7 @@ void snake(void);
 
 void collision(int x, int y)
 {
-    switch(board[x][y])
+    switch(BOARD(x,y))
     {
         case 0:
             break;
@@ -86,8 +88,8 @@ void move_head(int x, int y)
             break;
     }
     collision(x,y);
-    board[x][y]=1;
-    gfx_fillRect(COLOR_WHITE, x*4, y*4, 4, 4);
+    BOARD(x,y)=1;
+    gfx_fillRect(COLOR_BLUE, x*4, y*4, 4, 4);
 }
 
 void frame(void)
@@ -97,13 +99,13 @@ void frame(void)
     {
         for (y=0; y<maxY; y++)
         {
-            switch(board[x][y])
+            switch(BOARD(x,y))
             {
                 case 1:
                     if (!head)
                     {
                         move_head(x,y);
-                        board[x][y]++;
+                        BOARD(x,y)++;
                         head=1;
                     }
                     break;
@@ -112,13 +114,13 @@ void frame(void)
                 case -1:
                     break;
                 default:
-                    if (board[x][y]==snakelength)
+                    if (BOARD(x,y)==snakelength)
                     {
-                        board[x][y]=0;
-                        gfx_fillRect(COLOR_BLACK, x*4, y*4, 4, 4);
+                        BOARD(x,y)=0;
+                        gfx_fillRect(COLOR_WHITE, x*4, y*4, 4, 4);
                     }
                     else
-                        board[x][y]++;
+                        BOARD(x,y)++;
                     break;
             }
         }
@@ -129,22 +131,22 @@ void redraw(void)
 {
     int x,y;
 
-    gfx_clearScreen(COLOR_BLACK);
+    gfx_clearScreen(COLOR_WHITE);
 
     for(x=0; x<maxX; x++)
     {
         for(y=0; y<maxY; y++)
         {
-            switch (board[x][y])
+            switch (BOARD(x,y))
             {
                 case -1:
-                    gfx_fillRect(COLOR_WHITE, (x*4)+1, y*4, 2, 4);
-                    gfx_fillRect(COLOR_WHITE, x*4, (y*4)+1, 4, 2);
+                    gfx_fillRect(COLOR_RED, (x*4)+1, y*4, 2, 4);
+                    gfx_fillRect(COLOR_RED, x*4, (y*4)+1, 4, 2);
                     break;
                 case 0:
                     break;
                 default:
-                    gfx_fillRect(COLOR_WHITE, x*4, y*4, 4, 4);
+                    gfx_fillRect(COLOR_RED, x*4, y*4, 4, 4);
                     break;
             }
         }
@@ -155,10 +157,10 @@ int game_pause(void)
 {
     int evt;
     
-    gfx_putS(COLOR_WHITE, COLOR_BLACK, 3, 10,"SNAKE");
-    gfx_putS(COLOR_WHITE, COLOR_BLACK, 3, 25,"Game Paused");
-    gfx_putS(COLOR_WHITE, COLOR_BLACK, 3, 70,"Press [ON] to resume");
-    gfx_putS(COLOR_WHITE, COLOR_BLACK, 3, 95,"Press [OFF] to quit current game");
+    gfx_putS(COLOR_BLACK,COLOR_WHITE, 3, 10,"SNAKE");
+    gfx_putS(COLOR_BLACK,COLOR_WHITE, 3, 25,"Game Paused");
+    gfx_putS(COLOR_BLACK,COLOR_WHITE, 3, 70,"Press [ON] to resume");
+    gfx_putS(COLOR_BLACK,COLOR_WHITE, 3, 95,"Press [OFF] to quit current game");
     
     printf("In pause\n");
     
@@ -196,19 +198,19 @@ void game(void)
                 srand(tmr_getTick());
                 x=rand() % maxX;
                 y=rand() % maxY;
-            } while (board[x][y]);
+            } while (BOARD(x,y));
             apple=1;
-            board[x][y]=-1;
+            BOARD(x,y)=-1;
             appleX = x;
             appleY = y;
         }
 
-        gfx_fillRect(COLOR_WHITE, (appleX*4)+1, appleY*4, 2, 4);
-        gfx_fillRect(COLOR_WHITE, appleX*4, (appleY*4)+1, 4, 2);
+        gfx_fillRect(COLOR_RED, (appleX*4)+1, appleY*4, 2, 4);
+        gfx_fillRect(COLOR_RED, appleX*4, (appleY*4)+1, 4, 2);
     }
 
     sprintf(score_s,"Current score: %04d",score);
-    gfx_putS(COLOR_WHITE, COLOR_BLACK, 2, STATUS_Y, score_s);
+    gfx_putS(COLOR_BLACK, COLOR_WHITE, 2, STATUS_Y, score_s);
 
     mdelay(delay);
 }
@@ -224,23 +226,23 @@ int game_init(void)
 
     for (x=0; x<maxX; x++)
         for (y=0; y<maxY; y++)
-            board[x][y]=0;
+            BOARD(x,y)=0;
 
     apple=0;
     snakelength=4;
     
-    board[40][28]=1;
+    BOARD(40,28)=1;
     
     collision_done=0;
     
     printf("In init\n");
     
-    gfx_putS(COLOR_WHITE, COLOR_BLACK, 2, 30, "1 is slowest, 10 is fastest");
-    gfx_putS(COLOR_WHITE, COLOR_BLACK, 2, 100, "Press [UP]/[DOWN] to change level");
-    gfx_putS(COLOR_WHITE, COLOR_BLACK, 2, 115, "Press [OFF] to quit plugin");
-    gfx_putS(COLOR_WHITE, COLOR_BLACK, 2, 130, "Press [ON] to start/pause");
+    gfx_putS(COLOR_BLACK, COLOR_WHITE, 2, 30, "1 is slowest, 10 is fastest");
+    gfx_putS(COLOR_BLACK, COLOR_WHITE, 2, 100, "Press [UP]/[DOWN] to change level");
+    gfx_putS(COLOR_BLACK, COLOR_WHITE, 2, 115, "Press [OFF] to quit plugin");
+    gfx_putS(COLOR_BLACK, COLOR_WHITE, 2, 130, "Press [ON] to start/pause");
     sprintf(score_s,"Score: %04d",score);
-    gfx_putS(COLOR_WHITE, COLOR_BLACK, 2, STATUS_Y, score_s);
+    gfx_putS(COLOR_BLACK, COLOR_WHITE, 2, STATUS_Y, score_s);
     
     while(1)
     {
@@ -248,7 +250,7 @@ int game_init(void)
         if(redraw)
         {
             sprintf(plevel,"Current Level: %02d",level);    
-            gfx_putS(COLOR_WHITE, COLOR_BLACK, 2, 10, plevel);
+            gfx_putS(COLOR_BLACK, COLOR_WHITE, 2, 10, plevel);
             redraw=0;
         }
         
@@ -262,8 +264,8 @@ int game_init(void)
                 return 0;                
                     
             case BTN_ON:
-                    gfx_clearScreen(COLOR_BLACK);
-                    gfx_drawLine(COLOR_WHITE, 0, STATUS_Y-1, screenWidth, STATUS_Y-1);
+                    gfx_clearScreen(COLOR_WHITE);
+                    gfx_drawLine(COLOR_BLACK, 0, STATUS_Y-1, screenWidth, STATUS_Y-1);
                     delay = (11-level)*15;
                     score=0;
                     return 1;
@@ -322,7 +324,7 @@ void eventHandlerLoop(void)
         game();
         if(collision_done)
         {
-            gfx_clearScreen(COLOR_BLACK);
+            gfx_clearScreen(COLOR_WHITE);
             if(!game_init())
                 stop=1;
         }
@@ -332,18 +334,19 @@ void eventHandlerLoop(void)
             switch(evt)
             {
                 case BTN_OFF:
+                    gfx_clearScreen(COLOR_WHITE);
                     if(!game_init())
                         stop=1;
                     break;
                 case BTN_ON:
-                    gfx_clearScreen(COLOR_BLACK);
+                    gfx_clearScreen(COLOR_WHITE);
                     if(!game_pause())
                     {
                         stop=1;
                         break;
                     }
-                    gfx_clearScreen(COLOR_BLACK);
-                    gfx_drawLine(COLOR_WHITE, 0, STATUS_Y-1, screenWidth, STATUS_Y-1);
+                    gfx_clearScreen(COLOR_WHITE);
+                    gfx_drawLine(COLOR_BLACK, 0, STATUS_Y-1, screenWidth, STATUS_Y-1);
                     break;
                 case BTN_UP:
                     if (dir!=2) dir=0;
@@ -372,7 +375,7 @@ void eventHandlerLoop(void)
 void arch_init(){
     arch=getArch();
     getResolution(&screenWidth,&screenHeight);
-
+    
     if(screenWidth>=320){
         gfx_fontSet(STD7X13);
         fontHeight=13;
@@ -383,11 +386,14 @@ void arch_init(){
 
     maxX=screenWidth/4;
     maxY=(STATUS_Y-1)/4;
+    
+    board=(int*)malloc(maxX*maxY*sizeof(int));
 }
 
 void app_main(int argc,char * * argv)
 {
-    gfx_clearScreen(COLOR_BLACK); /* clear the LCD to black */
+    board=NULL;
+    gfx_clearScreen(COLOR_WHITE); /* clear the LCD to black */
 
     arch_init();
 
@@ -395,5 +401,6 @@ void app_main(int argc,char * * argv)
     if(game_init())
         eventHandlerLoop();
     evt_freeHandler(evt_handler);
+    if(board) free(board);
 }
 
