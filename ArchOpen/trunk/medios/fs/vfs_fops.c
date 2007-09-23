@@ -32,7 +32,6 @@ int vfs_strToFlag(char * str)
     
     
     int read=0,write=0,append=0,plus=0;
-    int nbFlag;
     int res=0;
     while(*str)
     {
@@ -239,6 +238,7 @@ int open(char * name,int flags)
     
     LIST_ADD_TAIL_NAMED(fd->mount_point->opened_node,fd,prev_open,next_open);
     thread_listAdd(THREAD_PTR_2_LIST(fd),FILE_RESSOURCE,THREAD_NO_FORCE);
+    printk("file %s at %x\n",name,fd->storage_location);
     return (int)fd;
 }
 
