@@ -113,7 +113,7 @@ DIR * opendir(char * pathname)
     /* check if we need to load content */
     if(!fd->dir_loaded)
     {
-        printk("[VFS] need to load folder\n");
+        VFS_PRINT("[VFS] need to load folder\n");
         ret_val = fat_loadDir(fd);
         if(ret_val!=MED_OK)
         {

@@ -24,6 +24,8 @@
 
 #include <gui/icons.h>
 #include <gui/file_browser.h>
+#include <gui/settings_browser.h>
+#include <gui/status_line.h>
 
 #include <driver/lcd.h>
 
@@ -52,15 +54,32 @@ void iniBrowser(void)
     gui_ls_mp3Bitmap=&icon_get("mp3Bitmap")->bmap_data;
     gui_ls_textBitmap=&icon_get("textBitmap")->bmap_data;
     gui_ls_imageBitmap=&icon_get("imageBitmap")->bmap_data;
+    
+    /* getting default setting*/
+    browser_loadCfg();
 }
 
-MED_RET_T viewNewDir(struct browser_data *bdata,char *name)
+MED_RET_T viewNewDir(struct browser_data *bdata,char *name,char * oldName)
 {
     MED_RET_T ret_val;
-    ret_val=browser_loadFoler(bdata,name); 
+    ret_val=browser_loadFoler(bdata,name);
+    int pos=0;
     if(ret_val!=MED_OK)
         return ret_val;
-    
+    if(oldName!=NULL)
+    {
+        pos=findName(bdata,oldName);
+        if(pos>4)
+        {
+            bdata->pos=pos-4;
+            bdata->nselect=4;
+        }
+        else
+        {
+            bdata->pos=0;
+            bdata->nselect=pos;   
+        }
+    }
     redrawBrowser(bdata);
     
     return MED_OK;
@@ -69,13 +88,18 @@ MED_RET_T viewNewDir(struct browser_data *bdata,char *name)
 void browser_screenSize(struct browser_data *bdata)
 {
     int fw,fh;
+
+    if(browser_has_statusbar)
+    {
+        bdata->y_start += SHELL_STATUS_HEIGHT;
+        bdata->height -= SHELL_STATUS_HEIGHT;
+    }
     
     bdata->nb_disp_entry=(bdata->height-BROWSER_STATUS_HEIGHT)/bdata->entry_height;
     gfx_getStringSize("M",&fw,&fh);
     bdata->max_entry_length=(bdata->width-
             (bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0)-
-            BROWSER_ICON_WIDTH)
-                                /fw;
+            BROWSER_ICON_WIDTH)/fw;
 
     bdata->browser_scroll.x=bdata->x_start
             +(bdata->scroll_pos==LEFT_SCROLL?1:bdata->width-BROWSER_SCROLLBAR_WIDTH);
@@ -193,6 +217,13 @@ int browser_browse(struct browser_data *bdata,char * path,char * res)
     
     /*initial draw*/
     browser_doDraw(bdata);
+
+    /*draw status bar if needed*/
+    if(browser_has_statusbar)
+    {
+        statusLine_init();
+        drawGui();
+    }
     
     /* start evt loop */
     

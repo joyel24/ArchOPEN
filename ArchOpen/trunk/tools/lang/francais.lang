@@ -81,3 +81,8 @@ STRLNG_NO_FILE_SELECTED # Aucun fichier select.
 STRLNG_LOAD_IMG # Chgmnt de l'image
 STRLNG_DISCARD_FILE_IMAGE # Effacer nelle Img
 STRLNG_DISCARD_BG_IMAGE # Effacer Img fond
+STRLNG_BROWSER_SETTINGS # Param. Browser
+STRLNG_HAS_BACK_ENTRY # Ajout de 'retour'
+STRLNG_BROWSER_BACK # <-retour
+STRLNG_SCROLL_ONLY_SELECTED # Scroll sous selection
+STRLNG_BRW_HAS_STATUSBAR # Barre de status active

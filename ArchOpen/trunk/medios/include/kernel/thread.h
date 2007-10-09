@@ -107,6 +107,7 @@ typedef struct thread_info {
 } THREAD_INFO;
 
 extern THREAD_INFO * threadCurrent;
+extern THREAD_INFO * idleThread;
 
 #define THREAD_LINKS THREAD_LIST __thread_list;
 #define THREAD_PTR_2_LIST(PTR)     (&PTR->__thread_list)

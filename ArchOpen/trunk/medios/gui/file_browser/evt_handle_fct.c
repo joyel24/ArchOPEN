@@ -27,6 +27,7 @@
 #include <gui/file_browser.h>
 #include <gui/scrollbar.h>
 #include <gui/msgBox.h>
+#include <gui/status_line.h>
 
 extern int evt_handler;
 
@@ -37,9 +38,10 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
 
     int stop=0;;
     int ret=-MED_ERROR;
-    int i;
     char evt=0;
     int prev_tick;
+    int i;
+    char tmp_str[MAX_PATH];
     struct browser_data * bdata;
     struct browser_data * dualBdata;
     gfx_getStringSize("M", &w, &h);
@@ -64,15 +66,43 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
         if(mainBdata->txt_scroll_speed>0
            && prev_tick+mainBdata->txt_scroll_speed<tmr_getTick())
         {
-            for (i = mainBdata->pos; i < mainBdata->listused && i < mainBdata->pos+mainBdata->nb_disp_entry; i++)
-                if(mainBdata->list[i].name_size>mainBdata->max_entry_length)
-                    printLongName(i,i-mainBdata->pos,(i-mainBdata->pos)==mainBdata->nselect,mainBdata);
-            if(mainBdata->is_dual && mainBdata->dual_mode!=0)
+            if(!browser_scroll_only_selected)
             {
-                for (i = dualBdata->pos; i < dualBdata->listused && i < dualBdata->pos+dualBdata->nb_disp_entry;
-                     i++)
-                    if(dualBdata->list[i].name_size>dualBdata->max_entry_length)
-                        printLongName(i,i-dualBdata->pos,(i-dualBdata->pos)==dualBdata->nselect,dualBdata);
+                for (i = mainBdata->pos; i < mainBdata->listused && i < mainBdata->pos+mainBdata->nb_disp_entry; i++)
+                    if(mainBdata->list[i].name_size>mainBdata->max_entry_length)
+                        printLongName(i,i-mainBdata->pos,(i-mainBdata->pos)==mainBdata->nselect,mainBdata);
+                if(mainBdata->is_dual && mainBdata->dual_mode!=0)
+                {
+                    for (i = dualBdata->pos; i < dualBdata->listused && i < dualBdata->pos+dualBdata->nb_disp_entry;
+                        i++)
+                        if(dualBdata->list[i].name_size>dualBdata->max_entry_length)
+                            printLongName(i,i-dualBdata->pos,(i-dualBdata->pos)==dualBdata->nselect,dualBdata);
+                }
+            }
+            else
+            {
+                if(mainBdata->is_dual)
+                {
+                    if(mainBdata->dual_mode>1)
+                    {
+                        int i=bdata->pos+bdata->nselect;
+                        if(dualBdata->list[i].name_size>dualBdata->max_entry_length)
+                            printLongName(i,i-dualBdata->pos,1,dualBdata);
+                    }
+                    else
+                    {
+                        int i=bdata->pos+bdata->nselect;
+                        if(mainBdata->list[i].name_size>mainBdata->max_entry_length)
+                            printLongName(i,i-mainBdata->pos,1,mainBdata);
+                    }
+    
+                }
+                else
+                {
+                    int i=bdata->pos+bdata->nselect;
+                    if(mainBdata->list[i].name_size>mainBdata->max_entry_length)
+                        printLongName(i,i-mainBdata->pos,1,mainBdata);
+                }
             }
             prev_tick=tmr_getTick();
         }
@@ -119,7 +149,7 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
                 break;
             case EVT_CF_IN:
             case EVT_CF_OUT:
-                if(viewNewDir(bdata,"/")!=MED_OK)
+                if(viewNewDir(bdata,"/",NULL)!=MED_OK)
                     stop=1;
                 break;
             case BTN_OFF:
@@ -128,9 +158,11 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
             case BTN_ON:
                 if(bdata->list[bdata->pos+bdata->nselect].type==TYPE_BACK)
                 {
+                    strcpy(tmp_str,currentDir(bdata));
+                    printk("prev folder: %s\n",tmp_str);
                     if(upDir(bdata))
                     {
-                        if(viewNewDir(bdata,NULL)!=MED_OK)
+                        if(viewNewDir(bdata,NULL,tmp_str)!=MED_OK)
                             stop=1;
                     }
                     break;
@@ -255,16 +287,19 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
                     switch(bdata->list[bdata->pos+bdata->nselect].type)
                     {
                         case TYPE_BACK:
+                            strcpy(tmp_str,currentDir(bdata));
+                            printk("prev folder: %s\n",tmp_str);
                             upDir(bdata);
-                            if(viewNewDir(bdata,NULL)!=MED_OK)
+                            if(viewNewDir(bdata,NULL,tmp_str)!=MED_OK)
                             {
                                 stop=1;
                                 break;
                             }
+                            
                             break;
                         case TYPE_DIR:
                             inDir(bdata,bdata->list[bdata->pos+bdata->nselect].name);
-                            if(viewNewDir(bdata,NULL)!=MED_OK)
+                            if(viewNewDir(bdata,NULL,NULL)!=MED_OK)
                             {
                                 stop=1;
                                 break;
@@ -301,9 +336,12 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
             case BTN_2:
 #endif
             case BTN_LEFT:
+                /* getting name of current folder */
+                strcpy(tmp_str,currentDir(bdata));
+                printk("prev folder: %s\n",tmp_str);
                 if(upDir(bdata))
                 {
-                    if(viewNewDir(bdata,NULL)!=MED_OK)
+                    if(viewNewDir(bdata,NULL,tmp_str)!=MED_OK)
                     {
                         stop=1;
                         break;
@@ -311,6 +349,8 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
                 }
                 break;
         }
+        if(browser_has_statusbar)
+            statusLine_handleEvent(evt);
     }
     return ret;
 }

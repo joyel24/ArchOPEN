@@ -49,14 +49,15 @@ MED_RET_T lang_loadLng(char * ptr,int size)
         ptr+=2;
         if(id<STRLNG_LAST_ENTRY)
         {
-            printk("[lang_loadLng] Found %d: %s\n",id,ptr);
+//            printk("[lang_loadLng] Found %d: %s\n",id,ptr);
             langString[id]=ptr;
         }
         else
         {
             if(id==0xFFFF)
             {
-                printk("[lang_loadLng] End of buildin_lng reached (%d/%d) ==> found end magic id\n",i,STRLNG_LAST_ENTRY);
+                printk("[lang_loadLng] End of reached: found end magic id (%d str found, max=%d)\n",
+                       i,STRLNG_LAST_ENTRY);
                 break;
             }
             else
@@ -67,7 +68,7 @@ MED_RET_T lang_loadLng(char * ptr,int size)
         while(ptr<end && *ptr) ptr++;
         if(ptr==end)
         {
-            printk("[lang_loadLng] End of buildin_lng reached (%d/%d)\n",i,STRLNG_LAST_ENTRY);
+            printk("[lang_loadLng] found %d str (max is %d)\n",i,STRLNG_LAST_ENTRY);
             break;
         }
         ptr++;
@@ -98,7 +99,7 @@ void lang_init(void)
 {
     customLang=(char*)1;
     lang_loadDefault();
-    printk("lang at 0x%x\n",langString);
+    //printk("lang at 0x%x\n",langString);
 }
 
 MED_RET_T lang_loadFile(char * fName)
@@ -106,6 +107,7 @@ MED_RET_T lang_loadFile(char * fName)
     int fd;
     int size;    
     char * buffer;
+    printk("[lang_loadFile] loading lng from %s\n",fName);
     fd=open(fName,O_RDONLY);
     if(fd<0)
     {
@@ -113,7 +115,6 @@ MED_RET_T lang_loadFile(char * fName)
         return -MED_ENOTFOUND;
     }
     size=filesize(fd);
-    printk("[lang_loadFile] Need to load %d bytes\n",size);
     buffer=(char*)malloc(size);
     if(!buffer)
     {
@@ -121,8 +122,7 @@ MED_RET_T lang_loadFile(char * fName)
     }
     size=read(fd,buffer,size);
     close(fd);
-    printk("[lang_loadFile] Read %d bytes\n",size);
-    if(lang_loadLng(buffer,size)!=MED_OK)
+if(lang_loadLng(buffer,size)!=MED_OK)
         return -MED_ERROR;
 /* NOTE: on error should reload previous lang */
     if(customLang)        

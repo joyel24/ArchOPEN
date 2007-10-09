@@ -14,6 +14,7 @@
 
 #include <kernel/kernel.h>
 #include <kernel/malloc.h>
+#include <kernel/lang.h>
 
 #include <fs/stdfs.h>
 
@@ -161,8 +162,13 @@ int doLs(struct browser_data * bdata)
                 continue;
             if(fullname[0]=='.' && fullname[1]=='.' && fullname[2]=='\0')
             {
-                if(!addEntry(bdata,"<-Back",TYPE_BACK,0))
-                    return 0;
+                if(browser_has_back_entry)
+                {
+                    if(!addEntry(bdata,getLangStr(STRLNG_BROWSER_BACK),TYPE_BACK,0))
+                        return 0;
+                }
+                else
+                    continue;
             }
             else
             {
@@ -222,6 +228,22 @@ int upDir(struct browser_data * bdata)
 
 }
 
+char * currentDir(struct browser_data * bdata)
+{
+    char * ptr=NULL;
+    if(isRoot(bdata))
+    {
+        return bdata->path;
+    }
+    ptr=strrchr(bdata->path,'/');
+    if(!ptr)
+    {
+        printk("[curDir] error can't find a '/' (%s)\n",bdata->path);
+        return NULL;
+    }
+    return ptr+1;
+}
+
 int isRoot(struct browser_data * bdata)
 {
     return (strlen(bdata->path)==1 && bdata->path[0]=='/');
@@ -251,6 +273,17 @@ int inDir(struct browser_data * bdata,char * name)
         printk("[inDir] error cant go to %s from %s, string too long\n",name,bdata->path);
         return 0;
     }
+}
+
+int findName(struct browser_data * bdata,char * name)
+{
+    int i;
+    for(i=0;i<bdata->listused;i++)
+    {
+        if(!strcmp(bdata->list[i].name,name))
+            return i;
+    }
+    return 0;
 }
 
 void clearSelection(struct browser_data * bdata)

@@ -24,6 +24,7 @@
 #include <gfx/graphics.h>
 
 #include <gui/file_browser.h>
+#include <gui/shell.h>
 
 #include <fs/file_type.h>
 
@@ -63,6 +64,10 @@ struct browser_data realData = {
     dual_mode          : 0,
     dual               : NULL
 };
+
+int browser_has_back_entry;
+int browser_scroll_only_selected;
+int browser_has_statusbar;
 
 void printList(struct browser_data * bdata,int val)
 {

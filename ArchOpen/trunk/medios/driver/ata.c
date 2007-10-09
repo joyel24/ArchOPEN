@@ -70,6 +70,8 @@ int ata_rwData(int disk,unsigned int lba,void * inData,int inCount,int cmd,int u
     int use_multiple=1;
     MED_RET_T ret_val=-MED_ERROR;
     
+//    printk("[ata-rw] disk=%x buffer=%x lba=%x count=%x cmd=%x use_dma=%x\n",disk,inData,lba,inCount,cmd,use_dma);
+    
     spinLock_lock(&ata_lock);        
     
     ata_RW_thread=threadCurrent;
@@ -838,11 +840,13 @@ void ata_init(void)
 
 void ide_intAction(int irq,struct pt_regs * regs)
 {
-    
     if(ata_RW_thread && ata_RW_thread->state==THREAD_BLOCKED_BY_DMA)
     {
         ata_RW_thread->state=THREAD_STATE_ENABLE;
-        threadCurrent=ata_RW_thread; 
+        /*NOTE: we could implement here some kind of test if current thread can
+                be preempted */
+        if(threadCurrent==idleThread)
+           threadCurrent=ata_RW_thread;
     }
 }
 

@@ -43,16 +43,19 @@ GCCFLAGS += -mcpu=arm7tdmi
 endif
 
 GCCFLAGS += -D$(TARGET_DEVICE) -D$(CHIP_TYPE) -I$(MEDIOS_SRC_PATH)/medios/include -I$(MEDIOS_SRC_PATH)/include --pipe
-GCCFLAGS += -I$(MEDIOS_SRC_PATH)/medios/lib/jpeg-6b
+GCCFLAGS += -I$(MEDIOS_SRC_PATH)/medios/lib/jpeg-6b 
+# -I$(MEDIOS_SRC_PATH)/medios/lib/zlib-1.2.3
+#GCCFLAGS += -I$(MEDIOS_SRC_PATH)/medios/lib/libpng-1.2.18
 
 ASFLAGS  += --defsym $(SPLASH_TYPE)=1 --defsym $(TARGET_DEVICE)=1 --defsym $(CHIP_TYPE)=1
 ASFLAGS  +=-I$(MEDIOS_SRC_PATH)/include
 
-LDFLAGS =  -L/usr/local/toolchain_arm_nofpu/arm-linux-uclibc/lib/ -lfloat -lm -lgcc -L./ -ljpeg 
-#-lz 
-#LDFLAGS =  -L/home/christophe/toolchain_arm_nofpu/arm-linux-uclibc/lib/ -lfloat -lm -lgcc -L./ -ljpeg -lz
-
 BUILD_DIR = $(MEDIOS_SRC_PATH)/medios/build
+LIB_DIR = $(MEDIOS_SRC_PATH)/lib
+
+LDFLAGS =  -L/usr/local/toolchain_arm_nofpu/arm-linux-uclibc/lib/ -L$(LIB_DIR) -ljpeg -lfloat -lm -lgcc
+#LDFLAGS =  -L/usr/local/toolchain_arm_nofpu/arm-linux-uclibc/lib/ -L$(LIB_DIR) -ljpeg -lpng -lz -lfloat -lm -lgcc
+#LDFLAGS =  -L/home/christophe/toolchain_arm_nofpu/arm-linux-uclibc/lib/ -L$(LIB_DIR) -ljpeg -lpng -lz -lfloat -lm -lgcc
 
 ifeq ($(BOOT_WITH_CONSOLE),1)
 	GCCFLAGS += -DBOOT_WITH_CONSOLE

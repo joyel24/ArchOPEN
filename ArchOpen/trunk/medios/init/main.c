@@ -85,30 +85,41 @@ unsigned int _sys_IniStack = IRAM_SIZE-SVC_STACK_SIZE;
 
 #if 0
 
-#include <gfx/bmp.h>
-#include <fs/stdfs.h>
+#include <zlib.h>
 
-void test(void)
+#define CHECK_ERR(err, msg) { \
+    if (err != Z_OK) { \
+        printk("%s error: %d\n", msg, err); \
+        return; \
+    } \
+}
+                 
+const char hello[] = "hello, hello!";
+                 
+void test()
 {
-    DIR * codec_folder;
-    struct dirent * entry;
-    char * fname;
-    codec_folder=opendir("/bmp/");
-    if(codec_folder)
-    {
-        while((entry=readdir(codec_folder))!=NULL)
-        {
-            if(entry->d_name[0]=='.')
-                continue;
-            fname=(char*)malloc(strlen(entry->d_name)+strlen("/bmp/")+1);
-            strcpy(fname,"/bmp/");
-            strcat(fname,entry->d_name);
-            gfx_loadBmp(fname);
-        }
-        closedir(codec_folder);
+    int err;    
+    uLong comprLen,uncomprLen;
+    Byte *compr,*uncompr;
+    uLong len = (uLong)strlen(hello)+1;
+    compr = (Byte *)malloc(1000*sizeof(int));
+    uncompr = (Byte *)malloc(1000*sizeof(int));
+    comprLen=uncomprLen=1000*sizeof(int);
+    
+    err = compress(compr, &comprLen, (const Bytef*)hello, len);
+    CHECK_ERR(err, "compress");
+
+    strcpy((char*)uncompr, "garbage");
+
+    err = uncompress(uncompr, &uncomprLen, compr, comprLen);
+    CHECK_ERR(err, "uncompress");
+
+    if (strcmp((char*)uncompr, hello)) {
+        printk("bad uncompress\n");
+        return;
+    } else {
+        printk("uncompress(): %s\n", (char *)uncompr);
     }
-    else
-        printk("Can't open folder\n");
 }
 
 #endif
@@ -141,7 +152,7 @@ void kernel_thread(void)
     tmr_print();
     thread_ps();
 #endif
-    //test();
+    //main_test();
 #ifdef BUILD_LIB
     app_main(1,&stdalone);
     reload_firmware();
@@ -171,9 +182,10 @@ void kernel_start (void)
     con_init();
 
     /* print banner on uart */
-    printk("MediOS " VERSION_NUMBER " - kernel loading\n\n");
+    printk("\nMediOS " VERSION_NUMBER " - kernel loading\n\n");
 
-    printk("Initial SP: %08x, kernel end: %08x, size in IRAM: %x/%x  Malloc start: %08x, size: %x\n",get_sp(),
+    printk("Initial SP:%08x, kernel end:%08x, size in IRAM:%x/%x\nMalloc start:%08x, Malloc size:%x\n",
+           get_sp(),
         (unsigned int)&_end_kernel,
         (unsigned int)&_iram_end - (unsigned int)&_iram_start,
         IRAM_SIZE,
@@ -217,9 +229,7 @@ void kernel_start (void)
     cpld_init();
     
     lcd_init();
-    
-    
-    
+           
     init_cmd_line();
 
 #ifdef HAVE_EVT

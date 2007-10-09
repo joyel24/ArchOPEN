@@ -53,9 +53,11 @@ void screens_show(int screen_num)
         printk("No or incompletet data for screen %d (ptr=%x)\n",screen_num,screen_table[screen_num]);
         return;
     }
-    
-    printk("switch from %d to %d\n",current_screen,screen_num);
-    
+
+    if(current_screen==-1)
+        printk("switch from NO_SCREEN to %d\n",screen_num);
+    else
+        printk("switch from %d to %d\n",current_screen,screen_num);
     if(current_screen!=-1 && screen_table[current_screen]) // need to save data of previous screen 
     {
         if(screen_table[current_screen]->palette)

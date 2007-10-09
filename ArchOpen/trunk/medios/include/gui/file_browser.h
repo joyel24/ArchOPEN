@@ -32,6 +32,10 @@
 #define MODE_NOSELECT 1
 #define MODE_STRING   2
 
+extern int browser_has_back_entry;
+extern int browser_scroll_only_selected;
+extern int browser_has_statusbar;
+
 struct dir_entry {
     char * name;
     int name_size;
@@ -111,14 +115,16 @@ struct dir_entry * nxtSelect(struct browser_data * bdata,int * pos);
 
 int upDir(struct browser_data * bdata);
 int inDir(struct browser_data * bdata,char * name);
+char * currentDir(struct browser_data * bdata);
 int isRoot(struct browser_data * bdata);
+int findName(struct browser_data * bdata,char * name);
 
 /*****    evt_handle_fct    *****/
 int  browserEvt         (struct browser_data * bdata);
 
 /*****    gui_fct    *****/
 void iniBrowser         (void);
-int  viewNewDir         (struct browser_data *bdata,char *name);
+int  viewNewDir         (struct browser_data *bdata,char *name,char * oldName);
 void browser_doDraw     (struct browser_data *bdata);
 void printName          (struct dir_entry * dEntry,int pos,int clear,int selected,struct browser_data *bdata);
 void printAllName       (struct browser_data *bdata);

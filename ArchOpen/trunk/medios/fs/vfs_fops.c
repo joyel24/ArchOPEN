@@ -195,6 +195,7 @@ int open(char * name,int flags)
         }
     }
 
+    
     ret_val=fat_fileOpen(fd);
 
     if(ret_val != MED_OK)
@@ -238,7 +239,6 @@ int open(char * name,int flags)
     
     LIST_ADD_TAIL_NAMED(fd->mount_point->opened_node,fd,prev_open,next_open);
     thread_listAdd(THREAD_PTR_2_LIST(fd),FILE_RESSOURCE,THREAD_NO_FORCE);
-    printk("file %s at %x\n",name,fd->storage_location);
     return (int)fd;
 }
 

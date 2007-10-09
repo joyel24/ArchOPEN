@@ -86,6 +86,13 @@ static void codec_findCodecs(){
             fname=(char*)malloc(strlen(entry->d_name)+strlen(CODECS_DIR)+1);
             strcpy(fname,CODECS_DIR);
             strcat(fname,entry->d_name);
+
+            if(entry->d_name[0]=='.' || (entry->d_name[0]=='.' && entry->d_name[0]=='.'))
+            {
+                /* ./ or ../ folder entry ==> discard */
+                continue;
+            } 
+            
             if(entry->type!=VFS_TYPE_FILE)
             {
                 printk("discard: '%s' not a file\n",entry->d_name);

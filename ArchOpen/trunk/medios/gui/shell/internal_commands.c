@@ -36,6 +36,7 @@
 
 #include <gfx/graphics.h>
 #include <gfx/jpg.h>
+#include <gfx/bmp.h>
 
 #include <gui/internal_commands.h>
 #include <gui/shell.h>
@@ -47,6 +48,7 @@
 #include <gui/settings_misc.h>
 #include <gui/settings_lang.h>
 #include <gui/settings_bgImg.h>
+#include <gui/settings_browser.h>
 
 #include <gui/player.h>
 #include <gui/playlistmenu.h>
@@ -71,6 +73,8 @@ static bool intCmd_doBgImgSetting(char * param);
 static bool intCmd_doTest(char * param);
 static bool intCmd_doCon_flushToDisk(char * param);
 static bool intCmd_doLoadJpg(char * param);
+static bool intCmd_doLoadBmp(char * param);
+static bool intCmd_doBrowserSetting(char * param);
 
 typedef struct{
     char * command;
@@ -111,6 +115,10 @@ INTERNAL_COMMAND intCmd_commands[] = {
         function: intCmd_doEnergySetting
     },
     {
+        command:  "set_browser",
+        function: intCmd_doBrowserSetting
+    },
+    {
         command:  "set_misc",
         function: intCmd_doMiscSetting
     },
@@ -149,6 +157,10 @@ INTERNAL_COMMAND intCmd_commands[] = {
     {
         command:  "loadJpeg",
         function: intCmd_doLoadJpg
+    },
+    {
+        command:  "loadBmp",
+        function: intCmd_doLoadBmp
     },
     /* should always be the last entry */
     {
@@ -431,33 +443,31 @@ static bool intCmd_doLowPower(char * param)
     return true;
 }
 
+#include <fs/vfs_node.h>
 static bool intCmd_doTest(char * param)
 {
-    DIR * lang_folder;
-    struct dirent * entry;
-    int i;
-    lang_folder=opendir("/medios/icons");
-    if(lang_folder)
-    {
-        printk("First read = full read\n");
-        i=0;
-        while((entry=readdir(lang_folder))!=NULL)
-            printk("%d: %s\n",i++,entry->d_name);
-        rewinddir(lang_folder);
-        printk("Second read = full read\n");
-        i=0;
-        while((entry=readdir(lang_folder))!=NULL)
-            printk("%d: %s\n",i++,entry->d_name);
-        closedir(lang_folder);
-    }
-    else
-        printk("Can't open folder\n");
+    int fd;
+    struct vfs_node * node;
+    char tmp[20];
+    fd=open(param,O_RDONLY);
+    if(fd<0)
+        return true;
+    node=(struct vfs_node *)fd;
+    printk("start: %x\n",node->storage_location);
+    read(fd,tmp,10);
+    close(fd);
     return true;
 }
 
 bool intCmd_doBgImgSetting(char * param)
 {
     bgImg_setting();
+    return true;   
+}
+
+bool intCmd_doBrowserSetting(char * param)
+{
+    browser_setting();
     return true;   
 }
 
@@ -485,6 +495,30 @@ bool intCmd_doLoadJpg(char * param)
         if(evt==BTN_OFF)
             break;
     }
+    gfx_planeShow(BMAP1);
+    gfx_planeHide(VID1);
+    return true;
+}
+
+bool intCmd_doLoadBmp(char * param)
+{
+    int evt,evt_handler;
+    gfx_planeHide(BMAP1);
+    gfx_planeHide(BMAP2);
+    gfx_planeShow(VID1);
+      
+    gfx_loadBmp(param);
+    printk("Back from loader\n");
+    evt_handler=evt_getHandler(BTN_CLASS);
+    while(1)
+    {
+        evt=evt_getStatus(evt_handler);
+        if(evt==NO_EVENT)
+            continue;
+        if(evt==BTN_OFF)
+            break;
+    }
+    printk("Exit\n");
     gfx_planeShow(BMAP1);
     gfx_planeHide(VID1);
     return true;

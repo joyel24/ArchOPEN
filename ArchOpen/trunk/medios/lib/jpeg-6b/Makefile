@@ -27,6 +27,6 @@ libjpeg.a: $(MEDIOSOBJECTS)
 	@$(RM) -f libjpeg.a
 	@$(AR) rc libjpeg.a  $(MEDIOSOBJECTS)
 	@$(RANLIB) libjpeg.a
-	@cp libjpeg.a ../../../
+	@cp libjpeg.a $(LIB_DIR)
 
 include $(MEDIOS_SRC_PATH)/default.rule

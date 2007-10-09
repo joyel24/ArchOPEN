@@ -45,7 +45,7 @@ unsigned int fat_cluster2Sec(struct bpb* fat_bpb, int cluster)
         printk( "cluster2sec() - Bad cluster number (%x/%x)\n", cluster,max_cluster);
         return -1;
     }
-
+    
     return (cluster - zerocluster) * fat_bpb->bpb_secperclus
            + fat_bpb->firstdatasector;
 }
@@ -163,13 +163,15 @@ MED_RET_T fat_initDevice(struct bpb* fat_bpb,int drive,unsigned int startsector)
     {
         fat_recalcFree(fat_bpb);
     }
-/*
+
     printk("Freecount: %d\n",fat_bpb->fsinfo.freecount);
     printk("Nextfree: 0x%x\n",fat_bpb->fsinfo.nextfree);
     printk("Cluster count: 0x%x\n",fat_bpb->dataclusters);
     printk("Sectors per cluster: %d\n",fat_bpb->bpb_secperclus);
     printk("FAT sectors: 0x%x\n",fat_bpb->fatsize);
-*/
+    printk("First sector : %x\n",fat_bpb->firstdatasector);
+    
+
     return MED_OK;
 }
 

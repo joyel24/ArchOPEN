@@ -198,10 +198,10 @@ static bool shellMenu_build(){
     }
 
     shellMenu_menuList->addWidget(shellMenu_menuList,shellMenu_rootMenu);
-    shellMenu_menuList->setFocusedWidget(shellMenu_menuList,shellMenu_rootMenu);
+    //shellMenu_menuList->setFocusedWidget(shellMenu_menuList,shellMenu_rootMenu);
 
     item=shellMenu_firstItem;
-
+    
     // create items & submenus
     while(item!=NULL){
 
@@ -303,6 +303,8 @@ static bool shellMenu_build(){
         item=item->next;
     }
 
+    shellMenu_menuList->setFocusedWidget(shellMenu_menuList,shellMenu_rootMenu);
+    
     printk("[shell menu] menu build\n");
     
     return true;

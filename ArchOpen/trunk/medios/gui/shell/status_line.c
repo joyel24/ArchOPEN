@@ -52,6 +52,8 @@ int color = 0;
 int level = 0;
 int chargeProgress = 0;
 
+int initDone=0;
+
 #define HOUR(HH)       (time_format==FORMAT_12?(HH<=12?HH:(HH-12)):HH)
 #define AMPM_ADD(HH)   time_format==FORMAT_12?HH<=12?"AM":"PM":""
 #define DATE1(DD,MM)   (date_format==FORMAT_DDMMYYYY?DD:MM)
@@ -276,6 +278,9 @@ void statusLine_handleEvent(int evt)
 void statusLine_init(void)
 {
     CFG_DATA * cfg;
+
+    if(initDone) return;
+    
     /* get icons */
     st_fwExtIcon=&icon_get("fwExtIcon")->bmap_data;
     st_cfIcon=&icon_get("cfIcon")->bmap_data;
@@ -317,5 +322,5 @@ void statusLine_init(void)
     cfg_clear(cfg);
 
     cfState=CF_IS_CONNECTED;
-
+    initDone=1;
 }

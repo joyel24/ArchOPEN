@@ -1,11 +1,16 @@
 include Makefile.conf
 
 SUBDIRS = medios
+SUBDIRS_CLEAN = $(MEDIOS_SRC_PATH)/lib
+
 KERNEL_OBJS = medios/build/*.o medios/target/$(CHIP_TYPE)/build/*.o medios/target/$(CHIP_TYPE)/$(TARGET_DEVICE)/build/*.o
 
 export MEDIOS_SRC_PATH=$(shell pwd)
 
 all: medios_shell
+
+lib_dir:
+	@mkdir -p $(MEDIOS_SRC_PATH)/lib
 
 mk_api_file:
 	@make -C tools/api_files/ --no-print-directory
@@ -17,7 +22,7 @@ mk_version:
 mk_lang:
 	@make -C tools/lang/ --no-print-directory
 
-incdir:
+inc_dir:
 	@make -C medios/include/target --no-print-directory incdir
 	@make -C medios/include/target/chip --no-print-directory incdir
                 
@@ -26,7 +31,7 @@ mk_build_tools:
                 
 medios_shell: medios.bin medios.wav medios.avi
         
-medios.bin: incdir mk_api_file mk_build_tools mk_lang subdirs
+medios.bin: inc_dir lib_dir mk_api_file mk_build_tools mk_lang subdirs
 	@echo '-----   Linking medios.bin 1/2'
 	@chmod 777 ./tools/lds_files/create_lds
 	@./tools/lds_files/create_lds init
