@@ -325,6 +325,11 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
 
                                 //TODO: not very nice, browser should be able to recieve EVT_REDRAW and process it
                                 evt_purgeHandler(evt_handler);
+                                if(browser_has_statusbar)
+                                {
+                                    statusLine_init();
+                                    drawStatusLine();
+                                }
                                 browser_doDraw(mainBdata);
                             }
                             break;

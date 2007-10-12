@@ -222,7 +222,7 @@ int browser_browse(struct browser_data *bdata,char * path,char * res)
     if(browser_has_statusbar)
     {
         statusLine_init();
-        drawGui();
+        drawStatusLine();
     }
     
     /* start evt loop */

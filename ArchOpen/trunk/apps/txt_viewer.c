@@ -32,6 +32,8 @@ int yDebug = 100;
 #define MID_SECTOR     (buffer + SMALL_BLOCK_SIZE)
 #define BOTTOM_SECTOR  (buffer + 2*(SMALL_BLOCK_SIZE))
 
+#define X_INIT   1
+
 /* Out-Of-Bounds test for any pointer to data in the buffer */
 #define BUFFER_OOB(p)    ((p) < buffer || (p) >= buffer_end)
 
@@ -566,7 +568,7 @@ static void viewer_draw(int col)
 
 						  memset(text, 0, sizeof(text));
 						  strncpy(text,scratch_buffer + col, k);
-                    gfx_putS(COLOR_BLACK, COLOR_WHITE, left_col*font_width, i*font_height, text);
+                    gfx_putS(COLOR_BLACK, COLOR_WHITE, left_col*font_width+X_INIT, i*font_height, text);
 
                 }
         }
@@ -581,7 +583,7 @@ static void viewer_draw(int col)
 
 						  memset(text, 0, sizeof(text));
 						  strncpy(text, line_begin + col, line_len);
-                    gfx_putS(COLOR_BLACK, COLOR_WHITE, left_col*font_width, i*font_height, text);
+                    gfx_putS(COLOR_BLACK, COLOR_WHITE, left_col*font_width+X_INIT, i*font_height, text);
 
                     line_end[0] = c;
                 }
