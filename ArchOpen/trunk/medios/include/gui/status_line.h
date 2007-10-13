@@ -16,7 +16,7 @@
 
 void statusLine_init(void);
 void statusLine_handleEvent(int evt);
-void drawGui(void);
+void drawStatusLine(void);
 
 #define FORMAT_MMDDYYYY    1
 #define FORMAT_DDMMYYYY    0
