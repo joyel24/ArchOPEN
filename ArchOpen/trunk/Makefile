@@ -23,8 +23,8 @@ mk_lang:
 	@make -C tools/lang/ --no-print-directory
 
 inc_dir:
-	@make -C medios/include/target --no-print-directory incdir
-	@make -C medios/include/target/chip --no-print-directory incdir
+	@make -C medios/include/target --no-print-directory inc_dir
+	@make -C medios/include/target/chip --no-print-directory inc_dir
                 
 mk_build_tools:
 	@make -C tools/buildTools --no-print-directory

@@ -9,7 +9,7 @@ distribPath=$3
 
 cd ~/archopen_src/build/trunk
 cp -f ../av3xx.conf ./Makefile.conf
-make incdir
+make inc_dir
 make mk_api_file
 #disarding messages from make clean
 make clean 2>&1 > /dev/null
