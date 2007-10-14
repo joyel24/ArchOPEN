@@ -145,6 +145,11 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
                 break;
             case BTN_F3:
                 browser_contMenu(bdata);
+                if(browser_has_statusbar)
+                {
+                    statusLine_init();
+                    drawStatusLine();
+                }
                 browser_doDraw(mainBdata);
                 break;
             case EVT_CF_IN:

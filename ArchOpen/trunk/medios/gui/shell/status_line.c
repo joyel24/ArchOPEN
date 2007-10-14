@@ -204,7 +204,7 @@ void drawLogo(void)
     gfx_drawBitmap(st_mediosLogo, lineData.logo_x, lineData.logo_y);
 }
 
-void drawGui(void)
+void drawStatusLine(void)
 {
     int w = 0;
     int h = 0;
@@ -240,7 +240,7 @@ void statusLine_handleEvent(int evt)
             usbState=kusbIsConnected();
             fwExtState=kFWIsConnected();
             cfState=CF_IS_CONNECTED;
-            drawGui();
+            drawStatusLine();
             break;
         case EVT_TIMER:
             drawTime();
