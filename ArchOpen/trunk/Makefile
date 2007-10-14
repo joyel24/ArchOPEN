@@ -42,7 +42,7 @@ medios.bin: inc_dir lib_dir mk_api_file mk_build_tools mk_lang subdirs
 	@$(OBJCOPY) -O binary medios.elf medios.bin
 	@$(ADDSIZE) medios.bin
 
-medios_lib: incdir mk_api_file mk_lang
+medios_lib: inc_dir mk_api_file mk_lang
 	@make -C $(MEDIOS_SRC_PATH)/medios --no-print-directory -s medios_lib
 
 aoboy: APP_NAME = aoboy
