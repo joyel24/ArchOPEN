@@ -31,6 +31,9 @@
 extern struct graphicsBuffer VIDEO_1;
 static bmpColor * bmpPalette;
 
+static bmp_info_header infoHeader;
+static bmp_file_header fileHeader;
+
 unsigned int bmp_numberColor(int bitcount)
 {
     unsigned int res;
@@ -209,22 +212,277 @@ void bmp_read32BitRow(unsigned int * buffer,char * data,int width)
 }
 
 #define BMP_RLE_DISCOVER 0
-#define BMP_RLE_ENCODED 1
+#define BMP_RLE_ENCODED  1
 #define BMP_RLE_ABSOLUTE 2
+#define BMP_RLE_END_BMP  3
+
+#define BMP_RLE_4BIT     2
+#define BMP_RLE_8BIT     1
+#define BMP_BITFIELD     3
 
 static int rle_mode;
 static int uses_rle;
 static int nbToRead;
-static char bmp_tmpBuff[0x100];
+static char * bmp_tmpRLEBuff;
 static int bmpIsRead;
 static int posInfo;
+static char charToDup;
+//static int partialByte_buff;
 
-void bmp_initFileReader(int hasRle)
+static int (*bmp_rle_decode_fct)(int fd,char* buffer,int nbBytes);
+
+int bmp_rle_4bit_fct(int fd,char* buffer,int nbBytes)
 {
+    char tag[2];
+    int pos=0;
+    int inputPos=0;
+    int partialByte=0;
+    int nbBytesRead;
+    
+    while(pos<nbBytes)
+    {
+        switch(rle_mode)
+        {
+            case BMP_RLE_DISCOVER:
+                if(read(fd,tag,2)!=2)
+                {
+                    printk("[BMP_RLE] error reading tag\n");
+                    return pos;
+                }
+                inputPos+=2;
+                if(tag[0]==0)
+                {
+                    switch(tag[1])
+                    {
+                        case 0x0: /*endOfLine*/
+                            //printk("End of line (pos=%d nbBytes=%d)\n",pos,nbBytes);
+                            if(pos!=0)
+                            {
+                                if(partialByte)
+                                    pos++;
+                                for(;pos<nbBytes;pos++)
+                                    buffer[pos]=0;
+                            }
+                            break;
+                        case 0x1: /*endOfBmp*/
+                            //printk("End of bmp\n");
+                            if(partialByte)
+                                    pos++;
+                            for(;pos<nbBytes;pos++)
+                                buffer[pos]=0;
+                            rle_mode=BMP_RLE_END_BMP;
+                            break;
+                        case 0x2: /*Delta*/
+                            printk("Delta in img\n");
+                            break;
+                        default: /*absolute mode*/
+                            nbToRead=tag[1];
+                            rle_mode=BMP_RLE_ABSOLUTE;
+                            bmpIsRead=0;
+                            posInfo=0;                            
+                            break;
+                    }
+                }
+                else
+                {
+                    rle_mode=BMP_RLE_ENCODED;
+                    nbToRead=tag[0];
+                    charToDup=tag[1];
+                }
+                break;
+
+            case BMP_RLE_ENCODED:                
+                if(partialByte)
+                {
+                    buffer[pos]= buffer[pos] | ((charToDup >> 4) & 0xF);
+                    pos++;
+                    nbToRead--;
+                    charToDup = ((charToDup & 0xF)<< 4) | ((charToDup >> 4) & 0xF);
+                    partialByte=0;
+                }
+                
+                for(;pos<nbBytes && nbToRead>1;pos++,nbToRead-=2)
+                    buffer[pos]=charToDup;
+                                                                            
+                if(nbToRead==1 && pos<nbBytes)
+                {
+                    partialByte=1;
+                    buffer[pos]=charToDup&0xF0;
+                    nbToRead=0;
+                }
+                
+                if(nbToRead==0)
+                    rle_mode=BMP_RLE_DISCOVER;
+                break;
+
+            case BMP_RLE_ABSOLUTE:
+                if(!bmpIsRead)
+                {
+                    nbBytesRead=(nbToRead+1)/2;
+                    nbBytesRead=((inputPos+nbBytesRead+1)/2)*2-inputPos;
+                    //printk("RLE 4bit: %d nibbles => %d bytes\n",nbToRead,nbBytesRead);
+                    if(read(fd,bmp_tmpRLEBuff,nbBytesRead)!=nbBytesRead)
+                    {
+                        printk("Error reading from file\n");
+                        return pos;
+                    }
+                    bmpIsRead=1;
+                    posInfo=0;
+                    inputPos+=nbBytesRead;
+                }
+                
+                if(partialByte)
+                {
+                    buffer[pos]= buffer[pos] | ((bmp_tmpRLEBuff[posInfo/2]>>4) & 0xF);
+                    pos++;   
+                    posInfo++;                 
+                    partialByte=0;
+                }                
+                                        
+                for(;pos<nbBytes && posInfo<nbToRead;)
+                {
+                    if(posInfo&0x1)
+                        buffer[pos]=(bmp_tmpRLEBuff[posInfo/2]&0xF)<<4;
+                    else
+                        buffer[pos]=bmp_tmpRLEBuff[posInfo/2]&0xF0;
+                        
+                    posInfo++;
+                    if(posInfo==nbToRead)
+                    {
+                        partialByte=1;
+                        break;   
+                    }
+                    if(posInfo&0x1)
+                        buffer[pos]=buffer[pos]|(bmp_tmpRLEBuff[posInfo/2]&0xF);
+                    else
+                        buffer[pos]=buffer[pos]|((bmp_tmpRLEBuff[posInfo/2]>>4)&0xF);                        
+                    pos++;
+                    posInfo++;
+                }
+                
+                if(posInfo==nbToRead)
+                    rle_mode=BMP_RLE_DISCOVER;
+                                
+                break;
+                
+            case BMP_RLE_END_BMP:
+                for(;pos<nbBytes;pos++)
+                    buffer[pos]=0;
+                break;                
+        }
+    }
+    return pos;
+}
+
+int bmp_rle_8bit_fct(int fd,char* buffer,int nbBytes)
+{
+    char tag[2];
+    int pos=0;
+    int inputPos=0;
+    int nbBytesRead;
+    while(pos<nbBytes)
+    {
+        switch(rle_mode)
+        {
+            case BMP_RLE_DISCOVER:
+                if(read(fd,tag,2)!=2)
+                {
+                    printk("[BMP_RLE] error reading tag\n");
+                    return pos;
+                }
+                inputPos+=2;
+                if(tag[0]==0)
+                {
+                    switch(tag[1])
+                    {
+                        case 0x0: /*endOfLine*/
+                            if(pos!=0)
+                                for(;pos<nbBytes;pos++)
+                                    buffer[pos]=0;
+                            break;
+                        case 0x1: /*endOfBmp*/
+                            //printk("End of bmp\n");
+                            for(;pos<nbBytes;pos++)
+                                buffer[pos]=0;
+                            rle_mode=BMP_RLE_END_BMP;
+                            break;
+                        case 0x2: /*Delta*/
+                            printk("Delta in img\n");
+                            break;
+                        default: /*absolute mode*/
+                            nbToRead=tag[1];
+                            rle_mode=BMP_RLE_ABSOLUTE;
+                            bmpIsRead=0;
+                            posInfo=0;
+                            break;
+                    }
+                }
+                else
+                {
+                    rle_mode=BMP_RLE_ENCODED;
+                    nbToRead=tag[0];
+                    charToDup=tag[1];
+                }
+                break;
+
+            case BMP_RLE_ENCODED: 
+                for(;pos<nbBytes && nbToRead>0;pos++,nbToRead--)
+                    buffer[pos]=charToDup;
+                                                                            
+                if(nbToRead==0)
+                    rle_mode=BMP_RLE_DISCOVER;
+                break;
+
+            case BMP_RLE_ABSOLUTE:
+                if(!bmpIsRead)
+                {
+                    nbBytesRead=((inputPos+nbToRead+1)/2)*2-inputPos;
+                    printk("RLE_ABSOLUTE: %d asked => %d read to match word bounderie (pos=%d)\n",
+                           nbToRead,nbBytesRead,inputPos);
+                    if(read(fd,bmp_tmpRLEBuff,nbBytesRead)!=nbBytesRead)
+                    {
+                        printk("Error reading from file\n");
+                        return pos;
+                    }
+                    inputPos+=nbBytesRead;
+                    bmpIsRead=1;
+                    posInfo=0;
+                }
+                for(;pos<nbBytes && posInfo<nbToRead;posInfo++,pos++)
+                    buffer[pos]=bmp_tmpRLEBuff[posInfo];
+                if(posInfo==nbToRead)
+                    rle_mode=BMP_RLE_DISCOVER;
+                break;
+            case BMP_RLE_END_BMP:
+                //printk("End of bmp\n");
+                for(;pos<nbBytes;pos++)
+                    buffer[pos]=0;
+                break;
+        }
+    }
+    return pos;
+}
+
+void bmp_initFileReader(int hasRle,int comp_mode)
+{
+    printk("[BMP] init RLE: hasRle=%d, comp_mode=%d\n",hasRle,comp_mode);
     if(hasRle)
     {
         uses_rle=1;
         rle_mode=BMP_RLE_DISCOVER;
+        switch(comp_mode)
+        {
+            case BMP_RLE_4BIT:
+                bmp_tmpRLEBuff=(char*)malloc(0x80);
+                bmp_rle_decode_fct=bmp_rle_4bit_fct;
+                break;
+            case BMP_RLE_8BIT:
+                bmp_tmpRLEBuff=(char*)malloc(0x100);
+                bmp_rle_decode_fct=bmp_rle_8bit_fct;
+                break;
+            default:
+                bmp_rle_decode_fct=NULL;
+        }
     }
     else
     {
@@ -234,78 +492,13 @@ void bmp_initFileReader(int hasRle)
 
 int bmp_readFile(int fd,char* buffer,int nbBytes)
 {
-    char tag[2];
-    int bmp_rle_done=0;
-    int nbRead;
-    char charToDup;
-    int i;
-    char buff[0x100];
-
     if(uses_rle)
     {
-        while(!bmp_rle_done)
-        {
-            switch(rle_mode)
-            {
-                case BMP_RLE_DISCOVER:
-                    if(read(fd,tag,2)!=2)
-                    {
-                        printk("[BMP_RLE] error reading tag\n");
-                        return 0;
-                    }
-                    if(tag[0]==0)
-                    {
-                        switch(tag[1])
-                        {
-                            case 0x0: /*endOfLine*/
-                                printk("End of line\n");
-                                break;
-                            case 0x1: /*endOfBmp*/
-                                printk("End of bmp\n");
-                                break;
-                            case 0x2: /*Delta*/
-                                printk("Delta in img\n");
-                                break;
-                            default: /*absolute mode*/
-                                nbToRead=tag[1];
-                                rle_mode=BMP_RLE_ABSOLUTE;
-                                bmpIsRead=0;
-                                posInfo=0;
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        rle_mode=BMP_RLE_ENCODED;
-                        nbToRead=tag[0];
-                        charToDup=tag[1];
-                    }
-                    break;
-
-                case BMP_RLE_ENCODED: /* attention ne marche pas car il faut diminuer nbBytes*/
-                    for(i=0;i<nbBytes && nbToRead>0;i++,nbToRead--)
-                        buffer[i]=charToDup;
-                    if(nbToRead==0)
-                        rle_mode=BMP_RLE_DISCOVER;
-                    break;
-
-                case BMP_RLE_ABSOLUTE:
-                    if(!bmpIsRead)
-                    {
-                        if(read(fd,bmp_tmpBuff,nbToRead)!=nbToRead)
-                        {
-                            printk("Error reading from file\n");
-                            return 0;
-                        }
-                        bmpIsRead=1;
-                    }
-                    for(i;nbBytes>0 && nbToRead>0;nbBytes--,nbToRead--)
-                    {
-                        
-                    }
-                    break;
-            }
-        }
+        if(!bmp_tmpRLEBuff)
+            return 0;
+        if(!bmp_rle_decode_fct)
+            return 0;
+        return bmp_rle_decode_fct(fd,buffer,nbBytes);
     }
     else
     {
@@ -316,8 +509,6 @@ int bmp_readFile(int fd,char* buffer,int nbBytes)
 MED_RET_T gfx_loadBmp(char * filename)
 {
     int fd;
-    bmp_info_header infoHeader;
-    bmp_file_header fileHeader;
     char tmp[fileHeader_size];
     int * tmp_int=(int*)tmp;
     int tmp_data;
@@ -330,6 +521,7 @@ MED_RET_T gfx_loadBmp(char * filename)
     int scr_w,scr_h;
 
     bmpPalette = NULL;
+    bmp_tmpRLEBuff = NULL;
 
     /*reading VID1 plane info*/
     gfx_planeGetSize(VID1,&scr_w,&scr_h,NULL);
@@ -384,14 +576,6 @@ MED_RET_T gfx_loadBmp(char * filename)
     infoHeader.colorsimportant);
 
     /* now testing headers value => can we handle the file ?*/
-
-    /* Compression */
-    if(infoHeader.compression == 1 || infoHeader.compression == 2)
-    {
-        printk("[BMP ERROR] %s is a RLE file => not supported\n",filename);
-        close(fd);
-        return -MED_ERROR;
-    }
 
     if(infoHeader.compression > 3)
     {
@@ -478,8 +662,8 @@ MED_RET_T gfx_loadBmp(char * filename)
             bmpPalette[j].Y=RGB2Y(r,g,b);
             bmpPalette[j].Cr=RGB2Cr(r,g,b);
             bmpPalette[j].Cb=RGB2Cb(r,g,b);
-            printk("%d: (%02x,%02x,%02x-%02x) -> (%02x,%02x,%02x)\n",j,r,g,b,res,
-                   bmpPalette[i].Y,bmpPalette[i].Cr,bmpPalette[i].Cb);
+            /*printk("%d: (%02x,%02x,%02x-%02x) -> (%02x,%02x,%02x)\n",j,r,g,b,res,
+                   bmpPalette[i].Y,bmpPalette[i].Cr,bmpPalette[i].Cb);*/
         }
         /*init rest of palette with white*/
         for(i=j;i<bmp_numberColor(infoHeader.bitcount);i++)
@@ -509,6 +693,7 @@ MED_RET_T gfx_loadBmp(char * filename)
         printk("[BMP ERROR] error seeking to img datafor file %s\n",filename);
         close(fd);
         if(bmpPalette) free(bmpPalette);
+        if(bmp_tmpRLEBuff) free(bmp_tmpRLEBuff);
         return -MED_ERROR;
     }
 
@@ -528,6 +713,18 @@ MED_RET_T gfx_loadBmp(char * filename)
     //buff_offset=&screenDirect[img_x/2+(img_y+infoHeader.height-1)*scr_w];
     buff_offset=screenDirect+infoHeader.height*scr_w;
 
+    /* Compression */
+    if(infoHeader.compression == 0)
+    {
+        bmp_initFileReader(0,0);
+    }
+    else
+    {
+        bmp_initFileReader(1,infoHeader.compression);
+    }
+    
+    
+    
     if(infoHeader.bitcount==16)
     {
         /*NOTE: need code for 16bit bmp */
@@ -539,16 +736,16 @@ MED_RET_T gfx_loadBmp(char * filename)
         for(i=infoHeader.height-1;i>=0;i--)
         {
             /*read one row*/
-            if(read(fd,tmpRow,rowSize)!=rowSize)
+            
+            if(bmp_readFile(fd,tmpRow,rowSize)!=rowSize)
             {
                 printk("[BMP ERROR] error reading row %d of %s\n",i,filename);
                 close(fd);
                 if(bmpPalette) free(bmpPalette);
+                if(bmp_tmpRLEBuff) free(bmp_tmpRLEBuff);
                 free(tmpRow);
                 return -MED_ERROR;
             }
-
-            /* converting 1 row */
             switch(bitDepth)
             {
                 case 1 : bmp_read1BitRow(buff_offset,tmpRow,width); break;
@@ -563,9 +760,8 @@ MED_RET_T gfx_loadBmp(char * filename)
     }
 
     close(fd);
-    printk("bf free1\n");
     if(bmpPalette) free(bmpPalette);
-    printk("bf free2\n");
+    if(bmp_tmpRLEBuff) free(bmp_tmpRLEBuff);
     free(tmpRow);
     return MED_OK;
 }

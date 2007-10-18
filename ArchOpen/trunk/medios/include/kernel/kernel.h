@@ -1,4 +1,4 @@
-/* 
+/*
 *   include/kernel/kernel.h
 *
 *   mediOS project
@@ -17,6 +17,9 @@
 #include <sys_def/section_types.h>
 #include <sys_def/errors.h>
 #include <sys_def/types.h>
+#include <sys_def/arch.h>
+
+#include <target/chip/arch/arch_def.h>
 
 #define SVC_STACK_SIZE 0x200
 
