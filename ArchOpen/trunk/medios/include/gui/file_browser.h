@@ -35,6 +35,7 @@
 extern int browser_has_back_entry;
 extern int browser_scroll_only_selected;
 extern int browser_has_statusbar;
+extern int txt_scroll_speed;
 
 struct dir_entry {
     char * name;
@@ -86,14 +87,12 @@ struct browser_data {
     
     struct scroll_bar browser_scroll;
     
-    int txt_scroll_speed;
     
 };
 
 #define    BROWSER_STATUS_HEIGHT     20
 #define    BROWSER_ICON_WIDTH        11
 #define    BROWSER_SCROLLBAR_WIDTH   10
-#define    BROWSER_TXT_SCROLL_SPEED  30
 
 int browser_simpleBrowse(char * path,char * res);
 int browser_browse(struct browser_data *bdata,char * path,char * res);

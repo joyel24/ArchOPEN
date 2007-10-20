@@ -86,3 +86,4 @@ STRLNG_HAS_BACK_ENTRY # Ajout de 'retour'
 STRLNG_BROWSER_BACK # <-retour
 STRLNG_SCROLL_ONLY_SELECTED # Scroll sous selection
 STRLNG_BRW_HAS_STATUSBAR # Barre de status active
+STRLNG_BRW_SCROLL_SPEED # Vitesse de defilement

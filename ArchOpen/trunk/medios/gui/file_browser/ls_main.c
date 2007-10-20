@@ -56,8 +56,6 @@ struct browser_data realData = {
     width           : LCD_WIDTH,
     height          : LCD_HEIGHT,
 
-    txt_scroll_speed: BROWSER_TXT_SCROLL_SPEED,
-
     entry_height    : 10,
 
     is_dual            : 0,
@@ -68,6 +66,7 @@ struct browser_data realData = {
 int browser_has_back_entry;
 int browser_scroll_only_selected;
 int browser_has_statusbar;
+int txt_scroll_speed;
 
 void printList(struct browser_data * bdata,int val)
 {

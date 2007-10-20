@@ -1,6 +1,6 @@
 if [ -n "$1" ]; then
 	cd $1
-	rm -f *.d *~ chip arch
+	rm -f *.d *~ chip arch *.orig
 	for file in *; do		
 		if [ -d $file ]; then
             if [ $file == "build" ]; then

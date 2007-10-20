@@ -21,6 +21,7 @@
 
 #include <gui/widgetlist.h>
 #include <gui/checkbox.h>
+#include <gui/trackbar.h>
 #include <gui/button.h>
 #include <gui/icons.h>
 #include <gui/msgBox.h>
@@ -37,6 +38,7 @@ WIDGETLIST menuList;
 CHECKBOX hasBack;
 CHECKBOX scrollSelected;
 CHECKBOX hasStatus;
+TRACKBAR txtScrollSpeed;
 
 #define ICON_X 5
 #define ICON_Y 5
@@ -48,6 +50,7 @@ void okBtnBrowser_click(BUTTON b)
     browser_has_back_entry=hasBack->checked;
     browser_scroll_only_selected=scrollSelected->checked;
     browser_has_statusbar=hasStatus->checked;
+    txt_scroll_speed=61-(txtScrollSpeed->value);
     
     CFG_DATA * cfg;
 
@@ -70,6 +73,7 @@ void okBtnBrowser_click(BUTTON b)
     cfg_writeInt(cfg,"brw_back_entry",browser_has_back_entry);
     cfg_writeInt(cfg,"brw_scroll_only_selected",browser_scroll_only_selected);
     cfg_writeInt(cfg,"brw_statusBar",browser_has_statusbar);
+    cfg_writeInt(cfg,"brw_scroll_speed",txt_scroll_speed);
 
     cfg_printItems(cfg);
     cfg_writeFile(cfg,"/medios/medios.cfg");
@@ -126,8 +130,8 @@ void browser_setting(void)
     lineH=(lineH+4);
     
     
-    x=minX;    
-    y=ICON_Y+h+(LCD_HEIGHT-ICON_Y-h-lineH*3)/2;
+    x=minX+1;    
+    y=ICON_Y+h+(LCD_HEIGHT-ICON_Y-h-lineH*6)/2;
     
     // menuList
     menuList=widgetList_create();
@@ -159,6 +163,22 @@ void browser_setting(void)
     hasStatus->setRect(hasStatus,x,y,8,8);
     hasStatus->checked=browser_has_statusbar;
     menuList->addWidget(menuList,hasStatus);
+    
+    y += lineH;
+    
+    //vitesse de scroll
+    gfx_getStringSize(getLangStr(STRLNG_BRW_SCROLL_SPEED),&sepW,&sepH);
+    gfx_putS(COLOR_BLACK,COLOR_WHITE,x,y,getLangStr(STRLNG_BRW_SCROLL_SPEED));
+    y += lineH;
+    
+    txtScrollSpeed=trackbar_create();
+    txtScrollSpeed->value=61-txt_scroll_speed;
+    txtScrollSpeed->minimum=1;
+    txtScrollSpeed->maximum=60;
+    txtScrollSpeed->increment=1;
+    txtScrollSpeed->setRect(txtScrollSpeed,x,y,160,sepH);
+    txtScrollSpeed->font=BROWSER_GUIFONT;
+    menuList->addWidget(menuList,txtScrollSpeed);
     
     y += lineH;
     
@@ -215,6 +235,7 @@ void browser_loadCfg(void)
 
     browser_has_back_entry=1;
     browser_scroll_only_selected=1;
+    txt_scroll_speed=30;
     
     cfg=cfg_readFile("/medios/medios.cfg");
                
@@ -231,6 +252,7 @@ void browser_loadCfg(void)
         cfg_writeInt(cfg,"brw_back_entry",1);
         cfg_writeInt(cfg,"brw_scroll_only_selected",1);
         cfg_writeInt(cfg,"brw_statusBar",1);
+        cfg_writeInt(cfg,"brw_scroll_speed",31);
         needWrite=1;
     }
     else
@@ -262,6 +284,16 @@ void browser_loadCfg(void)
         else
         {
             cfg_writeInt(cfg,"brw_statusBar",1);
+            needWrite=1;
+        }
+        //scroll speed
+        if(cfg_itemExists(cfg,"brw_scroll_speed"))
+        {
+            txt_scroll_speed=cfg_readInt(cfg,"brw_scroll_speed");
+        }
+        else
+        {
+            cfg_writeInt(cfg,"brw_scroll_speed",30);
             needWrite=1;
         }
         
