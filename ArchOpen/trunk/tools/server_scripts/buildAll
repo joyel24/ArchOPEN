@@ -26,6 +26,8 @@ echo "Clean SVN entry"
 rmSVN_folder
 cd ~/archopen_src
 
+mk_api
+
 #creating config
 mkConfig
 

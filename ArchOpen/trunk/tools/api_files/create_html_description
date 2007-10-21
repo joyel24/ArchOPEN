@@ -1,0 +1,35 @@
+# main description script
+
+REAL_NAME=""
+CUR_DATE=`date`
+
+function processName()
+{
+    REAL_NAME=`echo $1 | sed s/_/\ /`    
+}
+
+categories="GFX Drawing GUI Events Buttons File_system Memory String Sound Cfg_file csv_file Time Energy_Saving Arch_Info USb_/_FW Debug Irq Thread Misc "
+
+echo "<html><body>" > $2
+echo "<h1><center>Medios Api for .med applications</center></h1>" >> $2
+echo "<i>(Generated automatically on $CUR_DATE)</i><p>" >> $2
+echo "Function types:<ul>" >>$2
+for category in $categories; do
+processName $category
+echo "<li><a href='#$category'>$REAL_NAME</a>" >>$2
+done
+echo "</ul>" >>$2
+
+echo "<center>" >>$2
+
+for category in $categories; do
+processName $category
+echo "<h2 id='$category'>$REAL_NAME</<h2><p>" >>$2
+echo "<table border=1><tr><td width="10%"><b><center>Name</center></b></td>" >>$2
+echo "<td width="45%"><b><center>Signature</center></b></td>" >>$2
+echo "<td width="45%"><b><center>Description</center></b><td></b></tr>" >>$2
+./create_description $1 $category >> $2
+echo "</table></br>" >> $2
+done
+
+echo "</center></body></html>" >> $2

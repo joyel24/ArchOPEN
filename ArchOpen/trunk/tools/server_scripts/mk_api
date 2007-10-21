@@ -1,0 +1,5 @@
+cd ~/archopen_src/build/trunk/tools/api_files
+chmod 777 create_html_description create_description
+./create_html_description api_list.h ~/archopen_src/sav_report/med_api.html
+cd ~/archopen_src/sav_report/
+mvFtp builds med_api.html
