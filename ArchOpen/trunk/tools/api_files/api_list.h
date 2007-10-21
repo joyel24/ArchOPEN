@@ -182,6 +182,13 @@ void   # gfx_setEntirePalette      # int palette[256][3],int size
 void   # gfx_fontSet               # int font_nb
 int    # gfx_fontGet               # void
 
+#api_inc#sys_def/bmp.h
+#k_inc#gfx/bmp.h
+MED_RET_T # gfx_loadBmp_toPlane_center # char * filename,int plane
+MED_RET_T # gfx_loadBmp_toPlane_coord  # char * filename,int plane,int x,int y
+MED_RET_T # gfx_loadBmp_toMem_center   # char * filename,char * dest,int w,int h,int output_mode
+MED_RET_T # gfx_loadBmp_toMem_coord    # char * filename,char * dest,int w,int h,int output_mode,int x,int y
+
 #api_inc#stdarg.h
 #api_inc#sys_def/types.h
 void   # strlwr                    # char *s

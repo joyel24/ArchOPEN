@@ -507,7 +507,7 @@ bool intCmd_doLoadBmp(char * param)
     gfx_planeHide(BMAP2);
     gfx_planeShow(VID1);
       
-    gfx_loadBmp(param);
+    gfx_loadBmp_toPlane_center(param,VID1);
     printk("Back from loader\n");
     evt_handler=evt_getHandler(BTN_CLASS);
     while(1)
