@@ -24,7 +24,7 @@
 extern int cur_disk;
 
 int ATA_INB(int reg) {
-    int __res;
+    //int __res;
     if(reg==IDE_ALTSTATUS) {
         outb(OMAP_HD_ALTS_ERR_REQUEST,OMAP_REQUEST_BASE);
         while(inb(OMAP_REQUEST_BASE));

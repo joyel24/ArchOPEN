@@ -8,7 +8,7 @@ function processName()
     REAL_NAME=`echo $1 | sed s/_/\ /`    
 }
 
-categories="GFX Drawing GUI Events Buttons File_system Memory String Sound Cfg_file csv_file Time Energy_Saving Arch_Info USb_/_FW Debug Irq Thread Misc "
+categories="GFX Drawing GUI Events Buttons File_system Dynamic_Memory String Sound Cfg_file csv_file Time Energy_Saving Arch_Info USb_/_FW Debug Irq Thread Misc "
 
 echo "<html><body>" > $2
 echo "<center><a href='http://www.archopen.org/tiki-index.php'>" >> $2

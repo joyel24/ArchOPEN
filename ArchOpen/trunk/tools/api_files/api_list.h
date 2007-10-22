@@ -10,70 +10,70 @@
 #api_inc#sys_def/errors.h
 
 #k_inc#kernel/malloc.h
-void* # malloc   # long size                                  # Memory # allocate a buffer of <i>size</i> bytes
-void* # realloc  # void *buffer, long newsize                 # Memory # change the size of a previously allocated buffer
-void  # free     # void *buf                                  # Memory # free an allocated buffer (standard version)
-void  # kfree    # void *buf                                  # Memory # free an allocated buffer (kernel version, use it only if you know what you are doing)
-void* # calloc   # unsigned int nmemb,unsigned int size       # Memory # allocate a buffer of <i>nmemb</i> element of size <i>size</i>
+void* # malloc   # long size                             # Dynamic_Memory # Memory allocation,only SDRAM is currently available, not IRAM. NULL is returned if there isn't enough space
+void* # realloc  # void *buffer, long newsize            # Dynamic_Memory # buffer reallocation, used to change the size of an existing buffer. For size increase, the implementation is not optimum as buffer is moved to a place with enough room
+void  # free     # void *buf                             # Dynamic_Memory # free an allocated buffer (standard version)
+void  # kfree    # void *buf                             # Dynamic_Memory # free an allocated buffer (kernel version, use it only if you know what you are doing)
+void* # calloc   # unsigned int nmemb,unsigned int size  # Dynamic_Memory # allocate a buffer of <i>nmemb</i> element of size <i>size</i>
 
 #k_inc#kernel/lang.h
-char* #lang_getStr # int id                                   # Misc
+char* #lang_getStr # int id                                   # Misc # Returns a string in current lang from an id, for a list of idea look in lang file from trunk/tools/lang
 
 #k_inc#kernel/timer.h
-unsigned int # tmr_getTick   # void                           # Time
-unsigned int # tmr_getMicroTick   # void                      # Time
+unsigned int # tmr_getTick   # void      # Time # returns current tick timer value (1tick=10ms / 100Hz)
+unsigned int # tmr_getMicroTick   # void # Time # 1000 times more precise than tmr_getTick (1microtick=10µs / 100Khz)
 
 #k_inc#driver/time.h
 #api_inc#sys_def/time.h
-MED_RET_T # time_get # struct med_tm * valTime                # Time
-MED_RET_T # time_set # struct med_tm * newTime                # Time
+MED_RET_T # time_get # struct med_tm * valTime # Time # reads current date/time from clock, struct med_tm is defined in sys_def/time.h
+MED_RET_T # time_set # struct med_tm * newTime # Time # changes date/time of clock, struct med_tm is defined in
 
 #k_inc#kernel/delay.h
-void # udelay  # unsigned long usecs                          # Time
-void # mdelay  # unsigned long msecs                          # Time
+void # udelay  # unsigned long usecs                          # Time # waits for <i>usecs</i>
+void # mdelay  # unsigned long msecs                          # Time # waits for <i>msecs</i>
 
 #k_inc#driver/energy.h
-void # set_timer_status  # int timer_type, int power_mode, int status  # Energy_Saving
-void # set_timer_delay   # int timer_type, int power_mode, int delay   # Energy_Saving
-int  # get_timer_status  # int timer_type, int power_mode              # Energy_Saving
-int  # get_timer_delay   # int timer_type, int power_mode              # Energy_Saving
+void # set_timer_status # int timer_type,int power_mode,int status # Energy_Saving # enable/disable timer according to power mode
+void # set_timer_delay  # int timer_type,int power_mode,int delay # Energy_Saving # set timer delay according to power mode
+int  # get_timer_status # int timer_type,int power_mode # Energy_Saving # reads timer status according to power mode
+int  # get_timer_delay  # int timer_type,int power_mode # Energy_Saving # reads timer delay according to powwer mode
 
 #k_inc#driver/batDc.h
-int  # DC_isConnected    # void                              # Energy_Saving
-int  # batLevel          # void                              # Energy_Saving
+int  # DC_isConnected    # void                              # Energy_Saving # DC connector status
+int  # batLevel          # void                              # Energy_Saving # measures current bat level
 
 #k_inc#driver/lcd.h
-void # lcd_setBrightness # int br                            # Misc
-int  # lcd_getBrightness # void                              # Misc
+void # lcd_setBrightness # int br                            # Misc # changes brightness (not an Hardware option)
+int  # lcd_getBrightness # void                              # Misc # reads current brightness (not an Hardware option)
 
 #k_inc#driver/usb_fw.h
-int # usb_isConnected # void                                  # USb_/_FW
-int # FW_isConnected  # void                                  # USb_/_FW
+int # usb_isConnected # void                                  # USb_/_FW # checks if usb cable is connected
+int # FW_isConnected  # void                                  # USb_/_FW # checks if FireWire cable is connected
 
 #k_inc#kernel/evt.h
 #api_inc#sys_def/evt.h
-int          # evt_getHandler        # unsigned int mask                        # Events
-MED_RET_T    # evt_freeHandler       # int num_evt_pipe                         # Events
-int          # evt_getStatus         # int num_evt_pipe                         # Events
-MED_RET_T    # evt_getFullStatus     # int num_evt_pipe, struct evt_t * evt     # Events
-int          # evt_getStatusBlocking # int num_evt_pipe                         # Events
-const char * # getBtnName            # int btn                                  # Buttons
+int          # evt_getHandler        # unsigned int mask   # Events # get a new event handler from kernel, returns an error if all handlers are busy
+MED_RET_T    # evt_freeHandler       # int num_evt_pipe    # Events # release an event handler
+int          # evt_getStatus         # int num_evt_pipe    # Events # reads next event and returns the event number (returns NO_EVENT if there is no event)
+MED_RET_T    # evt_getFullStatus     # int num_evt_pipe, struct evt_t * evt # Events # same as aove, but full evt info will be send
+int          # evt_getStatusBlocking # int num_evt_pipe # Events # same as evt_getStatus but thread is blocked until an event occurs
+const char * # getBtnName            # int btn                              # Buttons # returns button name
 
 #k_inc#driver/buttons.h
 #api_inc#sys_def/buttons.h
-int # btn_readState # void                                                      # Buttons
+int # btn_readState # void  # Buttons # direct access to button state, use it with BTMASK_* from include/buttons.h
 
 #k_inc#init/exit.h
-void # halt_device     # void                                    # Misc                
-void # reload_firmware # void                                    # Misc
+void # halt_device     # void  # Misc # launches halt procedure
+void # reload_firmware # void  # Misc # according to arch this reloads archos firmware or reset the device
 
 #k_inc#kernel/kernel.h
-void        # printf        # char *fmt, ...                     # Debug
-void        # print_data    # char * data,int length             # Debug
-void        # do_bkpt       # void                               # Debug
-int         # getArch       # void                               # Arch_Info
-void        # getResolution # int * width,int * height           # Arch_Info
-MED_RET_T   # getErrno      # void                               # Debug
+void # printf        # char *fmt, ...                     # Debug # Prints text on UART and on device screen if mediOS was build with debug on screen
+void # print_data    # char * data,int length             # Debug # Outputs a buffer to UART and debug screen
+void # do_bkpt       # void                               # Debug # Adds a breakpoint in code for aoMulator (needs specific build option)
+int  # getArch       # void  # Arch_Info # gets arch type, include sys_def/arch.h to get available arch
+void        # getResolution # int * width,int * height # Arch_Info # returns resolution for this arch
+MED_RET_T   # getErrno      # void   # Debug # returns last error number
 
 #k_inc#lib/libfloat.h
 long # float_modsi3# long a, long b 
@@ -230,8 +230,8 @@ double # atof                      # char * str                                 
 double # strtod                    # char * str, char ** ptr                      # String
 
 #k_inc#lib/random.h
-void   # srand                     # unsigned int seed                            # Misc
-int    # rand                      # void                                         # Misc
+void   # srand                     # unsigned int seed                            # Misc # Init random generator
+int    # rand                      # void                                         # Misc # get a random number
 
 #api_inc#gui_user/widget.h
 #k_inc#gui/widget.h
@@ -302,30 +302,30 @@ void   # msgBox_info    # unsigned char* msg                                    
 #api_inc#sys_def/cfg_file.h
 #k_inc#fs/cfg_file.h
 
-void       # cfg_clear        # CFG_DATA * data                                 # Cfg_file
+void       # cfg_clear        # CFG_DATA * data                                 # Cfg_file # deallocates data (you must call this when you're finished with data)
 
-CFG_DATA * # cfg_newFile      # void                                            # Cfg_file
-CFG_DATA * # cfg_readFile     # char * filename                                 # Cfg_file
-bool       # cfg_writeFile    # CFG_DATA * data, char * filename                # Cfg_file
+CFG_DATA * # cfg_newFile      # void                                            # Cfg_file # allocates data for a new file
+CFG_DATA * # cfg_readFile     # char * filename                                 # Cfg_file # allocates and reads data from an existing file, returns NULL if the file can't be red
+bool       # cfg_writeFile    # CFG_DATA * data, char * filename                # Cfg_file # writes data to a file, returns true upon success
 
-void       # cfg_rewindItems  # CFG_DATA * data                                 # Cfg_file
-bool       # cfg_nextItem     # CFG_DATA * data, char * * name,char * * value   # Cfg_file
+void       # cfg_rewindItems  # CFG_DATA * data                                 # Cfg_file # used to enumerate all items, returns to the first one
+bool       # cfg_nextItem     # CFG_DATA * data, char * * name,char * * value   # Cfg_file # used to enumerate all items, reads the next item and returns its name and value
 
-bool       # cfg_itemExists   # CFG_DATA * data, char * name                    # Cfg_file
+bool       # cfg_itemExists   # CFG_DATA * data, char * name                    # Cfg_file # returns true if the item exists
 
-char *     # cfg_readString   # CFG_DATA * data, char * name                    # Cfg_file
-int        # cfg_readInt      # CFG_DATA * data, char * name                    # Cfg_file
-bool       # cfg_readBool     # CFG_DATA * data, char * name                    # Cfg_file
+char *     # cfg_readString   # CFG_DATA * data, char * name                    # Cfg_file # reads a string item
+int        # cfg_readInt      # CFG_DATA * data, char * name                    # Cfg_file # reads an integer item
+bool       # cfg_readBool     # CFG_DATA * data, char * name                    # Cfg_file # reads a boolean item
 
-void       # cfg_writeString  # CFG_DATA * data, char * name,char * value       # Cfg_file
-void       # cfg_writeInt     # CFG_DATA * data, char * name,int value          # Cfg_file
-void       # cfg_writeBool    # CFG_DATA * data, char * name,bool value         # Cfg_file
+void       # cfg_writeString  # CFG_DATA * data, char * name,char * value       # Cfg_file # writes a string item
+void       # cfg_writeInt     # CFG_DATA * data, char * name,int value          # Cfg_file # writes an integer item
+void       # cfg_writeBool    # CFG_DATA * data, char * name,bool value         # Cfg_file # writes a boolean item
 
-void       # cfg_addDummyLine # CFG_DATA * data, char * text                    # Cfg_file
+void       # cfg_addDummyLine # CFG_DATA * data, char * text                    # Cfg_file # adds a dummy line (usually a comment)
 
-bool       # cfg_deleteItem   # CFG_DATA * data, char * name                    # Cfg_file
+bool       # cfg_deleteItem   # CFG_DATA * data, char * name                    # Cfg_file # deletes an item, returns true if the item was found and deleted
 
-void       # cfg_printItems   # CFG_DATA * data                                 # Cfg_file
+void       # cfg_printItems   # CFG_DATA * data                                 # Cfg_file # outputs a list of all items in the console, usefull for debug
 
 #k_inc#fs/csv_file.h
 MED_RET_T  # csv_newFile      # char * filename                                 # csv_file
@@ -334,9 +334,9 @@ MED_RET_T  # csv_line2Array   # int nbItem,char ** item_array,char sepChar      
 MED_RET_T  # csv_readLine     # void * data,char * formatStr,char sepChar       # csv_file
 
 #k_inc#driver/speaker.h
-void       # speaker_enable    # int enable                        # Sound
-int        # speaker_state     # void                              # Sound
-int        # speaker_available # void                              # Sound
+void       # speaker_enable    # int enable                        # Sound # Changes the state of internal speaker
+int        # speaker_state     # void                              # Sound # Returns internal speaker state
+int        # speaker_available # void                              # Sound # Returns true if device supports an internal speaker
 
 #k_inc#snd/codec.h
 #api_inc#snd_user/codec.h
@@ -356,12 +356,12 @@ int             # buffer_read          # void * buf,int count      # Sound
 PLAYLIST_ITEM * # buffer_getActiveItem # void                      # Sound
 
 #k_inc#kernel/irq.h
-void    #  irq_changeHandler # int irq_num,void(*fct)(int irq,struct pt_regs * regs) # Irq
-void    #  irq_enable        # int irq                              # Irq
-void    #  irq_disable       # int irq                              # Irq
+void    #  irq_changeHandler # int irq_num,void(*fct)(int irq,struct pt_regs * regs) # Irq # Change Handler for a given IRQ
+void    #  irq_enable        # int irq                              # Irq # enable IRQ
+void    #  irq_disable       # int irq                              # Irq # disable IRQ
 
 #k_inc#kernel/thread.h
-unsigned long   #  yield # void                                    # Thread
+unsigned long   #  yield # void                                    # Thread # yield current thread
 
 #k_inc#driver/osd.h
 int     # osd_getTrspBit         # void                            # GFX
