@@ -33,6 +33,8 @@
 #include <snd/output.h>
 #include <snd/sound.h>
 
+#include <init/boot_error.h>
+
 #include "dspshared.h"
 
 #define POS2OFF(x) ((x)%OUTPUT_BUFFER_SIZE)
@@ -123,10 +125,9 @@ void output_initDsp(){
 
     *DSP_COM=0;
 
-    if(dsp_loadProgramFromHDD("/medios/codec/snd_dsp.out")!=MED_OK){
-
-        printk("[output] error: failed loading DSP program\n");
-
+    if(dsp_loadProgramFromHDD("/medios/codec/snd_dsp.out")!=MED_OK)
+    {
+        gui_bootError(DSP_CODEC_ERROR,BOOT_WARN);
         return;
     }
 

@@ -37,6 +37,8 @@
 
 #include <fs/cfg_file.h>
 
+#include <init/boot_error.h>
+
 #define BGIMG_GUIFONT RADONWIDE
 
 static WIDGETLIST menuList;
@@ -688,13 +690,16 @@ void bgImg_loadPref(void)
             {
                 if(loadSaveImg(1)!=MED_OK)
                 {
-                    printk("Load done\n");
+                    printk("BG Load failed\n");
                     cfg_writeInt(cfg,"has_bgImg",0);
+                    gui_bootError(MISSING_MIMG_FILE_ERROR,BOOT_WARN);
                     has_bgImg=0;
                     needWrite=1;  
                 }
                 else
-                    printk("Load failed\n");
+                {                    
+                    printk("BG Load done\n");
+                }
             }
         }
         else

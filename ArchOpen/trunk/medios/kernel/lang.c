@@ -108,6 +108,7 @@ MED_RET_T lang_loadFile(char * fName)
     int size;    
     char * buffer;
     printk("[lang_loadFile] loading lng from %s\n",fName);
+    
     fd=open(fName,O_RDONLY);
     if(fd<0)
     {

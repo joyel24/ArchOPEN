@@ -9,11 +9,13 @@
 */
 
 #include <lib/string.h>
+
 #include <sys_def/stddef.h>
 
 #include <kernel/kernel.h>
 #include <kernel/malloc.h>
 #include <kernel/thread.h>
+
 #include <fs/stdfs.h>
 #include <fs/med.h>
 
@@ -22,6 +24,8 @@
 #include <snd/playlist.h>
 #include <snd/output.h>
 #include <snd/sound.h>
+
+#include <init/boot_error.h>
 
 CODEC_INFO * codec_first = NULL;
 CODEC_INFO * codec_last = NULL;
@@ -173,10 +177,9 @@ static void codec_findCodecs(){
     }
     else
     {
-        printk("Missing codec folder: "CODECS_DIR"\n");
+        gui_bootError(MISSING_CODEC_ERROR,BOOT_WARN);
     }
     closedir(codec_folder);
-
 }
 
 

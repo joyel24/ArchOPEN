@@ -29,6 +29,8 @@
 
 #include <gui/settings_lang.h>
 
+#include <init/boot_error.h>
+
 #include <driver/lcd.h>
 
 #include <fs/cfg_file.h>
@@ -205,7 +207,9 @@ void lang_createList(int * nb,int * maxW)
     }
     else
     {
-        printk("Can't open lang folder\n");
+        msgBox_show(getLangStr(STRLNG_LANG_SETTINGS),getLangStr(STRLNG_MISSING_LANG_FOLDER),
+                        MSGBOX_TYPE_OK,MSGBOX_ICON_INFORMATION,evtHandle);
+        *nb=0;
         return ;
     }
     *nb=nbLang;
@@ -253,10 +257,19 @@ void lang_setting(void)
         return;
     }
     */
+    
+    if(nbLang==0)
+    {
+        evt_freeHandler(evtHandle);
+        return;
+    }
+    
     if(nbLang==1)
     {
         msgBox_show(getLangStr(STRLNG_LANG_SETTINGS),"No lang file found",
                     MSGBOX_TYPE_OK,MSGBOX_ICON_INFORMATION,evtHandle);
+        evt_freeHandler(evtHandle);
+        return;
     }
     
     stop_lang_set=0;
@@ -393,6 +406,7 @@ void lang_loadLang(void)
                     {
                         cfg_writeInt(cfg,"lngUseDefault",1);
                         lang_loadDefault();
+                        gui_bootError(MISSING_LANG_FILE_ERROR,BOOT_WARN);
                         needWrite=1;
                     }
                 }
@@ -417,6 +431,7 @@ void lang_loadLang(void)
                 {
                     cfg_writeInt(cfg,"lngUseDefault",1);
                     lang_loadDefault();
+                    gui_bootError(MISSING_LANG_FILE_ERROR,BOOT_WARN);
                 }
                 else
                 {

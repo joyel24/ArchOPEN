@@ -17,6 +17,7 @@
 #include <sys_def/font.h>
 
 #include <init/exit.h>
+#include <init/boot_error.h>
 
 #include <kernel/io.h>
 #include <kernel/version.h>
@@ -73,6 +74,7 @@
 
 #include <gui/shell.h>
 #include <gui/splash.h>
+#include <gui/icons.h>
 #include <gui/settings_misc.h>
 #include <gui/settings_lang.h>
 
@@ -85,6 +87,7 @@ unsigned int _sys_IniStack = IRAM_SIZE-SVC_STACK_SIZE;
 
 void kernel_thread(void)
 {
+    DIR * medFolder;
 #ifdef BUILD_LIB
     char * stdalone="STDALONE";
 #endif
@@ -97,11 +100,28 @@ void kernel_thread(void)
         for(;;);
     }
         
+    /* we shall have medios tree on disk */
+    medFolder=opendir("/medios");
+    if(!medFolder)
+    {
+        gui_bootError(MISSING_MEDIOS_ERROR,BOOT_ERROR);
+    }
+    closedir(medFolder);
+    
 #ifndef BUILD_LIB    
     sound_init();
 #endif
+    
     energy_loadPref();
     misc_loadPref();
+    
+    medFolder=opendir("/medios/lang");
+    if(!medFolder)
+    {
+        gui_bootError(MISSING_LANG_FOLDER_ERROR,BOOT_WARN);
+    }
+    closedir(medFolder);
+    
     lang_loadLang();
     
     /* boot info */
@@ -141,6 +161,7 @@ void kernel_start (void)
     
     gfx_init();
     con_init();
+    icon_kernelInit();
 
     /* print banner on uart */
     printk("\nMediOS " VERSION_NUMBER " - kernel loading\n\n");

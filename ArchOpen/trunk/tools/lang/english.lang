@@ -87,3 +87,4 @@ STRLNG_BROWSER_BACK # <-back
 STRLNG_SCROLL_ONLY_SELECTED # Scroll selected item only
 STRLNG_BRW_HAS_STATUSBAR # Enable status bar
 STRLNG_BRW_SCROLL_SPEED # Text scroll speed
+STRLNG_MISSING_LANG_FOLDER # Folder /medios/lang missing

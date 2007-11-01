@@ -41,6 +41,8 @@
 #include <snd/codec.h>
 #include <snd/sound.h>
 
+#include <init/boot_error.h>
+
 typedef struct SHELL_HANDLER_STRUCT * SHELL_HANDLER;
 
 struct SHELL_HANDLER_STRUCT {
@@ -101,7 +103,11 @@ static bool shell_parseHandlers(char * filename){
     CFG_DATA * data;
 
     data=cfg_readFile(filename);
-    if(data==NULL) return false;
+    if(data==NULL)
+    {
+        gui_bootError(MISSING_HANDLER_FILE_ERROR,BOOT_ERROR);
+        return false;
+    }
 
     printk("[shell] parsing '%s'\n",filename);
 
@@ -335,7 +341,6 @@ void shell_main(){
         printk("nb Tick needed for boot %d\n",tick);
         // main loop (never returns)
         shell_loop();
-
     }
 }
 

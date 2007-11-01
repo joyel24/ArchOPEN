@@ -27,6 +27,8 @@
 #include <gui/iconmenu.h>
 #include <gui/widgetlist.h>
 
+#include <init/boot_error.h>
+
 ICON shellMenu_folderIcon = NULL;
 ICON shellMenu_backIcon = NULL;
 ICON shellMenu_appIcon = NULL;
@@ -106,7 +108,11 @@ static bool shellMenu_parse(char * filename){
     CFG_DATA * data;
 
     data=cfg_readFile(filename);
-    if(data==NULL) return false;
+    if(data==NULL)
+    {
+        gui_bootError(MISSING_MENU_FILE_ERROR,BOOT_ERROR);
+        return false;
+    }
 
     printk("[shell menu] parsing '%s'\n",filename);
 
