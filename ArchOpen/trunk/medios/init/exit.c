@@ -48,7 +48,7 @@ void halt_device(void)
 
     printk("[exit] device halt\n");
     arch_HaltMsg();
-    
+   
     medios_close();
 
     printk("[exit] medios cleanup done\n");    
@@ -61,6 +61,7 @@ void halt_device(void)
     udelay(100);
     printk("[exit] ready to halt\n");
     clf();
+    cli();
     //outw(0,0x30a1a);
     while(1) /* nothing */;
 }

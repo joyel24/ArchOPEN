@@ -62,6 +62,13 @@
 #define Y_OFFSET 0x12
 #endif
 
+#if defined(AV5XX)
+#define LCD_WIDTH 480
+#define LCD_HEIGHT 272
+#define X_OFFSET 0
+#define Y_OFFSET 0x0
+#endif
+
 #if defined(PMA)
 #define LCD_WIDTH 320
 #define LCD_HEIGHT 240
@@ -74,7 +81,9 @@
 
 #define USER_MENU_QUIT -2
 
-#define OSD_BITMAP1_CONFIG  OSD_COMPONENT_ENABLE | OSD_BITMAP_8BIT | OSD_BITMAP_MERGEBACK | OSD_BITMAP_A7 | OSD_BITMAP_ZX1 | OSD_BITMAP_RAMCLUT
+//#define OSD_BITMAP1_CONFIG  OSD_COMPONENT_ENABLE | OSD_BITMAP_8BIT | OSD_BITMAP_MERGEBACK | OSD_BITMAP_A7 | OSD_BITMAP_ZX1 | OSD_BITMAP_RAMCLUT
+
+#define OSD_BITMAP1_CONFIG OSD_BMAP_1_CFG
 
 #if defined(GMINI4XX) || defined(GMINI402)
 int bt_UP = BTMASK_UP;
@@ -124,6 +133,18 @@ int bt_SELECT = BTMASK_F3;
 int bt_MENU = BTMASK_F1;
 #endif
 
+#if defined(AV5XX)
+int bt_UP = BTMASK_UP;
+int bt_DOWN = BTMASK_DOWN;
+int bt_LEFT = BTMASK_LEFT;
+int bt_RIGHT = BTMASK_RIGHT;
+int bt_A = BTMASK_BTN1;
+int bt_B = BTMASK_ON;
+int bt_START = BTMASK_F1;
+int bt_SELECT = BTMASK_OFF;
+int bt_MENU = BTMASK_F2;
+#endif
+
 unsigned long OSD_BITMAP1_ADDRESS;
 
 extern int RotScreen;
@@ -138,7 +159,8 @@ int app_main(int argc,char** argv)
 {
     char * rom;		
 /*
-		 to use the medios browser you have to define USE_MEDIOS_BROWSER. This completely changes the way the emu works, it mapps button_off
+		 to use the medios browser you have to define USE_MEDIOS_BROWSER. 
+         This completely changes the way the emu works, it mapps button_off
 		 to exit the emulator and return to the browser, While exit in the emu ingame menu still completly exits.
 		 Cj tell me if you want to do it this way and also let me know if it works for you?
 */
@@ -205,10 +227,10 @@ int app_main(int argc,char** argv)
     gfx_openGraphics();
     OSD_BITMAP1_ADDRESS = (int)gfx_planeGetBufferOffset(BMAP1);
     gfx_planeSetSize(BMAP1,160,144,8);
-    gfx_planeSetPos(BMAP1,(LCD_WIDTH-OSD_BITMAP1_WIDTH) + X_OFFSET,(LCD_HEIGHT-OSD_BITMAP1_HEIGHT)/2 + Y_OFFSET);
-    
-    gfx_fillRect(0x00,0,0,160,144);
+    gfx_planeSetPos(BMAP1,((LCD_WIDTH-OSD_BITMAP1_WIDTH) + X_OFFSET),(LCD_HEIGHT-OSD_BITMAP1_HEIGHT)/2 + Y_OFFSET);
+
     gfx_setPlane(BMAP1);
+    gfx_fillRect(COLOR_BLACK,0,0,160,144);
     gfx_planeShow(BMAP1);
     gfx_fontSet(10);   
     
@@ -219,7 +241,11 @@ int app_main(int argc,char** argv)
 
     printf("argc = %d, argv = %x\n",argc,argv);
 
-    if(argc<2) browser(rom);
+    if(argc<2)
+    {
+        if(browser(rom)!=0)
+            return 0;
+    }
     else strcpy(rom,argv[1]);
 
     if(!(*rom)) {
@@ -318,7 +344,7 @@ int doevents(void)
 #ifdef STDALONE
             reload_firmware();
 #endif
-#if defined(AV3XX) || defined(AV4XX) || defined(PMA)
+#if defined(AV3XX) || defined(AV4XX) || defined(PMA) || defined(AV5XX)
            return 0;
 #endif
         }

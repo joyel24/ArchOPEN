@@ -32,7 +32,7 @@ int doevents(void);
 int do_user_menu(void);
 void loadstate(int fd);
 void savestate(int fd);
-void browser(char * rom);
+int browser(char * rom);
 void loader_init(char *s);
 
 void emu_run();

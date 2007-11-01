@@ -27,6 +27,7 @@
     #include <kernel/malloc.h>
     #include <kernel/timer.h>
     #include <kernel/delay.h>
+    #include <kernel/evt.h>
 
     #include <driver/buttons.h>
 
@@ -39,6 +40,7 @@
 
 #include <sys_def/section_types.h>
 #include <sys_def/stddef.h>
+#include <sys_def/colordef.h>
 
 #define IS_LITTLE_ENDIAN
 

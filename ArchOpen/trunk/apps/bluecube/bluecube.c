@@ -25,6 +25,7 @@
 #include "global.h"
 #include "grafix.h"
 #include "box.h"
+#include "bluecube.h"
 
 
 #define NEXT_X  (screenWidth-40)
@@ -56,82 +57,72 @@ int explodeY;
 
 struct client_operations * cops;
 
+struct blueCube_archDef * archParam=NULL;
 
+#define ACTION_STOP           (archParam->action_stop)
+#define ACTION_PAUSE          (archParam->action_pause)
+#define ACTION_TURN_RIGHT_1   (archParam->action_turn_right_1)
+#define ACTION_TURN_RIGHT_2   (archParam->action_turn_right_2)
+#define ACTION_MOVE_LEFT      (archParam->action_move_left)
+#define ACTION_MOVE_RIGHT     (archParam->action_move_right)
+#define ACTION_MOVE_DOWN      (archParam->action_move_down)
+#define ACTION_NEW_GAME       (archParam->action_new_game)
+#define ACTION_DROP           (archParam->action_drop)
 
 void processEvt(int event)
 {
     if(bPause){
-
-        switch (event)
+        if(event==ACTION_PAUSE)
         {
-#ifdef AV4XX
-                case BTN_F2:
-#endif
-#ifndef AV4XX
-                case BTN_ON:
-#endif
-                bPause=0;
-                break;
-            case BTN_OFF:
-                bDone=1;
-                break;
+            bPause=0;
+        }
+        else if(event==ACTION_STOP)
+        {
+            bDone=1;
         }
 
     }else if (!bGameOver){
-
-        switch (event)
+        if(event==ACTION_TURN_RIGHT_1 || event==ACTION_TURN_RIGHT_2)
         {
-#ifdef AV4XX
-            case BTN_ON:
-#endif
-            case BTN_1:
-            case BTN_UP:
-                TurnClusterRight();
-                break;
-            case BTN_DOWN:
-                if(MoveCluster(0)){
+            TurnClusterRight();
+        }
+        else if (event==ACTION_MOVE_DOWN)
+        {
+            if(MoveCluster(0)){
                     NewCluster();
-    	        }
-                break;
-
-            case BTN_LEFT:
-                MoveClusterLeft();
-                break;
-            case BTN_RIGHT:
-                MoveClusterRight();
-                break;
-
-            case BTN_2:
-            case BTN_F1:
-                MoveCluster(1); /* "drop" cluster...      */
-                NewCluster();   /* ... and create new one */
-                break;
-
-#ifdef AV4XX
-                case BTN_F2:
-#endif
-#ifndef AV4XX
-                case BTN_ON:
-#endif
-                bPause=1;
-                break;
-            case BTN_OFF:
-                bDone=1;
-                break;
+                }
+        }
+        else if (event==ACTION_MOVE_LEFT)
+        {
+            MoveClusterLeft();
+        }
+        else if (event==ACTION_MOVE_RIGHT)
+        {
+            MoveClusterRight();
+        }
+        else if (event==ACTION_PAUSE)
+        {
+            bPause=1;
+        }
+        else if (event==ACTION_STOP)
+        {
+            bDone=1;
+        }
+        else if (event==ACTION_DROP)
+        {
+            MoveCluster(1); /* "drop" cluster...      */
+            NewCluster();   /* ... and create new one */
         }
 
     }else{
-
-        switch (event)
+        if(event==ACTION_NEW_GAME)
         {
-            case BTN_ON:
-                NewGame();
-                break;
-            case BTN_OFF:
-                bDone=1;
-                break;
+            NewGame();
         }
-
+        else if(event==ACTION_STOP)
+        {
+            bDone=1;
+        }
     }
 }
 
@@ -163,8 +154,19 @@ void mainLoop(int eventHandler)
 
 void initArch(){
     int bw,bh,bd;
-
+    int i=0;
     arch=getArch();
+    while(conf_table[i].conf!=NULL && conf_table[i].arch!=arch) i++;
+    if(conf_table[i].conf==NULL)
+    {
+        printf("Using default conf");
+        archParam=&default_conf;
+    }
+    else
+    {
+        printf("Using conf for %d\n",arch);
+        archParam=conf_table[i].conf;
+    }
     getResolution(&screenWidth,&screenHeight);
 
     gfx_planeGetSize(BMAP1,&bw,&bh,&bd);
@@ -200,19 +202,19 @@ int app_main(int argc,char** argv)
 //=======================================================================*/
 static void NewGame()
 {
-	InitBox(); /* Clear Box */
-	BoxDrawInit(screenWidth,screenHeight); /* Init boxdraw values */
-	
-	lines = 0; /* Reset lines counter */
-	score = 0; /* Reset score */
-	level = 0; /* Reset level */
-	nextPiece = rand()%7; /* Create random nextPiece */
-	NewCluster();
+    InitBox(); /* Clear Box */
+    BoxDrawInit(screenWidth,screenHeight); /* Init boxdraw values */
 
-	bPause = 0; /* No pause */
-	bCrazy = 0; /* No crazymode :) */
-	bGameOver = 0;
-	bExplode = 0;
+    lines = 0; /* Reset lines counter */
+    score = 0; /* Reset score */
+    level = 0; /* Reset level */
+    nextPiece = rand()%7; /* Create random nextPiece */
+    NewCluster();
+
+    bPause = 0; /* No pause */
+    bCrazy = 0; /* No crazymode :) */
+    bGameOver = 0;
+    bExplode = 0;
 
 }
 
@@ -222,46 +224,46 @@ static void NewGame()
 //=======================================================================*/
 static void Game_Loop()
 {
-	if (!bPause)
-	{
-		if (!bGameOver)
-		{
+    if (!bPause)
+    {
+        if (!bGameOver)
+        {
             cluster.dropCount--;  /* Decrease time until the next fall */;
 
-			if (cluster.dropCount == 0)
-			{
+            if (cluster.dropCount == 0)
+            {
                 ClearCluster();
-				if (MoveCluster(0)) /* If cluster "collides"... */
+                if (MoveCluster(0)) /* If cluster "collides"... */
                 {
-					NewCluster();   /* then create a new one ;) */
+                    NewCluster();   /* then create a new one ;) */
                 }
-			}
+            }
 
-			/* Increase Level */
-			if (((level == 0) && (lines >=  10)) ||
-				((level == 1) && (lines >=  30)) ||
-				((level == 2) && (lines >=  50)) ||
-				((level == 3) && (lines >=  70)) ||
-				((level == 4) && (lines >=  90)) ||
-				((level == 5) && (lines >= 110)) ||
-				((level == 6) && (lines >= 130)) ||
-				((level == 7) && (lines >= 150)) ||
-				((level == 8) && (lines >= 170)) ||
-				((level == 9) && (lines >= 200)))
-			{
-				level++;
-			}
-		}
-		else
-		{
-		    if(bExplode){
+            /* Increase Level */
+            if (((level == 0) && (lines >=  10)) ||
+                ((level == 1) && (lines >=  30)) ||
+                ((level == 2) && (lines >=  50)) ||
+                ((level == 3) && (lines >=  70)) ||
+                ((level == 4) && (lines >=  90)) ||
+                ((level == 5) && (lines >= 110)) ||
+                ((level == 6) && (lines >= 130)) ||
+                ((level == 7) && (lines >= 150)) ||
+                ((level == 8) && (lines >= 170)) ||
+                ((level == 9) && (lines >= 200)))
+            {
+                level++;
+            }
+        }
+        else
+        {
+            if(bExplode){
                 GameOverAnimation();
             }
-		}
+        }
 
-	}
+    }
 
-	DrawScene();
+    DrawScene();
 }
 
 /*=========================================================================
@@ -273,14 +275,14 @@ static void DrawScene()
     char chScore[30], chLines[30],chLevel[30];
 
     gfx_setPlane(BMAP2);
-    
+
     gfx_clearScreen(COLOR_WHITE);
 
     /* Draw border of the box */
     PutRect(boxdraw.box_x-5, boxdraw.box_y-5,
-    		boxdraw.box_width + 2*5, boxdraw.box_height + 2*5, COLOR_BLACK,0,0);
+            boxdraw.box_width + 2*5, boxdraw.box_height + 2*5, COLOR_BLACK,0,0);
     PutRect(boxdraw.box_x-1, boxdraw.box_y-1,
-    		boxdraw.box_width+2, boxdraw.box_height+2, COLOR_BLACK,0,0);
+            boxdraw.box_width+2, boxdraw.box_height+2, COLOR_BLACK,0,0);
 
     sprintf(chScore, "%d", score);
     sprintf(chLines, "%d", lines);
@@ -294,34 +296,34 @@ static void DrawScene()
 
 
     gfx_putS(COLOR_BLACK,COLOR_WHITE, 1, boxdraw.box_y+25, "Lines");
-	gfx_putS(COLOR_BLACK,COLOR_WHITE, 1, boxdraw.box_y+37, chLines);
-	gfx_putS(COLOR_BLACK,COLOR_WHITE, 1, boxdraw.box_y+50, "Level");
-	gfx_putS(COLOR_BLACK,COLOR_WHITE, 1, boxdraw.box_y+62, chLevel);
+    gfx_putS(COLOR_BLACK,COLOR_WHITE, 1, boxdraw.box_y+37, chLines);
+    gfx_putS(COLOR_BLACK,COLOR_WHITE, 1, boxdraw.box_y+50, "Level");
+    gfx_putS(COLOR_BLACK,COLOR_WHITE, 1, boxdraw.box_y+62, chLevel);
 
     DrawNextPiece(NEXT_X, NEXT_Y);
 
-	if (!bGameOver){
+    if (!bGameOver){
         DrawCluster(); /* Draw cluster */
     }
 
-   	DrawBox(); /* Draw box bricks */
+    DrawBox(); /* Draw box bricks */
 
-	if (bGameOver && !bExplode)
-	{
+    if (bGameOver && !bExplode)
+    {
         sprintf(chScore, "Your Score: %d", score);
 
         gfx_fontSet(STD8X13);
 
-		gfx_putS(COLOR_BLACK,COLOR_WHITE,(screenWidth-13*8)/2,screenHeight/2-13-7,"- Game Over -");
-		gfx_putS(COLOR_BLACK,COLOR_WHITE,(screenWidth-strlen(chScore)*8)/2,screenHeight/2+7,chScore);
-	}
+        gfx_putS(COLOR_BLACK,COLOR_WHITE,(screenWidth-13*8)/2,screenHeight/2-13-7,"- Game Over -");
+        gfx_putS(COLOR_BLACK,COLOR_WHITE,(screenWidth-strlen(chScore)*8)/2,screenHeight/2+7,chScore);
+    }
 
-	if (bPause)
-	{
+    if (bPause)
+    {
         gfx_fontSet(STD8X13);
 
-		gfx_putS(COLOR_BLACK,COLOR_WHITE,(screenWidth-10*8)/2,(screenHeight-13)/2,"- Paused -");
-	}
+        gfx_putS(COLOR_BLACK,COLOR_WHITE,(screenWidth-10*8)/2,(screenHeight-13)/2,"- Paused -");
+    }
 
     //the game needs double buffering
     memcpy(gfx_planeGetBufferOffset(BMAP1),gfx_planeGetBufferOffset(BMAP2),bufferSize);
@@ -333,11 +335,11 @@ static void DrawScene()
 //=======================================================================*/
 void StartGameOverAnimation()
 {
-	x = 0;
-	y = 0;
-	bGameOver = 1;
-	bExplode = 1;
-	explodeY=0;
+    x = 0;
+    y = 0;
+    bGameOver = 1;
+    bExplode = 1;
+    explodeY=0;
 }
 
 /*=========================================================================
@@ -348,12 +350,12 @@ static void GameOverAnimation()
 {
     int i;
 
-	for (i=0; i<BOX_BRICKS_X; i++)
-		SetBrick(i,explodeY,rand()%6+1);
+    for (i=0; i<BOX_BRICKS_X; i++)
+        SetBrick(i,explodeY,rand()%6+1);
 
-	explodeY++;
+    explodeY++;
 
-	if (explodeY>=BOX_BRICKS_Y) bExplode=0;
+    if (explodeY>=BOX_BRICKS_Y) bExplode=0;
 }
 
 /*=========================================================================
@@ -362,8 +364,8 @@ static void GameOverAnimation()
 //=======================================================================*/
 void PutRect(int x, int y, int w, int h, int r, int g, int b)
 {
-	// GrSetGCForeground(tetris_gc, MWRGB(r, g, b));
-	gfx_drawRect(r,x,y,w,h);
+    // GrSetGCForeground(tetris_gc, MWRGB(r, g, b));
+    gfx_drawRect(r,x,y,w,h);
 }
 
 void ClearRect(int x, int y, int w, int h)

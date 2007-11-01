@@ -82,6 +82,7 @@ __attribute__((section(".fwuncomp_code"))) void arch_reload_firmware(void){
     {
         printk("Reload not supported atm => halt\n");
         kernel_doCmd(CMD_HALT_DEVICE);
+        while(1);
     }
     else
     {

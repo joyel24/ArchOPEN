@@ -15,13 +15,13 @@
 /* menu.c - user menu for rockboy                                    */
 /*                                                                   */
 /* Modified by CjNr11 08/12/2005                                     */
+/* Mod by Oxygen 11/2007 : using evt and palette                     */
 /*********************************************************************/
 
 #include <sys_def/ctype.h>
 #include <sys_def/buttons.h>
 #include <driver/videnc.h>
 #include <driver/clkc.h>
-
 
 #include "defs.h"
 #include "avboy.h"
@@ -32,7 +32,7 @@
 #define drawline(a,b,c,d,e) gfx_drawLine(e,a,b,c,d)
 #define drawrect(a,b,c,d,e) gfx_drawRect(e,a,b,c,d)
 #define fillrect(a,b,c,d,e) gfx_fillRect(e,a,b,c,d)
-#define putsxy(a,b,c) gfx_putS(0xFF,0x00,a,b,c)
+#define putsxy(a,b,c) gfx_putS(COLOR_BLACK,COLOR_WHITE,a,b,c)
 
  
 #define OSD_BITMAP1_WIDTH 160
@@ -61,6 +61,13 @@
 #define Y_OFFSET 0x0
 #endif
 
+#if defined(AV5XX)
+#define LCD_WIDTH 480
+#define LCD_HEIGHT 272
+#define X_OFFSET 0
+#define Y_OFFSET 0x0
+#endif
+
 extern int frameskip;
 int TVState = 0;
 int TVStd = 0;
@@ -74,7 +81,7 @@ int MENU_X=10;
 
 //int SDRFreq = 0;
 
-#if defined(AV3XX) || defined(AV4XX) || defined(PMA)
+#if defined(AV3XX) || defined(AV4XX) || defined(PMA) || defined(AV5XX)
 extern int bt_UP;
 extern int bt_DOWN;
 extern int bt_LEFT;
@@ -162,7 +169,7 @@ static const char *opt_menu[] = {
 
 #define OPT2_MENU_TITLE "More Options"
 typedef enum {
-#if defined(AV3XX) || defined(AV4XX) || defined(PMA)
+#if defined(AV3XX) || defined(AV4XX) || defined(PMA) || defined(AV5XX)
   OM2_ITEM_ZMX,
   OM2_ITEM_ROT,
 #endif
@@ -176,7 +183,7 @@ typedef enum {
 static const char *opt2_menu[] = {
  // "Zoom X+1        ",
  // "Zoom Normal     ",
-#if defined (AV3XX) || defined(AV4XX) || defined(PMA)
+#if defined (AV3XX) || defined(AV4XX) || defined(PMA) || defined(AV5XX)
   "Zoom X          ",
   "Rotate Scr.     ",
 #endif
@@ -511,7 +518,7 @@ static void do_opt2_menu(void) {
   num_items = sizeof(opt2_menu) / sizeof(char*);
   mi = 0;
 //  snprintf((char *)opt2_menu[0], 17, "Overclock SDR  %1d", SDRFreq);
-#if defined(AV3XX) || defined(AV4XX) || defined(PMA)
+#if defined(AV3XX) || defined(AV4XX) || defined(PMA) || defined(AV5XX) 
   snprintf((char *)opt2_menu[1], 17, "Rotate Scr.    %1d", RotScreen);
   snprintf((char *)opt2_menu[0], 17, "Zoom X       %s", (ZoomX ? " ON" : "OFF"));
 #endif
@@ -538,7 +545,7 @@ static void do_opt2_menu(void) {
         snprintf((char *)opt2_menu[0], 17, "Overclock SDR  %1d", SDRFreq);
         (*(volatile unsigned short *)(0x30884))=0x8031;
         break;*/
-#if defined(AV3XX) || defined(AV4XX) || defined(PMA)
+#if defined(AV3XX) || defined(AV4XX) || defined(PMA) || defined(AV5XX)
       case OM2_ITEM_ZMX:
         if(!RotScreen) {
            ZoomX=!ZoomX;
@@ -598,6 +605,18 @@ static void do_opt2_menu(void) {
               bt_START = BTMASK_OFF;
               bt_MENU = BTMASK_BTN1;
               #endif
+              
+               #if defined(AV5XX)
+              bt_UP = BTMASK_RIGHT;
+              bt_DOWN = BTMASK_LEFT;
+              bt_LEFT = BTMASK_UP;
+              bt_RIGHT = BTMASK_DOWN;
+              bt_A = BTMASK_F2;
+              bt_B = BTMASK_F3;
+              bt_SELECT = BTMASK_F1;
+              bt_START = BTMASK_OFF;
+              bt_MENU = BTMASK_BTN1;
+              #endif
 
               MENU_X=2;
            }
@@ -618,6 +637,18 @@ static void do_opt2_menu(void) {
               #endif
 
               #if defined(AV4XX)
+              bt_UP = BTMASK_LEFT;
+              bt_DOWN = BTMASK_RIGHT;
+              bt_LEFT = BTMASK_DOWN;
+              bt_RIGHT = BTMASK_UP;
+              bt_A = BTMASK_F2;
+              bt_B = BTMASK_F3;
+              bt_SELECT = BTMASK_F1;
+              bt_START = BTMASK_OFF;
+              bt_MENU = BTMASK_BTN1;
+              #endif
+                           
+              #if defined(AV5XX)
               bt_UP = BTMASK_LEFT;
               bt_DOWN = BTMASK_RIGHT;
               bt_LEFT = BTMASK_DOWN;
@@ -660,6 +691,18 @@ static void do_opt2_menu(void) {
               #endif
 
               #if defined(AV4XX)
+              bt_UP = BTMASK_UP;
+              bt_DOWN = BTMASK_DOWN;
+              bt_LEFT = BTMASK_LEFT;
+              bt_RIGHT = BTMASK_RIGHT;
+              bt_A = BTMASK_BTN1;
+              bt_B = BTMASK_ON;
+              bt_START = BTMASK_F1;
+              bt_SELECT = BTMASK_OFF;
+              bt_MENU = BTMASK_F2;
+              #endif
+              
+              #if defined(AV5XX)
               bt_UP = BTMASK_UP;
               bt_DOWN = BTMASK_DOWN;
               bt_LEFT = BTMASK_LEFT;
@@ -755,7 +798,7 @@ static void select_item(char *title, int curr_item, size_t item_i) {
     /* deselect old item */
     y = MENU_Y + h + MENU_ITEM_PAD * 2; /* account for title */
     y += h * curr_item;
-    drawrect(x, y, w, h,0x00);
+    drawrect(x, y, w, h,COLOR_DARK_BLUE);
   }
 
   /* select new item */
@@ -764,7 +807,7 @@ static void select_item(char *title, int curr_item, size_t item_i) {
   /* select new item */
   y = MENU_Y + h + MENU_ITEM_PAD * 2; /* account for title */
   y += h * curr_item;
-  drawrect(x, y, w, h,0xf9);
+  drawrect(x, y, w, h,COLOR_WHITE);
 }
 
 /*
@@ -779,9 +822,9 @@ static void draw_menu(char *title, char **items, size_t num_items)  {
   int x, y, w, h, by;
 
   /* draw the outline */
-  gfx_fillRect(0xaf,MENU_X + 1, MENU_Y + 1, MENU_WIDTH, MENU_HEIGHT); // fillrect(0xaf,SHADOW_RECT);
-  gfx_fillRect(0x00,MENU_X, MENU_Y, MENU_WIDTH, MENU_HEIGHT);   // fillrect(0x00,MENU_RECT);
-  gfx_drawRect(0xff,MENU_X, MENU_Y, MENU_WIDTH, MENU_HEIGHT);   // drawrect(0xff,MENU_RECT);
+  gfx_fillRect(COLOR_BLUE,MENU_X + 1, MENU_Y + 1, MENU_WIDTH, MENU_HEIGHT); // fillrect(0xaf,SHADOW_RECT);
+  gfx_fillRect(COLOR_DARK_BLUE,MENU_X, MENU_Y, MENU_WIDTH, MENU_HEIGHT);   // fillrect(0x00,MENU_RECT);
+  gfx_drawRect(COLOR_WHITE,MENU_X, MENU_Y, MENU_WIDTH, MENU_HEIGHT);   // drawrect(0xff,MENU_RECT);
 
   /* calculate x/y */
   x = MENU_X + MENU_ITEM_PAD;
@@ -791,20 +834,21 @@ static void draw_menu(char *title, char **items, size_t num_items)  {
 
   /* draw menu stipple */
   for (i = MENU_Y; i < (size_t) y + h; i += 2)
-    drawline(MENU_X, i, MENU_X + MENU_WIDTH-1, i,0xff);
+    drawline(MENU_X, i, MENU_X + MENU_WIDTH-1, i,COLOR_BLUE);
 
   /* clear title rect */
-  fillrect((OSD_BITMAP1_WIDTH - w) / 2 - 2, y - 2, w + 4, h,0x00);
+  fillrect((OSD_BITMAP1_WIDTH - w) / 2 - 2, y - 2, w + 4, h,COLOR_DARK_BLUE);
 
   /* draw centered title on screen */
-  putsxy((OSD_BITMAP1_WIDTH - w)/2, y, title);
+  
+  gfx_putS(COLOR_WHITE,COLOR_DARK_BLUE,(OSD_BITMAP1_WIDTH - w)/2, y, title);
 
   /* calculate base Y for items */
   by = y + h + MENU_ITEM_PAD;
   
   /* iterate over each item and draw it on the screen */
   for (i = 0; i < num_items; i++)
-    putsxy(x+2, by + h * i, items[i]);
+    gfx_putS(COLOR_WHITE,COLOR_DARK_BLUE,x+2, by + h * i, items[i]);
 }
 
 /*
@@ -815,92 +859,85 @@ static void draw_menu(char *title, char **items, size_t num_items)  {
  * -1 :).
  *
  */
-static int do_menu(char *title, char **items, size_t num_items, int sel) {
-    int btn, sel_item, ret, curr_item; //,y,x,c=0;
-  bool done = false;
-  ret = MENU_CANCEL;
-
-
-  /* draw menu on screen and select the first item */
-  draw_menu(title, items, num_items);
-  curr_item = -1;
-  select_item(title, curr_item, sel);
-  curr_item = sel;
-
-  /* make sure button state is empty */
-  while (btn_readState());
-
-  /* loop until the menu is finished */
-  while (!done) {
-    /* grab a button */
-    while (btn_readState());
-    while(!(btn = btn_readState()));
-
-    /* handle the button */
-    if(btn & BTMASK_DOWN) {
-        /* select next item in list */
-        sel_item = curr_item + 1;
-        if (sel_item >= (int) num_items)
-          sel_item = 0;
-        select_item(title, curr_item, sel_item);
-        curr_item = sel_item;
-      }
-      else if(btn & BTMASK_UP) {
-        /* select prev item in list */
-        sel_item = curr_item - 1;
-        if (sel_item < 0)
-          sel_item = num_items - 1;
-        select_item(title, curr_item, sel_item);
-        curr_item = sel_item;
-      }
-      else if(btn & BTMASK_RIGHT) {
-        /* select current item */
-        ret = curr_item;
-        done = true;
-      }
-  /*    else if(btn & 0x10) {
-        for (y=0;y<144;y+=9) {
-          for (x=0;x<160;x+=10) {
-            gfx_fillRect(c, x, y, 10, 9);
-            c++;
-          }
+static int do_menu(char *title, char **items, size_t num_items, int sel)
+{
+    int sel_item, ret, curr_item; //,y,x,c=0;
+    bool done = false;
+    ret = MENU_CANCEL;
+    int evtHand,evt;
+    
+    /* draw menu on screen and select the first item */
+    draw_menu(title, items, num_items);
+    curr_item = -1;
+    select_item(title, curr_item, sel);
+    curr_item = sel;
+    evtHand=evt_getHandler(BTN_CLASS);
+            
+    /* loop until the menu is finished */
+    while (!done)
+    {
+        /* grab a button */
+        
+        evt=evt_getStatusBlocking(evtHand);
+    
+        switch(evt)
+        {
+            case BTN_DOWN: /* handle the button */
+                /* select next item in list */
+                sel_item = curr_item + 1;
+                if (sel_item >= (int) num_items)
+                sel_item = 0;
+                select_item(title, curr_item, sel_item);
+                curr_item = sel_item;
+                break;
+            case BTN_UP: /* select prev item in list */
+                sel_item = curr_item - 1;
+                if (sel_item < 0)
+                sel_item = num_items - 1;
+                select_item(title, curr_item, sel_item);
+                curr_item = sel_item;
+            case BTN_ON:
+            case BTN_RIGHT:                
+                /* select current item */
+                ret = curr_item;
+                done = true;
+                break;
+            case BTN_F2:
+            case BTN_OFF:
+                /* cancel out of menu */
+                ret = MENU_CANCEL;
+                done = true;
         }
-      }   */
-      else if(btn & 0x200) {
-        /* cancel out of menu */
-        ret = MENU_CANCEL;
-        done = true;
-      }
-//      else if(btn & 0x100) {
-//      }
-  }
-
-  /* return selected item */
-  return ret;
+    }
+    
+    /* return selected item */
+    return ret;
 }
 
-void browser(char * rom) {
-  int x, y, w, h, by;
-  size_t i;
+int browser(char * rom)
+{
+    int x, y, w, h, by;
+    size_t i;
+    
+    int sel_item=0, curr_item, num_items=6, nb=0,pos=0;
+    char title[]="Start...";
+    char (*items)[17];
+    char (*list)[MAX_PATH];
+    int done = 0,done1=0;
+    struct dirent *romdir;
+    DIR * romd=NULL;
+    int evtHand,evt;
 
-  int btn, sel_item=0, curr_item, num_items=6, nb=0,pos=0;
-  char title[]="Start...";
-  char (*items)[17];
-  char (*list)[MAX_PATH];
-  bool done = false;
-  struct dirent *romdir;
-  DIR * romd=NULL;
+    items = malloc(MAX_PATH*6);
+    list = malloc(MAX_PATH);
 
-items = malloc(MAX_PATH*6);
-list = malloc(MAX_PATH);
-
-romd=opendir(ROM_DIR);
-if(romd) printf("Dir %s opened!\n",ROM_DIR);
-else {
-  mkdir(ROM_DIR,0);
-  if(romd) printf("Dir %s created and opened!\n",ROM_DIR);
-  else printf("Dir error!\n");
-}
+    romd=opendir(ROM_DIR);
+    if(romd) printf("Dir %s opened!\n",ROM_DIR);
+    else {
+    mkdir(ROM_DIR,0);
+    if(romd) printf("Dir %s created and opened!\n",ROM_DIR);
+    else printf("Dir error!\n");
+    }
 
 
   while((romdir=readdir(romd))!=NULL) {
@@ -911,15 +948,19 @@ else {
      list = realloc(list,MAX_PATH*(nb+1));
      }
   }
+  
+    closedir(romd);
 
   if(!nb) {
-    *rom=0;
-    return;
+    *rom=0;    
+    return 0;
   }
 
-  gfx_fillRect(0xaf,11,9,140,128);
-  gfx_fillRect(0x00,10,8,140,128);
-  gfx_drawRect(0xff,10,8,140,128);
+  evtHand=evt_getHandler(BTN_CLASS);
+  
+  gfx_fillRect(COLOR_BLUE,11,9,140,128);
+  gfx_fillRect(COLOR_DARK_BLUE,10,8,140,128);
+  gfx_drawRect(COLOR_WHITE,10,8,140,128);
 
   x = 10 + 2;
   y = 8 + 2 * 2;
@@ -927,71 +968,85 @@ else {
   h += 2 * 2;
 
   for (i = 8; i < (size_t) y + h; i += 2)
-    drawline(10, i, 10 + 139, i,0xff);
+    drawline(10, i, 10 + 139, i,COLOR_BLUE);
 
-  fillrect((160 - w) / 2 - 2, y - 2, w + 4, h,0x00);
-  putsxy((160 - w)/2, y, title);
+  fillrect((160 - w) / 2 - 2, y - 2, w + 4, h,COLOR_DARK_BLUE);
+  gfx_putS(COLOR_WHITE,COLOR_DARK_BLUE,(160 - w)/2, y, title);
 
   by = y + h + 2;
   
 
 
-while(!done) {
-  if(pos > (nb-6)) num_items=nb-pos;
-  else num_items=6;
-//  for(i=0;i<num_items;i++) {items[i][0]='\0'; strcat(items[i],list[i+pos]);}
-  for(i=0;i<num_items;i++) {strncpy(items[i],list[i+pos],16); items[i][16]='\0';}
-
-  gfx_fillRect(0x00,11,29,138,106);
-  for (i = 0; i < num_items; i++)
-    putsxy(x+2, by + h * i, items[i]);
-
-  curr_item = -1;
-  select_item(title, curr_item, sel_item);
-  curr_item = sel_item;
-
-  while (1) {
-    while (btn_readState());
-    while(!(btn = btn_readState()));
-
-    if(btn & BTMASK_DOWN) {
-        sel_item = curr_item + 1;
-        if (sel_item >= (int) num_items) {
-           if(pos < (nb-6)) {sel_item=0;pos+=6;break;}
-           else {sel_item = curr_item;}
+    while(!done)
+    {
+        if(pos > (nb-6)) num_items=nb-pos;
+        else num_items=6;
+        //  for(i=0;i<num_items;i++) {items[i][0]='\0'; strcat(items[i],list[i+pos]);}
+        for(i=0;i<num_items;i++) {strncpy(items[i],list[i+pos],16); items[i][16]='\0';}
+        
+        gfx_fillRect(COLOR_DARK_BLUE,11,29,138,106);
+        for (i = 0; i < num_items; i++)
+            gfx_putS(COLOR_WHITE,COLOR_DARK_BLUE,x+2, by + h * i, items[i]);
+        
+        curr_item = -1;
+        select_item(title, curr_item, sel_item);
+        curr_item = sel_item;
+        done1=0;
+        while (!done1)
+        {            
+            evt=evt_getStatusBlocking(evtHand);        
+            
+            printk("evt = %d\n",evt);
+            
+            switch(evt)
+            {
+                case BTN_DOWN:    
+                    sel_item = curr_item + 1;
+                    if (sel_item >= (int) num_items)
+                    {
+                        if(pos < (nb-6)) {sel_item=0;pos+=6;done1=1;}
+                        else {sel_item = curr_item;}
+                    }
+                    else
+                    {
+                        select_item(title, curr_item, sel_item);
+                        curr_item = sel_item;
+                    }
+                    break;
+                case BTN_UP:            
+                    sel_item = curr_item - 1;
+                    if (sel_item < 0)
+                    {
+                        if(pos > 0) {sel_item=5;pos-=6;done1=1;}
+                        else {sel_item = curr_item;}
+                    }
+                    else
+                    {
+                        select_item(title, curr_item, sel_item);
+                        curr_item = sel_item;
+                    }
+                    break;
+                case BTN_RIGHT:
+                case BTN_ON:
+                    done = 1;
+                    done1=1;
+                    break;
+                case BTN_OFF:
+                    *rom=0;
+                    free(items);
+                    free(list);
+                    evt_freeHandler(evtHand);
+                    return 1;
+            }        
         }
-        else {
-           select_item(title, curr_item, sel_item);
-           curr_item = sel_item;
-        }
-      }
-      else if(btn & BTMASK_UP) {
-        sel_item = curr_item - 1;
-        if (sel_item < 0) {
-           if(pos > 0) {sel_item=5;pos-=6;break;}
-           else {sel_item = curr_item;}
-        }
-        else {
-           select_item(title, curr_item, sel_item);
-           curr_item = sel_item;
-        }
-      }
-      else if(btn & BTMASK_RIGHT) {
-        done = true;
-        break;
-      }
-      else if(btn & BTMASK_LEFT) {
-      }
-
-  }
-  }
+    }
 
   rom[0]='\0';
   strcat(rom,ROM_DIR);
   strcat(rom,list[curr_item+pos]);
   strcat(rom,"\0");
-  closedir(romd);
   free(items);
   free(list);
-  return;
+  evt_freeHandler(evtHand);
+  return 0;
 }
