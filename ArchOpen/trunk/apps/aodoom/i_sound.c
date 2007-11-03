@@ -102,17 +102,22 @@ tDspCom * dspCom;
 
 __IRAM_CODE void dsp_interrupt(int irq,struct pt_regs * regs){
     // debug message coming from the dsp
-    if (dspCom->hasDbgMsg){
+    if (dspCom->hasDbgMsg)
+    {
         char * str=malloc(256);
         int i;
 
         for(i=0;i<256;++i){
             str[i]=dspCom->dbgMsg[i];
         }
-        printf("dsp> %s\n",str);
-
+        uart_outString("dsp> ",DEBUG_UART);
+        uart_outString(str,DEBUG_UART);
+        uart_outString("\n",DEBUG_UART);
+        sprintf(str,"dsp mode %x\n",readCPUMode());
+        uart_outString(str,DEBUG_UART);
         dspCom->hasDbgMsg=0;
         free(str);
+        dspCom->hasDbgMsg=0;
     }
 
     if (dspCom->sndWantBuf){
@@ -135,6 +140,8 @@ void dsp_init(){
     irq_changeHandler(IRQ_DSP,dsp_interrupt);
     irq_enable(IRQ_DSP);
 
+    printk("Dsp INT handler at %x\n",dsp_interrupt);
+    
     *DSP_COM=0;
 #if 1
     dsp_loadProgramFromMemory(dspcode,len);

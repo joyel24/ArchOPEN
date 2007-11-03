@@ -69,10 +69,13 @@ MED_RET_T thread_init(void(*fct)(void))
 
     /*retval=thread_create(&sysThread,(void*)fct,(void*)thread_exit,NULL,NULL,0,THREAD_USE_SYS_STACK,
         SYS_STACK_BTM,PRIO_HIGH,"KERNEL",NULL,(unsigned long)NULL,(unsigned long)NULL);*/
-    
+#ifdef BUILD_LIB    
+    retval=thread_create(&sysThread,(void*)fct,(void*)thread_exit,NULL,NULL,0,THREAD_USE_SYS_STACK,
+        NULL,PRIO_HIGH,"KERNEL",NULL,(unsigned long)NULL,(unsigned long)NULL);
+#else
     retval=thread_create(&sysThread,(void*)fct,(void*)thread_exit,NULL,NULL,0,THREAD_USE_OTHER_STACK,
         NULL,PRIO_HIGH,"KERNEL",NULL,(unsigned long)NULL,(unsigned long)NULL);
-    
+#endif
 
     if(retval<0)
     {

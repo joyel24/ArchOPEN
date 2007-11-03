@@ -11,6 +11,7 @@
 */
 
 #include <kernel/kernel.h>
+#include <lib/string.h>
 
 #include <driver/hardware.h>
 #include <driver/uart.h>
@@ -18,8 +19,13 @@
 char trap_stack[1024];
 
 void do_trap_undef(void)
-{
+{    
+    char tmp_str[100];
     uart_outString("[INT] UNDEF !!\n",DEBUG_UART);
+    sprintf(tmp_str,"LR=%x\n",get_lr); 
+    uart_outString(tmp_str,DEBUG_UART);
+    uart_outString("LOOP\n",DEBUG_UART);
+    while(1) /*nothing*/;
 }
 
 void do_trap_swi(void)
@@ -30,16 +36,21 @@ void do_trap_swi(void)
 void do_trap_prefetch(void)
 {
     uart_outString("[INT] PREFETCH !!\n",DEBUG_UART);
+    uart_outString("LOOP\n",DEBUG_UART);
+    while(1) /*nothing*/;
 }
 
 void do_trap_data(void)
 {
     uart_outString("[INT] DATA !!\n",DEBUG_UART);
+    uart_outString("LOOP\n",DEBUG_UART);
+    while(1) /*nothing*/;
 }
 
 void do_trap_addrexcptn(void)
 {
     uart_outString("[INT] ADDREXCPTN => should not happen let's loop !!\n",DEBUG_UART);
+    while(1) /*nothing*/;
 }
 
 void print_wdt(void)

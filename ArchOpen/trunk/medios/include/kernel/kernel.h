@@ -35,7 +35,13 @@ int getArch(void);
 void getResolution(int * width,int * height);
 
 unsigned int get_sp(void);
-
+   
+#define get_lr                          \
+    ({                                   \
+        register long _lr asm("lr");     \
+        (long) _lr;               \
+    })
+       
 void printk_init(void);
 void printk_uartEnable(void);
 void printk_uartDisable(void);
