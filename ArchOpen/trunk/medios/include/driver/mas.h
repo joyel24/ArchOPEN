@@ -24,12 +24,6 @@ typedef struct _SOUND_BUFFER
     unsigned long  read;
     unsigned long  write;
     int playing;
-    void (*startPlayback)(void);
-    void (*pausePlayback)(void);
-    /*unsigned long  bytes_played;
-    unsigned long  loop_counter;
-    unsigned long  loops_played;
-    struct _SOUND_BUFFER* next_buffer;*/
 } sound_buffer_s;
 
 

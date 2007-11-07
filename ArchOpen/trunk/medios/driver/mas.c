@@ -198,10 +198,9 @@ int mas_IniMp3(sound_buffer_s * ptr)
 
     soundPaused = 1;
     irq_enable(IRQ_MAS_DATA);
+    
     soundBuffer = ptr;
-
-    ptr->startPlayback=mas_startMp3;
-    ptr->pausePlayback=mas_pauseMp3;
+    
     return 0;
 }
 
