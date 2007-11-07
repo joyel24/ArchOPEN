@@ -481,7 +481,7 @@ void bgImg_setting(void)
     trspString[0]=getLangStr(STRLNG_BLENDING);
     trspString[1]=getLangStr(STRLNG_TRSPARENT);
 
-    logo=icon_get("bgcfg");
+    logo=icon_get("bgCfg");
     if(!logo)
         icon_load("bgCfg.ico");
     
@@ -692,7 +692,7 @@ void bgImg_loadPref(void)
                 {
                     printk("BG Load failed\n");
                     cfg_writeInt(cfg,"has_bgImg",0);
-                    gui_bootError(MISSING_MIMG_FILE_ERROR,BOOT_WARN);
+                    gui_bootError(MISSING_IMG_FILE_ERROR,BOOT_WARN);
                     has_bgImg=0;
                     needWrite=1;  
                 }

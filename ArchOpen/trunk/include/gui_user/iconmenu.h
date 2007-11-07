@@ -19,6 +19,7 @@
 #include<sys_def/graphics.h>
 
 typedef enum {IMIP_TOP, IMIP_LEFT} IM_ICONPOSITION;
+typedef enum {IM_HAS_CAPTION, IM_NO_CAPTION} IM_CAPTION;
 
 //*****************************************************************************
 // ICONMENU_ITEM
@@ -30,6 +31,7 @@ typedef enum {IMIP_TOP, IMIP_LEFT} IM_ICONPOSITION;
     MENU_ITEM_MEMBERS                  \
                                        \
     BITMAP icon;                       \
+    IM_CAPTION itemCaption;            \
     IM_ICONPOSITION iconPosition;
 
 typedef struct {
@@ -46,7 +48,9 @@ typedef struct {
     MENU_MEMBERS                       \
                                        \
     int itemWidth;                     \
-    int itemHeight;
+    int itemHeight;                    \
+    IM_CAPTION itemCaption;            \
+    int btm_line_h;
 
 typedef struct {
     ICONMENU_MEMBERS

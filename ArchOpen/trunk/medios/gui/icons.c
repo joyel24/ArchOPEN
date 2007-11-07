@@ -15,11 +15,13 @@
 #include <kernel/malloc.h>
 
 #include <fs/stdfs.h>
+#include <fs/cfg_file.h>
 
 #include <gfx/graphics.h>
 
 #include <gui/icons.h>
 #include <gui/icons_data.h>
+#include <gui/shellmenu.h>
 
 #include <init/boot_error.h>
 
@@ -47,6 +49,7 @@ int iconPathLen=0;
 int folderType=0;
 
 ICON icon_list_head=NULL;
+int icon_initDone=0;
 
 void icon_initFolderName(void)
 {
@@ -82,19 +85,26 @@ void icon_initFolderName(void)
         if((fd=opendir(ICON_DIR))!=NULL)
         {
             closedir(fd);
-            //gui_bootError(OLD_ICON_FOLDER_ERROR,BOOT_WARN);
+            gui_bootError(OLD_ICON_FOLDER_ERROR,BOOT_WARN);
             iconPath=ICON_DIR"/";
             iconPathLen=strlen(iconPath);
+            folderType=1;
         }
         else
         {
             gui_bootError(MISSING_ICON_FOLDER_ERROR,BOOT_WARN);
             iconPath="";
+            folderType=0;
         }
 		
 	}
-
-	printk("[icon] init folder: using %s (len=%d)\n",iconPath,iconPathLen);
+    
+    if(folderType==0)
+        shellHasCaption=0;
+    else
+        shellHasCaption=1;
+    
+    
 }
 
 void icon_kernelInit(void)
@@ -116,15 +126,86 @@ void icon_kernelInit(void)
     icon_add("MsgBoxWarningBitmap",(unsigned char*)MsgBoxWarning, 18, 18);
     icon_add("MsgBoxInformationBitmap",(unsigned char*)MsgBoxInformation, 18, 18);
     icon_add("MsgBoxErrorBitmap",(unsigned char*)MsgBoxError, 18, 18);
+    icon_initDone=0;
 }
 
 void icon_init(void)
 {
-    /* init icon folder */
-    icon_initFolderName();
+    CFG_DATA * cfg;
+    int needWrite=0;
+           
+    if(!icon_initDone)
+    {
+        icon_initDone=1;
+        cfg=cfg_readFile("/medios/medios.cfg");
+                
+        if(!cfg)
+        {
+            printk("Can't open cfg file\n");
+            /* creating default */
+            cfg=cfg_newFile();
+            icon_initFolderName();
+            if(!cfg)
+            {
+                printk("Can't create new cfg file\n");
+                return;
+            }           
+            
+            cfg_writeInt(cfg,"shellHasCaption",shellHasCaption);
+            cfg_writeInt(cfg,"iconSize",folderType);            
+            needWrite=1;   
+        }
+        else
+        {
+            if(cfg_itemExists(cfg,"shellHasCaption"))
+            {
+                shellHasCaption=cfg_readInt(cfg,"shellHasCaption");
+            }
+            else
+            {
+                int old_data=folderType;
+                icon_initFolderName();
+                folderType=old_data;
+                cfg_writeInt(cfg,"shellHasCaption",shellHasCaption);
+                needWrite=1;
+            }   
+                         
+            if(cfg_itemExists(cfg,"iconSize"))
+            {
+                folderType=cfg_readInt(cfg,"iconSize");
+            }
+            else
+            {
+                int old_data=shellHasCaption;
+                icon_initFolderName();
+                shellHasCaption=old_data;
+                cfg_writeInt(cfg,"iconSize",folderType);
+                needWrite=1;
+            }  
+        }
+        if(needWrite) cfg_writeFile(cfg,"/medios/medios.cfg");
+        cfg_clear(cfg);
+        
+        icon_setPath();        
+    }
 }
 
+void icon_setPath(void)
+{
+    iconPathLen=strlen(ICON_DIR)+strlen(arch_icon_string[folderType]);
+    iconPath=(char*)malloc(iconPathLen);
+    sprintf(iconPath,"%s%s",ICON_DIR,arch_icon_string[folderType]);
+    printk("[icon] init folder: using %s (len=%d)(type=%d)(caption=%d)\n",
+           iconPath,iconPathLen,folderType,shellHasCaption);
+}
+    
+
 ICON icon_load(char * filename)
+{
+    return icon_loadFlag(filename,0);
+}
+        
+ICON icon_loadFlag(char * filename,int force)        
 {
     int infile;
     int i;
@@ -133,6 +214,7 @@ ICON icon_load(char * filename)
     char * tmpF;
     char * name;
     char buff[6];
+    int found=0;
 
     /* create the filename+path */
     tmpF=(char*)malloc(sizeof(char)*(iconPathLen+1+strlen(filename)+1));
@@ -183,16 +265,6 @@ ICON icon_load(char * filename)
 
     /* read icon name */
 
-    /*for(i=0;i<len;i++)
-    {
-
-        if(read(infile,buff,1)<=0)
-        {
-            printk("[icon_load] end of file reached - Step3\n");
-            goto err2;
-        }
-        name[i]=buff[0];
-    }*/
     if(read(infile,name,len)<len)
     {
         printk("[icon_load] end of file reached - reading name\n");
@@ -207,21 +279,33 @@ ICON icon_load(char * filename)
     {
         if(!strcmp(ptr->name,name))
         {
-            //printk("[icon_load] there is already an icon with that name\n");
-            kfree(name);
-            goto out;
+            if(force)
+            {
+                kfree(ptr->data);
+                kfree(name);
+                found=1;
+                break;
+            }
+            else
+            {
+                printk("[icon_load] there is already an icon with that name\n");
+                kfree(name);
+                goto out;
+            }
         }
     }
 
     /* create new icon struct*/
-    ptr=(ICON)kmalloc(sizeof(struct icon_elem));
-    if(!ptr)
+    if(!found)
     {
-        printk("[icon_load] not enough memory for icon structure\n");
-        goto err2;
+        ptr=(ICON)kmalloc(sizeof(struct icon_elem));
+        if(!ptr)
+        {
+            printk("[icon_load] not enough memory for icon structure\n");
+            goto err2;
+        }
+        ptr->name=name;
     }
-
-    ptr->name=name;
 
     /* read width and height */
     if(read(infile,buff,1)<=0)
@@ -237,18 +321,19 @@ ICON icon_load(char * filename)
         goto err3;
     }
     ptr->bmap_data.height=(int)buff[0];
-
+    
     /* create space for bmap data */
     ptr->data=(unsigned char *)kmalloc(sizeof(unsigned char)*ptr->bmap_data.width*ptr->bmap_data.height);
     if(!ptr->data)
     {
-        printk("[icon_load] not enough memory for data in icon structure (w=%d,h=%d)\n",ptr->bmap_data.width,ptr->bmap_data.height);
+        printk("[icon_load] not enough memory for data in icon structure (w=%d,h=%d)\n",
+               ptr->bmap_data.width,ptr->bmap_data.height);
         goto err3;
     }
-
+    
     len=ptr->bmap_data.width*ptr->bmap_data.height;
 
-    /*printk("[icon_load] loading icon %s from %s size (%d,%d)\n",ptr->name,
+   /* printk("[icon_load] loading icon %s from %s size (%d,%d)\n",ptr->name,
         tmpF,ptr->bmap_data.width,ptr->bmap_data.height);*/
 
     /* read icon data */
@@ -270,7 +355,7 @@ ICON icon_load(char * filename)
             goto err4;
         }
     }
-
+    
     /*if(read(infile,ptr->data,len)<len)
     {
         printk("[icon_load] end of file reached - reading icon data\n");
@@ -281,11 +366,14 @@ ICON icon_load(char * filename)
     ptr->bmap_data.data=(unsigned int)ptr->data;
     ptr->bmap_data.type=0;
     ptr->bmap_data.bpline=0;
-
+    
     /* insert new icon in list */
-    ptr->nxt=icon_list_head;
-    icon_list_head=ptr;
-
+    if(!found)
+    {
+        ptr->nxt=icon_list_head;
+        icon_list_head=ptr;
+    }
+    
 out:
     /* close file */
     close(infile);

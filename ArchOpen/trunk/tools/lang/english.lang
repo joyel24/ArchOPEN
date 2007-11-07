@@ -88,3 +88,10 @@ STRLNG_SCROLL_ONLY_SELECTED # Scroll selected item only
 STRLNG_BRW_HAS_STATUSBAR # Enable status bar
 STRLNG_BRW_SCROLL_SPEED # Text scroll speed
 STRLNG_MISSING_LANG_FOLDER # Folder /medios/lang missing
+STRLNG_SHELL_SETTINGS # Shell Settings
+STRLNG_SHELL_CAPTION # With caption
+STRLNG_RESET # Reset
+STRLNG_SIZE # Size
+STRLNG_ICONS_SMALL # small
+STRLNG_ICONS_STD # std
+STRLNG_ICONS_BIG # big

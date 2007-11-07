@@ -23,6 +23,7 @@ else
     rm -f medios/kernel/lang_data.bin
     rm -f medios/kernel/api_fct_list.h
     rm -f medios/include/kernel/version_svn.h
+    rm -Rf tools/icons/big tools/icons/small tools/icons/std
     rm -f *.lds *.conf *.out
     rm -Rf lib
     rm -Rf codec

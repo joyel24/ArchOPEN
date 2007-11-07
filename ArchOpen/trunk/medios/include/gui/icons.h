@@ -22,9 +22,14 @@
 void icon_init(void);
 void icon_kernelInit(void);
 
+extern int folderType;
+
 struct icon_elem * icon_load(char * filename);
+struct icon_elem * icon_loadFlag(char * filename,int force);
 struct icon_elem * icon_add(char * name,unsigned char * data,int w,int h);
 struct icon_elem * icon_get(char * name);
+
+void icon_setPath(void);
 
 #define ICON_SMALL    0
 #define ICON_STD      1

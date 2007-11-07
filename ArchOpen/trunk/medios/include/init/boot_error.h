@@ -19,18 +19,21 @@
 #define BOOT_ERROR 1
 #define BOOT_WARN  2
 
+
 /* Error definition */
 
-#define MISSING_MEDIOS_ERROR       0
-#define MISSING_CODEC_ERROR        1
-#define DSP_CODEC_ERROR            2
-#define MISSING_LANG_FOLDER_ERROR  3
-#define MISSING_LANG_FILE_ERROR    4
-#define MISSING_ICON_FOLDER_ERROR  5
-#define OLD_ICON_FOLDER_ERROR      6
+#define MISSING_MEDIOS_ERROR 0
+#define MISSING_CODEC_ERROR 1
+#define DSP_CODEC_ERROR 2
+#define MISSING_LANG_FOLDER_ERROR 3
+#define MISSING_LANG_FILE_ERROR 4
+#define MISSING_ICON_FOLDER_ERROR 5
+#define OLD_ICON_FOLDER_ERROR 6
 #define MISSING_HANDLER_FILE_ERROR 7
-#define MISSING_MENU_FILE_ERROR    8
-#define MISSING_MIMG_FILE_ERROR    9
+#define MISSING_MENU_FILE_ERROR 8
+#define MISSING_IMG_FILE_ERROR 9
+
+/* function declaration */
 
 void gui_bootError(int errorNumber,int type);
 

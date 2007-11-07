@@ -47,7 +47,7 @@ do_build_simple_app : do_build_simple_app_bin
 	@make -C ./ --no-print-directory -s $(APP_NAME).wav
 	@make -C ./ --no-print-directory -s $(APP_NAME).avi
         
-do_build_simple_app_bin: inc_dir mk_api_file
+do_build_simple_app_bin: inc_dir mk_api_file mk_build_tools mk_lang
 	@make -C apps/ --no-print-directory -s $(APP_NAME).o
 	@make -C medios/ --no-print-directory -s all DO_STDALONE_APP=1
 	@chmod 777 ./tools/lds_files/create_lds

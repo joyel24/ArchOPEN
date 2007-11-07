@@ -30,6 +30,11 @@
 #define SHELL_MENU_LISTVIEW_WIDTH LCD_WIDTH
 #define SHELL_MENU_LISTVIEW_HEIGHT 16
 
+#define SHELL_HAS_CAPTION 0
+#define SHELL_NO_CAPTION  1
+
+extern int shellHasCaption;
+
 void shellMenu_handleEvent(int event);
 bool shellMenu_init();
 void shellMenu_close();

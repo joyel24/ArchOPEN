@@ -158,9 +158,12 @@ int main(int argc, char* argv[]) {
 
     fseek(infile,0,SEEK_END);
     s=ftell(infile);
-    if(s!=(w*h*3+bmphdr.offsetbits))
+    
+    printf("(s=%d, w=%d, h=%d => %d)\n", s,w,h,w*h*3+bmphdr.offsetbits);
+    
+    if(s<(w*h*3+bmphdr.offsetbits))
     {
-        printf("'%s' size is wrong!\n", argv[2]);
+        printf("'%s' size is wrong! (s=%d, w=%d, h=%d => %d)\n", argv[2],s,w,h,w*h*3+bmphdr.offsetbits);
         exit(1);
     }
 

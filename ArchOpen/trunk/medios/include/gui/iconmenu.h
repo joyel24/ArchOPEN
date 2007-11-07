@@ -40,5 +40,7 @@ void iconMenu_init(ICONMENU m);
 bool iconMenu_handleEvent(ICONMENU m,int evt);
 void iconMenu_addItem(ICONMENU m, ICONMENU_ITEM item);
 void iconMenu_updateItems(ICONMENU m, bool fast);
-
+void iconMenu_setCaptionType(ICONMENU m,IM_CAPTION type);
+void iconMenu_paint(ICONMENU m);
+        
 #endif

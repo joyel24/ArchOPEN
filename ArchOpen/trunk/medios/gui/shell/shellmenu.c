@@ -38,6 +38,8 @@ ICONMENU shellMenu_rootMenu = NULL;
 
 typedef struct SHELLMENU_ITEM_STRUCT * SHELLMENU_ITEM;
 
+int shellHasCaption;
+
 struct SHELLMENU_ITEM_STRUCT {
     char * name;
     char * param;
@@ -57,6 +59,8 @@ SHELLMENU_ITEM shellMenu_firstItem = NULL;
 SHELLMENU_ITEM shellMenu_lastItem = NULL;
 
 bool rootListView=false;
+
+int icon_size[] = {40,64,80};
 
 static void shellMenu_onClick(ICONMENU menu, ICONMENU_ITEM menuItem){
     SHELLMENU_ITEM item;
@@ -195,14 +199,17 @@ static bool shellMenu_build(){
     shellMenu_rootMenu->menuList=shellMenu_menuList;
     shellMenu_rootMenu->onClick=(MENU_CLICKEVENT)shellMenu_onClick;
 
+    if(!shellHasCaption)
+        iconMenu_setCaptionType(shellMenu_rootMenu,IM_NO_CAPTION);
+    
     if(rootListView){
         shellMenu_rootMenu->itemWidth=SHELL_MENU_LISTVIEW_WIDTH;
         shellMenu_rootMenu->itemHeight=SHELL_MENU_LISTVIEW_HEIGHT;
     }else{
-        shellMenu_rootMenu->itemWidth=SHELL_MENU_ICONVIEW_WIDTH;
-        shellMenu_rootMenu->itemHeight=SHELL_MENU_ICONVIEW_HEIGHT;
+        shellMenu_rootMenu->itemWidth=icon_size[folderType];
+        shellMenu_rootMenu->itemHeight=icon_size[folderType];
     }
-
+    
     shellMenu_menuList->addWidget(shellMenu_menuList,shellMenu_rootMenu);
     //shellMenu_menuList->setFocusedWidget(shellMenu_menuList,shellMenu_rootMenu);
 
@@ -261,15 +268,18 @@ static bool shellMenu_build(){
                     menu->parentMenu=parentMenu;
                     menu->data=item->parent;
                     menu->onClick=(MENU_CLICKEVENT)shellMenu_onClick;
-
+                    
+                    if(!shellHasCaption)
+                        iconMenu_setCaptionType(menu,IM_NO_CAPTION);
+                    
                     if(item->parent->listView){
                         menu->itemWidth=SHELL_MENU_LISTVIEW_WIDTH;
                         menu->itemHeight=SHELL_MENU_LISTVIEW_HEIGHT;
                     }else{
-                        menu->itemWidth=SHELL_MENU_ICONVIEW_WIDTH;
-                        menu->itemHeight=SHELL_MENU_ICONVIEW_HEIGHT;
+                        menu->itemWidth=icon_size[folderType];
+                        menu->itemHeight=icon_size[folderType];
                     }
-
+                    
                     shellMenu_menuList->addWidget(shellMenu_menuList,menu);
     
                     // link the folder item to the menu
@@ -296,7 +306,7 @@ static bool shellMenu_build(){
                     icon=shellMenu_appIcon;
                 }
             }else{
-                icon=icon_load(item->icon);
+                icon=icon_loadFlag(item->icon,1);
             }
     
             if(icon!=NULL){
@@ -361,9 +371,9 @@ bool shellMenu_init(){
     shellMenu_firstItem = NULL;
     shellMenu_lastItem = NULL;
     // load icons
-    shellMenu_folderIcon = icon_load(SHELL_FOLDER_ICON);
-    shellMenu_backIcon = icon_load(SHELL_BACK_ICON);
-    shellMenu_appIcon = icon_load(SHELL_APP_ICON);
+    shellMenu_folderIcon = icon_loadFlag(SHELL_FOLDER_ICON,1);
+    shellMenu_backIcon = icon_loadFlag(SHELL_BACK_ICON,1);
+    shellMenu_appIcon = icon_loadFlag(SHELL_APP_ICON,1);
 
     // parse menu file
     if(!shellMenu_parse(SHELL_MENU_FILE)){

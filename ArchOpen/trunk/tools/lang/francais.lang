@@ -88,3 +88,10 @@ STRLNG_SCROLL_ONLY_SELECTED # Scroll sous selection
 STRLNG_BRW_HAS_STATUSBAR # Barre de status active
 STRLNG_BRW_SCROLL_SPEED # Vitesse de defilement
 STRLNG_MISSING_LANG_FOLDER # Repertoire /medios/lang absent
+STRLNG_SHELL_SETTINGS # Param. de l'interface
+STRLNG_SHELL_CAPTION # Avec intitule
+STRLNG_RESET # Reset
+STRLNG_SIZE # Taille
+STRLNG_ICONS_SMALL # petit
+STRLNG_ICONS_STD # std
+STRLNG_ICONS_BIG # grand

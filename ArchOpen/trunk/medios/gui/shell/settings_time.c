@@ -359,20 +359,20 @@ void clock_setting(void)
     y += lineH;
     x= minX+4;
     
-    gfx_getStringSize("OK",&sepW,&sepH);
+    gfx_getStringSize(getLangStr(STRLNG_OK),&sepW,&sepH);
     
     mib=button_create();
-    mib->caption="OK"; 
+    mib->caption=getLangStr(STRLNG_OK); 
     mib->font=TIME_DATE_GUIFONT;
     mib->setRect(mib,x,y,sepW+2,sepH+2);
     mib->onClick=(BUTTON_CLICKEVENT)okBtnClk_click;
     menuList->addWidget(menuList,mib);
         
-    gfx_getStringSize("RESET",&sepW,&sepH);
+    gfx_getStringSize(getLangStr(STRLNG_RESET),&sepW,&sepH);
     x+=mib->width+4;
     
     mib=button_create();
-    mib->caption="Reset"; 
+    mib->caption=getLangStr(STRLNG_RESET); 
     mib->font=TIME_DATE_GUIFONT;
     mib->setRect(mib,x,y,sepW+2,sepH+2);
     mib->onClick=(BUTTON_CLICKEVENT)resetBtnClk_click;

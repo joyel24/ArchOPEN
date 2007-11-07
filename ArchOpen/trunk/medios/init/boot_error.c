@@ -24,22 +24,12 @@
 #include <sys_def/colordef.h>
 #include <sys_def/evt.h>
 
-char * boot_error_msg[] = {
-    "/medios folder is missing",
-    "/medios/codec folder is missing",
-    "DSP file /medios/codec/snd_dsp.out can't be loaded",
-    "/medios/lang missing",
-    "config lang file missing, using default",
-    "/medios/icons is missing",
-    "old icon structure upgrade to new",
-    "/medios/handlers.cfg is missing",
-    "/medios/menu.cfg is missing",
-    "/medios/bg.img is missing"
-};
+#include "boot_error_msg.h"
 
 void gui_bootError(int errorNumber,int type)
 {
     int evtHand;
+    char tmp[20];
     gfx_openGraphics();
     
     gfx_clearScreen(COLOR_TRSP);
@@ -54,7 +44,8 @@ void gui_bootError(int errorNumber,int type)
     else
     {
         printk("MSG:%s\n",boot_error_msg[errorNumber]);
-        msgBox_show(type==BOOT_ERROR?"Boot error":"Boot warning",
+        sprintf(tmp,"%s - N°%d",type==BOOT_ERROR?"Boot error":"Boot warning",errorNumber);
+        msgBox_show(tmp,
                     boot_error_msg[errorNumber],MSGBOX_TYPE_OK,
                     type==BOOT_ERROR?MSGBOX_ICON_ERROR:MSGBOX_ICON_WARNING,evtHand);        
     }

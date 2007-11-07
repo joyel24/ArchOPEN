@@ -5,6 +5,7 @@ phpReportFile="phpReport_${curDate}.log"
 phpReportPath="/home/thomas/archopen_src/tmp/"
 savPath="/home/thomas/archopen_src/sav_report"
 distribPath="/home/thomas/archopen_src/build/medios_distrib"
+iconPath="/home/thomas/archopen_src/build/trunk/tools/icons"
 
 echo "<?" > ${phpReportPath}${phpReportFile}
 echo "/* report for php */" >> ${phpReportPath}${phpReportFile}
@@ -37,6 +38,7 @@ mkdir ${distribPath}/medios
 mkdir ${distribPath}/medios/apps
 mkdir ${distribPath}/medios/codec
 mkdir ${distribPath}/medios/lang
+mkdir ${distribPath}/medios/icons
 
 cd ~/archopen_src/build/trunk
 cp -f ../av3xx.conf ./Makefile.conf
@@ -45,6 +47,11 @@ cp -f tools/lang/*.lng ${distribPath}/medios/lang
 cd ~/archopen_src
 
 cp -Rf build/trunk/tools/medios_files/* ${distribPath}/medios/
+
+cd ${iconPath}
+chmod 777 genIcons
+./genIcons
+cp -Rf big small std ${distribPath}/medios/icons
 
 cd ${distribPath}
 zip -r iconsCfg.zip  ./

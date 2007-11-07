@@ -49,6 +49,7 @@
 #include <gui/settings_lang.h>
 #include <gui/settings_bgImg.h>
 #include <gui/settings_browser.h>
+#include <gui/settings_shell.h>
 
 #include <gui/player.h>
 #include <gui/playlistmenu.h>
@@ -75,6 +76,7 @@ static bool intCmd_doCon_flushToDisk(char * param);
 static bool intCmd_doLoadJpg(char * param);
 static bool intCmd_doLoadBmp(char * param);
 static bool intCmd_doBrowserSetting(char * param);
+static bool intCmd_doSet_shell(char * param);
 
 typedef struct{
     char * command;
@@ -117,6 +119,10 @@ INTERNAL_COMMAND intCmd_commands[] = {
     {
         command:  "set_browser",
         function: intCmd_doBrowserSetting
+    },
+    {
+        command:  "set_shell",
+        function: intCmd_doSet_shell
     },
     {
         command:  "set_misc",
@@ -522,4 +528,10 @@ bool intCmd_doLoadBmp(char * param)
     gfx_planeShow(BMAP1);
     gfx_planeHide(VID1);
     return true;
+}
+
+bool intCmd_doSet_shell(char * param)
+{
+    shell_setting();
+    return true;   
 }
