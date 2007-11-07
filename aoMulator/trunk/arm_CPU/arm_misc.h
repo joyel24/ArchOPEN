@@ -120,6 +120,8 @@ void arm_CoProcessor(int condCode,uint32_t instruction)
     INT_DEBUG_HEAD
     printf("coprocessor instruction: %08x\n",instruction);
     CHG_RUN_MODE(STEP)
+#else
+    DEBUG("coprocessor instruction: %08x\n",instruction);
 #endif
     //exit(0);
 }

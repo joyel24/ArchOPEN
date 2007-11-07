@@ -537,10 +537,14 @@ void go(uint32_t start_address,uint32_t stack_address)
         cur_irq_fct();
 
         address = T_FLAG ? PC_REAL&0xfffffffe : (PC_REAL+2)&0xfffffffc;
-
-       /* if(address >= 0x993efc && address <=0x993f48)
-            mem->printString(GET_REG(0));*/
-        
+/*
+        if(address == 0x920684)
+            mem->printString(GET_REG(0));
+        if(address == 0x9b3752)
+            mem->printString(GET_REG(1),GET_REG(2));
+        if(address == 0x9b373c)
+            putchar(GET_REG(0)&0xFF);
+*/        
         bkpt->fct(bkpt,address,0);
         cmd_line_fct();
         bkpt_step->fct(bkpt_step,address,0);

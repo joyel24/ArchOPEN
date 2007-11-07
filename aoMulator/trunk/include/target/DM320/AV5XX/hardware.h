@@ -10,8 +10,8 @@
 * KIND, either express of implied.
 */
 
-#define ARCH_NAME         "AV4XX"
-#define CHIP_NAME         "DM270"
+#define ARCH_NAME         "AV5XX"
+#define CHIP_NAME         "DM320"
 
 //#define homebrew //or let it be ;-)
 
@@ -19,7 +19,7 @@
 
 #define RESET_VECTOR      0x00000000
 
-#define IRAM_START        0x00000004
+#define IRAM_START        0x00000000
 #define IRAM_END          0x00008000
 #define TI_REG_START      0x00030000
 #define TI_REG_END        0x00040000
@@ -29,17 +29,12 @@
 
 
 #define FLASH_START       0x0100000
-#define FLASH_END         0x0200000
+#define FLASH_END         0x0300000
 #define FLASH_LOAD_OFFSET   0x00000000
 
 #define SDRAM_START       0x00900000
-#define SDRAM_END         0x01900000
-
-#ifndef homebrew
+#define SDRAM_END         0x02900000
 #define SDRAM_LOAD_OFFSET   0x0000000 // original;
-#else
-#define SDRAM_LOAD_OFFSET   0x310000 //gmini400 homebrew;
-#endif
 
 //#define HAS_VID0
 #define HAS_LCD
@@ -49,6 +44,7 @@
 
 
 #define START_ADDR        SDRAM_START //original
+//#define START_ADDR FLASH_START
 
 #define STACK_INIT        (IRAM_END - 0x4)
 #define RESET_INIT_VAL    0xEA03FFFE
@@ -58,7 +54,6 @@
 /* Special init for this arch: enable monitor command line mode */
 #define ARCH_INIT   \
 {                   \
-    write(0x10600f,0x55,1);\
 }
 
 /************************************************************ HW config */
@@ -135,8 +130,8 @@
 #define GPIO_BITRATE                       (GPIO_START+0x28)
 
 #define GPIO_STR  \
-{ "UKN", "ON", "OFF", "DC Power", "UKN", "UKN", "UKN", "CF conn", \
-  "I2C_DA", "I2C_CLK", "I2C_slave_DA", "USB conn", "UKN", "I2C_slave_CLK", "BTN LCD2", "BTN LCD1", \
+{ "UKN", "UKN", "ON", "OFF", "DC Power",  "UKN", "UKN", "CF conn", \
+   "UKN", "USB conn", "I2C_slave_DA", "I2C_slave_CLK", "I2C_DA", "I2C_CLK", "BTN LCD2", "BTN LCD1", \
                     \
   "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", \
   "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", \
@@ -145,19 +140,19 @@
   "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", \
 }
 
-#define GPIO_ON_NUM    0x01
-#define GPIO_OFF_NUM   0x02
+#define GPIO_ON_NUM    0x02
+#define GPIO_OFF_NUM   0x03
 #define GPIO_LCD_SWT_1 0x0F
 #define GPIO_LCD_SWT_2 0x0E
 
-#define GPIO_I2C_SDA  0x08
-#define GPIO_I2C_SCL  0x09
+#define GPIO_I2C_SDA  0x0c
+#define GPIO_I2C_SCL  0x0d
 
 #define GPIO_I2C_SLAVE_SDA  0x0A
-#define GPIO_I2C_SLAVE_SCL  0x0D
+#define GPIO_I2C_SLAVE_SCL  0x0b
 
-#define GIO_POWER_CONNECTED   0x03
-#define GIO_USB_CONNECTED     0x0b
+#define GIO_POWER_CONNECTED   0x04
+#define GIO_USB_CONNECTED     0x09
 #define GIO_CF_CONNECTED      0x07
 
 #define DSP_START   TI_REG_START+0x600
@@ -228,11 +223,11 @@
 #define INT_DMA     15
 
 /********************** IDE ****************************************/
-#define IDE_BASE    0x05100000
-#define IDE_END     0x05100100
+#define IDE_BASE    0x50000000
+#define IDE_END     0x50000100
 
-#define CF_BASE     0x06900000
-#define CF_END      0x06900100
+#define CF_BASE     0x60000000
+#define CF_END      0x60000100
 
 #define IDE_DATA                          (0x20)
 #define IDE_ERROR                         (0x22)
@@ -245,13 +240,13 @@
 #define IDE_STATUS                        (0x2e)
 #define IDE_COMMAND                       (0x2e)
 
-
+#define ATA_READ_MASK 0x80
 
 /********************** CPLD     ****************************************/
-#define CPLD_START       0x02000000
-#define CPLD_END         0x03000000
-#define CPLD_PORT_OFFSET 0x00500000
+#define CPLD_START       0x40000000
+#define CPLD_END         0x41000000
+#define CPLD_PORT_OFFSET 0x00400000
 
 /********************** LCD      ****************************************/
-#define SCREEN_WIDTH  320
-#define SCREEN_HEIGHT 240
+#define SCREEN_WIDTH  480
+#define SCREEN_HEIGHT 272

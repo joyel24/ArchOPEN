@@ -15,5 +15,9 @@
 
 #include <target/chip/arch/hardware.h>
 
+#ifndef ATA_READ_MASK
+#define ATA_READ_MASK 0x0
+#endif
+
 #endif
 

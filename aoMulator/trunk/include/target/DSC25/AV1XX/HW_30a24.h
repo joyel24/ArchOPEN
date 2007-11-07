@@ -1,5 +1,5 @@
 /*
-*   HW_mem.h
+*   HW_30a24.h
 *
 *   AV3XX emulator
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -10,30 +10,26 @@
 * KIND, either express of implied.
 */
 
-#ifndef __HW_MEM_H
-#define __HW_MEM_H
+#ifndef __HW_30A24_H
+#define __HW_30A24_H
 
 #include <emu.h>
+
+
 #include <core/HW_access.h>
 
 
-class HW_mem : public HW_access {
+class HW_30a24 : public HW_access {
     public:
-        HW_mem(char * fname,uint32_t start,uint32_t end,char * name, uint32_t load_offset);
-        HW_mem(char * fname,uint32_t start,uint32_t end,char * name);
-        ~HW_mem();
-        
-        void printString(uint32_t addr);
-        void printString(uint32_t addr,int size);
+        HW_30a24();
+
         uint32_t read(uint32_t addr,int size);
         void write(uint32_t addr,uint32_t val,int size);
 
-        char *  mem;
+        int HDD_power;
+        int power_connected;
+        int usb_connected;
 
-    private:
-
-
-        void init(char * fname,uint32_t start,uint32_t end,uint32_t load_offset);
 };
 
-#endif // __HW_MEM_H
+#endif // __HW_30A24_H

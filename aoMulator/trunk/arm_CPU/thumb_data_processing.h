@@ -244,7 +244,7 @@ void thumb_lsl_2Reg(uint32_t instruction) /* format 4 */
 void thumb_lsl_2Reg_imm(uint32_t instruction) /* format 3 */
 {
     uint32_t op2 = (instruction >> 6) & 0x1F;
-    DEBUG("LSL %s, %s, 0x%x",RR(GET_R1),RR(GET_R2),op2);
+    DEBUG("LSL %s, %s, 0x%x\n",RR(GET_R1),RR(GET_R2),op2);
     if(op2 == 0)
     {
        REG(GET_R1)=GET_REG(GET_R2);

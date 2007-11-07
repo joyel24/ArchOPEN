@@ -32,13 +32,14 @@ class mem_space:public HW_node {
         ~mem_space();
 
         int do_cmd_dump(int argc,char ** argv);
-        int do_cmd_add_bk_mem(int argc,char ** argv);
+        int do_cmd_add_bk_mem(int argc,char ** argv,int type);
         int do_cmd_dump_dsp(void);
         int do_cmd_write_mem(int argc,char ** argv);
 
         uint32_t read(uint32_t addr,int size);
         void write(uint32_t addr,uint32_t val,int size);
         void printString(uint32_t addr);
+        void printString(uint32_t addr,int size);
         
         HW_mem * dsp_mem;
         HW_mem * flash_mem;
@@ -52,7 +53,9 @@ class mem_space:public HW_node {
 
     private:
         bkpt_list * bkpt;
-
+        bkpt_list * bkptr;        
+        bkpt_list * bkptw;
+        
         void arch_init(void);
 };
 

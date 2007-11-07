@@ -18,7 +18,7 @@
 #include <core/bkpt_list.h>
 
 
-char * bkpt_str[] = { "CPU", "MEM", "STEPOVER" };
+char * bkpt_str[] = { "CPU", "MEM", "STEPOVER", "MEM READ", "MEM WRITE" };
 
 
 BKPT_LIST * new_bkpt_list(int type)
@@ -193,19 +193,41 @@ void has_bkpt(BKPT_LIST * ptr_list,uint32_t address,int mode)
                     printf("%s %s BREAKPOINT at 0x%08x %s%s%s\n",bkpt_str[ptr_list->type],mode==BKPT_MEM_READ?"read":"write",
                         address,ptr->cause!=NULL?"(":"",ptr->cause!=NULL?ptr->cause:"",
                         ptr->cause!=NULL?")":"");
+                    CHG_RUN_MODE(STEP);
+                    return;
+                case BKPT_MEMREAD:
+                    if(mode==BKPT_MEM_READ)
+                    {
+                        printf("%s %s BREAKPOINT at 0x%08x %s%s%s\n",bkpt_str[ptr_list->type],mode==BKPT_MEM_READ?"read":"write",
+                               address,ptr->cause!=NULL?"(":"",ptr->cause!=NULL?ptr->cause:"",
+                               ptr->cause!=NULL?")":"");
+                        CHG_RUN_MODE(STEP);
+                        return;
+                    }
+                    break;
+                case BKPT_MEMWRITE:
+                    if(mode==BKPT_MEM_WRITE)
+                    {
+                        printf("%s %s BREAKPOINT at 0x%08x %s%s%s\n",bkpt_str[ptr_list->type],mode==BKPT_MEM_READ?"read":"write",
+                               address,ptr->cause!=NULL?"(":"",ptr->cause!=NULL?ptr->cause:"",
+                               ptr->cause!=NULL?")":"");
+                        CHG_RUN_MODE(STEP);
+                        return;
+                    }
                     break;
                 case BKPT_CPU:
                     printf("%s BREAKPOINT at 0x%08x %s%s%s\n",bkpt_str[ptr_list->type],
                         address,ptr->cause!=NULL?"(":"",ptr->cause!=NULL?ptr->cause:"",
                         ptr->cause!=NULL?")":"");
                         //exit(0);
-                    break;
+                    CHG_RUN_MODE(STEP);
+                    return;
                 case BKPT_STEPOVER:
                     printf("Return from function at 0x%08x\n",address);
                     del(ptr_list,address);
-                    break;
-            }
-            CHG_RUN_MODE(STEP);
+                    CHG_RUN_MODE(STEP);
+                    return;
+            }            
             return ;
         }
         ptr=ptr->nxt;

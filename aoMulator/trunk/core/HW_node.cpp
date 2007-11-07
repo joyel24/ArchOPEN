@@ -54,6 +54,12 @@ void HW_node::printString(uint32_t addr)
     acc->printString(addr);
 }
 
+void HW_node::printString(uint32_t addr,int size)
+{
+    HW_access * acc = access_array[(addr-start)>>granularity_shift];
+    acc->printString(addr,size);
+}
+
 void HW_node::write(uint32_t addr,uint32_t val,int size)
 {
     HW_access * acc = access_array[(addr-start)>>granularity_shift];

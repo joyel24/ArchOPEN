@@ -34,6 +34,8 @@ mem_space::mem_space(char * flash,char * sdram):HW_node(0x0,0xFFFFFFFF,16,"AVMEM
     /* init bkpt_list */
 
     bkpt = new_bkpt_list(BKPT_MEM);
+    bkptr = new_bkpt_list(BKPT_MEMREAD);
+    bkptw = new_bkpt_list(BKPT_MEMWRITE);
 
     iram=new HW_mem(NULL,IRAM_START,IRAM_END,"IRAM");
     add_item(iram);
@@ -99,15 +101,15 @@ uint32_t mem_space::read(uint32_t addr,int size)
     uint32_t val = HW_node::read(addr,size);
 
     bkpt->fct(bkpt,addr,BKPT_MEM_READ);
-
+    bkptr->fct(bkptr,addr,BKPT_MEM_READ);
+    
     return val;
 }
 
 void mem_space::write(uint32_t addr,uint32_t val,int size)
 {
-
-
     bkpt->fct(bkpt,addr,BKPT_MEM_WRITE);
+    bkptw->fct(bkptw,addr,BKPT_MEM_WRITE);
 
     HW_node::write(addr,val,size);
 
@@ -119,5 +121,9 @@ void mem_space::printString(uint32_t addr)
     HW_node::printString(addr);
 }
 
+void mem_space::printString(uint32_t addr,int size)
+{
+    HW_node::printString(addr,size);
+}
 
 #include "mem_cmd_line_fct.h"

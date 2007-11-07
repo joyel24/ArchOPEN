@@ -18,6 +18,8 @@
 #define BKPT_CPU        0
 #define BKPT_MEM        1
 #define BKPT_STEPOVER   2
+#define BKPT_MEMREAD    3
+#define BKPT_MEMWRITE   4
 
 #define BKPT_MEM_READ   0
 #define BKPT_MEM_WRITE  1

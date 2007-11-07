@@ -125,7 +125,9 @@ void HW_dma::write(uint32_t addr,uint32_t val,int size)
                         DEBUG_HW(DMA_HW_DEBUG,"done");
                         break;
                     case DMA_ATA:
+#if DMA_CF != DMA_ATA
                     case DMA_CF:
+#endif
                         /*if(dma_dst>SDRAM_START)
                             dma_dst-=SDRAM_START;*/
                         DEBUG_HW(DMA_HW_DEBUG,"real dest = %x , src val (%x/%x) %02x%02x%02x%02x  ",
@@ -162,7 +164,7 @@ void HW_dma::nxtStep(void)
     if(run_status)
     {
         nbWait++;
-        if(nbWait>40)
+        if(nbWait>400)
         {
             run_status=0;
             if(data_ptr>=data_size)

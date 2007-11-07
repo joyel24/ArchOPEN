@@ -83,5 +83,5 @@ void HW_gpio::register_port(int num,gpio_port * port)
 {
     delete port_list[num];
     port_list[num] = port;
-    //DEBUG_HW(GPIO_HW_DEBUG,"Registering gpio port %x for %s\n",num,port->name);
+    printf("Registering gpio port %x for %s\n",num,port->name);
 }

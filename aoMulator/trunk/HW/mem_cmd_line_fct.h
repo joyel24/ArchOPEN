@@ -52,15 +52,40 @@ int mem_space::do_cmd_dump(int argc,char ** argv)
 
 int do_cmd_add_bk_mem_s(int argc,char ** argv)
 {
-    return mem->do_cmd_add_bk_mem(argc,argv);
+    return mem->do_cmd_add_bk_mem(argc,argv,BKPT_MEM);
 }
 
-int mem_space::do_cmd_add_bk_mem(int argc,char ** argv)
+int do_cmd_add_bk_memw_s(int argc,char ** argv)
+{
+    return mem->do_cmd_add_bk_mem(argc,argv,BKPT_MEMWRITE);
+}
+
+int do_cmd_add_bk_memr_s(int argc,char ** argv)
+{
+    return mem->do_cmd_add_bk_mem(argc,argv,BKPT_MEMREAD);
+}
+
+int mem_space::do_cmd_add_bk_mem(int argc,char ** argv,int type)
 {
     /*get first arg*/
     uint32_t i=0;
     uint32_t size=0;
     bool do_del = false;
+    bkpt_list * ptr;
+    
+    switch(type)
+    {
+        case BKPT_MEM:
+            ptr=bkpt;
+            break;
+        case BKPT_MEMREAD:
+            ptr=bkptr;
+            break;
+        case BKPT_MEMWRITE:
+            ptr=bkptw;
+            break;
+    }
+    
     if(argc>0)
     {
         if(argv[0][0] == '-')
@@ -70,16 +95,16 @@ int mem_space::do_cmd_add_bk_mem(int argc,char ** argv)
         }
         i = my_atoi(argv[0]);
         if(do_del)
-            del(bkpt,i);
+            del(ptr,i);
         else
         {
             if(argc>1)
                 size=my_atoi(argv[1]);
-            add(bkpt,i,size);
+            add(ptr,i,size);
         }
     }
     else
-        print_bkpt_list(bkpt);
+        print_bkpt_list(ptr);
     return 0;
 }
 
@@ -161,8 +186,16 @@ int mem_space::do_cmd_write_mem(int argc,char ** argv)
 int do_cmd_initMem_s(int argc, char ** arg)
 {
     printf("Init mem\n");
+#ifdef AV4XX 
+    printf("Av4XX spec init\n");
     mem->write(0x95faf6,0x1c00,2);
     mem->write(0x93283c,0x1c07,2);
+#elif defined(AV5XX)
+    printf("Av5XX spec init\n");
+    mem->write(0x131144,0xe1a00000,4);
+#else
+    printf("No specific init\n");
+#endif
     return 0;
 }
 
@@ -172,6 +205,8 @@ void init_mem_static_fct(mem_space * mem_obj)
     add_cmd_fct("dumpdsp",do_cmd_dump_dsp_s,"Dump dsp mem to file dsp.out");
     add_cmd_fct("dump",do_cmd_dump_s,"Dump mem to screen");
     add_cmd_fct("bkm",do_cmd_add_bk_mem_s,"Manage mem bkpt");
+    add_cmd_fct("bkmr",do_cmd_add_bk_memr_s,"Manage read mem bkpt");
+    add_cmd_fct("bkmw",do_cmd_add_bk_memw_s,"Manage write mem bkpt");
     add_cmd_fct("wmem",do_cmd_write_mem_s,"Write to mem: addr value size(1=byte,2,4)");
     add_cmd_fct("imem",do_cmd_initMem_s,"Special init needed for Av4 running archos FW");
     add_cmd_fct("dumpsdram",do_cmd_dumpsdram_s,"Dump sdram mem to file sd.out");

@@ -64,32 +64,32 @@ uint32_t HW_ata::read(uint32_t addr,int size)
     uint32_t ret_val=0;
     switch(addr-start)
     {
-        case IDE_CONTROL:
-        case IDE_STATUS:
+        case IDE_CONTROL|ATA_READ_MASK:
+        case IDE_STATUS|ATA_READ_MASK:
             ret_val = status;
             DEBUG_HW(ATA_HW_DEBUG,"ATA %s read %s : %x\n",(addr==IDE_CONTROL)?"CONTROL":"STATUS",name,ret_val );
             break;
-        case IDE_SELECT:
+        case IDE_SELECT|ATA_READ_MASK:
             ret_val = select_reg;
             DEBUG_HW(ATA_HW_DEBUG,"ATA %s read SELECT : %x\n",name,ret_val );
             break;
-        case IDE_HCYL:
+        case IDE_HCYL|ATA_READ_MASK:
             ret_val = h_cyl;
             DEBUG_HW(ATA_HW_DEBUG,"ATA %s read HIGH CYL : %x\n",name,ret_val );
             break;
-        case IDE_LCYL:
+        case IDE_LCYL|ATA_READ_MASK:
             ret_val = l_cyl;
             DEBUG_HW(ATA_HW_DEBUG,"ATA %s read LOW CYL : %x\n",name,ret_val );
             break;
-        case IDE_SECTOR:
+        case IDE_SECTOR|ATA_READ_MASK:
             ret_val = sector;
             DEBUG_HW(ATA_HW_DEBUG,"ATA %s read SECTOR : %x\n",name,ret_val );
             break;
-        case IDE_NSECTOR:
+        case IDE_NSECTOR|ATA_READ_MASK:
             ret_val = nsector;
             DEBUG_HW(ATA_HW_DEBUG,"ATA %s read NSECTOR : %x\n",name,ret_val );
             break;
-        case IDE_DATA:
+        case IDE_DATA|ATA_READ_MASK:
             ret_val = data[data_ptr] & 0xff ;
             data_ptr++;
             ret_val |= (data[data_ptr] & 0xff)<<8;
@@ -123,6 +123,10 @@ void HW_ata::write(uint32_t addr,uint32_t val,int size)
                 case IDE_CMD_READ_SECTORS:                
                     lba = sector | (l_cyl << 8) | (h_cyl << 16);                    
                     DEBUG_HW(ATA_HW_DEBUG,"read sectors LBA:%x count=%x\n",lba,nsector==0?256:nsector);
+                    /*if(lba==0x14b0 ||lba==0x14ef)
+                    {
+                        CHG_RUN_MODE(STEP);
+                    }*/
                     if(lba == 0 || lba == 1)
                     {
                         data_ptr = 0;
@@ -220,7 +224,7 @@ void HW_ata::write(uint32_t addr,uint32_t val,int size)
             break;
         case IDE_NSECTOR:
             nsector = val;
-            DEBUG_HW(ATA_HW_DEBUG,"ATA %s write SECTOR : %x\n",name,val );
+            DEBUG_HW(ATA_HW_DEBUG,"ATA %s write NSECTOR : %x\n",name,val );
             break;
         case IDE_DATA:
             data[data_ptr] = val & 0xFF;
@@ -235,6 +239,9 @@ void HW_ata::write(uint32_t addr,uint32_t val,int size)
                 buffer=NULL;
             }
             DEBUG_HW(ATA_HW_DEBUG,"ATA %s write DATA : %x\n",name,val );
+            break;
+        case IDE_CONTROL:
+            DEBUG_HW(ATA_HW_DEBUG,"ATA %s write Controle : %x\n",name,val );
             break;
         default:
             DEBUG_HW(ATA_HW_DEBUG,"ATA %s unsupported addr for write: %x val=%x\n",name,addr,val );

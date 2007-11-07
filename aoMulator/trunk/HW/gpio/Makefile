@@ -28,7 +28,7 @@ SRC += i2c_RTC.cpp gio_connection.cpp i2c_aic.cpp
 endif
 
 ifeq ("$(TARGET_DEVICE)","AV5XX")
-
+SRC += i2c_RTC.cpp gio_connection.cpp i2c_aic.cpp
 endif
 
 

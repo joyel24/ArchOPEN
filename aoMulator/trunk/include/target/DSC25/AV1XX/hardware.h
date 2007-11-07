@@ -1,7 +1,7 @@
 /*
 *   hardware.h
 *
-*    emulator
+*   AV3XX emulator
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
 *
 * All files in this archive are subject to the GNU General Public License.
@@ -10,16 +10,14 @@
 * KIND, either express of implied.
 */
 
-#define ARCH_NAME         "AV4XX"
-#define CHIP_NAME         "DM270"
-
-//#define homebrew //or let it be ;-)
+#define ARCH_NAME         "AV1XX"
+#define CHIP_NAME         "DSC25"
 
 /************************************************************ Memory Zone */
 
 #define RESET_VECTOR      0x00000000
 
-#define IRAM_START        0x00000004
+#define IRAM_START        0x00000000
 #define IRAM_END          0x00008000
 #define TI_REG_START      0x00030000
 #define TI_REG_END        0x00040000
@@ -28,38 +26,26 @@
 
 
 
-#define FLASH_START       0x0100000
-#define FLASH_END         0x0200000
-#define FLASH_LOAD_OFFSET   0x00000000
+#define FLASH_START       0x100000
+#define FLASH_END         0x180000
+#define FLASH_LOAD_OFFSET 0x000000
 
 #define SDRAM_START       0x00900000
 #define SDRAM_END         0x01900000
-
-#ifndef homebrew
-#define SDRAM_LOAD_OFFSET   0x0000000 // original;
-#else
-#define SDRAM_LOAD_OFFSET   0x310000 //gmini400 homebrew;
-#endif
-
-//#define HAS_VID0
-#define HAS_LCD
-//#define HAS_UART_XWIN
+#define SDRAM_LOAD_OFFSET 0x00000000
 
 /************************************************************ initial state */
 
-
-#define START_ADDR        SDRAM_START //original
-
+#define START_ADDR        SDRAM_START
+//#define START_ADDR        FLASH_START
 #define STACK_INIT        (IRAM_END - 0x4)
 #define RESET_INIT_VAL    0xEA03FFFE
 #define INIT_MODE         M_SVC
 
-#define HAS_CF
-/* Special init for this arch: enable monitor command line mode */
-#define ARCH_INIT   \
-{                   \
-    write(0x10600f,0x55,1);\
-}
+//#define HAS_VID0
+#define HAS_LCD
+
+//#define HAS_UART_XWIN
 
 /************************************************************ HW config */
 
@@ -80,96 +66,88 @@
 /********************** WDT   ****************************************/
 #define WDT_START   TI_REG_START+0x400
 #define WDT_END     TI_REG_START+0x406
+
 #define WDT_FIQ     0x1b
+
 /********************** IRQ      ****************************************/
 #define IRQ_START   TI_REG_START+0x500
-#define IRQ_END     TI_REG_START+0x57f
+#define IRQ_END     TI_REG_START+0x560
 
 #define FIQ_0    0x0
 #define FIQ_1    0x2
-#define FIQ_2    0x4
-#define IRQ_0    0x8
-#define IRQ_1    0xA
-#define IRQ_2    0xC
-
-#define IRQ_OFFSET 4
+#define IRQ_0    0x4
+#define IRQ_1    0x6
 
 #define INT_STATUS      (IRQ_START+0x0)
-#define INT_FIQ_ENTRY   (IRQ_START+0x10)
-#define INT_IRQ_ENTRY   (IRQ_START+0x18)
+#define INT_FIQ_ENTRY   (IRQ_START+0x8)
+#define INT_IRQ_ENTRY   (IRQ_START+0xC)
 #define INT_FSEL        (IRQ_START+0x20)
-#define INT_ENABLE      (IRQ_START+0x28)
-#define INT_EABASE      (IRQ_START+0x38)
+#define INT_ENABLE      (IRQ_START+0x24)
+
+#define IRQ_OFFSET 2
+
+#define INT_EABASE      (IRQ_START+0x30)
 #define INT_INTPRIO     (IRQ_START+0x40)
 
-#define NB_INT        39
+#define NB_INT        28
 
-#define NB_FIQ        3
-#define NB_IRQ        3
+#define NB_FIQ        2
+#define NB_IRQ        2
 
 #define NB_OF_REG     NB_FIQ+NB_IRQ
-
-#define REG_NUM(irq) (irq<16?0:irq<32?1:2)
-#define REAL_NUM(irq) (irq<16?irq:irq<32?irq-16:irq-32) //get the irq line number in the reg
+#define REG_NUM(irq)  (irq<16?0:1)
+#define REAL_NUM(irq) (irq<16?irq:irq-16) //get the irq line number in the reg
 
 /********************** GPIO     ****************************************/
 #define GPIO_START   TI_REG_START+0x580
-#define GPIO_END     TI_REG_START+0x5FF
+#define GPIO_END     TI_REG_START+0x596
 
-#define NB_GPIO_REG                        3
+#define NB_GPIO_REG                        2
 
 #define GPIO_DIRECTION0                    (GPIO_START+0x00)  // GIO 0-15
 #define GPIO_DIRECTION1                    (GPIO_START+0x02)  // GIO 16-31
-#define GPIO_DIRECTION2                    (GPIO_START+0x04)
-#define GPIO_INVERT0                       (GPIO_START+0x06)  // GIO 0-15
-#define GPIO_INVERT1                       (GPIO_START+0x08)  // GIO 16-31
-#define GPIO_INVERT2                       (GPIO_START+0x0a)
-#define GPIO_BITSET0                       (GPIO_START+0x0c)  // GIO 0-15
-#define GPIO_BITSET1                       (GPIO_START+0x0e)  // GIO 16-31
-#define GPIO_BITSET2                       (GPIO_START+0x10)
-#define GPIO_BITCLEAR0                     (GPIO_START+0x12)  // GIO 0-15
-#define GPIO_BITCLEAR1                     (GPIO_START+0x14)  // GIO 16-31
-#define GPIO_BITCLEAR2                     (GPIO_START+0x16)
-#define GPIO_ENABLE_IRQ                    (GPIO_START+0x24)  // GIO 0-7
-#define GPIO_FSEL                          (GPIO_START+0x26)
-#define GPIO_BITRATE                       (GPIO_START+0x28)
+
+#define GPIO_INVERT0                       (GPIO_START+0x04)  // GIO 0-15
+#define GPIO_INVERT1                       (GPIO_START+0x06)  // GIO 16-31
+
+#define GPIO_BITSET0                       (GPIO_START+0x08)  // GIO 0-15
+#define GPIO_BITSET1                       (GPIO_START+0x0a)  // GIO 16-31
+
+#define GPIO_BITCLEAR0                     (GPIO_START+0x0c)  // GIO 0-15
+#define GPIO_BITCLEAR1                     (GPIO_START+0x0e)  // GIO 16-31
+
+#define GPIO_ENABLE_IRQ                    (GPIO_START+0x10)  // GIO 0-7
+#define GPIO_FSEL                          (GPIO_START+0x12)
+#define GPIO_BITRATE                       (GPIO_START+0x14)
 
 #define GPIO_STR  \
-{ "UKN", "ON", "OFF", "DC Power", "UKN", "UKN", "UKN", "CF conn", \
-  "I2C_DA", "I2C_CLK", "I2C_slave_DA", "USB conn", "UKN", "I2C_slave_CLK", "BTN LCD2", "BTN LCD1", \
+{ "ON" , "SPDIF/UART1_RX", "UKN", "UKN", "MAS_EOD", "UKN", "IR", "UKN", \
+  "MAS_D0", "MAS_D1", "MAS_D2", "MAS_D3", "MAS_D4", "MAS_D5", "MAS_D6", "MAS_D7", \
                     \
-  "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", \
-  "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", \
-                    \
-  "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", \
-  "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", "UKN", \
+  "MAS_PWR", "UKN", "I2C_CLK", "I2C_DA", "UKN", "CPLD_MOD_SENSE", "CPLD_SIGNAL", "BCK_LIGHT", \
+  "UKN", "UKN", "UKN", "UKN", "OFF", "VIDEO/UART1_TX", "MAS_RTR", "MAS_PR"  \
 }
 
-#define GPIO_ON_NUM    0x01
-#define GPIO_OFF_NUM   0x02
-#define GPIO_LCD_SWT_1 0x0F
-#define GPIO_LCD_SWT_2 0x0E
+#define GPIO_ON_NUM   0x00
+#define GPIO_SPDIF_UART1_TX      0x01
+#define GPIO_MAS_EOD  0x04
+#define GPIO_MAS_Di   0x08
+#define GPIO_MAS_PW   0x10
 
-#define GPIO_I2C_SDA  0x08
-#define GPIO_I2C_SCL  0x09
+#define GPIO_OFF_NUM  0x1C
+#define GPIO_MAS_PR   0x1F
 
-#define GPIO_I2C_SLAVE_SDA  0x0A
-#define GPIO_I2C_SLAVE_SCL  0x0D
+#define GPIO_I2C_SDA  0x13
+#define GPIO_I2C_SCL  0x12
 
-#define GIO_POWER_CONNECTED   0x03
-#define GIO_USB_CONNECTED     0x0b
-#define GIO_CF_CONNECTED      0x07
-
-#define DSP_START   TI_REG_START+0x600
-#define DSP_END     TI_REG_START+0x610
+#define GPIO_LCD                 0x17
+#define GPIO_VID_OUT_UART1_RX    0x1D
 
 /********************** I2C     ****************************************/
 
 /********************** OSD     ****************************************/
 #define OSD_START   TI_REG_START+0x680
 #define OSD_END     TI_REG_START+0x700
-//#define OSD_START   0x18d0300
-//#define OSD_END     0x18d0320
 
 /********************** CCD     ****************************************/
 #define CCD_START   TI_REG_START+0x700
@@ -181,16 +159,14 @@
 
 /********************** PAL NTSC Encoder *******************************/
 #define PAL_NTSC_ENC_START   TI_REG_START+0x800
-#define PAL_NTSC_ENC_END     TI_REG_START+0x84e
+#define PAL_NTSC_ENC_END     TI_REG_START+0x83A
 
 /********************** CLOCK    ****************************************/
 #define CLOCK_START   TI_REG_START+0x880
 #define CLOCK_END     TI_REG_START+0x890
 
-
-#define  MEM_CFG_START TI_REG_START+0xA00
-#define  MEM_CFG_STOP TI_REG_START+0xA30
-
+#define  MEM_CFG_START TI_REG_START+0x920
+#define  MEM_CFG_STOP TI_REG_START+0x960
 
 /********************** ECR      ****************************************/
 #define ECR_START   TI_REG_START+0x900
@@ -207,14 +183,13 @@
 /* this HW is used on the av for the usb/DC/HD status */
 #define HAS_HW_30A24
 
-
 /********************** DMA      ****************************************/
 #define DMA_START   TI_REG_START+0xa38
 #define DMA_END     TI_REG_START+0xa48
 
 #define DMA_SDRAM         0x5
-#define DMA_ATA           0x3
-#define DMA_CF            0x4
+#define DMA_ATA           0x1
+#define DMA_CF            0x1
 
 #define DMA_SRC_HI  DMA_START+0x0
 #define DMA_SRC_LO  DMA_START+0x2
@@ -227,30 +202,31 @@
 
 #define INT_DMA     15
 
+#define DSP_START   TI_REG_START+0x600
+#define DSP_END     TI_REG_START+0x610
+
 /********************** IDE ****************************************/
-#define IDE_BASE    0x05100000
-#define IDE_END     0x05100100
+#define IDE_BASE    0x02500000
+#define IDE_END     0x02500400
 
-#define CF_BASE     0x06900000
-#define CF_END      0x06900100
+#define CF_BASE    0x02500000
+#define CF_END     0x02500400
 
-#define IDE_DATA                          (0x20)
-#define IDE_ERROR                         (0x22)
-#define IDE_NSECTOR                       (0x24)
-#define IDE_SECTOR                        (0x26)
-#define IDE_LCYL                          (0x28)
-#define IDE_HCYL                          (0x2a)
-#define IDE_SELECT                        (0x2c)
-#define IDE_CONTROL                       (0x1c)
-#define IDE_STATUS                        (0x2e)
-#define IDE_COMMAND                       (0x2e)
-
-
+#define IDE_DATA                          (0x000)
+#define IDE_ERROR                         (0x080)
+#define IDE_NSECTOR                       (0x100)
+#define IDE_SECTOR                        (0x180)
+#define IDE_LCYL                          (0x200)
+#define IDE_HCYL                          (0x280)
+#define IDE_SELECT                        (0x300)
+#define IDE_CONTROL                       (0x340)
+#define IDE_STATUS                        (0x380)
+#define IDE_COMMAND                       (0x380)
 
 /********************** CPLD     ****************************************/
-#define CPLD_START       0x02000000
-#define CPLD_END         0x03000000
-#define CPLD_PORT_OFFSET 0x00500000
+#define CPLD_START       0x05000000
+#define CPLD_END         0x06000000
+#define CPLD_PORT_OFFSET 0x00100000
 
 /********************** LCD      ****************************************/
 #define SCREEN_WIDTH  320
