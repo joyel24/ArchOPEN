@@ -1,0 +1,42 @@
+subfolder="small std big"
+
+# make sure bmp2medios is build
+cd ../bmp2medios
+make
+cd ../icons
+
+for type in $subfolder; do
+
+# define size
+    if [ "$type" = "small" ]; then
+        size=32
+    elif [ "$type" = "std" ]; then
+        size=48
+    else
+        size=64
+    fi
+    
+# go to right folder
+    rm -Rf $type
+    mkdir $type
+    cd $type
+    cp -Rf ../png/*.png ./
+# convert all png to right format
+    for file in *.png; do 
+        fname=`basename $file .png`
+# change size
+        if [ $size -ne 64 ]; then
+            echo "$type => convert"
+            convert -scale ${size}x${size} -quality 100 $file $file
+        fi
+# convert png to jpg and set bg to right color
+# I had to pass by jpg for some strange reason
+        convert $file -background "#FEFEFE" -flatten $fname.jpg
+# convert jpg to bmp
+        convert $fname.jpg -type TrueColor $fname.bmp
+# convert to ico
+        ../../bmp2medios/bmp2medios i $fname.bmp $fname.ico $fname
+    done        
+    rm -f *.bmp *.png *.jpg
+    cd ../
+done
