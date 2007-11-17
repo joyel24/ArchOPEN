@@ -13,6 +13,9 @@
 
 #ifndef __SETTINGS_BROWSER_H
 #define __SETTINGS_BROWSER_H
+#define BRW_SETTING_CST_A  -9
+#define BRW_SETTING_CST_B  60
+#define MAX_STEP 6
 
 void browser_setting(void);
 void browser_loadCfg(void);

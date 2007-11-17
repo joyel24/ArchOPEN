@@ -50,7 +50,7 @@ void okBtnBrowser_click(BUTTON b)
     browser_has_back_entry=hasBack->checked;
     browser_scroll_only_selected=scrollSelected->checked;
     browser_has_statusbar=hasStatus->checked;
-    txt_scroll_speed=61-(txtScrollSpeed->value);
+    txt_scroll_speed=(txtScrollSpeed->value)*BRW_SETTING_CST_A + BRW_SETTING_CST_B;
     
     CFG_DATA * cfg;
 
@@ -95,7 +95,7 @@ void browser_setting(void)
     int evtHandle;
     int event;
     
-    int minX,lineH,x,y,w,h,sepH,sepW;
+    int minX,lineH,x,y,w,h,sepH,sepW,tmp;
         
     stop_brw_set = 0;
     
@@ -166,15 +166,18 @@ void browser_setting(void)
     
     y += lineH;
     
-    //vitesse de scroll
     gfx_getStringSize(getLangStr(STRLNG_BRW_SCROLL_SPEED),&sepW,&sepH);
     gfx_putS(COLOR_BLACK,COLOR_WHITE,x,y,getLangStr(STRLNG_BRW_SCROLL_SPEED));
     y += lineH;
     
     txtScrollSpeed=trackbar_create();
-    txtScrollSpeed->value=61-txt_scroll_speed;
     txtScrollSpeed->minimum=1;
-    txtScrollSpeed->maximum=60;
+    txtScrollSpeed->maximum=MAX_STEP;
+    tmp=((txt_scroll_speed - BRW_SETTING_CST_B)/BRW_SETTING_CST_A);
+    //if a wrong value is read from a previous config.cfg set default value to middle of min and max
+    if (tmp < txtScrollSpeed->minimum || tmp > txtScrollSpeed->maximum)
+    	tmp = (txtScrollSpeed->minimum + txtScrollSpeed->maximum) / 2;
+    txtScrollSpeed->value=tmp;
     txtScrollSpeed->increment=1;
     txtScrollSpeed->setRect(txtScrollSpeed,x,y,160,sepH);
     txtScrollSpeed->font=BROWSER_GUIFONT;
@@ -235,7 +238,7 @@ void browser_loadCfg(void)
 
     browser_has_back_entry=1;
     browser_scroll_only_selected=1;
-    txt_scroll_speed=30;
+    txt_scroll_speed=3;
     
     cfg=cfg_readFile("/medios/medios.cfg");
                
@@ -252,7 +255,7 @@ void browser_loadCfg(void)
         cfg_writeInt(cfg,"brw_back_entry",1);
         cfg_writeInt(cfg,"brw_scroll_only_selected",1);
         cfg_writeInt(cfg,"brw_statusBar",1);
-        cfg_writeInt(cfg,"brw_scroll_speed",31);
+        cfg_writeInt(cfg,"brw_scroll_speed",3);
         needWrite=1;
     }
     else
@@ -289,11 +292,11 @@ void browser_loadCfg(void)
         //scroll speed
         if(cfg_itemExists(cfg,"brw_scroll_speed"))
         {
-            txt_scroll_speed=cfg_readInt(cfg,"brw_scroll_speed");
+            txt_scroll_speed=(cfg_readInt(cfg,"brw_scroll_speed")* BRW_SETTING_CST_A) + BRW_SETTING_CST_B;
         }
         else
         {
-            cfg_writeInt(cfg,"brw_scroll_speed",30);
+            cfg_writeInt(cfg,"brw_scroll_speed",3);
             needWrite=1;
         }
         
