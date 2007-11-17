@@ -24,6 +24,8 @@
 #include <sys_def/colordef.h>
 #include <sys_def/evt.h>
 
+#include <lib/string.h>
+
 #include "boot_error_msg.h"
 
 void gui_bootError(int errorNumber,int type)
