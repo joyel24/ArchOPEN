@@ -82,12 +82,19 @@
 extern int app_main(int argc, char * argv[]);
 #endif
 
+#ifdef TARGET_TYPE_AVLO
+#include "../../apps/avlo/include/avlo.h"
+#endif
+
 unsigned int _svc_IniStack = IRAM_SIZE;
 unsigned int _sys_IniStack = IRAM_SIZE-SVC_STACK_SIZE;
 
 void kernel_thread(void)
 {
+#ifdef TARGET_TYPE_STD
     DIR * medFolder;
+#endif
+    
 #ifdef BUILD_LIB
     char * stdalone="STDALONE";
 #endif
@@ -100,6 +107,7 @@ void kernel_thread(void)
         for(;;);
     }
         
+#ifdef TARGET_TYPE_STD
     /* we shall have medios tree on disk */
     medFolder=opendir("/medios");
     if(!medFolder)
@@ -107,14 +115,22 @@ void kernel_thread(void)
         gui_bootError(MISSING_MEDIOS_ERROR,BOOT_ERROR);
     }
     closedir(medFolder);
+#endif
+        
     
-#ifndef BUILD_LIB    
+#ifdef TARGET_TYPE_STD
+#ifndef BUILD_LIB
     sound_init();
+#endif
 #endif
     
     energy_loadPref();
-    misc_loadPref();
     
+#ifdef TARGET_TYPE_STD
+    misc_loadPref();
+#endif
+        
+#ifdef TARGET_TYPE_STD
     medFolder=opendir("/medios/lang");
     if(!medFolder)
     {
@@ -123,9 +139,10 @@ void kernel_thread(void)
     closedir(medFolder);
     
     lang_loadLang();
-    
+#endif
+        
     /* boot info */
-#if 0    
+#if 0  
     printk("SP: %08x\n",get_sp());
     irq_print();
     tmr_print();
@@ -139,8 +156,10 @@ void kernel_thread(void)
     while(1);
 #endif
          
+#ifdef TARGET_TYPE_STD
     shell_main();
-
+#endif
+    
     printk("[SYS thread] error: back to main()\n");
     for(;;);
 }
@@ -161,11 +180,20 @@ void kernel_start (void)
     
     gfx_init();
     con_init();
+    
+#ifdef TARGET_TYPE_STD
     icon_kernelInit();
-
+#endif
     /* print banner on uart */
+    
+#ifdef TARGET_TYPE_STD
     printk("\nMediOS " VERSION_NUMBER " - kernel loading\n\n");
-
+#endif
+    
+#ifdef TARGET_TYPE_AVLO
+    printk("\nAvlo " VERSION " - loading\n\n");
+#endif
+    
     printk("Initial SP:%08x, kernel end:%08x, size in IRAM:%x/%x\nMalloc start:%08x, Malloc size:%x\n",
            get_sp(),
         (unsigned int)&_end_kernel,
@@ -177,14 +205,17 @@ void kernel_start (void)
     printk("Chip rev : %x\n",inw(BUS_REVR));
     printk("Current Cpu mode : %x\n",readCPUMode());
     
-    lang_init();
-    
+#ifdef TARGET_TYPE_STD    
+    lang_init();    
     splash_init();
+#endif
     
 #ifdef BOOT_WITH_CONSOLE
     screens_show(SCREEN_CONSOLE);
 #else
+#ifdef TARGET_TYPE_STD
     screens_show(SCREEN_SPLASH);
+#endif
 #endif
     
     if(thread_init(kernel_thread)!=MED_OK)
@@ -211,37 +242,44 @@ void kernel_start (void)
     cpld_init();
     
     lcd_init();
-           
+    
+#ifdef TARGET_TYPE_STD           
     init_cmd_line();
-
+#endif
+    
 #ifdef HAVE_EVT
     evt_init();
 #endif
     btn_init();
-
+    
     energy_init();
     batDc_init();
-
+    
+#ifdef TARGET_TYPE_STD 
     time_init();
+#endif
     
 #ifdef CHK_USB_FW
     init_usb_fw();
 #endif
 
+#ifdef TARGET_TYPE_STD    
     FM_init();
+#endif
 
-#ifdef HAVE_EXT_MODULE
+#if defined(HAVE_EXT_MODULE) && defined(TARGET_TYPE_STD )
     init_ext_module();
     init_dvr_module();
 #endif
 
-#ifdef HAVE_CF
+#if defined(HAVE_CF) && defined(TARGET_TYPE_STD)
     cf_init();
 #endif
 
     ata_init();
     vfs_init();
         
+#ifdef TARGET_TYPE_STD 
 //    sound_init();
 #ifdef HAVE_MAS_SOUND
    mas_init();
@@ -249,7 +287,7 @@ void kernel_start (void)
 #ifdef HAVE_AIC23_SOUND
    aic23_init();
 #endif
-    
+#endif
     printk("[init] ------------ drivers done\n");
     
     /*Load kernel thread to enable irq*/

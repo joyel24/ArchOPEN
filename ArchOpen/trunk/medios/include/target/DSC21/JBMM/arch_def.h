@@ -12,6 +12,8 @@
 
 #include <sys_def/arch.h>
 
+#include "mem_def.h"
+
 #define SDRAM_START   0x08000000
 #define SDRAM_END     0x09000000
 

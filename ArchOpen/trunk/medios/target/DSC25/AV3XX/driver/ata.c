@@ -21,12 +21,15 @@
 
 void arch_ata_resetHD(void)
 {
+    int i;
+    CPLD_SET_PORT2(CPLD_HD_RESET);
+    for(i=0;i<0x100;i++) /*nothing*/;
+    CPLD_CLEAR_PORT2(CPLD_HD_RESET);
 }
 
 void arch_ata_powerUpHD(void)
 {
     CPLD_SET_PORT3(CPLD_HD_POWER); /* powering up HD */
-
 }
 
 void arch_ata_powerDownHD(void)
@@ -46,6 +49,7 @@ void arch_ata_selectCF(void)
 
 void arch_ata_init(void)
 {
+    arch_ata_resetHD();
 //    outb(0x8,IDE_CONTROL);          /* enabling ints */
 //    enable_irq(IRQ_IDE);
 }

@@ -12,7 +12,7 @@ echo "Creating lds : $1"
 
 dest_file="medios.lds"
 map_file="medios.map"
-include_file="medios/include/target/chip/arch/arch_def.h"
+include_file="medios/include/target/chip/arch/mem_def.h"
 template="tools/lds_files/lds_template"
 
 if [ -f $dest_file ]; then
@@ -27,7 +27,7 @@ dram_end=$cur_txt
 
 
 
-get_data SDRAM_START
+get_data KERNEL_START
 
 code_start=$cur_txt
 

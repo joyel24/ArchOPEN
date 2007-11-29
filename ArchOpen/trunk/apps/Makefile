@@ -3,7 +3,7 @@ export MEDIOS_SRC_PATH = $(dir $(MEDIOS_SRC_PATH_TMP))
 
 include $(MEDIOS_SRC_PATH)/Makefile.conf
 
-SUBDIRS = aones aoboy bluecube aodoom aosms pacman Gontactor pico
+SUBDIRS = aones aoboy bluecube aodoom aosms pacman Gontactor pico avlo
 
 MED_LIST = $(patsubst %.c,%.med,$(wildcard *.c))
 

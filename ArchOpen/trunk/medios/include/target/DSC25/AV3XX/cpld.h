@@ -41,6 +41,7 @@
 #define CPLD_USB               0x0
 
 /* PORT 2*/
+#define CPLD_HD_RESET          0x0
 #define CPLD2_DVR              0x1
 #define CPLD_LCD               0x2
 

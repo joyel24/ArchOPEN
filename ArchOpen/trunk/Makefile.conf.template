@@ -17,7 +17,6 @@ FM_REMOTE_VERSION = %CONFIGURE_FM_REMOTE_VERSION%
 HAVE_MAS_SOUND = %CONFIGURE_HAVE_MAS_SOUND%
 HAVE_AIC23_SOUND = %CONFIGURE_HAVE_AIC23_SOUND%
 HAVE_EVT = %CONFIGURE_HAVE_EVT%
-HAVE_DVR = %CONFIGURE_HAVE_DVR%
 BOOT_WITH_CONSOLE = %CONFIGURE_BOOT_WITH_CONSOLE%
 CHIP_TYPE = %CONFIGURE_CHIP_TYPE%
 HAVE_DBUG = %CONFIGURE_HAVE_DBUG%
@@ -28,6 +27,8 @@ HAVE_ST_RTC = %CONFIGURE_HAVE_ST_RTC%
 HAVE_TIME = %CONFIGURE_HAVE_TIME%
 IS_RELEASE = %CONFIGURE_IS_RELEASE%
 MEDIOS_LANG = %CONFIGURE_TARGET_LANG_NAME%
+BUILD_AVLO = %CONFIGURE_AVLO%
+
 #
 # Makefile core
 #
@@ -42,8 +43,19 @@ else
 GCCFLAGS += -mcpu=arm7tdmi
 endif
 
+ifeq ($(BUILD_AVLO),1)
+TARGET_TYPE = avlo
+#reconfig what is needed
+HAVE_EXT_MODULE = 0
+HAVE_MAS_SOUND = 0
+HAVE_AIC23_SOUND = 0
+HAVE_CF = 0
+else
+TARGET_TYPE = std
+endif
+
 GCCFLAGS += -D$(TARGET_DEVICE) -D$(CHIP_TYPE) -I$(MEDIOS_SRC_PATH)/medios/include -I$(MEDIOS_SRC_PATH)/include --pipe
-GCCFLAGS += -I$(MEDIOS_SRC_PATH)/medios/lib/jpeg-6b
+
 
 ASFLAGS  += --defsym $(SPLASH_TYPE)=1 --defsym $(TARGET_DEVICE)=1 --defsym $(CHIP_TYPE)=1
 ASFLAGS  +=-I$(MEDIOS_SRC_PATH)/include
@@ -51,7 +63,19 @@ ASFLAGS  +=-I$(MEDIOS_SRC_PATH)/include
 BUILD_DIR = $(MEDIOS_SRC_PATH)/medios/build
 LIB_DIR = $(MEDIOS_SRC_PATH)/lib
 
+ifeq ("$(TARGET_TYPE)","avlo")
+GCCFLAGS += -DTARGET_TYPE_AVLO
+ASFLAGS  += --defsym TARGET_TYPE_AVLO=1
+LDFLAGS =  -L/usr/local/toolchain_arm_nofpu/arm-linux-uclibc/lib/ -L$(LIB_DIR) -lfloat -lm -lgcc
+endif
+
+ifeq ("$(TARGET_TYPE)","std")
+GCCFLAGS += -DTARGET_TYPE_STD
+ASFLAGS  += --defsym TARGET_TYPE_STD=1
 LDFLAGS =  -L/usr/local/toolchain_arm_nofpu/arm-linux-uclibc/lib/ -L$(LIB_DIR) -ljpeg -lfloat -lm -lgcc
+GCCFLAGS += -I$(MEDIOS_SRC_PATH)/medios/lib/jpeg-6b
+endif
+
 #LDFLAGS =  -L/home/christophe/toolchain_arm_nofpu/arm-linux-uclibc/lib/ -L$(LIB_DIR) -ljpeg -lfloat -lm -lgcc
 
 ifeq ($(BOOT_WITH_CONSOLE),1)
@@ -113,7 +137,13 @@ ifeq ($(IS_RELEASE),1)
 endif
 
 # Font definition:
+ifeq ("$(TARGET_TYPE)","avlo")
+FONT_LIST = 4x6 6x9 8x13
+endif
+
+ifeq ("$(TARGET_TYPE)","std")
 FONT_LIST = 4x6 5x8 6x9 7x13 8x13 radonWide_9x12
+endif
 
 TOOL=arm-linux-uclibc
 GCC=$(TOOL)-gcc

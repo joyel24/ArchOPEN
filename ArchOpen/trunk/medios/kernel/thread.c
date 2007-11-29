@@ -85,8 +85,11 @@ MED_RET_T thread_init(void(*fct)(void))
     else
         printk("KERNEL thread created with pid %d\n",retval);
 
-    //threadSysStack=sysThread;
+#ifdef BUILD_LIB  
+    threadSysStack=sysThread;
+#else
     threadSysStack=NULL;
+#endif
 
     sysThread->state=THREAD_STATE_ENABLE;
     
@@ -510,6 +513,7 @@ unsigned long yieldTo(THREAD_INFO * nxtThread)
 __IRAM_CODE void thread_nxt(void)
 {
     THREAD_INFO * ptr=threadCurrent;
+    THREAD_INFO * old=threadCurrent;
     int topScore=0;
     THREAD_INFO * topThread=NULL;
     int has_top=0;
@@ -575,9 +579,12 @@ RQ: idleThread never considered as it is always disable here
         threadCurrent = topThread;
     }
 
+    if(old==threadCurrent) return;
+    
     sys_stack_size=(unsigned int)SYS_STACK_TOP-(unsigned int)SYS_STACK_BTM;
 
-    if(threadSysStack != threadCurrent && threadSysStack->useSysStack == 1 && threadCurrent->useSysStack == 1)
+    if(threadSysStack != threadCurrent && threadSysStack->useSysStack == 1 
+       && threadCurrent->useSysStack == 1)
     {
         /* saving prev sys stack */
         memcpy(threadSysStack->saveStack,threadSysStack->stackBottom,threadSysStack->stackSize);
@@ -592,7 +599,6 @@ RQ: idleThread never considered as it is always disable here
         memcpy(SYS_STACK_BTM,threadCurrent->saveStack+threadCurrent->stackSize-sys_stack_size,sys_stack_size);
         threadSysStack=threadCurrent;
     }
-
 }
 
 /***********************************************************************************

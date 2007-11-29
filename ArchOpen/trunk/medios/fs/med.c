@@ -26,9 +26,6 @@
 
 #include <snd/sound.h>
 
-
-#define CORE_START   ((char*)&_iram_end+0x10)
-
 //#define DO_MED_DEBUG
 
 #ifdef DO_MED_DEBUG
@@ -36,8 +33,6 @@
 #else
 #define DEBUG_MED(s...)
 #endif
-
-char * med_iramTop=CORE_START;
 
 char * SDRAM_SECTIONS[] = {
     ".texte",

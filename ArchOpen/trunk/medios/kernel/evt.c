@@ -99,9 +99,12 @@ int evt_getStatus(int num_evt_pipe)
 {
     struct evt_t evt;
     int ret_val;
+    
     ret_val = evt_getFullStatus(num_evt_pipe,&evt);
     if(ret_val!=MED_OK)
+    {
         return ret_val;
+    }
     return evt.evt;
 }
 
@@ -146,7 +149,6 @@ int evt_purgeHandler(int num_evt_pipe)
     return MED_OK;
 }
 
-#if 1
 struct evt_t evt;
 void evt_timer_action(void)
 {
@@ -154,7 +156,6 @@ void evt_timer_action(void)
     evt_timer.expires = tick + EVT_DELAY; /* 1s timer */
     tmr_start(&evt_timer);
 }
-#endif
 
 void evt_init(void)
 {

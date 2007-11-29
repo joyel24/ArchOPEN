@@ -226,6 +226,7 @@ void energy_chgMode(int power_mode)
             timer_status[HD_TIMER][power_mode]);
 }
 
+#ifdef TARGET_TYPE_STD
 void energy_loadPref(void)
 {
     CFG_DATA * cfg;
@@ -302,6 +303,23 @@ void energy_loadPref(void)
     lcd_launchTimer();
     hd_launchTimer();
 }
+#endif
+
+#ifdef TARGET_TYPE_AVLO
+void energy_loadPref(void)
+{
+    int i,j;
+    for(i=0;i<3;i++)
+        for(j=0;j<2;j++)
+        {
+            timer_status[i][j]=default_status[i][j];
+            timer_delay[i][j]=default_delay[i][j];
+        }
+    halt_launchTimer();
+    lcd_launchTimer();
+    hd_launchTimer();
+}
+#endif
 
 void energy_init(void)
 {

@@ -40,6 +40,8 @@ MED_RET_T getErrno(void)
     return errno;
 }
 
+char * med_iramTop=CORE_START;
+
 int readCPUMode(void)
 {
     int val;

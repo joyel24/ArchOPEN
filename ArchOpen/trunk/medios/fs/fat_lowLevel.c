@@ -59,7 +59,7 @@ MED_RET_T fat_initDevice(struct bpb* fat_bpb,int drive,unsigned int startsector)
 
     /* Read the sector */
     ret_val = ata_rwData(drive,startsector,buf,1,ATA_DO_READ,ATA_WITH_DMA);
-    if(ret_val)
+    if(ret_val<0)
     {
         printk( "fat_mount() - Couldn't read BPB (error code %d)\n", ret_val);
         return -MED_EIO;

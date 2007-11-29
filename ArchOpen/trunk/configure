@@ -87,12 +87,14 @@ CONFIGURE_HAVE_ST_RTC=-1
 CONFIGURE_HAVE_TIME=-1
 CONFIGURE_IS_RELEASE=-1
 CONFIGURE_TARGET_LANG=-1
+CONFIGURE_AVLO=-1
 
 if [ "$1" == "-d" ]; then
 CONFIGURE_TARGET_DEVICE="$2"
 echo "Using default value for target $2 lang: English"
 HAS_DEFAULT=1
 CONFIGURE_TARGET_LANG="1"
+CONFIGURE_AVLO="0"
 else
 # check if the file this script generates exists so we don't overwrite something
 if [ -f "./Makefile.conf" ]
@@ -144,7 +146,6 @@ if [ $CONFIGURE_TARGET_DEVICE == "1" ]; then
             CONFIGURE_CHIP_TYPE="DSC25"
             CONFIGURE_HAVE_EXT_MODULE="1"
             CONFIGURE_HAVE_CF="1"
-            CONFIGURE_HAVE_DBUG="1"
 	        TARGET_OK=1
             CONFIGURE_FM_REMOTE_VERSION="v1"
             CONFIGURE_SPLASH_TYPE="SPLASH_320x240"
@@ -152,6 +153,7 @@ if [ $CONFIGURE_TARGET_DEVICE == "1" ]; then
             CONFIGURE_HAVE_ST_RTC="1"
             CONFIGURE_HAVE_TIME="1"
             if [ $HAS_DEFAULT == "1" ]; then
+            CONFIGURE_HAVE_DBUG="0"
             CONFIGURE_CHK_USB_FW="1"
             CONFIGURE_HAVE_EVT="1"
             CONFIGURE_BOOT_WITH_CONSOLE="0"
@@ -160,6 +162,7 @@ fi
 
 if [ $CONFIGURE_TARGET_DEVICE == "2" ]; then
             CONFIGURE_TARGET_DEVICE="GMINI4XX"
+            CONFIGURE_AVLO="0"
 	        CONFIGURE_HAVE_MAS_SOUND="0"
             CONFIGURE_HAVE_AIC23_SOUND="1"     
             CONFIGURE_HAVE_EXT_MODULE="0"
@@ -185,8 +188,7 @@ if [ $CONFIGURE_TARGET_DEVICE == "3" ]; then
             CONFIGURE_HAVE_AIC23_SOUND="0" 
             CONFIGURE_CHIP_TYPE="DSC25"                
             CONFIGURE_HAVE_EXT_MODULE="1"
-            CONFIGURE_HAVE_CF="1"
-            CONFIGURE_HAVE_DBUG="1"
+            CONFIGURE_HAVE_CF="1"            
 	        TARGET_OK=1
             CONFIGURE_FM_REMOTE_VERSION="v1"
             CONFIGURE_BOOT_WITH_CONSOLE="1"
@@ -195,6 +197,7 @@ if [ $CONFIGURE_TARGET_DEVICE == "3" ]; then
             CONFIGURE_HAVE_ST_RTC="1"
             CONFIGURE_HAVE_TIME="1"
             if [ $HAS_DEFAULT == "1" ]; then
+            CONFIGURE_HAVE_DBUG="0"
             CONFIGURE_CHK_USB_FW="1"
             CONFIGURE_HAVE_EVT="1"
             CONFIGURE_BOOT_WITH_CONSOLE="0"
@@ -224,6 +227,7 @@ fi
 
 if [ $CONFIGURE_TARGET_DEVICE == "5" ]; then
             CONFIGURE_TARGET_DEVICE="GMINI402"
+            CONFIGURE_AVLO="0"
 	        CONFIGURE_HAVE_MAS_SOUND="0"
             CONFIGURE_HAVE_AIC23_SOUND="1"     
             CONFIGURE_HAVE_EXT_MODULE="0"
@@ -245,6 +249,7 @@ fi
 
 if [ $CONFIGURE_TARGET_DEVICE == "6" ]; then
             CONFIGURE_TARGET_DEVICE="AV4XX"
+            CONFIGURE_AVLO="0"
 	        CONFIGURE_HAVE_MAS_SOUND="0"
             CONFIGURE_HAVE_AIC23_SOUND="1"     
             CONFIGURE_HAVE_EXT_MODULE="0"
@@ -266,6 +271,7 @@ fi
 
 if [ $CONFIGURE_TARGET_DEVICE == "7" ]; then
             CONFIGURE_TARGET_DEVICE="PMA"
+            CONFIGURE_AVLO="0"
 	        CONFIGURE_HAVE_MAS_SOUND="0"
             CONFIGURE_HAVE_AIC23_SOUND="0"     
             CONFIGURE_HAVE_EXT_MODULE="0"
@@ -288,6 +294,7 @@ fi
 
 if [ $CONFIGURE_TARGET_DEVICE == "8" ]; then
             CONFIGURE_TARGET_DEVICE="AV5XX"
+            CONFIGURE_AVLO="0"
             CONFIGURE_HAVE_MAS_SOUND="0"
             CONFIGURE_HAVE_AIC23_SOUND="1"     
             CONFIGURE_HAVE_EXT_MODULE="0"
@@ -313,6 +320,8 @@ if [ $TARGET_OK == 0 ]; then
 	exit
 fi
 
+
+
 CONFIGURE_TARGET_LANG_NAME="X"
 if [ $CONFIGURE_TARGET_LANG == "1" ]; then
     CONFIGURE_TARGET_LANG_NAME="english"
@@ -329,6 +338,9 @@ echo "Configuring for $CONFIGURE_TARGET_DEVICE - $CONFIGURE_TARGET_LANG_NAME"
 # this section of the script asks all of the yes or no querys, they are of the following format:
 # CONFIG_QUERY_YN $variable_to_set "question to ask" "default answer"
 # variable_to_set=$?
+
+CONFIG_QUERY_YN $CONFIGURE_AVLO "Build Avlo?" "n"
+CONFIGURE_AVLO=$?
 
 CONFIG_QUERY_YN $CONFIGURE_HAVE_DBUG "Build with emu2 support? (adds bkpt for some arch)" "n"
 CONFIGURE_HAVE_DBUG=$?
@@ -357,7 +369,6 @@ cat ./Makefile.conf.template | sed > ./Makefile.conf \
  -e "s,%CONFIGURE_HAVE_MAS_SOUND%,${CONFIGURE_HAVE_MAS_SOUND},g" \
  -e "s,%CONFIGURE_HAVE_AIC23_SOUND%,${CONFIGURE_HAVE_AIC23_SOUND},g" \
  -e "s,%CONFIGURE_HAVE_EVT%,${CONFIGURE_HAVE_EVT},g" \
- -e "s,%CONFIGURE_HAVE_DVR%,${CONFIGURE_HAVE_DVR},g" \
  -e "s,%CONFIGURE_BOOT_WITH_CONSOLE%,${CONFIGURE_BOOT_WITH_CONSOLE},g" \
  -e "s,%CONFIGURE_CHIP_TYPE%,${CONFIGURE_CHIP_TYPE},g" \
  -e "s,%CONFIGURE_FM_REMOTE_VERSION%,${CONFIGURE_FM_REMOTE_VERSION},g" \
@@ -368,6 +379,7 @@ cat ./Makefile.conf.template | sed > ./Makefile.conf \
  -e "s,%CONFIGURE_HAVE_ST_RTC%,${CONFIGURE_HAVE_ST_RTC},g" \
  -e "s,%CONFIGURE_IS_RELEASE%,${CONFIGURE_IS_RELEASE},g" \
  -e "s,%CONFIGURE_TARGET_LANG_NAME%,${CONFIGURE_TARGET_LANG_NAME},g" \
+ -e "s,%CONFIGURE_AVLO%,${CONFIGURE_AVLO},g" \
  -e "s,%CONFIGURE_HAVE_DBUG%,${CONFIGURE_HAVE_DBUG},g"
 
 #did everything work?

@@ -66,7 +66,6 @@ typedef struct {
 #define MED_DEST_IRAM       0
 #define MED_DEST_SDRAM      1
 
-
 typedef struct __section_t {
     char*           name;
     uint32_t        vaddr;
@@ -89,7 +88,7 @@ typedef struct __med_t {
     char * iram_sdram_start;
 } med_t;
 
-extern char * med_iramTop;
+
 
 MED_RET_T med_load(char * file_name);
 MED_RET_T med_loadParam(int argc,char**argv);

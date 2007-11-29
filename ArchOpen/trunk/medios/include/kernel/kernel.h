@@ -59,6 +59,9 @@ extern unsigned int _sdend_end;
 
 extern int has_develFct;
 
+extern char * med_iramTop;
+#define CORE_START   ((char*)&_iram_end+0x10)
+
 int readCPUMode(void);
 
 #define SWAB16(x) (x)

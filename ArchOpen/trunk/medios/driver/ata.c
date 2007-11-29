@@ -70,7 +70,7 @@ int ata_rwData(int disk,unsigned int lba,void * inData,int inCount,int cmd,int u
     int use_multiple=1;
     MED_RET_T ret_val=-MED_ERROR;
     
-//    printk("[ata-rw] disk=%x buffer=%x lba=%x count=%x cmd=%x use_dma=%x\n",disk,inData,lba,inCount,cmd,use_dma);
+    //printk("[ata-rw] disk=%x buffer=%x lba=%x count=%x cmd=%x use_dma=%x\n",disk,inData,lba,inCount,cmd,use_dma);
     
     spinLock_lock(&ata_lock);        
     
@@ -95,7 +95,7 @@ int ata_rwData(int disk,unsigned int lba,void * inData,int inCount,int cmd,int u
             printk("[ata_rwData] Error trying to write lba 0\n");
             ata_RW_thread=NULL;
             spinLock_unlock(&ata_lock);
-            return 0;
+            return -MED_ERROR;
         }
     }
     
@@ -125,7 +125,7 @@ int ata_rwData(int disk,unsigned int lba,void * inData,int inCount,int cmd,int u
                 printk("[ata_rwData] error powering ON disk %d (err=%d)\n",disk,-ret_val);
                 ata_RW_thread=NULL;
                 spinLock_unlock(&ata_lock);
-                return 0;   
+                return -MED_ERROR;   
             }            
         }
         else
@@ -135,7 +135,7 @@ int ata_rwData(int disk,unsigned int lba,void * inData,int inCount,int cmd,int u
                 printk("[ata_rwData] error doing softReset for disk %d (err=%d)\n",disk,-ret_val);
                 ata_RW_thread=NULL;
                 spinLock_unlock(&ata_lock);
-                return 0;   
+                return -MED_ERROR;   
             }  
         }
     }
@@ -229,7 +229,7 @@ retry:
             
             if(ata_waitForStartXfer()!=MED_OK)
             {
-                ret_val=0;
+                ret_val=-MED_ERROR;
                 if(cmd==ATA_DO_WRITE)
                     goto end;
                 ata_doSoftReset(disk);
@@ -342,7 +342,7 @@ retry:
         }
         if(ata_waitForEndXfer()!=MED_OK)
         {
-            ret_val=0;            
+            ret_val=-MED_ERROR;            
             printk("[ata_rwData] Error doing softRest after bad EndOf Xfer\n");
             if(cmd==ATA_DO_WRITE)
                 goto end;
@@ -715,17 +715,20 @@ MED_RET_T ata_doPowerOn(int disk)
 MED_RET_T ata_identify(int disk,struct hd_info_s * disk_info)
 {
     unsigned char * sector=(unsigned char *)kmalloc(sizeof(unsigned char)*SECTOR_SIZE);
+    
     if(!sector)
     {
         printk("[ata_initDisk] can't malloc sector\n");
         return -MED_ENOMEM;
     }
-        
+    
     if(ata_rwData(disk,0,sector,1,ATA_DO_IDENT,ATA_WITH_DMA)<0)
     {
         kfree(sector);
+        printk("[ata_initDisk] error reading from disk\n");
         return -MED_ERROR;
-    }        
+    }
+    
     strncpy(disk_info->serial, &sector[20], 20);
     str_swapChar(disk_info->serial,20);
     str_findEnd(disk_info->serial,20);
@@ -763,20 +766,19 @@ MED_RET_T ata_initDisk(int disk)
     MED_RET_T ret_val;
     
     ata_selectDisk(disk);
-    
     if(!ata_powered)     
     {   
         arch_ata_powerUpHD();
         mdelay(10);
     }
-    
+       
     if(ata_hardReset(disk)!=MED_OK)
     {
         printk("[ata_initDisk] error doing ata_hardReset\n");
         disk_info[disk]=NULL;
         return -MED_ERROR;
     }
-    
+   
     if(ata_chkReg(disk)!=MED_OK)
         printk("[ata_initDisk] WARN: error doing chkReg\n");
     diskData = (struct hd_info_s *)kmalloc(sizeof(struct hd_info_s));
@@ -786,7 +788,7 @@ MED_RET_T ata_initDisk(int disk)
         disk_info[disk]=NULL;
         return -MED_ERROR;
     }
-    
+
     if((ret_val=ata_identify(disk,diskData))!=MED_OK)
     {   
         printk("[ata_initDisk] error identify returned %d\n",-ret_val);
@@ -794,6 +796,7 @@ MED_RET_T ata_initDisk(int disk)
         disk_info[disk]=NULL;
         return -MED_ERROR;
     }
+
     disk_info[disk]=diskData;
 
 #ifndef HAVE_DBUG    
@@ -833,6 +836,8 @@ void ata_init(void)
     ata_RW_thread=NULL;
     spinLock_ini(&ata_lock);
         
+    arch_ata_init();
+    
     irq_enable(IRQ_IDE);
     
     printk("[ATA init] done\n");

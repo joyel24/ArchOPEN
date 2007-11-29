@@ -12,12 +12,9 @@
 
 #include <sys_def/arch.h>
 
-#define SDRAM_START       0x0900000
-#define EXPLOIT_START     0x0DA0000
 // RQ: exploit is at 0xDA0000 at end of avi load
-#define SDRAM_END         0x1900000
 
-#define IRAM_SIZE         0x8000
+#include "mem_def.h"
 
 #define MALLOC_START  ((((unsigned int)&_end_kernel) & 0xFFFFF000)+0x1000)
 #define MALLOC_SIZE   (((unsigned int)&_sdend_start)-MALLOC_START)

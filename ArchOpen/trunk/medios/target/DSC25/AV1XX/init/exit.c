@@ -31,10 +31,11 @@ void reset_device(void);
 
 void arch_reload_firmware(void)
 {
+    void (*firmware_start)(void) = (void (*)(void)) 0x100004;
     printk("about to reboot\n");
     ata_softReset(HD_DISK);
     ata_StopHD(HD_DISK); /* we need to call halt_hd later to unmount all partitions */
-    reset_device();
+    firmware_start();
 }
 
 void arch_HaltMsg(void)

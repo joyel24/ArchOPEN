@@ -1,13 +1,22 @@
 # sending today irc log
 
 yestDate=`date --date="1 day ago" +"%Y%m%d"`
+todayDate=`date +"%Y%m%d"`
 
 cd ~/eggdrop/logs/
 
-fname=archopen.${yestDate}.log
-
+fname=archopen.${todayDate}.log
+fname_bis=archopen.${yestDate}.log
+fname2=scourge.${todayDate}.log
+fname_bis2=scourge.${yestDate}.log
 if [ -e $fname ]; then
-mvFtp irclog $fname
+mvFtp irclog $fname $fname_bis
 else
 echo "$fname not present"
+fi
+
+if [ -e $fname2 ]; then
+mvFtp irc_scourge $fname2 $fname_bis2
+else
+echo "$fname2 not present"
 fi

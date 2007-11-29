@@ -3,11 +3,19 @@ include Makefile.conf
 SUBDIRS = medios
 SUBDIRS_CLEAN = $(MEDIOS_SRC_PATH)/lib
 
+ifeq ("$(TARGET_TYPE)","std")
+TARGET = medios_shell
+endif
+
+ifeq ("$(TARGET_TYPE)","avlo")
+TARGET = avlo
+endif
+
 KERNEL_OBJS = medios/build/*.o medios/target/$(CHIP_TYPE)/build/*.o medios/target/$(CHIP_TYPE)/$(TARGET_DEVICE)/build/*.o
 
 export MEDIOS_SRC_PATH=$(shell pwd)
 
-all: medios_shell
+all: $(TARGET)
 
 lib_dir:
 	@mkdir -p $(MEDIOS_SRC_PATH)/lib
@@ -25,6 +33,8 @@ mk_lang:
 inc_dir:
 	@make -C medios/include/target --no-print-directory inc_dir
 	@make -C medios/include/target/chip --no-print-directory inc_dir
+	@make -C medios/include/target/chip/arch --no-print-directory memDef
+
                 
 mk_build_tools:
 	@make -C tools/buildTools --no-print-directory
@@ -63,5 +73,8 @@ aosms: do_build_app
 pico: LD_BIN_INC = apps/pico/dspcode/pico_dsp.out
 pico: APP_NAME = pico
 pico: do_build_app
+
+avlo: APP_NAME = avlo
+avlo: do_build_app
 
 include default.rule

@@ -10,5 +10,12 @@
 entry_code:
     /* no specific init for av1xx*/
     b kernel_entry
-    .asciz "MEDIOS0" 
+.ifdef TARGET_TYPE_STD
+    .asciz "MEDIOS0"
     .word 0
+.endif
+.ifdef TARGET_TYPE_AVLO
+    .space 0x54, 0
+    .asciz "BJBMVERSION2000"
+    .space 0x20, 0
+.endif

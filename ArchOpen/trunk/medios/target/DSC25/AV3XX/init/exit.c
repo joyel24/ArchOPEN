@@ -44,6 +44,8 @@ void arch_reload_firmware(void)
 
 void arch_HaltMsg(void)
 {
+#ifdef TARGET_TYPE_STD
     splash_setString(getLangStr(STRLNG_SPLASH_SHUTDOWN));
     screens_show(SCREEN_SPLASH);    
+#endif
 }

@@ -1,6 +1,12 @@
 include $(MEDIOS_SRC_PATH)/Makefile.conf
 
+ifeq ("$(TARGET_TYPE)","std")
 SUBDIRS = api init kernel lib driver fs gfx gui snd target
+endif
+
+ifeq ("$(TARGET_TYPE)","avlo")
+SUBDIRS = init kernel lib driver fs gfx target
+endif
 
 SUBDIRS_CLEAN = build
 
