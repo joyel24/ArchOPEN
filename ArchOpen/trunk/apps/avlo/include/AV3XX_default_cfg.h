@@ -13,7 +13,7 @@
 #ifndef __DEFAULT_CFG_H
 #define __DEFAULT_CFG_H
 
-#define BTM_TXT      "V4.2 | image: "
+#define BTM_TXT      VERSION " | image: "
 #define TXT_FONT STD6X9
 #define BOX_FONT STD8X13
 

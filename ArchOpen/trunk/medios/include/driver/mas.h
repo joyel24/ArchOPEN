@@ -15,7 +15,7 @@
 
 #include <kernel/irq.h>
 
-#warning change this when we will land new sound stuff
+// NOTE: change this when we will land new sound stuff
 //#include <kernel/sound.h>
 typedef struct _SOUND_BUFFER
 {

@@ -11,11 +11,14 @@
 */
 
 #include <lib/string.h>
+
 #include <sys_def/colordef.h>
 #include <sys_def/font.h>
-#include <kernel/lang.h>
 
+#include <kernel/lang.h>
+#include <kernel/malloc.h>
 #include <kernel/evt.h>
+#include <kernel/kernel.h>
 
 #include <driver/lcd.h>
 
@@ -118,6 +121,65 @@ void msgBox_init(void)
 #define POS_X(X) ((X)+posX)
 #define POS_Y(Y) ((Y)+posY)
 
+#if 0
+int msgBox_cutLineEoL(char * str,char ** res)
+{
+    int nbLine=1;
+    char * ptr=(char *)malloc(strlen(str));
+    
+    if(!ptr)
+    {
+        printk("[msgBox_cutLine] Can't malloc\n");
+        return 0;
+    }
+    
+    while((*str=='\n' || *str=='\r') && *str!='\0') str++;
+    
+    if(*str=='\0')
+    {
+        free(ptr);
+        printk("[msgBox_cutLine] empty string\n");
+        return 0;
+    }
+    
+    strcpy(ptr,str);
+    res[0]=ptr;
+    
+    while(nbLine < 10 && *ptr!='\0')
+    {
+        if(*ptr=='\n' || *ptr=='\r')
+        {
+            *ptr='\0';
+            ptr++;
+            while(*ptr=='\n' || *ptr=='\r') ptr++;
+            if(*ptr!='\0')
+            {
+                res[nbLine]=ptr;
+                nbLine++;
+            }
+        }
+        else
+            ptr++;
+    }    
+    if(nbLine==10)
+    {
+        /* removing any tailling \n or \r */
+        int len=strlen(ptr);
+        int i=1;
+        if(*(ptr+len-1) == '\n' || *(ptr+len-1) == '\r')
+        {
+            while(*(ptr+len-i)== '\n' || *(ptr+len-i) == '\r') i++;
+            *(ptr+len-i+1)='\0';
+        }
+    }
+    return nbLine;
+}
+
+int msgBox_cutLineWidth(char * str,int cutWidth, char ** res)
+{
+    
+}
+#endif
 /* draw the msg box */
 void msgBox_draw(unsigned char* caption, unsigned char* msg, int type, int icon,int useOwnPlane)
 {
@@ -188,10 +250,10 @@ void msgBox_draw(unsigned char* caption, unsigned char* msg, int type, int icon,
 
     // center box
     if(useOwnPlane)
-        posX = SCREEN_REAL_WIDTH-width;
+        posX = LCD_WIDTH-width;
     else
-        posX = (SCREEN_REAL_WIDTH-width)/2;
-    posY = (SCREEN_HEIGHT/2)-(MSGBOX_HEIGHT/2);
+        posX = (LCD_WIDTH-width)/2;
+    posY = (LCD_HEIGHT/2)-(MSGBOX_HEIGHT/2);
     if(useOwnPlane)
         gfx_planeSetPos(BMAP2,SCREEN_ORIGIN_X+posX,SCREEN_ORIGIN_Y+posY);
 

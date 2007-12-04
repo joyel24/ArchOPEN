@@ -67,7 +67,7 @@ int maxRepeat;
 char tmp_txt[100];
 
 int evt_handler;
-int evt;
+//int evt;
 
 struct avlo_cfg * ptr_cfg;
 
@@ -76,6 +76,8 @@ int app_main(int argc,char** argv)
     int ret,nbCfg,redraw;
     int i,dd;
     int bat_loop=0;
+    void * ptr;
+    int evt;
            
     printk("In main AVLO\n");        
     
@@ -162,12 +164,12 @@ loopErr:
             printk("[WARNING] File not found: %s\n",cfgG.bg_img);
         else
         {
-            void * ptr=gfx_planeGetBufferOffset(VID1);
+            ptr=gfx_planeGetBufferOffset(VID1);
             int nb_read = read(fd_img,ptr,size);
             printk("Read: %x/%x bytes of image\n",nb_read,size);
             if(nb_read==size)
             {
-                gfx_planeSetState(BMAP1,OSD_BITMAP_RAMCLUT | OSD_BITMAP_ZX1 | OSD_BITMAP_8BIT 
+                gfx_planeSetState(BMAP1,OSD_BMAP_1_CFG 
                         | OSD_BITMAP_TRSP_ENABLE_BIT | OSD_BITMAP_BLEND_FACTOR(0));
                 gfx_planeShow(BMAP1); /* needed to make new state val real */
                 gfx_planeShow(VID1);
@@ -199,6 +201,14 @@ loopErr:
     {
         printk("[WARNING] No img defined\n");
     }
+#else
+    ptr=gfx_planeGetBufferOffset(VID1);
+    for(i=0;i<SCREEN_REAL_WIDTH*4*SCREEN_HEIGHT;i++)
+        *((int*)ptr+i)=COLOR32_BLACK;
+    gfx_planeShow(VID1);
+    gfx_planeSetState(BMAP1,OSD_BMAP_1_CFG 
+                        | OSD_BITMAP_TRSP_ENABLE_BIT | OSD_BITMAP_BLEND_FACTOR(0));
+    gfx_planeShow(BMAP1); /* needed to make new state val real */
 #endif
     printIniLevel(3);
 
@@ -231,10 +241,10 @@ loopErr:
         }
         
         evt=evt_getStatus(evt_handler);
-        /*
+        
         if(processDefault(evt,nbCfg)<0)
             goto loopErr;
-        */
+        
         if(evt==NO_EVENT)
             continue;
 /*
@@ -262,12 +272,10 @@ loopErr:
             switch(evt)
             {
                 case BTN_DOWN:
-                    if(cursorPos<nbCfg)
-                        moveCursor(+1);
+                    moveCursor(+1,nbCfg);
                     break;
                 case BTN_UP:
-                    if(cursorPos>0)
-                        moveCursor(-1);
+                    moveCursor(-1,nbCfg);
                     break;
                 case BTN_ON:
                 case BTN_RIGHT:
@@ -428,9 +436,9 @@ int fastLoadCJBM(char * filename)
 #endif
 }
 
-void moveCursor(int direction)
+void moveCursor(int direction,int nbCfg)
 {
-    int h,w,offset;
+    int h,w,offset;    
     // unhighlight current
     gfx_fontSet(TXT_FONT);
     gfx_getStringSize(cfg[cursorPos].label,&w,&h);
@@ -444,6 +452,9 @@ void moveCursor(int direction)
     gfx_drawLine(COLOR_TSP,ENTRY_X+w+2,ENTRY_Y+2+ cursorPos*offset,ENTRY_X+w+2,ENTRY_Y+h-2+ cursorPos*offset);
     // move to nxt
     cursorPos+=direction;
+    
+    if(cursorPos<0) cursorPos=nbCfg;
+    if(cursorPos>nbCfg) cursorPos=0;
     // highlight nxt
     gfx_putS(COLOR_TXT,COLOR_SEL,ENTRY_X, ENTRY_Y + cursorPos*offset,cfg[cursorPos].label);
     gfx_getStringSize(cfg[cursorPos].label,&w,&h);
@@ -477,6 +488,7 @@ void affUSB()
 
 void doFault(int faultNum)
 {
+    int evt;
     printFault(faultNum);
     enableUsbFw();
     usbenable=1;
@@ -493,7 +505,7 @@ void doFault(int faultNum)
 }
 
 
-int processDefault(int key,int nbCfg)
+int processDefault(int evt,int nbCfg)
 {
     int pos;
     if(chkdefault)

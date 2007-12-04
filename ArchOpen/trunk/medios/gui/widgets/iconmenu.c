@@ -254,7 +254,9 @@ void iconMenu_addItem(ICONMENU m, ICONMENU_ITEM item){
 
 void iconMenu_updateItems(ICONMENU m, bool fast){
     int lastx=(((m->width-2*m->margin)/m->itemWidth)-1)*m->itemWidth; // relative x coordinate of the last item on a line
+    int iniX=(m->width-(lastx+m->itemWidth+2*m->margin))/2;                
     int i,x,y;
+    lastx+=iniX;
     MENU_ITEM mi;
 
     if (fast){
@@ -266,7 +268,7 @@ void iconMenu_updateItems(ICONMENU m, bool fast){
     }else{
 
         // full repositioning of visible items
-        x=0;
+        x=iniX;
         y=0;
         for(i=m->topIndex;(i<m->topIndex+m->visibleCount) && (i<m->itemCount);++i){
             mi=m->items[i];
@@ -280,7 +282,7 @@ void iconMenu_updateItems(ICONMENU m, bool fast){
 
             x+=m->itemWidth;
             if(x>lastx){
-                x=0;
+                x=iniX;
                 y+=m->itemHeight;
             }
         }

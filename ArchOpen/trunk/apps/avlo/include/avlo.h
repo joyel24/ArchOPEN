@@ -14,7 +14,7 @@
 #ifndef __AVLO_H_
 #define __AVLO_H_
 
-#define VERSION "V4.4"
+#define VERSION "V5.0"
 
 /*
 Common functions
@@ -27,7 +27,7 @@ void waitKey(void);
 void waitKeyReleased(int has_time_out);
 void affUSB();
 void avlo_drawBat();
-void moveCursor(int direction);
+void moveCursor(int direction,int nbCfg);
 int  processDefault(int key,int nbCfg);
 void printErr(int key);
 int fastLoadCJBM(char * filename);

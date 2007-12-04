@@ -16,6 +16,8 @@
 
 #include <sys_def/types.h>
 
+#include <target/chip/arch/shell.h>
+
 #define SHELL_DIR "/mediOS"
 
 #define SHELL_HANDLERS_FILE SHELL_DIR"/handlers.cfg"

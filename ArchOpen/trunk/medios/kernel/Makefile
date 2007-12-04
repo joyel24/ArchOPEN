@@ -7,7 +7,7 @@ endif
 
 ifeq ("$(TARGET_TYPE)","avlo")
 SRC = irq.c malloc.c pipes.c printk.c timer.c trap_fct.c kdelay.c kernel.c \
-      delay.S trap.S thread.c console.c no_swi.c
+      delay.S trap.S thread.c console.c no_swi.c cmd_line.c cmd_line_fct.c
 endif
 
 ifeq ($(HAVE_EVT),1)

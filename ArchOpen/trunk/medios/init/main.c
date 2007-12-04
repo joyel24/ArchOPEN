@@ -89,6 +89,34 @@ extern int app_main(int argc, char * argv[]);
 unsigned int _svc_IniStack = IRAM_SIZE;
 unsigned int _sys_IniStack = IRAM_SIZE-SVC_STACK_SIZE;
 
+#if 0
+int msgBox_cutLineEoL(char * str,char ** res);
+
+void test2(char * str)
+{
+    char * tmp[10];
+    int i,nb;
+    printk("Testing: |%s|\n",str);
+    nb=msgBox_cutLine(str,tmp);
+    printk("-----------------\nIt has %d lines:\n",nb);
+    for(i=0;i<nb;i++)
+        printk("%d:|%s|\n",i,tmp[i]);
+}
+
+void test(void)
+{
+    test2("\n\n");
+    test2("\nAAAAAA\n\n\nBBBBB\nCCCC");
+    test2("AA\nBB\nCC\nDD\nEE\nFF\nGG\nHH\nII\nJJ\nKK\n");
+    test2("AA\nBB\nCC\nDD\nEE\nFF\nGG\nHH\nII\nJJ\n");
+    test2("AAAAAAAAAAAAAAAAAA");
+    test2("AAAAAAAAAAAAAAAAAA\n\n");
+}
+
+
+#endif
+
+
 void kernel_thread(void)
 {
 #ifdef TARGET_TYPE_STD
@@ -149,6 +177,8 @@ void kernel_thread(void)
     thread_ps();
 #endif
     
+    //               test();
+                   
 #ifdef BUILD_LIB
     app_main(1,&stdalone);
     reload_firmware();
@@ -243,10 +273,8 @@ void kernel_start (void)
     
     lcd_init();
     
-#ifdef TARGET_TYPE_STD           
     init_cmd_line();
-#endif
-    
+   
 #ifdef HAVE_EVT
     evt_init();
 #endif

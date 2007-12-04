@@ -20,6 +20,7 @@
 #define AJZ_DECODE_ADDR NULL
 
 #define SDRAM_ARCHOS_START 0x00900000
+#define SDRAM_ARCHOS_CFG 0x8
 
 //#define LOAD_BG
 

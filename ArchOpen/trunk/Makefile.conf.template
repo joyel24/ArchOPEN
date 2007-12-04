@@ -45,11 +45,6 @@ endif
 
 ifeq ($(BUILD_AVLO),1)
 TARGET_TYPE = avlo
-#reconfig what is needed
-HAVE_EXT_MODULE = 0
-HAVE_MAS_SOUND = 0
-HAVE_AIC23_SOUND = 0
-HAVE_CF = 0
 else
 TARGET_TYPE = std
 endif

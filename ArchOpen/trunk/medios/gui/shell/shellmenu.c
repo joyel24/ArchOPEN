@@ -93,7 +93,7 @@ static SHELLMENU_ITEM shellMenu_addItem(){
     item->icon=NULL;
     item->event=NO_EVENT;
     item->global=false;
-    item->listView=false;
+    item->listView=SHELL_MENU_MODE;
     item->parent=NULL;
     item->next=NULL;
 
@@ -367,7 +367,7 @@ void shellMenu_printItems(){
 
 bool shellMenu_init(){
     
-    rootListView=false;
+    rootListView=SHELL_MENU_MODE;
     shellMenu_firstItem = NULL;
     shellMenu_lastItem = NULL;
     // load icons

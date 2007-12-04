@@ -52,5 +52,5 @@ void arch_HaltMsg(void)
     gfx_getStringSize(msg,&w,&h);
     
     
-    gfx_putS(COLOR_RED,COLOR_TRSP,(SCREEN_REAL_WIDTH-w)/2,(SCREEN_HEIGHT-h)/2,msg);
+    gfx_putS(COLOR_RED,COLOR_TRSP,(LCD_WIDTH-w)/2,(LCD_HEIGHT-h)/2,msg);
 }

@@ -22,7 +22,7 @@
 
 struct statusLine_data lineData = {
     x:0,y:0,
-    w:SCREEN_REAL_WIDTH,
+    w:LCD_WIDTH,
     bg_color:COLOR_LIGHT_BLUE,
     bat_x:139,
     bat_y:2,

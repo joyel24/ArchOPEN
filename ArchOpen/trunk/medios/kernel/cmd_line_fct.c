@@ -288,7 +288,9 @@ void do_mem (unsigned char ** params)
 
 void do_run (unsigned char ** params)
 {
+#ifdef TARGET_TYPE_STD
     med_load (params[0]);
+#endif
 }
 
 void do_halt (unsigned char ** params)
@@ -648,5 +650,7 @@ void do_diskFullInfo(unsigned char ** params)
 
 void do_loadLand(unsigned char ** params)
 {
+#ifdef TARGET_TYPE_STD
     lang_loadFile(params[0]);
+#endif
 }

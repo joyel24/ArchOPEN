@@ -1,5 +1,7 @@
 /*
-*   include/kernel/videnc_DSC25.h
+*   include/target/chip/arch/shell.h
+*
+* AV4XX
 *
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -10,15 +12,9 @@
 * KIND, either express of implied.
 */
 
-#ifndef __VIDENC_DSC25_H
-#define __VIDENC_DSC25_H
+#ifndef __ARCH_SHELL_H
+#define __ARCH_SHELL_H
 
-#include <kernel/io.h>
-
-#include <driver/videnc.h>
-
-#define VIDENC_BASE                      0x00030800
-
-#define VIDENC_SET_PARAMETERS(mode,interlace) {}
+#define SHELL_MENU_MODE 0
 
 #endif

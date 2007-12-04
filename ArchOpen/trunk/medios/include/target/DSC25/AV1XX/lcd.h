@@ -19,7 +19,7 @@
 #define LCD_BACK_LIGHT                    0x02600200
 
 #define SCREEN_WIDTH                      672
-#define SCREEN_REAL_WIDTH                 165
+#define SCREEN_REAL_WIDTH                 336
 #define SCREEN_HEIGHT                     234
 #define SCREEN_ORIGIN_X                   0x1e
 #define SCREEN_ORIGIN_Y                   0x0
@@ -31,8 +31,8 @@
 #define SCREEN_NTSC_SHIFT_X               125
 #define SCREEN_NTSC_SHIFT_Y               22
 
-#define LCD_WIDTH SCREEN_REAL_WIDTH
-#define LCD_HEIGHT SCREEN_HEIGHT
+#define LCD_WIDTH SCREEN_REAL_WIDTH/2
+#define LCD_HEIGHT SCREEN_HEIGHT/2
 
 #define OSD_BMAP_1_CFG      OSD_BITMAP_RAMCLUT | OSD_BITMAP_ZX2 | OSD_BITMAP_ZY1 | OSD_BITMAP_8BIT
 #define OSD_BMAP_2_CFG      OSD_BITMAP_RAMCLUT | OSD_BITMAP_ZX2 | OSD_BITMAP_ZY1 | OSD_BITMAP_8BIT
