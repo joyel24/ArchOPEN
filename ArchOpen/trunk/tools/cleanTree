@@ -1,6 +1,7 @@
 if [ -n "$1" ]; then
 	cd $1
 	rm -f *.d *~ chip arch *.orig *.map
+    rm -f mem_def.h   
 	for file in *; do		
 		if [ -d $file ]; then
             if [ $file == "build" ]; then

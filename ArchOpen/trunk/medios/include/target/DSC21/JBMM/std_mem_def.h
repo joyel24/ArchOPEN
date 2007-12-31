@@ -10,5 +10,4 @@
 #define SDRAM_START   0x08000000
 #define KERNEL_START  0x08000000
 #define SDRAM_END     0x09000000
-
 #define IRAM_SIZE         0x8000
