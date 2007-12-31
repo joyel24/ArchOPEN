@@ -90,27 +90,30 @@ unsigned int _svc_IniStack = IRAM_SIZE;
 unsigned int _sys_IniStack = IRAM_SIZE-SVC_STACK_SIZE;
 
 #if 0
-int msgBox_cutLineEoL(char * str,char ** res);
+#include <gui/msgBox.h>
+#include <sys_def/font.h>
 
-void test2(char * str)
-{
-    char * tmp[10];
-    int i,nb;
-    printk("Testing: |%s|\n",str);
-    nb=msgBox_cutLine(str,tmp);
-    printk("-----------------\nIt has %d lines:\n",nb);
-    for(i=0;i<nb;i++)
-        printk("%d:|%s|\n",i,tmp[i]);
-}
+
 
 void test(void)
 {
-    test2("\n\n");
-    test2("\nAAAAAA\n\n\nBBBBB\nCCCC");
-    test2("AA\nBB\nCC\nDD\nEE\nFF\nGG\nHH\nII\nJJ\nKK\n");
-    test2("AA\nBB\nCC\nDD\nEE\nFF\nGG\nHH\nII\nJJ\n");
-    test2("AAAAAAAAAAAAAAAAAA");
-    test2("AAAAAAAAAAAAAAAAAA\n\n");
+    int handler=evt_getHandler(BTN_CLASS);
+    gfx_initGraphics();    
+    gfx_clearScreen(COLOR_TRSP);
+
+    icon_init();
+    msgBox_init();
+    screens_show(SCREEN_GFX);
+
+    msgBox_show("Type OK","Text\ntype 0",MSGBOX_TYPE_OK,MSGBOX_ICON_EXCLAMATION,handler);
+    msgBox_show("Type OK/Cancel","Text\ntype 1",MSGBOX_TYPE_OKCANCEL,MSGBOX_ICON_EXCLAMATION,handler);
+    msgBox_show("Type Yes/No","Text\ntype 2",MSGBOX_TYPE_YESNO,MSGBOX_ICON_EXCLAMATION,handler);
+    msgBox_show("Type Yes/No/Cancel","Text\ntype 3",MSGBOX_TYPE_YESNOCANCEL,MSGBOX_ICON_EXCLAMATION,handler);
+    msgBox_show("Type Info","Text\ntype 4\n pas bouton",MSGBOX_TYPE_INFO,MSGBOX_ICON_EXCLAMATION,handler);
+        
+
+            
+    evt_freeHandler(handler);
 }
 
 
@@ -177,8 +180,8 @@ void kernel_thread(void)
     thread_ps();
 #endif
     
-    //               test();
-                   
+       //     test();
+    
 #ifdef BUILD_LIB
     app_main(1,&stdalone);
     reload_firmware();

@@ -38,7 +38,7 @@
 
 #define PIXEL_COORD_CHECK(x,y,type){                                           \
     if(x<0 || y<0 ||                                                           \
-      x>=buffers[current_plane]->width || y>=buffers[current_plane]->height){  \
+      x>buffers[current_plane]->width || y>buffers[current_plane]->height){  \
         printk("[gfx] "type" with bad coordinates! x=%d y=%d\n",x,y);          \
         return;                                                                \
     }                                                                          \
@@ -547,6 +547,29 @@ void gfx_getStringSize(unsigned char *str, int *w, int *h)
         *h=fnt_fontFromId(current_font)->height;
 }
 
+
+void gfx_getStringNSize(unsigned char * str,int nbChar,int * w, int * h)
+{
+    if(!str || !nbChar)
+    {
+        if(w) *w=0;
+        if(h) *h=0;
+    }
+
+    if(w)
+    {
+        *w=0;
+        while(*str && nbChar>0)
+        {
+            *w += fnt_fontFromId(current_font)->width;
+            str++;
+            nbChar--;
+        }
+    }
+    if(h)
+        *h=fnt_fontFromId(current_font)->height;
+}
+        
 void gfx_putC(unsigned int color, unsigned int bg_color, int x, int y, unsigned char s)
 {
     FONT fnt=fnt_fontFromId(current_font);

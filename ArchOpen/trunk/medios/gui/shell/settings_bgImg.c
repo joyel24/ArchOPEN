@@ -643,7 +643,7 @@ void bgImg_setting(void)
                 menuList->handleEvent(menuList,event);
                 break;
         }
-    }while(event!=BTN_OFF && !stop_bgImg_set);
+    }while(event!=WIDGET_BACK_BTN && !stop_bgImg_set);
     
     menuList->destroy(menuList);
     evt_freeHandler(evtHandler);

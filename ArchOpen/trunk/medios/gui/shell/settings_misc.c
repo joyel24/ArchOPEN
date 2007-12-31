@@ -227,7 +227,7 @@ void misc_setting(void)
                 menuList->handleEvent(menuList,event);
                 break;
         }
-    }while(event!=BTN_OFF && !stop_misc_set); 
+    }while(event!=WIDGET_BACK_BTN && !stop_misc_set); 
        
     menuList->destroy(menuList);
     evt_freeHandler(evtHandle);

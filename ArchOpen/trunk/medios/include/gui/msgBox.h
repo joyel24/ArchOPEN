@@ -20,4 +20,13 @@
     int msgBox_show(unsigned char* caption, unsigned char* msg, int type, int icon,int evt_hanlder);
     void msgBox_info(unsigned char* msg);
 
+#define MSG_BOX_MAX_LINE 10
+    
+struct msgBox_line {
+    char * str;
+    int width;   
+};
+    
+    int msgBox_cutLine(char * str,struct msgBox_line * res, char ** orgStr,int newFont, int max_width);
+    
 #endif

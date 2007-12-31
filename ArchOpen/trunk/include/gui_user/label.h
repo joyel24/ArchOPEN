@@ -22,12 +22,21 @@ typedef enum {LA_LEFT, LA_CENTER, LA_RIGHT} LABEL_ALIGNMENT;
 // LABEL
 //*****************************************************************************
 
+struct label_line {
+    char * str;
+    int width;   
+};
+
 // members of the LABEL object
 #define LABEL_MEMBERS          \
     /* we inherit from MENUITEM */     \
     WIDGET_MEMBERS                     \
                                        \
     char * caption;                    \
+    struct label_line * lines;         \
+    char * internal_str;               \
+    int nbLines;                       \
+    int interline;                     \
     LABEL_ALIGNMENT alignment;
 
 typedef struct {

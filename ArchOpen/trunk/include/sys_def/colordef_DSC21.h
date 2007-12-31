@@ -41,6 +41,7 @@
 #define COLOR_WHITE2       0
 #define COLOR_LIGHT_GREY   0
 #define COLOR_LIGHT_GRAY   0
+#define COLOR_LIGHT_WHITE  0
 #define COLOR_DARK_GREY    0
 #define COLOR_DARK_GRAY    0
 #define COLOR_GREEN        0

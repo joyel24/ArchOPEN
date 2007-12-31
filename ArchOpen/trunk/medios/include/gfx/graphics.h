@@ -103,6 +103,7 @@ void  gfx_drawLine             (unsigned int color, int x1, int y1, int x2, int 
 void  gfx_putS                 (unsigned int color, unsigned int bg_color, int x, int y, unsigned char *s);
 void  gfx_putnS                (unsigned int color, unsigned int bg_color, int x, int y, int n, unsigned char *s);
 void  gfx_getStringSize        (unsigned char *str, int *w, int *h);
+void  gfx_getStringNSize       (unsigned char * str,int nbChar,int * w, int * h);
 void  gfx_putC                 (unsigned int color, unsigned int bg_color, int x, int y, unsigned char s);
 void  gfx_drawSprite           (unsigned int * palette, SPRITE * sprite, int x, int y);
 void  gfx_drawBitmap           (BITMAP * bitmap, int x, int y);

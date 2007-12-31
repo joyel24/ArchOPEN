@@ -27,6 +27,7 @@
 #define COLOR_LIGHT_GRAY   21
 #define COLOR_DARK_GREY    8
 #define COLOR_DARK_GRAY    8
+#define COLOR_LIGHT_WHITE  18
 #define COLOR_GREEN        2
 #define COLOR_BLUE3        51
 #define COLOR_LIGHT_BLUE   38

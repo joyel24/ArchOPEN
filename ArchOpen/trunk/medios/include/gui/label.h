@@ -22,8 +22,15 @@
 // LABEL
 //*****************************************************************************
 
+#define LABEL_MAX_LINE 20
+
 LABEL label_create();
 void label_init(LABEL l);
 void label_paint(LABEL l);
+int label_getNbLines(LABEL l);
+void label_setTxt(LABEL l,char * txt);
+void label_getMaxSize(LABEL l,int * w,int * h);
+
+int label_cutBigLine(LABEL l,int charWidth,char * endPtr);
 
 #endif

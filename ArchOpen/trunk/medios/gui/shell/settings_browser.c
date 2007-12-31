@@ -224,7 +224,7 @@ void browser_setting(void)
                 menuList->handleEvent(menuList,event);
                 break;
         }
-    }while(event!=BTN_OFF && !stop_brw_set); 
+    }while(event!=WIDGET_BACK_BTN && !stop_brw_set); 
        
     menuList->destroy(menuList);
     evt_freeHandler(evtHandle);

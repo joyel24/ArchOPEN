@@ -122,7 +122,8 @@ static void con_drawLine(int start,int end, int y){
   }
 
   //clear the remaining part of the line
-  g8ops.fillRect(CON_BGCOLOR,x,y,SCREEN_WIDTH-x,CON_FONT->height,&con_gfxStruct);
+  //NOTE LCD_WIDTH g8ops.fillRect(CON_BGCOLOR,x,y,SCREEN_WIDTH-x,CON_FONT->height,&con_gfxStruct);
+  g8ops.fillRect(CON_BGCOLOR,x,y,LCD_WIDTH-x,CON_FONT->height,&con_gfxStruct);
 }
 
 static void con_drawScroll(int start,int end,int delta){
@@ -324,7 +325,8 @@ void con_clear(){
   con_lastUpdateEndY=-CON_FONT->height+CON_MARGIN_Y;
 
   //clear the whole screen
-  g8ops.fillRect(CON_BGCOLOR,0,0,SCREEN_WIDTH,SCREEN_HEIGHT,&con_gfxStruct);
+  // NOTE: LCD_WIDTH g8ops.fillRect(CON_BGCOLOR,0,0,SCREEN_WIDTH,SCREEN_HEIGHT,&con_gfxStruct);
+  g8ops.fillRect(CON_BGCOLOR,0,0,LCD_WIDTH,LCD_HEIGHT,&con_gfxStruct);
 }
 
 void con_write(char * text, char color){
@@ -368,8 +370,10 @@ void con_init(){
   osd_setEntirePalette(gui_pal,256,true);
   osd_savePalette(con_paletteSave,256);
   
-  con_numLines=(SCREEN_HEIGHT-CON_MARGIN_Y)/CON_FONT->height;
-  con_numCols=(SCREEN_REAL_WIDTH-CON_MARGIN_X)/CON_FONT->width;
+  //NOTE: LCD_HEIGHT con_numLines=(SCREEN_HEIGHT-CON_MARGIN_Y)/CON_FONT->height;
+  con_numLines=(LCD_HEIGHT-CON_MARGIN_Y)/CON_FONT->height;
+  //NOTE: LCD_WIDTH con_numCols=(SCREEN_REAL_WIDTH-CON_MARGIN_X)/CON_FONT->width;
+  con_numCols=(LCD_WIDTH-CON_MARGIN_X)/CON_FONT->width;
 
   con_screenVisible=false;
   con_clear();
