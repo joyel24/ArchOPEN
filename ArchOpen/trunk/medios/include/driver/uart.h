@@ -1,5 +1,5 @@
 /*
-*   include/kernel/uart.h
+*   include/driver/uart.h
 *
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)
@@ -18,8 +18,7 @@
 
 #include <kernel/irq.h>
 
-#define UART_0        0
-#define UART_1        1
+#include <sys_def/uart.h>
 
 #define UART_DTRR     0x00000000
 #define UART_BRSR     0x00000002
@@ -32,18 +31,25 @@
 #define UART_REG(NUM) (NUM==UART_0?UART0_BASE:UART1_BASE)
 #define UART_IRQ_NUM(NUM) (NUM==UART_0?IRQ_UART0:IRQ_UART1)
 
-void uart_intAction(int irq,struct pt_regs * regs);
+
+
+/* available in API */
 
 int  uart_in         (unsigned char * data,int uartNum);
 void uart_out        (unsigned char data,int uartNum);
 void uart_outString  (unsigned char * data,int uartNum);
+void uart_changeSpeed(int speed,int uart_num);
+
+
+/* will have to see if we need to put this in API
+maybe on device where UART is shared with video */
+void uart_need       (int uart_num);
+
+/*internal function */
 
 void uart_init       (void);
-
-void uart_need       (int uart_num);
-void uart_changeSpeed(int speed,int uart_num);
+void uart_intAction(int irq,struct pt_regs * regs);
 void uart_restoreIrqHandler(int uartNum);
-
 void arch_uart_need  (int uart_num);
 void arch_uart_init  ();
 int  arch_uart_getBrsr(int speed);

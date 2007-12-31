@@ -32,6 +32,12 @@ MED_RET_T # time_set # struct med_tm * newTime # Time # changes date/time of clo
 void # udelay  # unsigned long usecs                          # Time # waits for <i>usecs</i>
 void # mdelay  # unsigned long msecs                          # Time # waits for <i>msecs</i>
 
+#k_inc#driver/uart.h
+int  # uart_in          # unsigned char * data,int uartNum    # Uart # if data is available in uart <i>uartNum</i> buffer, reads next char from uart (in <i>data</i>) and returns 1, returns 0 otherwise (for uartNum you shall use one of the define from trunk/include/sys_def/uart.h)
+void # uart_out         # unsigned char data,int uartNum      # Uart # send char <i>data</i> on uart <i>uartNum</i>
+void # uart_outString   # unsigned char * data,int uartNum    # Uart # send a full string (NULL terminated) on uart <i>uartNum</i>
+void # uart_changeSpeed # int speed,int uart_num              # Uart # change the speed of uart <i>uartNum</i>
+
 #k_inc#driver/energy.h
 void # set_timer_status # int timer_type,int power_mode,int status # Energy_Saving # enable/disable timer according to power mode
 void # set_timer_delay  # int timer_type,int power_mode,int delay # Energy_Saving # set timer delay according to power mode
