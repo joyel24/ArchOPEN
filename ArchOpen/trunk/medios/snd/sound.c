@@ -20,6 +20,7 @@
 
 #include <driver/buttons.h>
 #include <driver/dsp.h>
+#include <driver/energy.h>
 
 #ifdef HAVE_AIC23_SOUND
 #include <driver/aic23.h>
@@ -95,6 +96,7 @@ void sound_nextTrack(bool discard){
         sound_play(discard);
     }else{
         printk("[sound] playlist end\n");
+        halt_disableTimer(TIMER_ENABLE);
     }
 }
 
@@ -136,9 +138,11 @@ void sound_start(void){
         buffer_start();
         codec_start();
         output_start();
-
+        halt_disableTimer(TIMER_DISABLE);
+        
         sound_activeItem=NULL;
         sound_state=SS_STOPPED;
+        
         sound_started=true;
     }
 }
@@ -149,7 +153,8 @@ void sound_stop(void){
         codec_stop();
         output_stop();
         buffer_stop();
-
+        halt_disableTimer(TIMER_ENABLE);
+        
         sound_activeItem=NULL;
         sound_state=SS_STOPPED;
         sound_started=false;

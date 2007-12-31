@@ -92,7 +92,7 @@ void okBtnEnergy_click(BUTTON b)
                 cfg_writeInt(cfg,tmpStr,timer_delay[i][j]);
             }
         }
-    cfg_printItems(cfg);
+//    cfg_printItems(cfg);
     cfg_writeFile(cfg,"/medios/medios.cfg");
     cfg_clear(cfg);
     energy_chgMode(getPowerMode());

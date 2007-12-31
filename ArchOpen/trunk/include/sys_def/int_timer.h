@@ -26,4 +26,7 @@
 #define TIMER_DELAY_VAL       1
 #define TIMER_STATUS_VAL      0
 
+#define TIMER_ENABLE          0
+#define TIMER_DISABLE         1
+
 #endif

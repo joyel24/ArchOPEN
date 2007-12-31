@@ -75,7 +75,7 @@ void okBtnBrowser_click(BUTTON b)
     cfg_writeInt(cfg,"brw_statusBar",browser_has_statusbar);
     cfg_writeInt(cfg,"brw_scroll_speed",txt_scroll_speed);
 
-    cfg_printItems(cfg);
+//    cfg_printItems(cfg);
     cfg_writeFile(cfg,"/medios/medios.cfg");
     cfg_clear(cfg);
                              

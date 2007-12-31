@@ -18,6 +18,7 @@
 #include <driver/cpld.h>
 #include <driver/usb_fw.h>
 #include <driver/ata.h>
+#include <driver/energy.h>
 
 int kusb_state,kfw_state;
 
@@ -49,6 +50,7 @@ void setUsbFw(int state)
                 k_usb_fw=2;
                 printk("[USB/FW] FW_EXT enable\n");
             }
+            halt_disableTimer(TIMER_DISABLE);
         }
         else
         {
@@ -62,7 +64,8 @@ void setUsbFw(int state)
                 FW_disable();
                 printk("[USB/FW] FW_EXT disable\n");
             }
-            k_usb_fw=0;                
+            k_usb_fw=0;    
+            halt_disableTimer(TIMER_ENABLE);            
         }
         kusb_fw_status=state;
     }

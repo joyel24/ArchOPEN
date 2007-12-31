@@ -31,6 +31,7 @@
 struct tmr_s lcdOnOff_timer;
 
 struct tmr_s halt_timer;
+int halt_disable_timer = 0; //number of times other programs have asked to disable the halt_timer
 
 int hd_sleep_state=0;
 struct tmr_s hd_timer;
@@ -134,6 +135,18 @@ void halt_launchTimer(void)
     }
 }
 
+void halt_disableTimer(int disable)
+{
+  if(disable)
+    halt_disable_timer++;
+  else
+    if(halt_disable_timer > 0)
+      halt_disable_timer--;
+      
+  if(halt_disable_timer == 0)
+    halt_launchTimer();
+}
+
 void hd_launchTimer(void)
 {
     int power_mode=getPowerMode();
@@ -168,7 +181,7 @@ void lcd_off_action(void)
 void halt_action(void)
 {
     int power_mode=getPowerMode();
-    if(timer_status[HALT_TIMER][power_mode])
+    if(timer_status[HALT_TIMER][power_mode] && halt_disable_timer == 0)
     {
         printk("[power] Power off timer => halt\n");
         halt_device();

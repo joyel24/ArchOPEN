@@ -27,6 +27,7 @@ int  get_timer_delay(int timer_type, int power_mode);
 
 void lcd_launchTimer(void);
 void halt_launchTimer(void);
+void halt_disableTimer(int disable);
 void hd_launchTimer(void);
 
 void hd_stopTimer(void);

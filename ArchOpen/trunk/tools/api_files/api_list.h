@@ -42,7 +42,8 @@ void # uart_changeSpeed # int speed,int uart_num              # Uart # change th
 void # set_timer_status # int timer_type,int power_mode,int status # Energy_Saving # enable/disable timer according to power mode
 void # set_timer_delay  # int timer_type,int power_mode,int delay # Energy_Saving # set timer delay according to power mode
 int  # get_timer_status # int timer_type,int power_mode # Energy_Saving # reads timer status according to power mode
-int  # get_timer_delay  # int timer_type,int power_mode # Energy_Saving # reads timer delay according to powwer mode
+int  # get_timer_delay  # int timer_type,int power_mode # Energy_Saving # reads timer delay according to power mode
+void # halt_disableTimer# int disable                   # Energy_Saving # pause the Halt timer and keeps it curent setting (usefull for sound player, usb, ...)
 
 #k_inc#driver/batDc.h
 int  # DC_isConnected    # void                              # Energy_Saving # DC connector status
