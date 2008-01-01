@@ -70,7 +70,7 @@ int ata_rwData(int disk,unsigned int lba,void * inData,int inCount,int cmd,int u
     int use_multiple=1;
     MED_RET_T ret_val=-MED_ERROR;
     
-    //printk("[ata-rw] disk=%x buffer=%x lba=%x count=%x cmd=%x use_dma=%x\n",disk,inData,lba,inCount,cmd,use_dma);
+   // printk("[ata-rw] disk=%x buffer=%x lba=%x count=%x cmd=%x use_dma=%x\n",disk,inData,lba,inCount,cmd,use_dma);
     
     spinLock_lock(&ata_lock);        
     
@@ -340,7 +340,11 @@ retry:
             if(i>count) i=count;
             xfer_size-=nbSector;            
         }
+#ifdef JBMM
+        if(cmd!=ATA_DO_WRITE && ata_waitForEndXfer()!=MED_OK)
+#else        
         if(ata_waitForEndXfer()!=MED_OK)
+#endif
         {
             ret_val=-MED_ERROR;            
             printk("[ata_rwData] Error doing softRest after bad EndOf Xfer\n");
@@ -442,6 +446,12 @@ MED_RET_T ata_waitForEndXfer(void)
 {
     if(ata_waitForBusy()<0)
         return -MED_ERROR;
+    
+    mdelay(2);
+    
+    /*printk("[ATA-waitForEndXfer]: status=%x (masked %x|%x)\n",ATA_INB(IDE_ALTSTATUS),
+           ATA_INB(IDE_ALTSTATUS) & (IDE_STATUS_RDY|IDE_STATUS_DRQ),IDE_STATUS_RDY);
+    */
     
     if((ATA_INB(IDE_ALTSTATUS) & (IDE_STATUS_RDY|IDE_STATUS_DRQ))==IDE_STATUS_RDY)
         return MED_OK;
@@ -718,14 +728,14 @@ MED_RET_T ata_identify(int disk,struct hd_info_s * disk_info)
     
     if(!sector)
     {
-        printk("[ata_initDisk] can't malloc sector\n");
+        printk("[ata_identify] can't malloc sector\n");
         return -MED_ENOMEM;
     }
     
     if(ata_rwData(disk,0,sector,1,ATA_DO_IDENT,ATA_WITH_DMA)<0)
     {
         kfree(sector);
-        printk("[ata_initDisk] error reading from disk\n");
+        printk("[ata_identify] error reading from disk\n");
         return -MED_ERROR;
     }
     
@@ -798,7 +808,6 @@ MED_RET_T ata_initDisk(int disk)
     }
 
     disk_info[disk]=diskData;
-
 #ifndef HAVE_DBUG    
     if((ret_val=ata_setFeatures(disk))!=MED_OK)
     {   

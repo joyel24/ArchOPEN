@@ -55,7 +55,8 @@ struct graphicsBuffer splash_gfxBmapStruct = {
 
 struct screen_data splash_screenData = {
     show:splash_show,
-    palette:NULL
+    palette:NULL,
+    hide:NULL
 };
 
 extern char splash_img[SCREEN_REAL_WIDTH*4*SCREEN_HEIGHT];

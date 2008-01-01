@@ -21,9 +21,11 @@
 
 void wdt_init(void)
 {
+#ifndef NO_WDT
   wdt_stop();
   arch_wdt_init();
   printk("[init] TI watchdog timer\n");
+#endif
 }
 
 void wdt_setup(int prescaler,int divider,bool doreset)
@@ -38,11 +40,15 @@ void wdt_setup(int prescaler,int divider,bool doreset)
 
 void wdt_stop(void)
 {
+#ifndef NO_WDT
   outw((inw(WDT_MODE)&(~WDT_MODE_ENABLED)),WDT_MODE);
+#endif
 }
 
 void wdt_start(void)
 {
+#ifndef NO_WDT
   outw((inw(WDT_MODE)|WDT_MODE_ENABLED),WDT_MODE);
+#endif
 }
 

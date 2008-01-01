@@ -58,6 +58,9 @@ void screens_show(int screen_num)
         printk("switch from NO_SCREEN to %d\n",screen_num);
     else
         printk("switch from %d to %d\n",current_screen,screen_num);
+    
+    
+    
     if(current_screen!=-1 && screen_table[current_screen]) // need to save data of previous screen 
     {
         if(screen_table[current_screen]->palette)
@@ -77,6 +80,8 @@ void screens_show(int screen_num)
         osd_setEntirePalette((int(*)[3])screen_table[screen_num]->palette,256,false);
     else
         printk("no need to restore palette\n");
+    if(screen_table[current_screen]->hide)
+        screen_table[current_screen]->hide();
     screen_table[screen_num]->show();
     current_screen=screen_num;
 }

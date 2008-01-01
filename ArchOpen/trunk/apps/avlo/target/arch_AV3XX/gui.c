@@ -25,19 +25,8 @@
 
 #include <default_cfg.h>
 
-/*
-#include <kernel.h>
-#include <graphics.h>
-#include <hardware.h>
-*/
-
-
-
 extern struct avlo_cfg * ptr_cfg;
-/*
-#include <colordef.h>
-#include <font.h>
-*/
+
 /* load step from 0 to 3 */
 void printIniLevel(int level)
 {

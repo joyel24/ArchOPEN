@@ -21,7 +21,8 @@
 
 //#define LOAD_BG
 
-#define SDRAM_ARCHOS_START 0x00800000
+#define SDRAM_ARCHOS_START 0x08000000
+#define SDRAM_ARCHOS_CFG   0x7F
 
 #ifdef AVLO_C
 struct avlo_cfg default_cfg = {

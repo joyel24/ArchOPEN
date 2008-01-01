@@ -21,7 +21,7 @@
 
 void arch_wdt_init(void)
 {
-  wdt_setup(1000-1,27-1,false);
-  wdt_start();
+  //wdt_setup(1000-1,27-1,false);
+  //wdt_start();
 }
 

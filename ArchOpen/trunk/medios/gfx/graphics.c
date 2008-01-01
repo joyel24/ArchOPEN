@@ -161,7 +161,8 @@ int gfx_paletteSave[256][3];
 
 struct screen_data gfx_screenData = {
     show:gfx_show,
-    palette:(int (*)[])gfx_paletteSave
+    palette:(int (*)[])gfx_paletteSave,
+    hide:NULL
 };
 
 int     current_font=0;
@@ -347,8 +348,7 @@ void gfx_show(void)
 void gfx_openGraphics(void)
 {
     gfx_initGraphics();
-    screens_show(SCREEN_GFX);
-    
+    screens_show(SCREEN_GFX);    
 }
 
 void gfx_initGraphics(void)

@@ -35,6 +35,7 @@ void con_flushToDisk(void);
 int con_handleBtn(int btn);
 
 void con_screenShow(void);
+void con_screenHide(void);
 
 bool con_screenIsVisible(void);
 void con_screenScroll(int lines);

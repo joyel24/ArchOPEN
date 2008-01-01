@@ -21,6 +21,7 @@
 
 struct screen_data {
     void (*show)(void);
+    void (*hide)(void);
     int (*palette)[];
 };
 

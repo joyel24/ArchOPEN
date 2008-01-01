@@ -60,7 +60,8 @@ int con_paletteSave[256][3];
 
 struct screen_data console_screenData = {
     show:con_screenShow,
-    palette:(int (*)[])con_paletteSave
+    palette:(int (*)[])con_paletteSave,
+    hide:con_screenHide
 };
 
 char con_buffer[CON_BUFFER_SIZE];
@@ -217,6 +218,11 @@ void con_screenUpdate(){
   }
 
   con_lastUpdateScreenEnd=con_screenEnd;
+}
+
+void con_screenHide(void)
+{
+    con_screenVisible=false;
 }
 
 void con_screenShow(void)
