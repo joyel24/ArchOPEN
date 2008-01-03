@@ -80,7 +80,7 @@ void screens_show(int screen_num)
         osd_setEntirePalette((int(*)[3])screen_table[screen_num]->palette,256,false);
     else
         printk("no need to restore palette\n");
-    if(screen_table[current_screen]->hide)
+    if(current_screen!=-1 && screen_table[current_screen]->hide)
         screen_table[current_screen]->hide();
     screen_table[screen_num]->show();
     current_screen=screen_num;
