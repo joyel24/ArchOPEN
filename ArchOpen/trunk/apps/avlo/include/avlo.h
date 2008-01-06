@@ -14,7 +14,7 @@
 #ifndef __AVLO_H_
 #define __AVLO_H_
 
-#define VERSION "V5.0"
+#define VERSION "V5.1"
 
 /*
 Common functions

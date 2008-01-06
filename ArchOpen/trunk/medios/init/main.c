@@ -240,13 +240,16 @@ void kernel_start (void)
     
 #ifdef TARGET_TYPE_STD    
     lang_init();    
+#endif
+    
+#ifndef NO_SPLASH
     splash_init();
 #endif
     
 #ifdef BOOT_WITH_CONSOLE
     screens_show(SCREEN_CONSOLE);
 #else
-#ifdef TARGET_TYPE_STD
+#ifndef NO_SPLASH
     screens_show(SCREEN_SPLASH);
 #endif
 #endif

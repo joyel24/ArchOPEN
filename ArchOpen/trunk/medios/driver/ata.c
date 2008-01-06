@@ -563,6 +563,8 @@ MED_RET_T ata_doPowerOff(int disk)
         spinLock_unlock(&ata_lock);
         ata_powered=0;
     }
+    else
+        printk("[ata_doPowerOff] bad State (spin=%d, sleep=%d powered=%d)\n",ata_spinup,ata_sleeping,ata_powered);
     return MED_OK;
 }
 
@@ -718,6 +720,7 @@ MED_RET_T ata_doPowerOn(int disk)
             return -MED_ERROR;
         if(ata_freezeLock(disk)!=MED_OK)
             return -MED_ERROR;
+        ata_powered=1;
     }
     return MED_OK;
 }
@@ -791,6 +794,9 @@ MED_RET_T ata_initDisk(int disk)
    
     if(ata_chkReg(disk)!=MED_OK)
         printk("[ata_initDisk] WARN: error doing chkReg\n");
+    
+    ata_powered=1;
+    
     diskData = (struct hd_info_s *)kmalloc(sizeof(struct hd_info_s));
     if(!diskData)
     {

@@ -10,7 +10,7 @@ TARGET_CODEC=tremor
 all: do_build
 	@$(LD) -o $(TARGET_CODEC).bin $(OBJS) $(LDFLAGS)
 	@cat codec.info $(TARGET_CODEC).bin > $(TARGET_CODEC).cod
-	#@rm -f $(TARGET_CODEC).bin
+	@rm -f $(TARGET_CODEC).bin
 	@mv $(TARGET_CODEC).cod $(MEDIOS_SRC_PATH)/codec
 
 include $(MEDIOS_SRC_PATH)/default.rule

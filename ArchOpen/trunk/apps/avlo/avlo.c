@@ -14,6 +14,7 @@
 #include <kernel/kernel.h>
 #include <kernel/evt.h>
 #include <kernel/malloc.h>
+#include <kernel/delay.h>
 
 #include <driver/ata.h>
 #include <driver/batDc.h>
@@ -28,6 +29,7 @@
 #include <lib/string.h>
 
 #include <fs/stdfs.h>
+#include <fs/vfs.h>
 
 #include <sys_def/colordef.h>
 #include <sys_def/font.h>
@@ -83,8 +85,8 @@ int app_main(int argc,char** argv)
     
     gfx_openGraphics();
     
-    gfx_planeSetState(VID1,0xF0);
-    gfx_planeSetSize(VID1,SCREEN_WIDTH,SCREEN_HEIGHT,32);
+    //gfx_planeSetState(VID1,0xF0);
+    //gfx_planeSetSize(VID1,SCREEN_WIDTH,SCREEN_HEIGHT,32);
     
     /* load image ini_graphics((unsigned int)bg_img); */
     /*
@@ -158,7 +160,7 @@ loopErr:
     if(cfgG.bg_img[0] != 0)
     {
         int fd_img = open(cfgG.bg_img,O_RDONLY);
-        int size = SCREEN_REAL_WIDTH*4*SCREEN_HEIGHT;
+        int size = SCREEN_REAL_WIDTH*2*SCREEN_HEIGHT;
         printk("Loading img\n");
         if(fd_img<0)
             printk("[WARNING] File not found: %s\n",cfgG.bg_img);
@@ -259,6 +261,10 @@ loopErr:
                 printk("disable usb\n");
                 usbenable=0;
                 disableUsbFw();
+                mdelay(10);
+                ata_hardReset(HD_DISK);
+                vfs_init();
+                disk_addAll();  
                 redraw=1;
                 cleanUSBMsg=1;
                 //waitKeyReleased(NO_TIME_OUT);
@@ -312,6 +318,12 @@ loopErr:
                     {                 
                         usbenable=1;
                         USBEnableString();
+                        if(disk_rmAll()!=MED_OK)
+                        {
+                            printk("can't umount\n");
+                            goto loopErr;
+                        }
+
                         enableUsbFw();
                         //waitKeyReleased(NO_TIME_OUT);  
                         for(dd=0;dd<1000;dd++) /* nothing */;  

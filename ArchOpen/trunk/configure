@@ -348,9 +348,10 @@ CONFIGURE_HAVE_MAS_SOUND="0"
 CONFIGURE_HAVE_AIC23_SOUND="0"
 CONFIGURE_HAVE_CF="0"
 
-# no specific config for Av3xx
-#if [ $CONFIGURE_TARGET_DEVICE == "AV3XX" ]; then
-#fi
+# need specific config for Av3xx
+if [ $CONFIGURE_TARGET_DEVICE == "AV3XX" ]; then
+CONFIGURE_SPLASH_TYPE="SPLASH_AVLO_320x240"
+fi
 # need specific config for Av1xx
 if [ $CONFIGURE_TARGET_DEVICE == "AV1XX" ]; then
 echo "Avlo - Av1XX spec config"

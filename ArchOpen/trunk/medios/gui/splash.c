@@ -66,10 +66,12 @@ char * splashStr=NULL;
 
 void splash_init(void)
 {
-    splash_gfxStruct.offset=(unsigned int)splash_img;
-    gfx_initComponent(BMAP2,&splash_gfxBmapStruct,(unsigned int)screen_BMAP2);
     screens_add(&splash_screenData,SCREEN_SPLASH);
+    splash_gfxStruct.offset=(unsigned int)splash_img;
+#ifdef TARGET_TYPE_STD
+    gfx_initComponent(BMAP2,&splash_gfxBmapStruct,(unsigned int)screen_BMAP2);
     splashStr=getLangStr(STRLNG_SPLASH_LOADING);
+#endif
 }
 
 void splash_show(void)

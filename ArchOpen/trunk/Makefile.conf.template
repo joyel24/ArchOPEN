@@ -73,6 +73,10 @@ endif
 
 #LDFLAGS =  -L/home/christophe/toolchain_arm_nofpu/arm-linux-uclibc/lib/ -L$(LIB_DIR) -ljpeg -lfloat -lm -lgcc
 
+ifeq ("$(SPLASH_TYPE)","NONE")
+	GCCFLAGS += -DNO_SPLASH
+endif
+
 ifeq ($(BOOT_WITH_CONSOLE),1)
 	GCCFLAGS += -DBOOT_WITH_CONSOLE
 endif

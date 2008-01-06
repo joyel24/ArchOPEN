@@ -5,7 +5,7 @@ SUBDIRS = api init kernel lib driver fs gfx gui snd target
 endif
 
 ifeq ("$(TARGET_TYPE)","avlo")
-SUBDIRS = init kernel lib driver fs gfx target
+SUBDIRS = init kernel lib driver fs gfx gui target
 endif
 
 SUBDIRS_CLEAN = build
