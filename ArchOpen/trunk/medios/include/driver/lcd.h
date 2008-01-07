@@ -21,7 +21,7 @@
 void lcd_init();
 void lcd_enable();
 void lcd_disable();
-bool lcd_enabled();
+int lcd_enabled();
 void lcd_setBrightness(int br);
 int lcd_getBrightness();
 

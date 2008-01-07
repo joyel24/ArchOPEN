@@ -74,6 +74,8 @@ void do_ls(unsigned char ** params);
 void do_cat(unsigned char ** params);
 void do_diskFullInfo(unsigned char ** params);
 void do_loadLand(unsigned char ** params);
+void do_brightSet(unsigned char ** params);
+void do_brightGet(unsigned char ** params);
 
 struct cmd_line_s cmd_tab[] = {
     {
@@ -263,6 +265,18 @@ struct cmd_line_s cmd_tab[] = {
         help_str   : "loadLng lng_file: load a new language file",
         cmd_action : do_loadLand,
         nb_args    : 1
+    },
+    {
+        cmd        : "brightSet",
+        help_str   : "brightSet val: set lcd brightness",
+        cmd_action : do_brightSet,
+        nb_args    : 1
+    },
+    {
+        cmd        : "brightGet",
+        help_str   : "brightGet: gives current value of lcd brightness",
+        cmd_action : do_brightGet,
+        nb_args    : 0
     },
     /* this has to be the last entry */
     {
@@ -653,4 +667,17 @@ void do_loadLand(unsigned char ** params)
 #ifdef TARGET_TYPE_STD
     lang_loadFile(params[0]);
 #endif
+}
+
+void do_brightSet(unsigned char ** params)
+{
+    int val=atoi (params[0]);
+    int old=lcd_getBrightness();
+    lcd_setBrightness(val);
+    printk("Set %d->%d\n",old,val);
+}
+
+void do_brightGet(unsigned char ** params)
+{
+    printk("Brightness %d\n",lcd_getBrightness());
 }

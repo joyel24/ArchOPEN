@@ -17,9 +17,10 @@
 #include <driver/cpld.h>
 #include <driver/gio.h>
 
-int lcd_bright=10;
+int lcd_bright=0;
 
 void arch_lcd_init(){
+    GIO_DIRECTION(GIO_LCD_BACKLIGHT,GIO_OUT);
 }
 
 void arch_lcd_enable(){
@@ -33,7 +34,6 @@ void arch_lcd_disable(){
 }
 
 void arch_lcd_setBrigthness(int br){
-#warning need something for lcd brightness on AV3
-    //lcd_bright=br/10;
+    lcd_bright=br/10;
 }
 

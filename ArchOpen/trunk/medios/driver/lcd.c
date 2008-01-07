@@ -15,7 +15,7 @@
 #include <driver/energy.h>
 
 int lcd_brightness;
-bool lcd_state;
+int lcd_state;
 
 
 void lcd_init(){
@@ -27,18 +27,18 @@ void lcd_init(){
 }
 
 void lcd_enable(){
-    lcd_state=true;
+    lcd_state=1;
     arch_lcd_setBrigthness(lcd_brightness);
     arch_lcd_enable();
 }
 
 void lcd_disable(){
-    lcd_state=false;
+    lcd_state=0;
     arch_lcd_setBrigthness(0);
     arch_lcd_disable();
 };
 
-bool lcd_enabled(){
+int lcd_enabled(){
     return lcd_state;
 }
 

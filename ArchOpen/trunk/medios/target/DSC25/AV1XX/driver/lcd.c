@@ -20,6 +20,7 @@
 int lcd_bright=0;
 
 void arch_lcd_init(){
+    GIO_DIRECTION(GIO_LCD_BACKLIGHT,GIO_OUT);
 }
 
 void arch_lcd_enable(){
@@ -33,6 +34,6 @@ void arch_lcd_disable(){
 }
 
 void arch_lcd_setBrigthness(int br){
-    lcd_bright=br*10;
+    lcd_bright=br/5;
 }
 
