@@ -25,6 +25,7 @@
 #include <gui/checkbox.h>
 #include <gui/msgBox.h>
 #include <gui/icons.h>
+#include <gui/trackbar.h>
 #include <gui/chooser.h>
 
 #include <gui/shellmenu.h>
@@ -37,11 +38,13 @@
 
 #define SHELL_GUIFONT RADONWIDE
 
-WIDGETLIST menuList;  
-CHECKBOX hasCaption;
-CHOOSER iconSize;
+static WIDGETLIST menuList;  
+static CHECKBOX hasCaption;
+static CHOOSER iconSize;
+static TRACKBAR brightVal;
 
 int stop_shell_set;
+int init_bright;
 
 char * iconSizeStr[3];
 
@@ -85,6 +88,12 @@ void okBtnShell_click(BUTTON b)
         needWrite=1;
     }
     
+    if(init_bright!=brightVal->value)
+    {
+        cfg_writeInt(cfg,"lcdBrightness",brightVal->value);
+        needWrite=1;
+    }
+    
     if(needWrite)
     {
         cfg_writeFile(cfg,"/medios/medios.cfg");
@@ -101,6 +110,11 @@ void okBtnShell_click(BUTTON b)
 void cancelBtnShell_click(BUTTON b)
 {
     stop_shell_set=1;
+}
+
+void brightVal_chg(TRACKBAR trkBar)
+{
+    lcd_setBrightness(trkBar->value);
 }
 
 void shell_setting(void)
@@ -189,7 +203,19 @@ void shell_setting(void)
     menuList->addWidget(menuList,iconSize);
     
     y += lineH;
-    x=minX+4;    
+    init_bright=lcd_getBrightness();
+    brightVal=trackbar_create();
+    brightVal->value=init_bright;
+    brightVal->minimum=0;
+    brightVal->maximum=100; /* mas is probably different on DSC21 */
+    brightVal->increment=5;
+    brightVal->setRect(brightVal,x,y,maxW+29,h+1); /* using same height and width as previous widget*/
+    brightVal->font=SHELL_GUIFONT;
+    brightVal->onChange=(TRACKBAR_CHANGEEVENT)brightVal_chg;
+    menuList->addWidget(menuList,brightVal);
+    
+    y += lineH;
+    x=minX+4;
     
     gfx_getStringSize(getLangStr(STRLNG_OK),&sepW,&sepH);    
     mib=button_create();

@@ -15,6 +15,9 @@
 #include <driver/energy.h>
 
 #include <kernel/kernel.h>
+#include <kernel/delay.h>
+
+#include <fs/cfg_file.h>
 
 int lcd_brightness;
 int lcd_state;
@@ -22,19 +25,56 @@ int lcd_state;
 #define LCD_FADE_ENABLE_DELAY  5
 #define LCD_FADE_DISABLE_DELAY 5
 
-void lcd_init(){
-
+void lcd_init()
+{
+    
     lcd_setBrightness(LCD_MAX_BRIGHTNESS);
     lcd_enable();
-
     arch_lcd_init();
 }
 
-int lcdVal=10;
+void lcd_brightIni(void)
+{
+    CFG_DATA * cfg;
+    int needWrite=0;
+     
+    cfg=cfg_readFile("/medios/medios.cfg");
+            
+    if(!cfg)
+    {
+        printk("Can't open cfg file\n");
+        /* creating default */
+        cfg=cfg_newFile();
+        if(!cfg)
+        {
+            printk("Can't create new cfg file\n");
+            return;
+        }           
+        
+        cfg_writeInt(cfg,"lcdBrightness",LCD_MAX_BRIGHTNESS);
+        lcd_setBrightness(LCD_MAX_BRIGHTNESS);         
+        needWrite=1;   
+    }
+    else
+    {
+        if(cfg_itemExists(cfg,"lcdBrightness"))
+        {
+            lcd_setBrightness(cfg_readInt(cfg,"lcdBrightness"));
+        }
+        else
+        {
+            cfg_writeInt(cfg,"lcdBrightness",LCD_MAX_BRIGHTNESS);
+            lcd_setBrightness(LCD_MAX_BRIGHTNESS);         
+            needWrite=1;   
+        }   
+    }
+    if(needWrite) cfg_writeFile(cfg,"/medios/medios.cfg");
+    cfg_clear(cfg);
+}
 
 void lcd_fadeEnable()
 {
-    int i,j;
+    int i;
     lcd_state=1;
     arch_lcd_enable();
     for(i=0;i<lcd_brightness;i++)
@@ -47,7 +87,7 @@ void lcd_fadeEnable()
 
 void lcd_fadeDisable()
 {
-    int i,j;
+    int i;
 
     for(i=lcd_brightness;i>=0;i--)
     {
@@ -88,6 +128,7 @@ int lcd_getBrightness(){
 
 void lcd_keyPress(void)
 {
+    lcd_state=1; /*needed here i norder to launch timer*/
     kernel_doCmd(CMD_LCD_ENABLE);
     if(FM_is_connected())
         FM_lightsON();

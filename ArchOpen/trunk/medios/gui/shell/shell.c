@@ -41,6 +41,8 @@
 #include <snd/codec.h>
 #include <snd/sound.h>
 
+#include <driver/lcd.h>
+
 #include <init/boot_error.h>
 
 typedef struct SHELL_HANDLER_STRUCT * SHELL_HANDLER;
@@ -307,6 +309,7 @@ void shell_main(){
     gfx_clearScreen(COLOR_TRSP);
 
     icon_init();
+    lcd_brightIni();
     msgBox_init();
     iniBrowser();
 

@@ -24,6 +24,7 @@ void lcd_disable();
 int lcd_enabled();
 void lcd_setBrightness(int br);
 int lcd_getBrightness();
+void lcd_brightIni(void);
 
 void lcd_fadeEnable();
 void lcd_fadeDisable();
