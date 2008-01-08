@@ -72,5 +72,7 @@ void kernel_cmdPipeFct(void);
 
 #define CMD_HALT_DEVICE 1
 #define CMD_ATA_SLEEP   2
+#define CMD_LCD_ENABLE  3
+#define CMD_LCD_DISABLE 4
 
 #endif

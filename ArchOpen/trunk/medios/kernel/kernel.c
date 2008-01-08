@@ -84,6 +84,16 @@ void kernel_cmdPipeFct(void)
                 case CMD_HALT_DEVICE:
                     halt_device();
                     break;
+                case CMD_LCD_ENABLE:
+                    printk("LCD enable");
+                    lcd_fadeEnable();
+                    printk(" done\n");
+                    break;
+                case CMD_LCD_DISABLE:
+                    printk("LCD disable");
+                    lcd_fadeDisable();
+                    printk(" done\n");
+                    break;
                 default:
                     printk("UKN cmd: %d\n",cmd);   
             }

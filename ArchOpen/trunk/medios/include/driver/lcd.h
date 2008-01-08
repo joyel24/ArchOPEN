@@ -25,6 +25,9 @@ int lcd_enabled();
 void lcd_setBrightness(int br);
 int lcd_getBrightness();
 
+void lcd_fadeEnable();
+void lcd_fadeDisable();
+
 void lcd_keyPress(void);
 
 void arch_lcd_init();

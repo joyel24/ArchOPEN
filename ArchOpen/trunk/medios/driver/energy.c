@@ -172,9 +172,11 @@ void lcd_off_action(void)
     int power_mode=getPowerMode();
     if(timer_status[LCD_TIMER][power_mode])
     {
-        lcd_disable();
+        //lcd_disable();
+        kernel_doCmd(CMD_LCD_DISABLE);
         if(FM_is_connected())
             FM_lightsOFF();
+        
     }
 }
 
@@ -210,7 +212,8 @@ void hd_sleep_fct(void)
 void energy_lowPower(void)
 {
     tmr_stop(&lcdOnOff_timer);
-    lcd_disable();
+    //lcd_disable();
+    kernel_doCmd(CMD_LCD_DISABLE);
     if(FM_is_connected())
         FM_lightsOFF();
     if(!kusb_fw_status)

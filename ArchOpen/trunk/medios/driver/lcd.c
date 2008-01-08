@@ -14,9 +14,13 @@
 #include <driver/fm_remote.h>
 #include <driver/energy.h>
 
+#include <kernel/kernel.h>
+
 int lcd_brightness;
 int lcd_state;
 
+#define LCD_FADE_ENABLE_DELAY  5
+#define LCD_FADE_DISABLE_DELAY 5
 
 void lcd_init(){
 
@@ -26,17 +30,48 @@ void lcd_init(){
     arch_lcd_init();
 }
 
-void lcd_enable(){
+int lcdVal=10;
+
+void lcd_fadeEnable()
+{
+    int i,j;
+    lcd_state=1;
+    arch_lcd_enable();
+    for(i=0;i<lcd_brightness;i++)
+    {
+        arch_lcd_setBrigthness(i);
+        mdelay(LCD_FADE_ENABLE_DELAY);
+    }
+    arch_lcd_setBrigthness(lcd_brightness);
+}
+
+void lcd_fadeDisable()
+{
+    int i,j;
+
+    for(i=lcd_brightness;i>=0;i--)
+    {
+        arch_lcd_setBrigthness(i);
+        mdelay(LCD_FADE_DISABLE_DELAY);
+    }
+    arch_lcd_setBrigthness(0);
+    lcd_state=0;
+    arch_lcd_disable();
+}
+
+void lcd_enable()
+{
     lcd_state=1;
     arch_lcd_setBrigthness(lcd_brightness);
     arch_lcd_enable();
 }
 
-void lcd_disable(){
+void lcd_disable()
+{
     lcd_state=0;
     arch_lcd_setBrigthness(0);
     arch_lcd_disable();
-};
+}
 
 int lcd_enabled(){
     return lcd_state;
@@ -53,7 +88,7 @@ int lcd_getBrightness(){
 
 void lcd_keyPress(void)
 {
-    lcd_enable();
+    kernel_doCmd(CMD_LCD_ENABLE);
     if(FM_is_connected())
         FM_lightsON();
     lcd_launchTimer();
