@@ -202,14 +202,18 @@ void shell_setting(void)
     iconSize->orientation=WIDGET_ORIENTATION_HORIZ;
     menuList->addWidget(menuList,iconSize);
     
+    x=minX;
     y += lineH;
+    
+    gfx_getStringSize(getLangStr(STRLNG_BRIGHTNESS),&w,&h);
+    gfx_putS(COLOR_BLACK,COLOR_TRSP,x,y,getLangStr(STRLNG_BRIGHTNESS));
     init_bright=lcd_getBrightness();
     brightVal=trackbar_create();
     brightVal->value=init_bright;
     brightVal->minimum=0;
     brightVal->maximum=100; /* mas is probably different on DSC21 */
     brightVal->increment=5;
-    brightVal->setRect(brightVal,x,y,maxW+29,h+1); /* using same height and width as previous widget*/
+    brightVal->setRect(brightVal,x+w+3,y,80,h+1); /* using same height and width as previous widget*/
     brightVal->font=SHELL_GUIFONT;
     brightVal->onChange=(TRACKBAR_CHANGEEVENT)brightVal_chg;
     menuList->addWidget(menuList,brightVal);
