@@ -31,6 +31,7 @@
 #include <driver/fm_remote.h>
 #include <driver/ata.h>
 #include <driver/energy.h>
+#include <driver/lcd.h>
 
 #include <fs/stdfs.h>
 #include <fs/vfs.h>

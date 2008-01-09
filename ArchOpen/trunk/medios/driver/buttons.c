@@ -35,6 +35,8 @@ struct tmr_s btnChk_tmr;
 __IRAM_DATA int nb_off_press;
 __IRAM_DATA int btn_state;
 
+int wait_for_release;
+
 int mx_press[NB_BUTTONS];
 struct btn_repeatParam default_repeatParam = {
     DEFAULT_INIT_DELAY,
@@ -66,6 +68,15 @@ __IRAM_CODE int btn_readState(void)
 __IRAM_CODE void btn_chkPress(void)
 {    
     btn_state=arch_btn_readHardware();
+
+    if(wait_for_release)
+    {
+      if(btn_state == 0x0)
+        wait_for_release = 0;
+        
+      return;
+    }
+
     if(btn_state&BTMASK_OFF)
     {
         nb_off_press++;
@@ -88,8 +99,7 @@ __IRAM_CODE void btn_chkPress(void)
         if(!lcd_enabled())
         {
             lcd_keyPress();
-            /* wait for release */
-            while(arch_btn_readHardware()!=0x0) /*nothing*/;
+            wait_for_release = 1;
         }
         else
         {
@@ -194,7 +204,7 @@ void btn_init(void)
     nb_off_press=0;
     need_clean=0;
     btn_state=0;
-
+    wait_for_release=0;
 
     for(btn=0;btn<NB_BUTTONS;btn++)
     {
