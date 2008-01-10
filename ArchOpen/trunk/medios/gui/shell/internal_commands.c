@@ -300,6 +300,9 @@ static bool intCmd_doUsbMode(char * param){
                 evt=evt_getStatus(eh);
             }while(evt!=BTN_F3 && evt!=EVT_USB_OUT);
 
+            if(!lcd_enabled())
+                lcd_keyPress();
+            
             msgBox_show(getLangStr(STRLNG_USB_MODE),getLangStr(STRLNG_USB_LEAVING),MSGBOX_TYPE_INFO,MSGBOX_ICON_INFORMATION,-1);
             mdelay(10);
             disableUsbFw();
@@ -307,7 +310,7 @@ static bool intCmd_doUsbMode(char * param){
             mdelay(10);
             ata_hardReset(HD_DISK);
             vfs_init();
-            disk_addAll();            
+            disk_addAll();     
             
             /* reloading menu */
 #if 0
