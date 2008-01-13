@@ -24,7 +24,7 @@
 
 /** Bat level **/
 
-#define GET_BAT_LEVEL                      0
+#define GET_BAT_LEVEL                      -1
 
 
 #endif

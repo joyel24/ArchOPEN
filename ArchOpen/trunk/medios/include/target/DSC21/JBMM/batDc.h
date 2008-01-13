@@ -28,7 +28,7 @@
 #ifdef HAVE_MAS_SOUND
 #define GET_BAT_LEVEL (mas_readBat())
 #else
-#define GET_BAT_LEVEL 8
+#define GET_BAT_LEVEL -1
 #endif
 
 

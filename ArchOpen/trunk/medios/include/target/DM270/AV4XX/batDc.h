@@ -26,7 +26,7 @@
 #define POWER_CONNECTED                   (GIO_IS_SET(GIO_POWER_CONNECTED))
 
 /** Bat level **/
-#define GET_BAT_LEVEL                     (CPLD_VER==0x5?0:tsc2003getVal(CMD_BAT0|INTERNAL_ON))
+#define GET_BAT_LEVEL                     (CPLD_VER==0x5?-1:tsc2003getVal(CMD_BAT0|INTERNAL_ON))
 
 
 #endif

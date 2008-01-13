@@ -92,6 +92,8 @@ int old_level;
 
 void drawBat(void)
 {
+    int w,h;
+    
     if(pwrState == 0)
         batteryRefreshValue = 10;
     else
@@ -100,20 +102,23 @@ void drawBat(void)
     if(pwrState == 0)
     {
         power = batLevel();
-
-        if(power < 2)
-            color = COLOR_DARK_RED;
-        else if(power < 4)
-            color = COLOR_RED;
-        else if(power < 6)
-            color = COLOR_ORANGE2;
-        else
-            color = COLOR_GREEN;
-
-        if(power > 2)
-            level = (int)(power - 1) * 3;
-        if(level > 21)
-            level = 21;
+        
+        if(power!=-1)
+        {
+            if(power < 2)
+                color = COLOR_DARK_RED;
+            else if(power < 4)
+                color = COLOR_RED;
+            else if(power < 6)
+                color = COLOR_ORANGE2;
+            else
+                color = COLOR_GREEN;
+    
+            if(power > 2)
+                level = (int)(power - 1) * 3;
+            if(level > 21)
+                level = 21;
+        }
     }
     else if(pwrState == 1)
     {
@@ -137,7 +142,13 @@ void drawBat(void)
     gfx_drawRect(COLOR_BLACK,lineData.bat_x,lineData.bat_y,23,10);
     gfx_fillRect(COLOR_BLACK,lineData.bat_x+23,lineData.bat_y+2,3,6);
     gfx_fillRect(lineData.bg_color,lineData.bat_x+1,lineData.bat_y+1,21,8);
-    gfx_fillRect(color,lineData.bat_x+1,lineData.bat_y+1,level,8);
+    if(pwrState == 1 || (pwrState == 0 && power!=-1))
+        gfx_fillRect(color,lineData.bat_x+1,lineData.bat_y+1,level,8);
+    else
+    {
+        gfx_getStringSize("?", &w, &h);
+        gfx_putS(COLOR_GREEN,lineData.bg_color,lineData.bat_x+(23-w)/2,lineData.bat_y+(10-h)/2,"?");
+    }
 
     if(FM_is_connected()) /* show bat status on FM remote */
     {
