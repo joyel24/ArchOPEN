@@ -25,6 +25,7 @@
 MENU_ITEM menuItem_create();
 void menuItem_destroy(MENU_ITEM mi);
 void menuItem_init(MENU_ITEM mi);
+bool menuItem_isVisible(MENU_ITEM mi);
 
 //*****************************************************************************
 // MENU

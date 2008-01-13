@@ -52,6 +52,27 @@ void menuItem_init(MENU_ITEM mi){
     mi->subMenu=NULL;
 }
 
+bool menuItem_isVisible(MENU_ITEM mi)
+{
+    int i,ti,bi;
+    MENU m;
+    m=mi->parentMenu;
+    ti=m->topIndex;
+    bi=MIN(m->itemCount-1,m->topIndex+m->visibleCount-1);
+    if(ti<0 || ti>=m->itemCount || bi<0 || bi>m->itemCount)
+    {
+        printk("[widget] menu_paint sanity error! (ti=%d,cnt=%d,bi=%d)\n",ti,m->itemCount,bi);
+        return false;
+    }
+    
+    for(i=ti;i<=bi;++i)
+    {
+        if(mi==m->items[i])
+            return true;
+    }
+    return false;
+}
+
 //*****************************************************************************
 // MENU
 //*****************************************************************************
@@ -89,7 +110,7 @@ void menu_init(MENU m){
     m->addItem=(MENU_ITEMADDER)menu_addItem;
     m->clearItems=(MENU_ITEMSCLEARER)menu_clearItems;
     m->indexOf=(MENU_INDEXGETTER)menu_indexOf;
-    m->indexFromCaption=(MENU_INDEXFROMCAPTIONGETTER)menu_indexFromCaption;
+    m->indexFromCaption=(MENU_INDEXFROMCAPTIONGETTER)menu_indexFromCaption;    
 
     // properties
     m->items=malloc(0); // will be realloced as items are added
@@ -197,6 +218,7 @@ void menu_addItem(MENU m, MENU_ITEM item){
     // we have now at least 1 item -> indicies can now be valid
     if (m->index<0 && item->canFocus) m->index=m->itemCount-1; // don't set a non focusable item as the active one
     m->topIndex=MAX(0,m->topIndex);
+    item->parentMenu=m;
 }
 
 void menu_clearItems(MENU m){

@@ -31,6 +31,7 @@ typedef struct MENU_STRUCT * MENU;
     WIDGET_MEMBERS                     \
                                        \
     char * caption;                    \
+    MENU parentMenu;                   \
     MENU subMenu;
 
 typedef struct {

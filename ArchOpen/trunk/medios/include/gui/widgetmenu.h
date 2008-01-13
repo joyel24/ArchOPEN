@@ -20,6 +20,7 @@
 #include <gui/checkbox.h>
 #include <gui/trackbar.h>
 #include <gui/chooser.h>
+#include <gui/button.h>
 
 //*****************************************************************************
 // WIDGETMENU_ITEM
@@ -34,6 +35,17 @@ bool widgetMenuItem_handleEvent(WIDGETMENU_ITEM mi,int evt);
 void widgetMenuItem_paint(WIDGETMENU_ITEM mi);
 void widgetMenuItem_cfgToString(WIDGETMENU_ITEM mi,char * s);
 void widgetMenuItem_cfgFromString(WIDGETMENU_ITEM mi,char * s);
+void widgetMenuItem_rePaint(WIDGETMENU_ITEM mi);
+
+//*****************************************************************************
+// WIDGETMENU_BUTTON
+//*****************************************************************************
+
+WIDGETMENU_BUTTON widgetMenuButton_create();
+void widgetMenuButton_destroy(WIDGETMENU_BUTTON mc);
+void widgetMenuButton_init(WIDGETMENU_BUTTON mc);
+void widgetMenuButton_cfgToString(WIDGETMENU_BUTTON mc,char * s);
+void widgetMenuButton_cfgFromString(WIDGETMENU_BUTTON mc,char * s);
 
 //*****************************************************************************
 // WIDGETMENU_CHECKBOX
@@ -73,6 +85,7 @@ WIDGETMENU widgetMenu_create();
 void widgetMenu_destroy(WIDGETMENU m);
 void widgetMenu_init(WIDGETMENU m);
 bool widgetMenu_handleEvent(WIDGETMENU m,int evt);
+BUTTON widgetMenu_getButton(WIDGETMENU m,int index);
 CHECKBOX widgetMenu_getCheckbox(WIDGETMENU m,int index);
 TRACKBAR widgetMenu_getTrackbar(WIDGETMENU m,int index);
 CHOOSER widgetMenu_getChooser(WIDGETMENU m,int index);

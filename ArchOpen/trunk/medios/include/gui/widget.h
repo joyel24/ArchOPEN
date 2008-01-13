@@ -26,5 +26,6 @@ void widget_init(WIDGET w);
 bool widget_handleEvent(WIDGET w,int evt);
 void widget_paint(WIDGET w);
 void widget_setRect(WIDGET w,int x,int y,int width,int height);
+void widget_autoSize(WIDGET w);
 
 #endif

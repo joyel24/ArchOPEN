@@ -425,6 +425,12 @@ static bool intCmd_doPlaylist(char * param){
 static bool intCmd_doFlashDump(char * param){
     int fd,size;
     
+    if(!disk_initDone())
+    {
+        printk("Error: disk is not init\n");
+        return true;
+    }
+    
     fd=open("/flash.bin",O_WRONLY|O_CREAT);
     if (fd<0){
         printk("[Dump] can't open file /flash.bin !\n");

@@ -42,6 +42,7 @@ void chooser_init(CHOOSER c){
     c->destroy=(WIDGET_DESTROYER)chooser_destroy;
     c->handleEvent=(WIDGET_EVENTHANDLER)chooser_handleEvent;
     c->paint=(WIDGET_PAINTHANDLER)chooser_paint;
+    c->autoSize=(WIDGET_AUTOSIZE)chooser_autoSize;
     c->onChange=NULL;
 
     // properties
@@ -104,6 +105,33 @@ bool chooser_handleEvent(CHOOSER c,int evt){
     if (c->onChange!=NULL && oi!=c->index) c->onChange(c);
 
     return handled;
+}
+
+void chooser_autoSize(CHOOSER c)
+{
+    int w,h,w2;
+    int of,i,box_size;
+       
+    of=gfx_fontGet(); // save previous font
+    gfx_fontSet(c->font);
+    
+    w=0;
+    gfx_getStringSize("H",NULL,&h);
+    
+    c->height=h+2*c->margin;
+    
+    if(c->items)
+    {
+        w=0;
+        for(i=0;i<c->itemCount;i++)
+        {
+            gfx_getStringSize(c->items[i],&w2,NULL);
+            if(w2>w) w=w2;
+        }
+    }
+    /*adding box+arrow*/
+    c->width=w+2*(c->height-2*c->margin)+2*c->margin;
+    gfx_fontSet(of);
 }
 
 void chooser_paint(CHOOSER c){

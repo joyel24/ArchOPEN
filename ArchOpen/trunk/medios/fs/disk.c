@@ -190,6 +190,14 @@ MED_RET_T disk_rmAll(void)
     return disk_rm(HD_DISK);
 }
 
+int disk_initDone(void)
+{
+    if(disk_info[0]==NULL)
+        return 0;
+    else
+        return 1;
+}
+
 MED_RET_T disk_init(void)
 {
     int i;

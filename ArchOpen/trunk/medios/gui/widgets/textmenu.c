@@ -16,6 +16,7 @@
 
 #include <kernel/malloc.h>
 #include <kernel/evt.h>
+#include <kernel/kernel.h>
 
 //*****************************************************************************
 // TEXTMENU_ITEM
@@ -111,9 +112,32 @@ void textMenu_init(TEXTMENU m){
     // methods
     m->handleEvent=(WIDGET_EVENTHANDLER)textMenu_handleEvent;
     m->addItem=(MENU_ITEMADDER)textMenu_addItem;
+    m->setFocus=(TEXTMENU_FOCUSSETTER)textMenu_setFocus;
 
     // properties
     m->itemHeight=10;
+}
+
+void textMenu_setFocus(TEXTMENU m, MENU_ITEM item)
+{
+    int index;
+    int bi,top;
+    int cnt=m->itemCount;
+    /* try to find widget in list */    
+    index=menu_indexOf((MENU)m,item);
+    if(index==-1)
+        return;
+    
+    bi=MIN(cnt,m->visibleCount);
+    top=index-(bi/2);
+    
+    if(top<0)
+        top=0;
+    if(top+bi>(cnt))
+        top=cnt-bi;
+    m->topIndex=top;
+    m->index=index;
+    textMenu_updateItems(m,false);
 }
 
 bool textMenu_handleEvent(TEXTMENU m,int evt){

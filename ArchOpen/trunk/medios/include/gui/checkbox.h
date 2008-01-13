@@ -26,5 +26,6 @@ void checkbox_destroy(CHECKBOX c);
 void checkbox_init(CHECKBOX c);
 bool checkbox_handleEvent(CHECKBOX c,int evt);
 void checkbox_paint(CHECKBOX c);
+void checkbox_autoSize(CHECKBOX c);
 
 #endif

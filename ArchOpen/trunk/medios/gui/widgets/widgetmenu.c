@@ -13,6 +13,7 @@
 #include <lib/string.h>
 #include <sys_def/stddef.h>
 
+#include <kernel/kernel.h>
 #include <kernel/malloc.h>
 #include <kernel/evt.h>
 
@@ -55,12 +56,14 @@ void widgetMenuItem_init(WIDGETMENU_ITEM mi){
     mi->paint=(WIDGET_PAINTHANDLER)widgetMenuItem_paint;
     mi->cfgToString=(WIDGETMENU_ITEM_CFGGETTER)widgetMenuItem_cfgToString;
     mi->cfgFromString=(WIDGETMENU_ITEM_CFGSETTER)widgetMenuItem_cfgFromString;
-
+    mi->rePaint=(WIDGETMENU_ITEM_REPAINT)widgetMenuItem_rePaint;
+    
     // properties
     mi->caption="WidgetMenuItem";
     mi->cfgStored=false;
     mi->cfgName="CfgName";
     mi->widgetWidth=128;
+    mi->doAutoSize=false;
 }
 
 bool widgetMenuItem_handleEvent(WIDGETMENU_ITEM mi,int evt){
@@ -73,39 +76,117 @@ bool widgetMenuItem_handleEvent(WIDGETMENU_ITEM mi,int evt){
     }
 }
 
+void widgetMenuItem_rePaint(WIDGETMENU_ITEM mi)
+{
+    bool clearState;
+    clearState=mi->clearBackground;
+    mi->clearBackground=true;
+    widgetMenuItem_paint(mi);
+    mi->clearBackground=clearState;
+}
+
 void widgetMenuItem_paint(WIDGETMENU_ITEM mi){
-    int x,y;
-    int w,h;
+    int txt_x,txt_y;
+    int txt_w,txt_h;
+    int w2;
     int color;
     int of;
+    int no_caption=0;
     bool ocb;
 
+    if(!menuItem_isVisible((MENU_ITEM)mi))
+    {
+        return;   
+    }
+    
     widget_paint((WIDGET)mi);
 
     color=(mi->focused)?mi->focusColor:mi->backColor;
 
+    txt_x=mi->x;
+    txt_y=mi->y;
+    
     // caption
-
-    of=gfx_fontGet(); // save previous font
-
-    gfx_fontSet(mi->font);
-
-    gfx_getStringSize(mi->caption,&w,&h);
-    y=mi->y+(mi->height-h)/2;
-    x=mi->x+mi->margin;
-
-    gfx_putS(mi->foreColor,color,x,y,mi->caption);
-
-    gfx_fontSet(of); // restore previous font
+    if(mi->caption && (*mi->caption)!='\0')
+    {
+        of=gfx_fontGet(); // save previous font
+        gfx_fontSet(mi->font);
+        gfx_getStringSize(mi->caption,&txt_w,&txt_h);
+        txt_y=mi->y+(mi->height-txt_h)/2;
+        txt_x=mi->x+mi->margin;
+    
+        gfx_putS(mi->foreColor,color,txt_x,txt_y,mi->caption);
+    
+        gfx_fontSet(of); // restore previous font
+    }
+    else
+    {
+        no_caption=1;
+    }
 
     // widget
 
     //  sync widget props with the menuitem ones
     mi->widget->focused=mi->focused;
-    mi->widget->width=mi->width*mi->widgetWidth/256-mi->margin;
-    mi->widget->height=mi->height-2*mi->margin;
-    mi->widget->x=mi->x+mi->width-mi->margin-mi->widget->width;
-    mi->widget->y=mi->y+mi->margin;
+    if(!no_caption)
+    {
+        if(mi->doAutoSize)
+        {
+            mi->widget->autoSize(mi->widget);
+            w2=mi->width*mi->widgetWidth/256-mi->margin;
+            if(mi->widget->width==0 || mi->widget->width>w2)
+            {
+                mi->widget->width=mi->width*mi->widgetWidth/256-mi->margin;
+                mi->widget->x=mi->x+mi->width-mi->margin-mi->widget->width;
+            }
+            else
+            {
+               mi->widget->x=txt_x+txt_w+2;
+            }
+            
+            if(mi->widget->height==0)
+            {
+                mi->widget->height=mi->height-2*mi->margin;
+                mi->widget->y=mi->y+mi->margin;
+            }
+            else if(mi->widget->height > mi->height)
+            {
+                mi->widget->height=mi->height;
+                mi->widget->y=mi->y;
+            }
+            else
+                mi->widget->y=mi->y+(mi->height-mi->widget->height)/2;                
+        }
+        else /* no autoSize */
+        {            
+            mi->widget->width=mi->width*mi->widgetWidth/256-mi->margin;
+            mi->widget->height=mi->height-2*mi->margin;    
+            mi->widget->x=mi->x+mi->width-mi->margin-mi->widget->width;
+            mi->widget->y=mi->y+mi->margin;
+        }
+    }
+    else
+    {
+        if(mi->doAutoSize)
+        {
+            mi->widget->autoSize(mi->widget);
+            w2=mi->width-2*mi->margin;
+            if(mi->widget->width==0 || mi->widget->width>w2)
+                mi->widget->width=w2;
+            if(mi->widget->height==0)
+                mi->widget->height=mi->height-2*mi->margin;
+            else if(mi->widget->height > mi->height)
+                mi->widget->height=mi->height;
+                
+        }
+        else /* no autosize */
+        {        
+            mi->widget->width=mi->width-2*mi->margin;
+            mi->widget->height=mi->height-2*mi->margin;           
+        }
+        mi->widget->x=mi->x+mi->margin;
+        mi->widget->y=mi->y+(mi->height-mi->widget->height)/2;
+    }
 
     ocb=mi->widget->clearBackground;
     mi->widget->clearBackground=false; // done by the menu
@@ -121,6 +202,51 @@ void widgetMenuItem_cfgToString(WIDGETMENU_ITEM mi,char * s){
 }
 
 void widgetMenuItem_cfgFromString(WIDGETMENU_ITEM mi,char * s){
+    *s=0;
+}
+
+//*****************************************************************************
+// WIDGETMENU_BUTTON
+//*****************************************************************************
+
+WIDGETMENU_BUTTON widgetMenuButton_create(){
+    WIDGETMENU_BUTTON mc;
+
+    // allocate WIDGETMENUCHECKBOX memory
+    mc=malloc(sizeof(*mc));
+
+    // create the widget
+    mc->button=button_create();
+    mc->widget=(WIDGET)mc->button;
+
+    // init members
+    widgetMenuButton_init(mc);
+
+    return mc;
+}
+
+void widgetMenuButton_destroy(WIDGETMENU_BUTTON mc){
+    widgetMenuItem_destroy((WIDGETMENU_ITEM)mc);
+}
+
+void widgetMenuButton_init(WIDGETMENU_BUTTON mc){
+    widgetMenuItem_init((WIDGETMENU_ITEM)mc);
+
+    // methods
+    mc->destroy=(WIDGET_DESTROYER)widgetMenuButton_destroy;
+    mc->cfgToString=(WIDGETMENU_ITEM_CFGGETTER)widgetMenuButton_cfgToString;
+    mc->cfgFromString=(WIDGETMENU_ITEM_CFGSETTER)widgetMenuButton_cfgFromString;
+
+    // properties
+    mc->caption="WidgetMenuButton";
+    mc->widget->margin=WIDGETMENU_WIDGET_MARGIN;
+}
+
+void widgetMenuButton_cfgToString(WIDGETMENU_BUTTON mc,char * s){
+    *s=0;
+}
+
+void widgetMenuButton_cfgFromString(WIDGETMENU_BUTTON mc,char * s){
     *s=0;
 }
 
@@ -284,6 +410,7 @@ void widgetMenu_init(WIDGETMENU m){
 
     // methods
     m->handleEvent=(WIDGET_EVENTHANDLER)widgetMenu_handleEvent;
+    m->getButton=(WIDGETMENU_BUTTONGETTER)widgetMenu_getButton;
     m->getCheckbox=(WIDGETMENU_CHECKBOXGETTER)widgetMenu_getCheckbox;
     m->getTrackbar=(WIDGETMENU_TRACKBARGETTER)widgetMenu_getTrackbar;
     m->getChooser=(WIDGETMENU_CHOOSERGETTER)widgetMenu_getChooser;
@@ -305,6 +432,11 @@ bool widgetMenu_handleEvent(WIDGETMENU m,int evt){
     if (!handled) handled=textMenu_handleEvent((TEXTMENU)m,evt);
 
     return handled;
+}
+
+BUTTON widgetMenu_getButton(WIDGETMENU m,int index){
+    if(index<0 ||index>=m->itemCount) return NULL;
+    return ((WIDGETMENU_BUTTON)m->items[index])->button;
 }
 
 CHECKBOX widgetMenu_getCheckbox(WIDGETMENU m,int index){

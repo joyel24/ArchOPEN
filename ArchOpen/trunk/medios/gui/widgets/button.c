@@ -43,6 +43,7 @@ void button_init(BUTTON b){
     b->destroy=(WIDGET_DESTROYER)button_destroy;
     b->handleEvent=(WIDGET_EVENTHANDLER)button_handleEvent;
     b->paint=(WIDGET_PAINTHANDLER)button_paint;
+    b->autoSize=(WIDGET_AUTOSIZE)button_autoSize;
     b->onClick=NULL;
     b->clickOnRightLeft=1;
 
@@ -74,10 +75,27 @@ bool button_handleEvent(BUTTON b,int evt){
     return handled;
 }
 
+void button_autoSize(BUTTON b)
+{
+    int w,h,of;
+    of=gfx_fontGet(); // save previous font
+    gfx_fontSet(b->font);
+    if(b->caption && (*b->caption)!='\0')
+        gfx_getStringSize(b->caption,&w,&h);
+    else
+        gfx_getStringSize("H",&w,&h);
+    
+    b->width=2*b->margin+2*BUTTON_INTERNAL_SPACE+w;
+    b->height=2*b->margin+2*BUTTON_INTERNAL_SPACE+h;
+    
+    gfx_fontSet(of);
+}
+
 void button_paint(BUTTON b){
     int x,y;
     int w,h;
     int color;
+    int of;
 
     widget_paint((WIDGET)b);
 
@@ -93,7 +111,7 @@ void button_paint(BUTTON b){
     if (b->focused) gfx_fillRect(color,x+1,y+1,w-2,h-2);
 
     // caption
-    int of=gfx_fontGet(); // save previous font
+    of=gfx_fontGet(); // save previous font
 
     gfx_fontSet(b->font);
 

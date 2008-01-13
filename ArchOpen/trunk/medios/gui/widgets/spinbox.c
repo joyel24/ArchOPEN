@@ -75,6 +75,7 @@ void spinbox_init(SPINBOX t)
     t->setPos=(SPINBOX_SETPOS)spinbox_setPos;
     t->setValue=(SPINBOX_SETVALUE)spinbox_setValue;
     t->getValue=(SPINBOX_GETVALUE)spinbox_getValue;
+    t->autoSize=(WIDGET_AUTOSIZE)spinbox_autoSize;
     
     // properties
     spinbox_setParam(t,0,99,1,2);    
@@ -131,6 +132,20 @@ bool spinbox_handleEvent(SPINBOX t,int evt){
     if (t->onChange!=NULL && ov!=t->value) t->onChange(t);
 
     return handled;
+}
+
+void spinbox_autoSize(SPINBOX t)
+{
+    int w,h;
+    int of;
+       
+    of=gfx_fontGet(); // save previous font
+    gfx_fontSet(t->font);
+    
+    gfx_getStringSize("H",&w,&h);
+    t->width=t->nbDigits*w+4;
+    t->height=h+4; 
+    gfx_fontSet(of);
 }
 
 #define STR_SPINBOX(A) ((A)==1?"%01d":(A)==2?"%02d":(A)==3?"%03d":"%04d")

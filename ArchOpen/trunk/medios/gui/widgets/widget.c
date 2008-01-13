@@ -40,7 +40,7 @@ void widget_init(WIDGET w){
     w->handleEvent=(WIDGET_EVENTHANDLER)widget_handleEvent;
     w->paint=(WIDGET_PAINTHANDLER)widget_paint;
     w->setRect=(WIDGET_RECTSETTER)widget_setRect;
-
+    w->autoSize=(WIDGET_AUTOSIZE)widget_autoSize;
     // properties
     w->x=0;
     w->y=0;
@@ -73,6 +73,11 @@ bool widget_handleEvent(WIDGET w,int evt){
     }
     
     return handled;
+}
+
+void widget_autoSize(WIDGET w)
+{
+    w->height=w->width=0;   
 }
 
 void widget_paint(WIDGET w){

@@ -28,5 +28,6 @@ void spinbox_setParam(SPINBOX t,int minimum,int maximum,int increment,int nbDigi
 void spinbox_setFont(SPINBOX t,int font);
 void spinbox_setPos(SPINBOX t,int x,int y);
 int  spinbox_getValue(SPINBOX t);
+void spinbox_autoSize(SPINBOX t);
 
 #endif

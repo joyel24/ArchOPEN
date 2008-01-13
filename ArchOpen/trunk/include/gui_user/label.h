@@ -37,7 +37,14 @@ struct label_line {
     char * internal_str;               \
     int nbLines;                       \
     int interline;                     \
+    LABEL_SETTEXT setText;             \
+    LABEL_GETMAXSIZE getMaxSize;       \
+    LABEL_GETNBLINES getNbLines;       \
     LABEL_ALIGNMENT alignment;
+
+typedef void(*LABEL_SETTEXT)(void *,char *);
+typedef void(*LABEL_GETMAXSIZE)(void *,int *,int *);
+typedef int(*LABEL_GETNBLINES)(void*);
 
 typedef struct {
     LABEL_MEMBERS

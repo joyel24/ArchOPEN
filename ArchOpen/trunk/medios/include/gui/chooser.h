@@ -23,5 +23,6 @@ void chooser_destroy(CHOOSER c);
 void chooser_init(CHOOSER c);
 bool chooser_handleEvent(CHOOSER c,int evt);
 void chooser_paint(CHOOSER c);
+void chooser_autoSize(CHOOSER c);
 
 #endif

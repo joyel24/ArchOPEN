@@ -44,6 +44,7 @@ void trackbar_init(TRACKBAR t){
     t->handleEvent=(WIDGET_EVENTHANDLER)trackbar_handleEvent;
     t->paint=(WIDGET_PAINTHANDLER)trackbar_paint;
     t->onChange=NULL;
+    t->autoSize=(WIDGET_AUTOSIZE)trackbar_autoSize;
 
     // properties
     t->value=0;
@@ -51,6 +52,7 @@ void trackbar_init(TRACKBAR t){
     t->maximum=100;
     t->increment=1;
     t->numTicks=3;
+    t->minSpacing=TRACKBAR_MIN_SPACING;
     t->numValueDigits=3;
 }
 
@@ -79,6 +81,24 @@ bool trackbar_handleEvent(TRACKBAR t,int evt){
     if (t->onChange!=NULL && ov!=t->value) t->onChange(t);
 
     return handled;
+}
+
+void trackbar_autoSize(TRACKBAR t)
+{
+    int w,h;
+    int of;
+    int cursor_w,txt_w;
+       
+    of=gfx_fontGet(); // save previous font
+    gfx_fontSet(t->font);
+    
+    gfx_getStringSize("H",&w,&h);
+    t->height=h+t->margin*2;
+    cursor_w=t->height*TRACKBAR_CURSOR_RATIO;
+    txt_w=t->numValueDigits*w;
+    t->numTicks=(t->maximum-t->minimum)/t->increment-1;
+    t->width=txt_w+TRACKBAR_SPACING+2*t->margin+cursor_w+t->numTicks*(t->minSpacing+cursor_w);
+    gfx_fontSet(of);
 }
 
 void trackbar_paint(TRACKBAR t){

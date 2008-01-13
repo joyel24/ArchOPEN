@@ -18,10 +18,13 @@
 
 #include <gui/widget.h>
 
+#define BUTTON_INTERNAL_SPACE 1
+
 BUTTON button_create();
 void button_destroy(BUTTON b);
 void button_init(BUTTON b);
 bool button_handleEvent(BUTTON b,int evt);
 void button_paint(BUTTON b);
+void button_autoSize(BUTTON b);
 
 #endif

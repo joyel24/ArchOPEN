@@ -21,6 +21,7 @@
 // paint parameters
 #define TRACKBAR_SPACING 2 // space between trackbar and value
 #define TRACKBAR_CURSOR_RATIO (1/1.618) // h/w ratio
+#define TRACKBAR_MIN_SPACING 4 // minimum space btw 2 ticks 
 
 TRACKBAR trackbar_create();
 void trackbar_destroy(TRACKBAR t);
@@ -28,5 +29,6 @@ void trackbar_init(TRACKBAR t);
 bool trackbar_handleEvent(TRACKBAR t,int evt);
 void trackbar_paint(TRACKBAR t);
 void trackbar_setValue(TRACKBAR t,int value);
+void trackbar_autoSize(TRACKBAR t);
 
 #endif

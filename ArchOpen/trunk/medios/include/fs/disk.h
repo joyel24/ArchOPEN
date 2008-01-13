@@ -57,6 +57,7 @@ struct hd_info_s {
 extern struct hd_info_s * disk_info[NB_DISK];
 
 MED_RET_T disk_init(void);
+int disk_initDone(void);
 
 MED_RET_T disk_add(int disk);
 MED_RET_T disk_rm(int disk);

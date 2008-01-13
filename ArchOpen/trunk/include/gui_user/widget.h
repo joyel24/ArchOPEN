@@ -39,6 +39,7 @@
     WIDGET_EVENTHANDLER handleEvent;   \
     WIDGET_PAINTHANDLER paint;         \
     WIDGET_RECTSETTER setRect;         \
+    WIDGET_AUTOSIZE autoSize;          \
     int x;                             \
     int y;                             \
     int width;                         \
@@ -60,6 +61,7 @@ typedef bool(*WIDGET_EVENTHANDLER)(void *,int);
 typedef void(*WIDGET_PAINTHANDLER)(void *);
 typedef void(*WIDGET_DESTROYER)(void *);
 typedef void(*WIDGET_RECTSETTER)(void *,int,int,int,int);
+typedef void(*WIDGET_AUTOSIZE)(void *);
 
 typedef struct {
     WIDGET_MEMBERS

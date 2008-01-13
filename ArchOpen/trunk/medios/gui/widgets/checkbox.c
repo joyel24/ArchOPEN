@@ -43,6 +43,7 @@ void checkbox_init(CHECKBOX c){
     c->destroy=(WIDGET_DESTROYER)checkbox_destroy;
     c->handleEvent=(WIDGET_EVENTHANDLER)checkbox_handleEvent;
     c->paint=(WIDGET_PAINTHANDLER)checkbox_paint;
+    c->autoSize=(WIDGET_AUTOSIZE)checkbox_autoSize;
     c->onChange=NULL;
 
     // properties
@@ -70,6 +71,27 @@ bool checkbox_handleEvent(CHECKBOX c,int evt){
     }
 
     return handled;
+}
+
+void checkbox_autoSize(CHECKBOX c)
+{
+    int w,h,of;
+    of=gfx_fontGet(); // save previous font
+    gfx_fontSet(c->font);
+    if(c->caption && (*c->caption)!='\0')
+    {
+        gfx_getStringSize(c->caption,&w,&h);
+        c->height=h+2*c->margin;
+        c->width=c->height-2*c->margin; /*box size*/
+        c->width=c->width+c->margin+CHECKBOX_SPACING+w;
+    }
+    else /* no caption */
+    {
+        gfx_getStringSize("H",NULL,&h);
+        c->height=h+2*c->margin;
+        c->width=c->height-2*c->margin;
+    }
+    gfx_fontSet(of);
 }
 
 void checkbox_paint(CHECKBOX c){

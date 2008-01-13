@@ -19,6 +19,7 @@
 #include <gui_user/checkbox.h>
 #include <gui_user/trackbar.h>
 #include <gui_user/chooser.h>
+#include <gui_user/button.h>
 
 //*****************************************************************************
 // WIDGETMENU_ITEM
@@ -31,17 +32,35 @@
                                                            \
     WIDGETMENU_ITEM_CFGGETTER cfgToString;                 \
     WIDGETMENU_ITEM_CFGSETTER cfgFromString;               \
+    WIDGETMENU_ITEM_REPAINT   rePaint;                     \
     WIDGET widget;                                         \
+    bool doAutoSize;                                       \
     bool cfgStored;                                        \
     char * cfgName;                                        \
     int widgetWidth;  /* in 1/256th of the item width */
 
 typedef void(*WIDGETMENU_ITEM_CFGGETTER)(void *,char *);
 typedef void(*WIDGETMENU_ITEM_CFGSETTER)(void *,char *);
+typedef void(*WIDGETMENU_ITEM_REPAINT)(void *);
 
 typedef struct {
     WIDGETMENU_ITEM_MEMBERS
 } * WIDGETMENU_ITEM;
+
+//*****************************************************************************
+// WIDGETMENU_BUTTON
+//*****************************************************************************
+
+// members of the WIDGETMENU_BUTTON object
+#define WIDGETMENU_BUTTON_MEMBERS                        \
+    /* we inherit from WIDGETMENU_ITEM */                  \
+    WIDGETMENU_ITEM_MEMBERS                                \
+                                                           \
+    BUTTON button;
+
+typedef struct {
+    WIDGETMENU_BUTTON_MEMBERS
+} * WIDGETMENU_BUTTON;
 
 //*****************************************************************************
 // WIDGETMENU_CHECKBOX
@@ -97,12 +116,14 @@ typedef struct {
     /* we inherit from TEXTMENU */                         \
     TEXTMENU_MEMBERS                                       \
                                                            \
+    WIDGETMENU_BUTTONGETTER getButton;                     \
     WIDGETMENU_CHECKBOXGETTER getCheckbox;                 \
     WIDGETMENU_TRACKBARGETTER getTrackbar;                 \
     WIDGETMENU_CHOOSERGETTER getChooser;                   \
     WIDGETMENU_CFGLOADER cfgLoad;                          \
     WIDGETMENU_CFGSAVER cfgSave;
 
+typedef BUTTON(*WIDGETMENU_BUTTONGETTER)(void *,int);
 typedef CHECKBOX(*WIDGETMENU_CHECKBOXGETTER)(void *,int);
 typedef TRACKBAR(*WIDGETMENU_TRACKBARGETTER)(void *,int);
 typedef CHOOSER(*WIDGETMENU_CHOOSERGETTER)(void *,int);

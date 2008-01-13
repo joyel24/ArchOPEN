@@ -42,7 +42,10 @@ typedef struct {
     /* we inherit from MENU */         \
     MENU_MEMBERS                       \
                                        \
+    TEXTMENU_FOCUSSETTER setFocus;     \
     int itemHeight;
+
+typedef void(*TEXTMENU_FOCUSSETTER)(void *,void *);
 
 typedef struct {
     TEXTMENU_MEMBERS

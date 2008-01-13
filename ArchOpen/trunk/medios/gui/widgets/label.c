@@ -38,6 +38,9 @@ void label_init(LABEL l){
 
     // methods
     l->paint=(WIDGET_PAINTHANDLER)label_paint;
+    l->setText=(LABEL_SETTEXT)label_setTxt;
+    l->getMaxSize=(LABEL_GETMAXSIZE)label_getMaxSize;
+    l->getNbLines=(LABEL_GETNBLINES)label_getNbLines;
 
     // properties
     l->canFocus=false;
@@ -260,10 +263,10 @@ void label_paint(LABEL l){
                     x=l->x+l->margin;
                     break;
                 case LA_RIGHT:
-                    x=l->x+l->lines[i].width-l->margin-w;
+                    x=l->x+l->width-l->lines[i].width-l->margin;
                     break;
                 case LA_CENTER:
-                    x=l->x+(l->lines[i].width-w)/2;
+                    x=l->x+(l->width-l->lines[i].width)/2;
                     break;
             }
             gfx_putS(l->foreColor,l->backColor,x,y,l->lines[i].str);    

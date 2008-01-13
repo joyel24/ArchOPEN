@@ -27,6 +27,7 @@
     int maximum;                       \
     int increment;                     \
     int numTicks;                      \
+    int minSpacing;                    \
     int numValueDigits;
 
 typedef void(*TRACKBAR_CHANGEEVENT)(void *);
