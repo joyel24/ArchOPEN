@@ -21,6 +21,7 @@
 #include <gui/trackbar.h>
 #include <gui/chooser.h>
 #include <gui/button.h>
+#include <gui/spinbox.h>
 
 //*****************************************************************************
 // WIDGETMENU_ITEM
@@ -78,6 +79,16 @@ void widgetMenuChooser_cfgToString(WIDGETMENU_CHOOSER mc,char * s);
 void widgetMenuChooser_cfgFromString(WIDGETMENU_CHOOSER mc,char * s);
 
 //*****************************************************************************
+// WIDGETMENU_SPINBOX
+//*****************************************************************************
+
+WIDGETMENU_SPINBOX widgetMenuSpinbox_create();
+void widgetMenuSpinbox_destroy(WIDGETMENU_SPINBOX mc);
+void widgetMenuSpinbox_init(WIDGETMENU_SPINBOX mc);
+void widgetMenuSpinbox_cfgToString(WIDGETMENU_SPINBOX mc,char * s);
+void widgetMenuSpinbox_cfgFromString(WIDGETMENU_SPINBOX mc,char * s);
+
+//*****************************************************************************
 // WIDGETMENU
 //*****************************************************************************
 
@@ -85,10 +96,13 @@ WIDGETMENU widgetMenu_create();
 void widgetMenu_destroy(WIDGETMENU m);
 void widgetMenu_init(WIDGETMENU m);
 bool widgetMenu_handleEvent(WIDGETMENU m,int evt);
+
 BUTTON widgetMenu_getButton(WIDGETMENU m,int index);
 CHECKBOX widgetMenu_getCheckbox(WIDGETMENU m,int index);
 TRACKBAR widgetMenu_getTrackbar(WIDGETMENU m,int index);
 CHOOSER widgetMenu_getChooser(WIDGETMENU m,int index);
+SPINBOX widgetMenu_getSpinbox(WIDGETMENU m,int index);
+
 bool widgetMenu_cfgLoad(WIDGETMENU m,char * filename);
 bool widgetMenu_cfgSave(WIDGETMENU m,char * filename);
 

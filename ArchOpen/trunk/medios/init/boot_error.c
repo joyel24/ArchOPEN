@@ -46,7 +46,7 @@ void gui_bootError(int errorNumber,int type)
     else
     {
         printk("MSG:%s\n",boot_error_msg[errorNumber]);
-        sprintf(tmp,"%s - N°%d",type==BOOT_ERROR?"Boot error":"Boot warning",errorNumber);
+        sprintf(tmp,"%s - N %d",type==BOOT_ERROR?"Boot error":"Boot warning",errorNumber);
         msgBox_show(tmp,
                     boot_error_msg[errorNumber],MSGBOX_TYPE_OK,
                     type==BOOT_ERROR?MSGBOX_ICON_ERROR:MSGBOX_ICON_WARNING,evtHand);        

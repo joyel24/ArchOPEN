@@ -19,11 +19,11 @@
 #include <lib/string.h>
 
 #include <gui/widgetlist.h>
-#include <gui/button.h>
+#include <gui/widgetmenu.h>
+#include <gui/settings_screens.h>
 #include <gui/icons.h>
-#include <gui/checkbox.h>
-#include <gui/virtKbd.h>
 #include <gui/msgBox.h>
+#include <gui/virtKbd.h>
 
 #include <gui/settings_misc.h>
 
@@ -35,23 +35,36 @@
 
 #define MISC_GUIFONT RADONWIDE
 
-WIDGETLIST menuList;  
-CHECKBOX FmRemote;
-CHECKBOX ExtSpkr;
-CHECKBOX develFct;
-CHECKBOX virtKbdLY;
-
-int stop_misc_set;
+static WIDGETMENU widgetMenu;
+static WIDGETMENU_CHECKBOX FmRemote;
+static WIDGETMENU_CHECKBOX ExtSpkr;
+static WIDGETMENU_CHECKBOX develFct;
+static WIDGETMENU_CHECKBOX virtKbdLY;
 
 int has_develFct;
 
-#define ICON_X 5
-#define ICON_Y 5
-
-void okBtnMisc_click(BUTTON b)
+void miscSet_sav(void)
 {
+    int needSave=0;
+    int fmSate=FM_getState();
+    int spkrState;
     CFG_DATA * cfg;
     /* opening config file */
+    
+    TEST_VAR(fmSate,FmRemote->checkbox->checked,needSave);
+    TEST_VAR(has_develFct,develFct->checkbox->checked,needSave);
+    if(SPKR_AVAILABLE())
+    {
+        spkrState=SPKR_STATE();
+        TEST_VAR(spkrState,ExtSpkr->checkbox->checked,needSave);
+    }
+    TEST_VAR(paramVirtKbd,virtKbdLY->checkbox->checked,needSave);
+    
+    if(!needSave)
+    {
+        printk("No change ==> no save\n");
+        return;
+    }
     
     msgBox_info(getLangStr(STRLNG_SAVE_SETTINGS));
     
@@ -69,24 +82,24 @@ void okBtnMisc_click(BUTTON b)
     
     /* setting the config */
     
-    if(FmRemote->checked != FM_getState())
+    if(FmRemote->checkbox->checked != FM_getState())
     {
-        if(FmRemote->checked)
+        if(FmRemote->checkbox->checked)
             FM_enable();
         else
             FM_disable();
-        cfg_writeInt(cfg,"fmRemote",FmRemote->checked);
+        cfg_writeInt(cfg,"fmRemote",FmRemote->checkbox->checked);
     }
     
-    if(develFct->checked != has_develFct)
+    if(develFct->checkbox->checked != has_develFct)
     {
-        has_develFct=develFct->checked;
+        has_develFct=develFct->checkbox->checked;
         cfg_writeInt(cfg,"develFct",has_develFct);
     }
     
-    if(SPKR_AVAILABLE() && ExtSpkr->checked!=SPKR_STATE())
+    if(SPKR_AVAILABLE() && ExtSpkr->checkbox->checked!=SPKR_STATE())
     {
-        if(ExtSpkr->checked)
+        if(ExtSpkr->checkbox->checked)
         {
             SPKR_ON();
         }
@@ -94,143 +107,76 @@ void okBtnMisc_click(BUTTON b)
         {
             SPKR_OFF();
         }
-        cfg_writeInt(cfg,"ExtSpkr",ExtSpkr->checked);
+        cfg_writeInt(cfg,"ExtSpkr",ExtSpkr->checkbox->checked);
     }
     
-    if(virtKbdLY->checked != paramVirtKbd)
+    if(virtKbdLY->checkbox->checked != paramVirtKbd)
     {
-        paramVirtKbd=virtKbdLY->checked;
+        paramVirtKbd=virtKbdLY->checkbox->checked;
         cfg_writeInt(cfg,"VkbdLY",paramVirtKbd);
     }
     
     cfg_writeFile(cfg,"/medios/medios.cfg");
     cfg_clear(cfg);
-    stop_misc_set=1;
 }
 
 void misc_setting(void)
 {
     ICON logo;
-        
-    int evtHandle;
-    int event;
     
-    int minX,w,h,x,y,sepW,sepH,lineH;
-    
-    BUTTON mib;
-    gfx_clearScreen(COLOR_TRSP);
-    
-    stop_misc_set=0;
-    
-    evtHandle = evt_getHandler(BTN_CLASS|GUI_CLASS);
-    if(evtHandle<0)
-    {
-        printk("Can't get evt handler\n");   
-    }
+    int minX,minY;
     
     logo=icon_get("misc");
     if(!logo)
         icon_load("misc.ico");
     
-    gfx_drawBitmap(&logo->bmap_data,ICON_X,ICON_Y);
-    
-    minX = ICON_X + logo->bmap_data.width;
-        
-    
-    gfx_drawLine(COLOR_BLUE,minX+3,5,minX+3,LCD_HEIGHT-5);
-        
-    minX+=5; 
-       
-    gfx_fontSet(STD8X13);
-    gfx_getStringSize(getLangStr(STRLNG_MISC_SETTINGS),&w,&h);
-    lineH=h+5;
-
-    gfx_putS(COLOR_DARK_GREY,COLOR_TRSP,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,getLangStr(STRLNG_MISC_SETTINGS));
-    
-    x=minX;    
-    y=ICON_Y+2*lineH;
+    settings_initScreen(getLangStr(STRLNG_MISC_SETTINGS),logo,&minX,&minY);
     
     // menuList
-    menuList=widgetList_create();
-    menuList->ownWidgets=true;
-
-    gfx_fontSet(MISC_GUIFONT);
+    widgetMenu=widgetMenu_create();
+    widgetMenu->setRect(widgetMenu,minX,minY,LCD_WIDTH-minX,LCD_HEIGHT-minY);
+    widgetMenu->ownItems=true; // the menu will handle items destroy
     
     // standardMenu
+    FmRemote=widgetMenuCheckbox_create();
+    FmRemote->caption=NULL;
+    FmRemote->checkbox->caption=getLangStr(STRLNG_MISC_REMOTE);
+    FmRemote->checkbox->checked=FM_getState();
+    FmRemote->doAutoSize=true;
+    widgetMenu->addItem(widgetMenu,FmRemote);
     
-    FmRemote=checkbox_create();
-    FmRemote->caption=getLangStr(STRLNG_MISC_REMOTE);
-    FmRemote->font=MISC_GUIFONT;
-    FmRemote->setRect(FmRemote,x,y,8,8);
-    FmRemote->checked=FM_getState();
-    
-    y+=lineH;
-    
-    menuList->addWidget(menuList,FmRemote);
-    
-    develFct=checkbox_create();
-    develFct->caption=getLangStr(STRLNG_MISC_DEV);
-    develFct->font=MISC_GUIFONT;
-    develFct->setRect(develFct,x,y,8,8);
-    develFct->checked=has_develFct;
-    
-    y+=lineH;
-    
-    menuList->addWidget(menuList,develFct);
-    
+    develFct=widgetMenuCheckbox_create();
+    develFct->caption=NULL;
+    develFct->checkbox->caption=getLangStr(STRLNG_MISC_DEV);
+    develFct->checkbox->checked=has_develFct;
+    develFct->doAutoSize=true;
+    widgetMenu->addItem(widgetMenu,develFct);
+        
     if(SPKR_AVAILABLE())
     {
-        ExtSpkr=checkbox_create();
-        ExtSpkr->caption=getLangStr(STRLNG_MISC_SPEAKER);
-        ExtSpkr->font=MISC_GUIFONT;
-        ExtSpkr->setRect(ExtSpkr,x,y,8,8);
-        ExtSpkr->checked=SPKR_STATE();
-        menuList->addWidget(menuList,ExtSpkr);
-        y+=lineH;
+        ExtSpkr=widgetMenuCheckbox_create();
+        ExtSpkr->caption=NULL;
+        ExtSpkr->checkbox->caption=getLangStr(STRLNG_MISC_SPEAKER);
+        ExtSpkr->checkbox->checked=SPKR_STATE();
+        ExtSpkr->doAutoSize=true;
+        widgetMenu->addItem(widgetMenu,ExtSpkr);
     }
     
-    virtKbdLY=checkbox_create();
-    virtKbdLY->caption="Kbd, text at top";
-    virtKbdLY->font=MISC_GUIFONT;
-    virtKbdLY->setRect(virtKbdLY,x,y,8,8);
-    virtKbdLY->checked=paramVirtKbd;
-    y+=lineH;
-    
-    menuList->addWidget(menuList,virtKbdLY);
-    
-    gfx_getStringSize("OK",&sepW,&sepH);
-    
-    mib=button_create();
-    mib->caption="OK"; 
-    mib->font=MISC_GUIFONT;
-    mib->setRect(mib,x,y,sepW+4,sepH+2);
-    mib->onClick=(BUTTON_CLICKEVENT)okBtnMisc_click;
-    menuList->addWidget(menuList,mib);
-        
+    virtKbdLY=widgetMenuCheckbox_create();
+    virtKbdLY->caption=NULL;
+    virtKbdLY->checkbox->caption="Kbd, text at top";
+    virtKbdLY->checkbox->checked=paramVirtKbd;
+    virtKbdLY->doAutoSize=true;
+    widgetMenu->addItem(widgetMenu,virtKbdLY);
+            
     // intial paint
     // set focus
-    menuList->setFocusedWidget(menuList,FmRemote);
-    menuList->paint(menuList);
+    widgetMenu->setFocus(widgetMenu,FmRemote);    
+    widgetMenu->paint(widgetMenu);
     
-    do{
-        event=evt_getStatusBlocking(evtHandle);
-        if (!event) continue; // no new events
-        switch(event)
-        {
-            case BTN_UP:
-                menuList->changeFocus(menuList,WLD_PREVIOUS);
-                break;
-            case BTN_DOWN:
-                menuList->changeFocus(menuList,WLD_NEXT);
-                break;    
-            default:
-                menuList->handleEvent(menuList,event);
-                break;
-        }
-    }while(event!=WIDGET_BACK_BTN && !stop_misc_set); 
+    settings_evtLoop(widgetMenu,miscSet_sav,-1);
        
-    menuList->destroy(menuList);
-    evt_freeHandler(evtHandle);
+    widgetMenu->destroy(widgetMenu);
 }
 
 void misc_loadPref(void)

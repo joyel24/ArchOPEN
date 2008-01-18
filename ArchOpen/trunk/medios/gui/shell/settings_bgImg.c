@@ -11,9 +11,9 @@
 */
 
 #include <kernel/kernel.h>
-#include <kernel/evt.h>
 #include <kernel/malloc.h>
 #include <kernel/lang.h>
+#include <kernel/evt.h>
 
 #include <gfx/kfont.h>
 #include <gfx/jpg.h>
@@ -25,9 +25,9 @@
 #include <gui/widgetmenu.h>
 #include <gui/icons.h>
 #include <gui/msgBox.h>
-#include <gui/label.h>
 #include <gui/file_browser.h>
 #include <gui/settings_misc.h>
+#include <gui/settings_screens.h>
 
 #include <driver/lcd.h>
 #include <driver/osd.h>
@@ -35,8 +35,6 @@
 #include <fs/cfg_file.h>
 
 #include <init/boot_error.h>
-
-#define BGIMG_GUIFONT RADONWIDE
 
 static WIDGETMENU widgetMenu;
 static WIDGETMENU_CHECKBOX bgImg_disp_chk;
@@ -47,15 +45,8 @@ static WIDGETMENU_BUTTON discardFileImg_button;
 static WIDGETMENU_BUTTON discardBg_button;
 static WIDGETMENU_BUTTON reset_button;
 static WIDGETMENU_ITEM  fName;
-static LABEL title_label;
 
-static ICON logo;
-
-static int stop_bgImg_set;
-static int minX,minY,txt_x;
-
-#define ICON_X 5
-#define ICON_Y 5
+ICON logo;
 
 #define BG_FILENAME "/medios/bg.img"
 
@@ -68,7 +59,6 @@ int bgImg_enable=0;
 int blendMode=0;
 int blendFactor=0;
 int has_bgImg;
-int smallScreen;
 
 int oldHas_bg;
 
@@ -182,8 +172,7 @@ MED_RET_T loadSaveImg(int mode)
 void bgImgSet_save(void)
 {
     CFG_DATA * cfg;
-    int needWrite=0;
-    int nVal;
+    int needSave=0;
     
     msgBox_info(getLangStr(STRLNG_SAVE_SETTINGS));
     
@@ -205,53 +194,40 @@ void bgImgSet_save(void)
     }
     
     /* checking if someting has changed */
-    if(has_bgImg!=oldHas_bg)
-        needWrite=1;
-    nVal=bgImg_disp_chk->checkbox->checked?1:0;
-    if(bgImg_enable!=nVal)
+    
+    TEST_VAR(oldHas_bg,has_bgImg,needSave);
+    TEST_VAR(bgImg_enable,bgImg_disp_chk->checkbox->checked?1:0,needSave);
+    TEST_VAR(blendMode,blendTrsp->chooser->index?1:0,needSave);
+    TEST_VAR(blendFactor,trspVal->trackbar->value,needSave);
+     
+    
+    if(!needSave)
     {
-        needWrite=1;
-        bgImg_enable=nVal;
+        printk("No change ==> no save\n");
+        return;
     }
     
-    nVal=blendTrsp->chooser->index?1:0;
-    if(blendMode!=nVal)
+    cfg=cfg_readFile("/medios/medios.cfg");
+    if(!cfg)
     {
-        needWrite=1;
-        blendMode=nVal;
-    }
-    nVal=trspVal->trackbar->value;
-    if(blendFactor!=nVal)
-    {   
-        needWrite=1;
-        blendFactor=nVal;
-    }
-    
-    if(needWrite)
-    {
-        cfg=cfg_readFile("/medios/medios.cfg");
+        printk("[bgImg-menu] Can't open cfg file\n");
+        cfg=cfg_newFile();
         if(!cfg)
         {
-            printk("[bgImg-menu] Can't open cfg file\n");
-            cfg=cfg_newFile();
-            if(!cfg)
-            {
-                printk("[bgImg-menu] Can't create new cfg file\n");
-                return;
-            }
+            printk("[bgImg-menu] Can't create new cfg file\n");
+            return;
         }
-        
-        /* setting the config */
-        cfg_writeInt(cfg,"has_bgImg",has_bgImg);    
-        cfg_writeInt(cfg,"bgImg_enable",bgImg_enable);
-        cfg_writeInt(cfg,"blendMode",blendMode);
-        cfg_writeInt(cfg,"blendFactor",blendFactor);
-        
-        cfg_writeFile(cfg,"/medios/medios.cfg");
-        cfg_clear(cfg);
     }
     
-    stop_bgImg_set=1;
+    /* setting the config */
+    cfg_writeInt(cfg,"has_bgImg",has_bgImg);    
+    cfg_writeInt(cfg,"bgImg_enable",bgImg_enable);
+    cfg_writeInt(cfg,"blendMode",blendMode);
+    cfg_writeInt(cfg,"blendFactor",blendFactor);
+    
+    cfg_writeFile(cfg,"/medios/medios.cfg");
+    cfg_clear(cfg);
+    
     BG_MENU_STATE("After OK btn",1);
 }
 
@@ -453,12 +429,7 @@ void trspVal_chg(TRACKBAR trkBar)
 
 void drawBGMenuBG(void)
 {
-    gfx_clearScreen(COLOR_TRSP);   
-    gfx_drawBitmap(&logo->bmap_data,ICON_X,ICON_Y);
-    if(!smallScreen)
-        gfx_drawLine(COLOR_RED,minX-8+3,5,minX-8+3,LCD_HEIGHT-5);
-     
-    title_label->paint(title_label);
+    settings_initScreen(getLangStr(STRLNG_BG_SETTING),logo,NULL,NULL);
 }
 
 void reset_button_click(BUTTON b)
@@ -486,25 +457,20 @@ void reset_button_click(BUTTON b)
 
 void bgImg_setting(void)
 {    
-    int event;
-    int w,h,x,y;
+    int minX,minY;
     
-    stop_bgImg_set=0;  
     bg_img_path[0]='\0';    
     has_file=0; 
     needClean=0;
     oldHas_bg=has_bgImg;
-    if(LCD_HEIGHT<240 || LCD_WIDTH<320)
-       smallScreen=1;
-    else
-       smallScreen=0;
     
     BG_MENU_STATE("Init menu",0);
     
     evtHandler = evt_getHandler(BTN_CLASS|GUI_CLASS);
     if(evtHandler<0)
     {
-        printk("[bgImg-menu] Can't get evt handler\n");   
+        printk("Can't get evt handler\n");
+        return;
     }
     
     trspString[0]=getLangStr(STRLNG_BLENDING);
@@ -514,36 +480,10 @@ void bgImg_setting(void)
     if(!logo)
         icon_load("bgCfg.ico");
     
-    if(!smallScreen)
-    {
-        minX = ICON_X + logo->bmap_data.width + 8;
-        txt_x = minX;
-    }
-    else
-    {
-        minX = 0;
-        txt_x =ICON_X + logo->bmap_data.width + 8;
-    }
+    settings_initScreen(getLangStr(STRLNG_BG_SETTING),logo,&minX,&minY);
 
-    title_label=label_create();    
-    title_label->setRect(title_label,txt_x, ICON_Y,
-                         LCD_WIDTH-txt_x-1,0);
-    title_label->font=STD8X13;
-    title_label->alignment=LA_CENTER;
-    title_label->setText(title_label,getLangStr(STRLNG_BG_SETTING));
-    
-    drawBGMenuBG();
-    title_label->getMaxSize(title_label,&w,&h);
-            
-    x=minX;
-    if(smallScreen)        
-        y=minY=ICON_Y+MAX(logo->bmap_data.height,h)+1;
-    else
-        y=minY=ICON_Y+h+2;
-    
-    // menuList
     widgetMenu=widgetMenu_create();
-    widgetMenu->setRect(widgetMenu,x,y,LCD_WIDTH-x,LCD_HEIGHT-y);
+    widgetMenu->setRect(widgetMenu,minX,minY,LCD_WIDTH-minX,LCD_HEIGHT-minY);
     widgetMenu->ownItems=true; // the menu will handle items destroy
     
     bgImg_disp_chk=widgetMenuCheckbox_create();
@@ -625,20 +565,7 @@ void bgImg_setting(void)
 
     BG_MENU_STATE("Init done",1);
     
-    do{
-        event=evt_getStatusBlocking(evtHandler);
-        if (!event) continue; // no new events
-        switch(event)
-        {
-            case BTN_OFF:
-                stop_bgImg_set=1;
-                bgImgSet_save();
-                break;
-            default:
-                widgetMenu->handleEvent(widgetMenu,event);
-                break;
-        }
-    }while(event!=WIDGET_BACK_BTN && !stop_bgImg_set);
+    settings_evtLoop(widgetMenu,bgImgSet_save,evtHandler);
     
     widgetMenu->destroy(widgetMenu);
     evt_freeHandler(evtHandler);

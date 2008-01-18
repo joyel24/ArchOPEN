@@ -28,20 +28,32 @@ extern char * buildin_lng_end;
 char * ptr_buildin;
 char * ptr_buildin_end;
 
-MED_RET_T lang_loadLng(char * ptr,int size)
+int lng_langNum;
+
+MED_RET_T lang_loadLng(char * ptr,int size, int * lngNum)
 {
     int i,id;
     char * end=ptr+size;
     
-    if(strncmp(ptr,"LNG",3))
+    if(strncmp(ptr,LNG_HEADER,3))
     {
         printk("Not a lang buffer\n");
-        return -MED_ERROR;
-    }
+        return -MED_EINVAL;
+    }    
+    ptr+=3; // skipping LNG header
     
-    //print_data(ptr,10);
-    
-    ptr+=4; // skipping LNG header + 1 char of invisible header 
+    /* checking version */
+    if(*ptr!=LNG_VERSION)
+    {
+        printk("Wrong version\n");
+        return -MED_EBADDATA;
+    }    
+    ptr++; // skipping version
+     
+    /*reading lang number*/
+    if(lngNum)
+        *lngNum=*ptr;
+    ptr++;    
     
     for(i=0;i<STRLNG_LAST_ENTRY;i++)
     {
@@ -54,7 +66,7 @@ MED_RET_T lang_loadLng(char * ptr,int size)
         }
         else
         {
-            if(id==0xFFFF)
+            if(id==LNG_LAST_ENTRY)
             {
                 printk("[lang_loadLng] End of reached: found end magic id (%d str found, max=%d)\n",
                        i,STRLNG_LAST_ENTRY);
@@ -85,7 +97,8 @@ void lang_loadDefault(void)
     ptr_buildin_end=(char*)&buildin_lng_end;
     size=ptr_buildin_end-ptr_buildin;
     customLang=NULL;
-    lang_loadLng(ptr_buildin,size);
+    lang_loadLng(ptr_buildin,size,NULL);
+    lng_langNum=0;
 }
 
 char * lang_getStr(int id)
@@ -98,13 +111,14 @@ char * lang_getStr(int id)
 void lang_init(void)
 {
     customLang=(char*)1;
+    lng_langNum=0;
     lang_loadDefault();
-    //printk("lang at 0x%x\n",langString);
 }
 
 MED_RET_T lang_loadFile(char * fName)
 {
     int fd;
+    MED_RET_T res;
     int size;    
     char * buffer;
     printk("[lang_loadFile] loading lng from %s\n",fName);
@@ -123,17 +137,11 @@ MED_RET_T lang_loadFile(char * fName)
     }
     size=read(fd,buffer,size);
     close(fd);
-if(lang_loadLng(buffer,size)!=MED_OK)
-        return -MED_ERROR;
+    if((res=lang_loadLng(buffer,size,&lng_langNum))!=MED_OK)
+        return res;
 /* NOTE: on error should reload previous lang */
     if(customLang)        
         free(customLang);
     customLang=buffer;
     return MED_OK;
-#if 0
-lang_error:
-    /*restoring initial data*/
-    lang_loadLng(buildin_lng,buildin_lng_end-buildin_lng);
-    return -MED_EBADDATA;
-#endif
 }

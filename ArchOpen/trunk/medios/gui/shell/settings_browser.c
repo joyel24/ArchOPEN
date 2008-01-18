@@ -20,40 +20,37 @@
 #include <lib/string.h>
 
 #include <gui/widgetlist.h>
-#include <gui/checkbox.h>
-#include <gui/trackbar.h>
-#include <gui/button.h>
 #include <gui/icons.h>
 #include <gui/msgBox.h>
-
+#include <gui/widgetmenu.h>
 #include <gui/file_browser.h>
 #include <gui/settings_browser.h>
+#include <gui/settings_screens.h>
 
 #include <fs/cfg_file.h>
 
-#define BROWSER_GUIFONT RADONWIDE
+static WIDGETMENU widgetMenu;
+static WIDGETMENU_CHECKBOX hasBack;
+static WIDGETMENU_CHECKBOX scrollSelected;
+static WIDGETMENU_CHECKBOX hasStatus;
+static WIDGETMENU_TRACKBAR txtScrollSpeed;
 
-WIDGETLIST menuList;  
-
-CHECKBOX hasBack;
-CHECKBOX scrollSelected;
-CHECKBOX hasStatus;
-TRACKBAR txtScrollSpeed;
-
-#define ICON_X 5
-#define ICON_Y 5
-
-int stop_brw_set;
-
-void okBtnBrowser_click(BUTTON b)
+void browserSetting_sav(void)
 {
-    browser_has_back_entry=hasBack->checked;
-    browser_scroll_only_selected=scrollSelected->checked;
-    browser_has_statusbar=hasStatus->checked;
-    txt_scroll_speed=(txtScrollSpeed->value)*BRW_SETTING_CST_A + BRW_SETTING_CST_B;
-    
+    int needSave=0;
     CFG_DATA * cfg;
-
+    
+    TEST_VAR(browser_has_back_entry,hasBack->checkbox->checked,needSave);
+    TEST_VAR(browser_scroll_only_selected,scrollSelected->checkbox->checked,needSave);
+    TEST_VAR(browser_has_statusbar,hasStatus->checkbox->checked,needSave);
+    TEST_VAR(txt_scroll_speed,(txtScrollSpeed->trackbar->value)*BRW_SETTING_CST_A + BRW_SETTING_CST_B,needSave);
+    
+    if(!needSave)
+    {
+        printk("No change ==> no save\n");
+        return;
+    }
+    
     /* saving to cfg file */
     
     msgBox_info(getLangStr(STRLNG_SAVE_SETTINGS));
@@ -78,157 +75,74 @@ void okBtnBrowser_click(BUTTON b)
 //    cfg_printItems(cfg);
     cfg_writeFile(cfg,"/medios/medios.cfg");
     cfg_clear(cfg);
-                             
-    stop_brw_set=1;
-
-}
-
-void cancelBtnBrowser_click(BUTTON b)
-{
-    stop_brw_set=1;
 }
 
 void browser_setting(void)
 {
     ICON logo;
-      
-    int evtHandle;
-    int event;
     
-    int minX,lineH,x,y,w,h,sepH,sepW,tmp;
-        
-    stop_brw_set = 0;
-    
-    BUTTON mib;
-        
-    gfx_clearScreen(COLOR_TRSP);
-        
-    evtHandle = evt_getHandler(BTN_CLASS|GUI_CLASS);
-    if(evtHandle<0)
-    {
-        printk("Can't get evt handler\n");   
-    }
+    int minX,minY;
+    int tmp;
+    WIDGETMENU_ITEM it;
     
     logo=icon_get("browser_icon");
     if(!logo)
         icon_load("browser_icon.ico");
     
-    gfx_drawBitmap(&logo->bmap_data,ICON_X,ICON_Y);
+    settings_initScreen(getLangStr(STRLNG_BROWSER_SETTINGS),logo,&minX,&minY);
+
+    widgetMenu=widgetMenu_create();
+    widgetMenu->setRect(widgetMenu,minX,minY,LCD_WIDTH-minX,LCD_HEIGHT-minY);
+    widgetMenu->ownItems=true; // the menu will handle items destroy
     
-    minX = ICON_X + logo->bmap_data.width;        
-    
-    gfx_drawLine(COLOR_RED,minX+3,5,minX+3,LCD_HEIGHT-5);
+    hasBack=widgetMenuCheckbox_create();
+    hasBack->caption=NULL;
+    hasBack->checkbox->caption=getLangStr(STRLNG_HAS_BACK_ENTRY);
+    hasBack->checkbox->checked=browser_has_back_entry;
+    hasBack->doAutoSize=true;
+    widgetMenu->addItem(widgetMenu,hasBack);
         
-    minX+=3; 
-       
-    gfx_fontSet(STD8X13);
-    gfx_getStringSize(getLangStr(STRLNG_BROWSER_SETTINGS),&w,&h);
-    gfx_putS(COLOR_DARK_GREY,COLOR_TRSP,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,getLangStr(STRLNG_BROWSER_SETTINGS));
+    scrollSelected=widgetMenuCheckbox_create();
+    scrollSelected->caption=NULL;
+    scrollSelected->checkbox->caption=getLangStr(STRLNG_SCROLL_ONLY_SELECTED);
+    scrollSelected->checkbox->checked=browser_scroll_only_selected;
+    scrollSelected->doAutoSize=true;
+    widgetMenu->addItem(widgetMenu,scrollSelected);
     
-    gfx_fontSet(BROWSER_GUIFONT);    
-    gfx_getStringSize(getLangStr(STRLNG_BROWSER_SETTINGS),&w,&lineH);    
-    lineH=(lineH+4);
+    hasStatus=widgetMenuCheckbox_create();
+    hasStatus->caption=NULL;
+    hasStatus->checkbox->caption=getLangStr(STRLNG_BRW_HAS_STATUSBAR);
+    hasStatus->checkbox->checked=browser_has_statusbar;
+    hasStatus->doAutoSize=true;
+    widgetMenu->addItem(widgetMenu,hasStatus);
+        
+    it=widgetMenuItem_create();
+    it->caption=getLangStr(STRLNG_BRW_SCROLL_SPEED);
+    it->widgetWidth=0;
+    it->canFocus=0;
+    widgetMenu->addItem(widgetMenu,it);
     
-    
-    x=minX+1;    
-    y=ICON_Y+h+(LCD_HEIGHT-ICON_Y-h-lineH*6)/2;
-    
-    // menuList
-    menuList=widgetList_create();
-    menuList->ownWidgets=true;
-
-    // standardMenu
-     
-    hasBack=checkbox_create();
-    hasBack->caption=getLangStr(STRLNG_HAS_BACK_ENTRY);
-    hasBack->font=BROWSER_GUIFONT;
-    hasBack->setRect(hasBack,x,y,8,8);
-    hasBack->checked=browser_has_back_entry;
-    menuList->addWidget(menuList,hasBack);
-    
-    y += lineH;
-    
-    scrollSelected=checkbox_create();
-    scrollSelected->caption=getLangStr(STRLNG_SCROLL_ONLY_SELECTED);
-    scrollSelected->font=BROWSER_GUIFONT;
-    scrollSelected->setRect(scrollSelected,x,y,8,8);
-    scrollSelected->checked=browser_scroll_only_selected;
-    menuList->addWidget(menuList,scrollSelected);   
-    
-    y += lineH;
-
-    hasStatus=checkbox_create();
-    hasStatus->caption=getLangStr(STRLNG_BRW_HAS_STATUSBAR);
-    hasStatus->font=BROWSER_GUIFONT;
-    hasStatus->setRect(hasStatus,x,y,8,8);
-    hasStatus->checked=browser_has_statusbar;
-    menuList->addWidget(menuList,hasStatus);
-    
-    y += lineH;
-    
-    gfx_getStringSize(getLangStr(STRLNG_BRW_SCROLL_SPEED),&sepW,&sepH);
-    gfx_putS(COLOR_BLACK,COLOR_WHITE,x,y,getLangStr(STRLNG_BRW_SCROLL_SPEED));
-    y += lineH;
-    
-    txtScrollSpeed=trackbar_create();
-    txtScrollSpeed->minimum=1;
-    txtScrollSpeed->maximum=MAX_STEP;
+    txtScrollSpeed=widgetMenuTrackbar_create();
+    txtScrollSpeed->caption=NULL;
     tmp=((txt_scroll_speed - BRW_SETTING_CST_B)/BRW_SETTING_CST_A);
     //if a wrong value is read from a previous config.cfg set default value to middle of min and max
-    if (tmp < txtScrollSpeed->minimum || tmp > txtScrollSpeed->maximum)
-    	tmp = (txtScrollSpeed->minimum + txtScrollSpeed->maximum) / 2;
-    txtScrollSpeed->value=tmp;
-    txtScrollSpeed->increment=1;
-    txtScrollSpeed->setRect(txtScrollSpeed,x,y,160,sepH);
-    txtScrollSpeed->font=BROWSER_GUIFONT;
-    menuList->addWidget(menuList,txtScrollSpeed);
-    
-    y += lineH;
-    
-    gfx_getStringSize(getLangStr(STRLNG_OK),&sepW,&sepH);
-    
-    mib=button_create();
-    mib->caption=getLangStr(STRLNG_OK); 
-    mib->font=BROWSER_GUIFONT;
-    mib->setRect(mib,x,y,sepW+2,sepH+2);
-    mib->onClick=(BUTTON_CLICKEVENT)okBtnBrowser_click;
-    menuList->addWidget(menuList,mib);
-        
-    gfx_getStringSize(getLangStr(STRLNG_CANCEL),&sepW,&sepH);
-    x+=mib->width+4;
-    
-    mib=button_create();
-    mib->caption=getLangStr(STRLNG_CANCEL); 
-    mib->font=BROWSER_GUIFONT;
-    mib->setRect(mib,x,y,sepW+2,sepH+2);
-    mib->onClick=(BUTTON_CLICKEVENT)cancelBtnBrowser_click;
-    menuList->addWidget(menuList,mib);
-    
+    if (tmp < txtScrollSpeed->trackbar->minimum || tmp > txtScrollSpeed->trackbar->maximum)
+        tmp = (txtScrollSpeed->trackbar->minimum + txtScrollSpeed->trackbar->maximum) / 2;
+    txtScrollSpeed->trackbar->value=tmp;
+    txtScrollSpeed->trackbar->minimum=1;
+    txtScrollSpeed->trackbar->maximum=MAX_STEP; /* mas is probably different on DSC21 */
+    txtScrollSpeed->trackbar->increment=1;
+    txtScrollSpeed->doAutoSize=true;
+    widgetMenu->addItem(widgetMenu,txtScrollSpeed);
+            
     // intial paint
     // set focus
-    menuList->setFocusedWidget(menuList,hasBack);
-    menuList->paint(menuList);
+    widgetMenu->setFocus(widgetMenu,hasBack);    
+    widgetMenu->paint(widgetMenu);
     
-    do{
-        event=evt_getStatusBlocking(evtHandle);
-        if (!event) continue; // no new events
-        switch(event)
-        {
-            case BTN_UP:
-                menuList->changeFocus(menuList,WLD_PREVIOUS);
-                break;
-            case BTN_DOWN:
-                menuList->changeFocus(menuList,WLD_NEXT);
-                break;    
-            default:
-                menuList->handleEvent(menuList,event);
-                break;
-        }
-    }while(event!=WIDGET_BACK_BTN && !stop_brw_set); 
+    settings_evtLoop(widgetMenu,browserSetting_sav,-1);
        
-    menuList->destroy(menuList);
-    evt_freeHandler(evtHandle);
-
+    widgetMenu->destroy(widgetMenu);
 }
 
 void browser_loadCfg(void)

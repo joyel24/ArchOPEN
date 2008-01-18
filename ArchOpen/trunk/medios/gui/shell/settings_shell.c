@@ -20,13 +20,11 @@
 #include <lib/string.h>
 
 #include <gui/widgetlist.h>
-#include <gui/button.h>
 #include <gui/icons.h>
-#include <gui/checkbox.h>
 #include <gui/msgBox.h>
 #include <gui/icons.h>
-#include <gui/trackbar.h>
-#include <gui/chooser.h>
+#include <gui/widgetmenu.h>
+#include <gui/settings_screens.h>
 
 #include <gui/shellmenu.h>
 
@@ -36,27 +34,29 @@
 
 #include <driver/lcd.h>
 
-#define SHELL_GUIFONT RADONWIDE
 
-static WIDGETLIST menuList;  
-static CHECKBOX hasCaption;
-static CHOOSER iconSize;
-static TRACKBAR brightVal;
+static WIDGETMENU widgetMenu;
+static WIDGETMENU_CHECKBOX hasCaption;
+static WIDGETMENU_CHOOSER iconSize;
+static WIDGETMENU_TRACKBAR brightVal;
 
-int stop_shell_set;
 int init_bright;
 
 char * iconSizeStr[3];
 
-#define ICON_X 5
-#define ICON_Y 5
-
-void okBtnShell_click(BUTTON b)
+void shellSet_save(void)
 {
     CFG_DATA * cfg;
-    int needWrite=0;
+    int forceWrite=0;
+    int needSave=0;
+    int reloadShell=0;
     /* opening config file */
     
+    TEST_VAR(shellHasCaption,hasCaption->checkbox->checked,needSave);
+    TEST_VAR(folderType,iconSize->chooser->index,needSave);
+    if(needSave) reloadShell=1;    
+    TEST_VAR(init_bright,brightVal->trackbar->value,needSave);
+             
     msgBox_info(getLangStr(STRLNG_SAVE_SETTINGS));
     
     cfg=cfg_readFile("/medios/medios.cfg");
@@ -69,47 +69,32 @@ void okBtnShell_click(BUTTON b)
             printk("Can't create new cfg file\n");
             return;
         }
+        forceWrite=1;
     }
     
     /* setting the config */
     
-    if(hasCaption->checked != shellHasCaption)
-    {
-        shellHasCaption=hasCaption->checked;
+    if(hasCaption->checkbox->checked != shellHasCaption || forceWrite)
         cfg_writeInt(cfg,"shellHasCaption",shellHasCaption);
-        needWrite=1;
-    }
     
-    if(iconSize->index != folderType)
+    if(iconSize->chooser->index != folderType || forceWrite)
     {
-        folderType=iconSize->index;
         cfg_writeInt(cfg,"iconSize",folderType);
         icon_setPath();
-        needWrite=1;
     }
     
-    if(init_bright!=brightVal->value)
-    {
-        cfg_writeInt(cfg,"lcdBrightness",brightVal->value);
-        needWrite=1;
-    }
+    if(init_bright!=brightVal->trackbar->value || forceWrite)
+        cfg_writeInt(cfg,"lcdBrightness",brightVal->trackbar->value);
     
-    if(needWrite)
+    cfg_writeFile(cfg,"/medios/medios.cfg");
+    cfg_clear(cfg);
+    /* need to reload shell */
+    if(reloadShell)
     {
-        cfg_writeFile(cfg,"/medios/medios.cfg");
-        /* need to reload shell */
         shellMenu_close();
         shellMenu_init();
         shell_restore();
     }
-    cfg_clear(cfg);
-
-    stop_shell_set=1;
-}
-
-void cancelBtnShell_click(BUTTON b)
-{
-    stop_shell_set=1;
 }
 
 void brightVal_chg(TRACKBAR trkBar)
@@ -121,145 +106,59 @@ void shell_setting(void)
 {
     ICON logo;
         
-    int evtHandle;
-    int event;
-    
-    int minX,w,h,x,y,sepW,sepH,lineH,maxW;
-    
-    BUTTON mib;
+    int minX,minY;
     
     iconSizeStr[0]=getLangStr(STRLNG_ICONS_SMALL);
     iconSizeStr[1]=getLangStr(STRLNG_ICONS_STD);
     iconSizeStr[2]=getLangStr(STRLNG_ICONS_BIG);
     
-    gfx_clearScreen(COLOR_TRSP);
-    
-    stop_shell_set=0;
-    
-    evtHandle = evt_getHandler(BTN_CLASS|GUI_CLASS);
-    if(evtHandle<0)
-    {
-        printk("Can't get evt handler\n");   
-    }
-    
     logo=icon_get("shell_setting");
     if(!logo)
         icon_load("shell_setting.ico");
     
-    gfx_drawBitmap(&logo->bmap_data,ICON_X,ICON_Y);
-    
-    minX = ICON_X + logo->bmap_data.width;
-    
-    gfx_drawLine(COLOR_BLUE,minX+3,5,minX+3,LCD_HEIGHT-5);
-        
-    minX+=5; 
-       
-    gfx_fontSet(STD8X13);
-    gfx_getStringSize(getLangStr(STRLNG_SHELL_SETTINGS),&w,&h);
-    lineH=h+5;
-
-    gfx_putS(COLOR_DARK_GREY,COLOR_TRSP,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,getLangStr(STRLNG_SHELL_SETTINGS));
-    
-    x=minX;    
-    y=ICON_Y+2*lineH;
+    settings_initScreen(getLangStr(STRLNG_SHELL_SETTINGS),logo,&minX,&minY);
     
     // menuList
-    menuList=widgetList_create();
-    menuList->ownWidgets=true;
-
-    gfx_fontSet(SHELL_GUIFONT);
+    widgetMenu=widgetMenu_create();
+    widgetMenu->setRect(widgetMenu,minX,minY,LCD_WIDTH-minX,LCD_HEIGHT-minY);
+    widgetMenu->ownItems=true; // the menu will handle items destroy
     
     // standardMenu
     
-    hasCaption=checkbox_create();
-    hasCaption->caption=getLangStr(STRLNG_SHELL_CAPTION);
-    hasCaption->font=SHELL_GUIFONT;
-    hasCaption->setRect(hasCaption,x,y,8,8);
-    hasCaption->checked=shellHasCaption;
-    
-    y+=lineH;
-    
-    menuList->addWidget(menuList,hasCaption);
+    hasCaption=widgetMenuCheckbox_create();
+    hasCaption->caption=NULL;
+    hasCaption->checkbox->caption=getLangStr(STRLNG_SHELL_CAPTION);
+    hasCaption->checkbox->checked=shellHasCaption;
+    hasCaption->doAutoSize=true;
+    widgetMenu->addItem(widgetMenu,hasCaption);
         
-    gfx_getStringSize(getLangStr(STRLNG_SIZE),&w,&h);
-    gfx_putS(COLOR_BLACK,COLOR_TRSP,x,y,getLangStr(STRLNG_SIZE));
-    
-    x=x+(w+3);
-    
-    gfx_getStringSize(iconSizeStr[0],&maxW,NULL);    
-    gfx_getStringSize(iconSizeStr[1],&w,NULL);
-    if(w>maxW) maxW=w;
-    gfx_getStringSize(iconSizeStr[2],&w,&h);
-    if(w>maxW) maxW=w;
-        
-    iconSize=chooser_create();
-    iconSize->items=iconSizeStr;
-    iconSize->itemCount=3;
-    iconSize->index=folderType;
-    iconSize->font=SHELL_GUIFONT;
-    iconSize->setRect(iconSize,x,y,maxW+29,h+1);    
-    iconSize->wrap=WIDGET_WRAP_ON;
-    iconSize->orientation=WIDGET_ORIENTATION_HORIZ;
-    menuList->addWidget(menuList,iconSize);
-    
-    x=minX;
-    y += lineH;
-    
-    gfx_getStringSize(getLangStr(STRLNG_BRIGHTNESS),&w,&h);
-    gfx_putS(COLOR_BLACK,COLOR_TRSP,x,y,getLangStr(STRLNG_BRIGHTNESS));
+    iconSize=widgetMenuChooser_create();
+    iconSize->caption=NULL;
+    iconSize->chooser->items=iconSizeStr;
+    iconSize->chooser->itemCount=3;
+    iconSize->chooser->index=folderType;
+    iconSize->chooser->wrap=WIDGET_WRAP_ON;
+    iconSize->chooser->orientation=WIDGET_ORIENTATION_HORIZ;
+    iconSize->doAutoSize=true;
+    widgetMenu->addItem(widgetMenu,iconSize);
+            
     init_bright=lcd_getBrightness();
-    brightVal=trackbar_create();
-    brightVal->value=init_bright;
-    brightVal->minimum=0;
-    brightVal->maximum=100; /* mas is probably different on DSC21 */
-    brightVal->increment=5;
-    brightVal->setRect(brightVal,x+w+3,y,80,h+1); /* using same height and width as previous widget*/
-    brightVal->font=SHELL_GUIFONT;
-    brightVal->onChange=(TRACKBAR_CHANGEEVENT)brightVal_chg;
-    menuList->addWidget(menuList,brightVal);
-    
-    y += lineH;
-    x=minX+4;
-    
-    gfx_getStringSize(getLangStr(STRLNG_OK),&sepW,&sepH);    
-    mib=button_create();
-    mib->caption=getLangStr(STRLNG_OK); 
-    mib->font=SHELL_GUIFONT;
-    mib->setRect(mib,x,y,sepW+4,sepH+2);
-    mib->onClick=(BUTTON_CLICKEVENT)okBtnShell_click;
-    menuList->addWidget(menuList,mib);
-        
-    x+=mib->width+4;
-    gfx_getStringSize(getLangStr(STRLNG_CANCEL),&sepW,&sepH);    
-    mib=button_create();
-    mib->caption=getLangStr(STRLNG_CANCEL); 
-    mib->font=SHELL_GUIFONT;
-    mib->setRect(mib,x,y,sepW+4,sepH+2);
-    mib->onClick=(BUTTON_CLICKEVENT)cancelBtnShell_click;
-    menuList->addWidget(menuList,mib);
+    brightVal=widgetMenuTrackbar_create();
+    brightVal->caption=NULL;
+    brightVal->trackbar->value=init_bright;
+    brightVal->trackbar->minimum=0;
+    brightVal->trackbar->maximum=100; /* mas is probably different on DSC21 */
+    brightVal->trackbar->increment=5;
+    brightVal->trackbar->onChange=(TRACKBAR_CHANGEEVENT)brightVal_chg;
+    brightVal->doAutoSize=true;
+    widgetMenu->addItem(widgetMenu,brightVal);
     
     // intial paint
     // set focus
-    menuList->setFocusedWidget(menuList,hasCaption);
-    menuList->paint(menuList);
+    widgetMenu->setFocus(widgetMenu,hasCaption);    
+    widgetMenu->paint(widgetMenu);
     
-    do{
-        event=evt_getStatusBlocking(evtHandle);
-        if (!event) continue; // no new events
-        switch(event)
-        {
-            case BTN_UP:
-                menuList->changeFocus(menuList,WLD_PREVIOUS);
-                break;
-            case BTN_DOWN:
-                menuList->changeFocus(menuList,WLD_NEXT);
-                break;    
-            default:
-                menuList->handleEvent(menuList,event);
-                break;
-        }
-    }while(event!=WIDGET_BACK_BTN && !stop_shell_set); 
+    settings_evtLoop(widgetMenu,shellSet_save,-1);
        
-    menuList->destroy(menuList);
-    evt_freeHandler(evtHandle);
+    widgetMenu->destroy(widgetMenu);
 }

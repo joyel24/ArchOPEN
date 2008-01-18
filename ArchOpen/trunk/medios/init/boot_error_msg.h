@@ -23,4 +23,5 @@ char * boot_error_msg[] = {
 	/*7*/	"/medios/handlers.cfg is missing",
 	/*8*/	"/medios/menu.cfg is missing",
 	/*9*/	"/medios/bg.img is missing",
+   /*10*/   "Wrong Lang file version, get newest pack",
 };

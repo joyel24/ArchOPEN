@@ -11,7 +11,6 @@
 */
 
 #include <kernel/kernel.h>
-#include <kernel/evt.h>
 #include <kernel/lang.h>
 
 #include <gfx/kfont.h>
@@ -19,11 +18,11 @@
 #include <lib/string.h>
 
 #include <gui/widgetlist.h>
-#include <gui/chooser.h>
-#include <gui/button.h>
+#include <gui/widgetmenu.h>
 #include <gui/icons.h>
 #include <gui/msgBox.h>
 #include <gui/settings_energy.h>
+#include <gui/settings_screens.h>
 
 #include <driver/lcd.h>
 #include <driver/energy.h>
@@ -31,24 +30,41 @@
 
 #include <fs/cfg_file.h>
 
-#define ENERGY_GUIFONT RADONWIDE
+static WIDGETMENU widgetMenu;
+static WIDGETMENU_CHOOSER chooser_list[6];
 
-WIDGETLIST menuList;  
 
-#define ICON_X 5
-#define ICON_Y 5
-
-CHOOSER chooser_list[6];
-
-int stop_enrg_set;
-
-void okBtnEnergy_click(BUTTON b)
+void energySet_sav(void)
 {
     CFG_DATA * cfg;
     int i,j;
     char tmpStr[50];
+    int needSave=0;
     /* saving to cfg file */
     
+    for(j=0;j<2;j++)
+        for(i=0;i<3;i++)
+        {
+            TEST_VAR(timer_status[i][j],chooser_list[i+j*3]->chooser->index!=9,needSave);
+            if(timer_status[i][j])
+            {
+                if(i==2)
+                {
+                    TEST_VAR(timer_delay[i][j],(chooser_list[i+j*3]->chooser->index+1)*60,needSave);
+                }
+                else
+                {
+                    TEST_VAR(timer_delay[i][j],(chooser_list[i+j*3]->chooser->index+1)*10,needSave);
+                }
+            }
+        }
+                    
+    if(!needSave)
+    {
+        printk("No change ==> no save\n");
+        return;
+    }   
+        
     msgBox_info(getLangStr(STRLNG_SAVE_SETTINGS));
     
     cfg=cfg_readFile("/medios/medios.cfg");
@@ -66,7 +82,7 @@ void okBtnEnergy_click(BUTTON b)
     for(j=0;j<2;j++)
         for(i=0;i<3;i++)
         {
-            if(chooser_list[i+j*3]->index==9)
+            if(chooser_list[i+j*3]->chooser->index==9)
             {
                 timer_status[i][j]=0;
                 sprintf(tmpStr,"energy_%s_%s_status",timer_type[i],power_type[j]);
@@ -76,15 +92,14 @@ void okBtnEnergy_click(BUTTON b)
             {
                 if(i==2)
                 {
-                    //chooser_list[i+j*3]->index=timer_status[i][j]==1?(timer_delay[i][j]/60)-1:9;
                     timer_status[i][j]=1;
-                    timer_delay[i][j]=(chooser_list[i+j*3]->index+1)*60;
+                    timer_delay[i][j]=(chooser_list[i+j*3]->chooser->index+1)*60;
                     
                 }
                 else
                 {
                     timer_status[i][j]=1;
-                    timer_delay[i][j]=(chooser_list[i+j*3]->index+1)*10;
+                    timer_delay[i][j]=(chooser_list[i+j*3]->chooser->index+1)*10;
                 }
                 sprintf(tmpStr,"energy_%s_%s_status",timer_type[i],power_type[j]);
                 cfg_writeInt(cfg,tmpStr,1);
@@ -92,11 +107,9 @@ void okBtnEnergy_click(BUTTON b)
                 cfg_writeInt(cfg,tmpStr,timer_delay[i][j]);
             }
         }
-//    cfg_printItems(cfg);
     cfg_writeFile(cfg,"/medios/medios.cfg");
     cfg_clear(cfg);
     energy_chgMode(getPowerMode());
-    stop_enrg_set=1;
 }
 
 void resetBtnEnergy_click(BUTTON b)
@@ -105,9 +118,10 @@ void resetBtnEnergy_click(BUTTON b)
     for(j=0;j<2;j++)
         for(i=0;i<3;i++)
             if(i==2)
-                chooser_list[i+j*3]->index=timer_status[i][j]==1?(timer_delay[i][j]/60)-1:9;
+                chooser_list[i+j*3]->chooser->index=timer_status[i][j]==1?(timer_delay[i][j]/60)-1:9;
             else
-                chooser_list[i+j*3]->index=timer_status[i][j]==1?(timer_delay[i][j]/10)-1:9;
+                chooser_list[i+j*3]->chooser->index=timer_status[i][j]==1?(timer_delay[i][j]/10)-1:9;
+    widgetMenu->paint(widgetMenu);
 }
 
 void energy_setting(void)
@@ -119,144 +133,66 @@ void energy_setting(void)
     char * valFormStr_1[10]={"10s","20s","30s","40s","50s","60s","70s","80s","90s",getLangStr(STRLNG_NRJ_NEVER)};
     char * valFormStr_2[10]={"1min","2min","3min","4min","5min","6min","7min","8min","9min",getLangStr(STRLNG_NRJ_NEVER)};
     
-    int evtHandle;
-    int event;
-    
-    int minX,maxW,lineH,x,y,label_offset,w,h,sepH,sepW;
+    int minX,minY;
         
     int i,j;
     
-    stop_enrg_set = 0;
-    
-    BUTTON mib;
-    
-    printk("Cur power:");
-    
-    for(i=0;i<3;i++)
-        for(j=0;j<2;j++)
-    {
-        printk("%s-%s (%s|%d) -",timer_type[i],power_type[j],
-               timer_status[i][j]==0?"disable":"enable",
-               timer_delay[i][j]);
-    }
-    printk("\n");
-    
-    gfx_clearScreen(COLOR_TRSP);
-    
-    
-    evtHandle = evt_getHandler(BTN_CLASS|GUI_CLASS);
-    if(evtHandle<0)
-    {
-        printk("Can't get evt handler\n");   
-    }
+    WIDGETMENU_BUTTON mib;
+    WIDGETMENU_ITEM it;
+    WIDGETMENU_CHOOSER co;
     
     logo=icon_get("energy");
     if(!logo)
         icon_load("energy.ico");
     
-    gfx_drawBitmap(&logo->bmap_data,ICON_X,ICON_Y);
-    
-    minX = ICON_X + logo->bmap_data.width;
-        
-    
-    gfx_drawLine(COLOR_ORANGE,minX+3,5,minX+3,LCD_HEIGHT-5);
-        
-    minX+=3; 
-       
-    gfx_fontSet(STD8X13);
-    gfx_getStringSize(getLangStr(STRLNG_NRJ_SETTINGS),&w,&h);
-    gfx_putS(COLOR_DARK_GREY,COLOR_TRSP,minX+(LCD_WIDTH-minX-w)/2,ICON_Y,getLangStr(STRLNG_NRJ_SETTINGS));
-    
-    gfx_fontSet(ENERGY_GUIFONT);    
-    gfx_getStringSize(getLangStr(STRLNG_NRJ_NEVER),&maxW,&lineH);    
-    lineH=(lineH+4);
-    
-    gfx_getStringSize("HALT",&label_offset,NULL);
-    
-    maxW=maxW+35+4+label_offset;
-    x=minX+(LCD_WIDTH-minX-maxW)/2;    
-    y=ICON_Y+h+(LCD_HEIGHT-ICON_Y-h-lineH*9-2*2)/2;
+    settings_initScreen(getLangStr(STRLNG_NRJ_SETTINGS),logo,&minX,&minY);
     
     // menuList
-    menuList=widgetList_create();
-    menuList->ownWidgets=true;
+    widgetMenu=widgetMenu_create();
+    widgetMenu->setRect(widgetMenu,minX,minY,LCD_WIDTH-minX,LCD_HEIGHT-minY);
+    widgetMenu->ownItems=true; // the menu will handle items destroy
 
     // standardMenu
     
     for(j=0;j<2;j++)
     {
-        gfx_putS(COLOR_BLUE,COLOR_TRSP,x,y,j==0?getLangStr(STRLNG_NRJ_ON_BATTERY):getLangStr(STRLNG_NRJ_ON_DC));
-        y+=lineH;
-        gfx_getStringSize(j==0?getLangStr(STRLNG_NRJ_ON_BATTERY):getLangStr(STRLNG_NRJ_ON_DC),&w,&h);
-        gfx_drawLine(COLOR_BLACK,x-1,y-2,x+w+1,y-2);
-        y+=2;
+        it=widgetMenuItem_create();
+        it->caption=j==0?getLangStr(STRLNG_NRJ_ON_BATTERY):getLangStr(STRLNG_NRJ_ON_DC);
+        it->widgetWidth=0;
+        it->canFocus=0;
+        widgetMenu->addItem(widgetMenu,it);
+        
         for(i=0;i<3;i++)
         {
-            sprintf(tmpStr,"%s",timer_type[i]);
-            gfx_putS(COLOR_BLUE,COLOR_TRSP,x,y,tmpStr);
-            chooser_list[i+j*3]=chooser_create();
-            chooser_list[i+j*3]->items=i==2?valFormStr_2:valFormStr_1;
-            chooser_list[i+j*3]->itemCount=10;
+            chooser_list[i+j*3]=co=widgetMenuChooser_create();
+            co->caption=timer_type[i];
+            co->chooser->items=i==2?valFormStr_2:valFormStr_1;
+            co->chooser->itemCount=10;
             if(i==2)
-            {
-                    chooser_list[i+j*3]->index=timer_status[i][j]==1?(timer_delay[i][j]/60)-1:9;                
-            }
+                co->chooser->index=timer_status[i][j]==1?(timer_delay[i][j]/60)-1:9;
             else
-            {
-                chooser_list[i+j*3]->index=timer_status[i][j]==1?(timer_delay[i][j]/10)-1:9;
-            }
-            chooser_list[i+j*3]->font=ENERGY_GUIFONT;
-            gfx_getStringSize(valFormStr_1[9],&w,&h);
-            chooser_list[i+j*3]->setRect(chooser_list[i+j*3],x+label_offset+4,y,w+35,h+1);
-            chooser_list[i+j*3]->wrap=WIDGET_WRAP_ON;
-            menuList->addWidget(menuList,chooser_list[i+j*3]);
-            y+=lineH;
+                co->chooser->index=timer_status[i][j]==1?(timer_delay[i][j]/10)-1:9;
+            
+            co->chooser->wrap=WIDGET_WRAP_ON;
+            co->chooser->orientation=WIDGET_ORIENTATION_HORIZ;
+            co->doAutoSize=true;
+            widgetMenu->addItem(widgetMenu,co);
         }
-        //y+=lineH;
     }
+    
+    mib=widgetMenuButton_create();
+    mib->caption=NULL;
+    mib->doAutoSize=true;
+    mib->button->caption=getLangStr(STRLNG_RESET);
+    mib->button->onClick=(BUTTON_CLICKEVENT)resetBtnEnergy_click;
+    widgetMenu->addItem(widgetMenu,mib);
         
-    
-    gfx_getStringSize("OK",&sepW,&sepH);
-    
-    mib=button_create();
-    mib->caption="OK"; 
-    mib->font=ENERGY_GUIFONT;
-    mib->setRect(mib,x,y,sepW+2,sepH+2);
-    mib->onClick=(BUTTON_CLICKEVENT)okBtnEnergy_click;
-    menuList->addWidget(menuList,mib);
-        
-    gfx_getStringSize("RESET",&sepW,&sepH);
-    x+=mib->width+4;
-    
-    mib=button_create();
-    mib->caption="Reset"; 
-    mib->font=ENERGY_GUIFONT;
-    mib->setRect(mib,x,y,sepW+2,sepH+2);
-    mib->onClick=(BUTTON_CLICKEVENT)resetBtnEnergy_click;
-    menuList->addWidget(menuList,mib);
-    
     // intial paint
     // set focus
-    menuList->setFocusedWidget(menuList,chooser_list[0]);
-    menuList->paint(menuList);
+    widgetMenu->setFocus(widgetMenu,chooser_list[0]);    
+    widgetMenu->paint(widgetMenu);
     
-    do{
-        event=evt_getStatusBlocking(evtHandle);
-        if (!event) continue; // no new events
-        switch(event)
-        {
-            case BTN_UP:
-                menuList->changeFocus(menuList,WLD_PREVIOUS);
-                break;
-            case BTN_DOWN:
-                menuList->changeFocus(menuList,WLD_NEXT);
-                break;    
-            default:
-                menuList->handleEvent(menuList,event);
-                break;
-        }
-    }while(event!=WIDGET_BACK_BTN && !stop_enrg_set); 
+    settings_evtLoop(widgetMenu,energySet_sav,-1);
        
-    menuList->destroy(menuList);
-    evt_freeHandler(evtHandle);
+    widgetMenu->destroy(widgetMenu);
 }

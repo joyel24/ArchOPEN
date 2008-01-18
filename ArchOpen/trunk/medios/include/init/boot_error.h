@@ -32,6 +32,7 @@
 #define MISSING_HANDLER_FILE_ERROR 7
 #define MISSING_MENU_FILE_ERROR 8
 #define MISSING_IMG_FILE_ERROR 9
+#define WRONG_LANG_VERSION_ERROR 10
 
 /* function declaration */
 

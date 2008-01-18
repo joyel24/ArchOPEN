@@ -20,6 +20,7 @@
 #include <gui_user/trackbar.h>
 #include <gui_user/chooser.h>
 #include <gui_user/button.h>
+#include <gui_user/spinbox.h>
 
 //*****************************************************************************
 // WIDGETMENU_ITEM
@@ -107,6 +108,24 @@ typedef struct {
     WIDGETMENU_CHOOSER_MEMBERS
 } * WIDGETMENU_CHOOSER;
 
+
+//*****************************************************************************
+// WIDGETMENU_SPINBOX
+//*****************************************************************************
+
+// members of the WIDGETMENU_SPINBOX object
+#define WIDGETMENU_SPINBOX_MEMBERS                         \
+    /* we inherit from WIDGETMENU_ITEM */                  \
+    WIDGETMENU_ITEM_MEMBERS                                \
+                                                           \
+    SPINBOX spinbox;
+
+typedef struct {
+    WIDGETMENU_SPINBOX_MEMBERS
+} * WIDGETMENU_SPINBOX;
+
+
+
 //*****************************************************************************
 // WIDGETMENU
 //*****************************************************************************
@@ -117,6 +136,7 @@ typedef struct {
     TEXTMENU_MEMBERS                                       \
                                                            \
     WIDGETMENU_BUTTONGETTER getButton;                     \
+    WIDGETMENU_SPINBOXGETTER getSpinbox;                   \
     WIDGETMENU_CHECKBOXGETTER getCheckbox;                 \
     WIDGETMENU_TRACKBARGETTER getTrackbar;                 \
     WIDGETMENU_CHOOSERGETTER getChooser;                   \
@@ -124,6 +144,7 @@ typedef struct {
     WIDGETMENU_CFGSAVER cfgSave;
 
 typedef BUTTON(*WIDGETMENU_BUTTONGETTER)(void *,int);
+typedef SPINBOX(*WIDGETMENU_SPINBOXGETTER)(void *,int);
 typedef CHECKBOX(*WIDGETMENU_CHECKBOXGETTER)(void *,int);
 typedef TRACKBAR(*WIDGETMENU_TRACKBARGETTER)(void *,int);
 typedef CHOOSER(*WIDGETMENU_CHOOSERGETTER)(void *,int);

@@ -11,21 +11,21 @@
 */
 
 #include <kernel/kernel.h>
-#include <kernel/evt.h>
 #include <kernel/lang.h>
 #include <kernel/malloc.h>
+#include <kernel/evt.h>
 
 #include <gfx/kfont.h>
 
 #include <lib/string.h>
 
 #include <gui/widgetlist.h>
+#include <gui/widgetmenu.h>
 #include <gui/button.h>
 #include <gui/icons.h>
-#include <gui/checkbox.h>
 #include <gui/msgBox.h>
-#include <gui/chooser.h>
 #include <gui/file_browser.h>
+#include <gui/settings_screens.h>
 
 #include <gui/settings_lang.h>
 
@@ -40,37 +40,39 @@
 
 #define MAX_NB_LANG   5
 
-WIDGETLIST menuList;  
-CHOOSER langList;
+static WIDGETMENU widgetMenu;
+static WIDGETMENU_CHOOSER langList;
+ICON logo;
 
-int stop_lang_set;
 char lang_path[250];
-
-#define ICON_X 5
-#define ICON_Y 5
 
 extern char * customLang;
 
 int nbLang;
 char * langNameList[MAX_NB_LANG];
-int evtHandle;
+int langNum[MAX_NB_LANG];
 
 void cleanLangList(int nb);
 void drawLangMenuBG(void);
 
-void cancelBtnLang_click(BUTTON b)
-{
-    stop_lang_set=1;
-}
+int evtHandler;
+int hasBadVersion;
 
-void okBtnLang_click(BUTTON b)
+void langSet_sav(void)
 {
     CFG_DATA * cfg;
     int useDefault=0;
+    MED_RET_T res;
     /* opening config file */
     
+    if(langNum[langList->chooser->index]==lng_langNum)
+    {
+        printk("No change ==> no save\n");
+        return;
+    }
+    
     msgBox_info(getLangStr(STRLNG_LOAD_LANG));
-    if(langList->index==0)
+    if(langList->chooser->index==0)
     {
         printk("Loading Default\n");
         lang_loadDefault();
@@ -78,14 +80,21 @@ void okBtnLang_click(BUTTON b)
     }
     else
     {
-        printk("Loading: %s\n",langNameList[langList->index]);
-        snprintf(lang_path,MAX_PATH,"/medios/lang/%s.lng",langNameList[langList->index]);
-        if(lang_loadFile(lang_path)!=MED_OK)
+        printk("Loading: %s\n",langNameList[langList->chooser->index]);
+        snprintf(lang_path,MAX_PATH,"/medios/lang/%s.lng",langNameList[langList->chooser->index]);
+        if((res=lang_loadFile(lang_path))!=MED_OK)
         {
-            snprintf(lang_path,MAX_PATH,getLangStr(STRLNG_ERROR_LOADING),langNameList[langList->index]);
-            msgBox_show(getLangStr(STRLNG_LANG_SETTINGS),lang_path,
-                        MSGBOX_TYPE_OK,MSGBOX_ICON_INFORMATION,evtHandle);
-            //cleanLangList(nbLang);            
+            if(res==-MED_EBADDATA)
+            {
+                msgBox_show(getLangStr(STRLNG_LANG_SETTINGS),getLangStr(STRLNG_LNG_WRONG_VERSION),
+                            MSGBOX_TYPE_OK,MSGBOX_ICON_INFORMATION,evtHandler);
+            }
+            else
+            {
+                snprintf(lang_path,MAX_PATH,getLangStr(STRLNG_ERROR_LOADING),langNameList[langList->chooser->index]);
+                msgBox_show(getLangStr(STRLNG_LANG_SETTINGS),lang_path,
+                            MSGBOX_TYPE_OK,MSGBOX_ICON_INFORMATION,evtHandler);
+            }
         }
         
     }
@@ -100,7 +109,6 @@ void okBtnLang_click(BUTTON b)
         if(!cfg)
         {
             printk("Can't create new cfg file\n");
-            stop_lang_set=1;
             cleanLangList(nbLang);
             return;
         }
@@ -115,12 +123,11 @@ void okBtnLang_click(BUTTON b)
     else
     {
         cfg_writeInt(cfg,"lngUseDefault",0);
-        cfg_writeString(cfg,"lngName",langNameList[langList->index]);
+        cfg_writeString(cfg,"lngName",langNameList[langList->chooser->index]);
     }
     cfg_writeFile(cfg,"/medios/medios.cfg");
     cfg_clear(cfg);
     cleanLangList(nbLang);
-    stop_lang_set=1;
 }
 
 void browserLang_click(BUTTON b)
@@ -132,9 +139,9 @@ void browserLang_click(BUTTON b)
     }
     printk("Res=%d,|%s|\n",-ret_val,myPath);*/
     msgBox_show(getLangStr(STRLNG_LANG_SETTINGS),"Browser Not available yet here",
-                MSGBOX_TYPE_OK,MSGBOX_ICON_INFORMATION,evtHandle);
+                MSGBOX_TYPE_OK,MSGBOX_ICON_INFORMATION,evtHandler);
     drawLangMenuBG();
-    menuList->paint(menuList);
+    widgetMenu->paint(widgetMenu);
 }
 
 void cleanLangList(int nb)
@@ -149,24 +156,23 @@ void cleanLangList(int nb)
     }   
 }
 
-void lang_createList(int * nb,int * maxW)
+void lang_createList(int * nb)
 {
     char * cur_lang;
     int nbLang=1;
     DIR * lang_folder;
-    char header[3];
+    char header[5];
     int fd;
-    int w,h,i;
+    int i;
     int len;
     struct dirent * entry;    
+    
+    hasBadVersion=0;
     
     for(i=1;i<MAX_NB_LANG;i++)
         langNameList[i]=NULL;
     
-    langNameList[0]=getLangStr(STRLNG_DEFAULT);
-    gfx_getStringSize(langNameList[0],&w,&h);
-    *maxW=w;
-    
+    langNameList[0]=getLangStr(STRLNG_DEFAULT);    
     lang_folder=opendir("/medios/lang");
     
     if(lang_folder)
@@ -179,28 +185,30 @@ void lang_createList(int * nb,int * maxW)
             fd=open(lang_path,O_RDONLY);
             if(fd<0)
                 continue;
-            if(read(fd,header,3)!=3)
+            if(read(fd,header,5)!=5)
             {
                 close(fd);
                 continue;
             }
             
-            if(strncmp(header,"LNG",3))
+            close(fd);
+            
+            if(strncmp(header,LNG_HEADER,3))
+                continue;
+            
+            if(header[3]!=LNG_VERSION)
             {
-                close(fd);
-                continue;   
+                hasBadVersion=1;
+                continue;
             }
             
             nbLang++;
             len=(int)(strrchr(entry->d_name,'.')-(char*)entry->d_name);
             cur_lang=(char*)malloc(len+1);
             strncpy(cur_lang,entry->d_name,len);
-            cur_lang[len]='\0';
-            gfx_getStringSize(cur_lang,&w,&h);
-            if(*maxW<w)
-                *maxW=w;            
+            cur_lang[len]='\0';            
             langNameList[nbLang-1]=cur_lang;
-            close(fd);
+            langNum[nbLang-1]=header[4];
         }
         printk("Found %d lang\n",nbLang);
         closedir(lang_folder);        
@@ -208,166 +216,111 @@ void lang_createList(int * nb,int * maxW)
     else
     {
         msgBox_show(getLangStr(STRLNG_LANG_SETTINGS),getLangStr(STRLNG_MISSING_LANG_FOLDER),
-                        MSGBOX_TYPE_OK,MSGBOX_ICON_INFORMATION,evtHandle);
+                        MSGBOX_TYPE_OK,MSGBOX_ICON_INFORMATION,evtHandler);
         *nb=0;
         return ;
     }
     *nb=nbLang;
 }
 
-int minX;
-ICON logo;
-int txt_x;
-
 void drawLangMenuBG(void)
 {
-
-    gfx_clearScreen(COLOR_TRSP);
-    gfx_fontSet(LANG_GUIFONT);
-    gfx_drawBitmap(&logo->bmap_data,ICON_X,ICON_Y);
-    minX = ICON_X + logo->bmap_data.width;
-    gfx_drawLine(COLOR_DARK_BLUE,minX+3,5,minX+3,LCD_HEIGHT-5);
-    gfx_drawLine(COLOR_BLUE,minX+4,5,minX+4,LCD_HEIGHT-5);
-    gfx_drawLine(COLOR_LIGHT_BLUE,minX+5,5,minX+5,LCD_HEIGHT-5);
-    minX+=7;
-    gfx_fontSet(STD8X13);
-    gfx_putS(COLOR_DARK_GREY,COLOR_TRSP,txt_x,ICON_Y,getLangStr(STRLNG_LANG_SETTINGS));
+    settings_initScreen(getLangStr(STRLNG_NRJ_SETTINGS),logo,NULL,NULL);
 }
 
 void lang_setting(void)
 {       
-    int event;
-    int w,h,x,y,sepW,sepH,lineH,maxW;
-    BUTTON mib;
+    int minX,minY;
+    int curIndex,i;
+    
+    WIDGETMENU_BUTTON mib;
 
     nbLang=0;
-    evtHandle = evt_getHandler(BTN_CLASS|GUI_CLASS);
-    if(evtHandle<0)
+    curIndex=0;
+    hasBadVersion=0;
+    
+    evtHandler = evt_getHandler(BTN_CLASS|GUI_CLASS);
+    if(evtHandler<0)
     {
-        printk("Can't get evt handler\n");   
+        printk("Can't get evt handler\n");  
+        return; 
     }
     
-    gfx_fontSet(LANG_GUIFONT);
-    lang_createList(&nbLang,&maxW);
-    /*
-    if(!langNameList)
-    {
-        msgBox_show(getLangStr(STRLNG_MISSING_FOLDER),"Create /medios/lang and put lng file",
-                    MSGBOX_TYPE_OK,MSGBOX_ICON_ERROR,evtHandle);
-        return;
-    }
-    */
-    
+    lang_createList(&nbLang);
+       
     if(nbLang==0)
     {
-        evt_freeHandler(evtHandle);
+        evt_freeHandler(evtHandler);
         return;
     }
     
     if(nbLang==1)
     {
-        msgBox_show(getLangStr(STRLNG_LANG_SETTINGS),"No lang file found",
-                    MSGBOX_TYPE_OK,MSGBOX_ICON_INFORMATION,evtHandle);
-        evt_freeHandler(evtHandle);
+        if(hasBadVersion)
+        {
+            msgBox_show(getLangStr(STRLNG_LANG_SETTINGS),getLangStr(STRLNG_LNG_WRONG_VERSION),
+                        MSGBOX_TYPE_OK,MSGBOX_ICON_INFORMATION,evtHandler);
+        }
+        else
+        {
+            msgBox_show(getLangStr(STRLNG_LANG_SETTINGS),"No lang file found",
+                        MSGBOX_TYPE_OK,MSGBOX_ICON_INFORMATION,evtHandler);
+        }
+        evt_freeHandler(evtHandler);
         return;
     }
     
-    stop_lang_set=0;
     logo=icon_get("lang");
     if(!logo)
         icon_load("lang.ico");
-    gfx_fontSet(STD8X13);
-    gfx_getStringSize(getLangStr(STRLNG_LANG_SETTINGS),&w,&h);
-    lineH=h+5;
-    txt_x=minX+(LCD_WIDTH-minX-w)/2;
-
-    drawLangMenuBG();
-    
-    x=minX;    
-    y=ICON_Y+2*lineH;
-    
+    settings_initScreen(getLangStr(STRLNG_LANG_SETTINGS),logo,&minX,&minY);
+        
     // menuList
-    menuList=widgetList_create();
-    menuList->ownWidgets=true;
+    widgetMenu=widgetMenu_create();
+    widgetMenu->setRect(widgetMenu,minX,minY,LCD_WIDTH-minX,LCD_HEIGHT-minY);
+    widgetMenu->ownItems=true; // the menu will handle items destroy
 
-    gfx_fontSet(LANG_GUIFONT);
-    
+    if(lng_langNum==0 || nbLang==1)
+        curIndex=0;
+    else
+    {
+        for(i=1;i<nbLang;i++)
+        {
+            if(langNum[i]==lng_langNum)
+            {
+                   curIndex=i;
+                   break;
+            }
+            curIndex=0;                
+        }   
+    }
     // standardMenu
-    
-    langList=chooser_create();
-    langList->items=langNameList;
-    langList->itemCount=nbLang;
-    /* NOTE:need something to find which lang is currently selected */
-    langList->index=0;
-    langList->font=LANG_GUIFONT;
-    gfx_getStringSize(langNameList[0],&w,&h);
-    langList->setRect(langList,x,y,maxW+29,h+1);
-    langList->wrap=WIDGET_WRAP_ON;
-    langList->orientation=WIDGET_ORIENTATION_HORIZ;
-    menuList->addWidget(menuList,langList);
-            
-    y+=lineH;
-
-    gfx_getStringSize(getLangStr(STRLNG_OK),&sepW,&sepH);
-    
-    mib=button_create();
-    mib->caption=getLangStr(STRLNG_OK); 
-    mib->font=LANG_GUIFONT;
-    mib->setRect(mib,x,y,sepW+4,sepH+2);
-    mib->onClick=(BUTTON_CLICKEVENT)okBtnLang_click;
-    mib->clickOnRightLeft=0;
-    menuList->addWidget(menuList,mib);
-    
-    x=x+sepW+4+4;
-
-    gfx_getStringSize(getLangStr(STRLNG_CANCEL),&sepW,&sepH);
-    
-    mib=button_create();
-    mib->caption=getLangStr(STRLNG_CANCEL); 
-    mib->font=LANG_GUIFONT;
-    mib->setRect(mib,x,y,sepW+4,sepH+2);
-    mib->onClick=(BUTTON_CLICKEVENT)cancelBtnLang_click;
-    mib->clickOnRightLeft=0;
-    menuList->addWidget(menuList,mib);
-
-    x=minX;
-    y+=lineH; 
-
-
-    gfx_getStringSize(getLangStr(STRLNG_OTHER),&sepW,&sepH);
-    
-    mib=button_create();
-    mib->caption=getLangStr(STRLNG_OTHER);
-    mib->font=LANG_GUIFONT;
-    mib->setRect(mib,x,y,sepW+4,sepH+2);
-    mib->onClick=(BUTTON_CLICKEVENT)browserLang_click;
-    mib->clickOnRightLeft=0;
-    menuList->addWidget(menuList,mib);
-    
+    langList=widgetMenuChooser_create();
+    langList->caption=NULL;
+    langList->chooser->items=langNameList;
+    langList->chooser->itemCount=nbLang;
+    langList->chooser->index=curIndex;
+    langList->chooser->wrap=WIDGET_WRAP_ON;
+    langList->chooser->orientation=WIDGET_ORIENTATION_HORIZ;
+    langList->doAutoSize=true;
+    widgetMenu->addItem(widgetMenu,langList);
+        
+    mib=widgetMenuButton_create();
+    mib->caption=NULL;
+    mib->doAutoSize=true;
+    mib->button->caption=getLangStr(STRLNG_OTHER);
+    mib->button->onClick=(BUTTON_CLICKEVENT)browserLang_click;
+    widgetMenu->addItem(widgetMenu,mib);
+        
     // intial paint
     // set focus
-    menuList->setFocusedWidget(menuList,langList);
-    menuList->paint(menuList);
+    widgetMenu->setFocus(widgetMenu,langList);    
+    widgetMenu->paint(widgetMenu);
     
-    do{
-        event=evt_getStatusBlocking(evtHandle);
-        if (!event) continue; // no new events
-        switch(event)
-        {
-            case BTN_UP:
-                menuList->changeFocus(menuList,WLD_PREVIOUS);
-                break;
-            case BTN_DOWN:
-                menuList->changeFocus(menuList,WLD_NEXT);
-                break;   
-            default:
-                menuList->handleEvent(menuList,event);
-                break;
-        }
-    }while(event!=WIDGET_BACK_BTN && !stop_lang_set); 
+    settings_evtLoop(widgetMenu,langSet_sav,evtHandler);
        
-    menuList->destroy(menuList);
-    evt_freeHandler(evtHandle);
+    widgetMenu->destroy(widgetMenu);
+    evt_freeHandler(evtHandler);
 }
 
 void lang_loadLang(void)
@@ -376,7 +329,7 @@ void lang_loadLang(void)
     CFG_DATA * cfg;
     int needWrite=0;
     int useDefault=0;
-           
+    
     cfg=cfg_readFile("/medios/medios.cfg");
                
     if(!cfg)

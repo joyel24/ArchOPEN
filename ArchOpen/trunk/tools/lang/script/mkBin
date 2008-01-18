@@ -1,6 +1,4 @@
 # create all bin files from lang
 
-for file in *.lang; do
-name=`basename $file .lang`
-./script/genBin $file ${name}.lng ./script/lang_version ./script/bin_tail
-done
+./script/genBin english.lang english.lng 1
+./script/genBin francais.lang francais.lng 2

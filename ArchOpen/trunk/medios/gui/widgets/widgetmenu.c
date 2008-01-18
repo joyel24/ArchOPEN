@@ -57,7 +57,7 @@ void widgetMenuItem_init(WIDGETMENU_ITEM mi){
     mi->cfgToString=(WIDGETMENU_ITEM_CFGGETTER)widgetMenuItem_cfgToString;
     mi->cfgFromString=(WIDGETMENU_ITEM_CFGSETTER)widgetMenuItem_cfgFromString;
     mi->rePaint=(WIDGETMENU_ITEM_REPAINT)widgetMenuItem_rePaint;
-    
+
     // properties
     mi->caption="WidgetMenuItem";
     mi->cfgStored=false;
@@ -96,16 +96,16 @@ void widgetMenuItem_paint(WIDGETMENU_ITEM mi){
 
     if(!menuItem_isVisible((MENU_ITEM)mi))
     {
-        return;   
+        return;
     }
-    
+
     widget_paint((WIDGET)mi);
 
     color=(mi->focused)?mi->focusColor:mi->backColor;
 
     txt_x=mi->x;
     txt_y=mi->y;
-    
+
     // caption
     if(mi->caption && (*mi->caption)!='\0')
     {
@@ -114,9 +114,9 @@ void widgetMenuItem_paint(WIDGETMENU_ITEM mi){
         gfx_getStringSize(mi->caption,&txt_w,&txt_h);
         txt_y=mi->y+(mi->height-txt_h)/2;
         txt_x=mi->x+mi->margin;
-    
+
         gfx_putS(mi->foreColor,color,txt_x,txt_y,mi->caption);
-    
+
         gfx_fontSet(of); // restore previous font
     }
     else
@@ -143,7 +143,7 @@ void widgetMenuItem_paint(WIDGETMENU_ITEM mi){
             {
                mi->widget->x=txt_x+txt_w+2;
             }
-            
+
             if(mi->widget->height==0)
             {
                 mi->widget->height=mi->height-2*mi->margin;
@@ -155,12 +155,12 @@ void widgetMenuItem_paint(WIDGETMENU_ITEM mi){
                 mi->widget->y=mi->y;
             }
             else
-                mi->widget->y=mi->y+(mi->height-mi->widget->height)/2;                
+                mi->widget->y=mi->y+(mi->height-mi->widget->height)/2;
         }
         else /* no autoSize */
-        {            
+        {
             mi->widget->width=mi->width*mi->widgetWidth/256-mi->margin;
-            mi->widget->height=mi->height-2*mi->margin;    
+            mi->widget->height=mi->height-2*mi->margin;
             mi->widget->x=mi->x+mi->width-mi->margin-mi->widget->width;
             mi->widget->y=mi->y+mi->margin;
         }
@@ -177,12 +177,12 @@ void widgetMenuItem_paint(WIDGETMENU_ITEM mi){
                 mi->widget->height=mi->height-2*mi->margin;
             else if(mi->widget->height > mi->height)
                 mi->widget->height=mi->height;
-                
+
         }
         else /* no autosize */
-        {        
+        {
             mi->widget->width=mi->width-2*mi->margin;
-            mi->widget->height=mi->height-2*mi->margin;           
+            mi->widget->height=mi->height-2*mi->margin;
         }
         mi->widget->x=mi->x+mi->margin;
         mi->widget->y=mi->y+(mi->height-mi->widget->height)/2;
@@ -247,6 +247,51 @@ void widgetMenuButton_cfgToString(WIDGETMENU_BUTTON mc,char * s){
 }
 
 void widgetMenuButton_cfgFromString(WIDGETMENU_BUTTON mc,char * s){
+    *s=0;
+}
+
+//*****************************************************************************
+// WIDGETMENU_SPINBOX
+//*****************************************************************************
+
+WIDGETMENU_SPINBOX widgetMenuSpinbox_create(){
+    WIDGETMENU_SPINBOX mc;
+
+    // allocate WIDGETSPINBOX memory
+    mc=malloc(sizeof(*mc));
+
+    // create the widget
+    mc->spinbox=spinbox_create();
+    mc->widget=(WIDGET)mc->spinbox;
+
+    // init members
+    widgetMenuSpinbox_init(mc);
+
+    return mc;
+}
+
+void widgetMenuSpinbox_destroy(WIDGETMENU_SPINBOX mc){
+    widgetMenuItem_destroy((WIDGETMENU_ITEM)mc);
+}
+
+void widgetMenuSpinbox_init(WIDGETMENU_SPINBOX mc){
+    widgetMenuItem_init((WIDGETMENU_ITEM)mc);
+
+    // methods
+    mc->destroy=(WIDGET_DESTROYER)widgetMenuSpinbox_destroy;
+    mc->cfgToString=(WIDGETMENU_ITEM_CFGGETTER)widgetMenuSpinbox_cfgToString;
+    mc->cfgFromString=(WIDGETMENU_ITEM_CFGSETTER)widgetMenuSpinbox_cfgFromString;
+
+    // properties
+    mc->caption="WidgetMenuSpinbox";
+    mc->widget->margin=WIDGETMENU_WIDGET_MARGIN;
+}
+
+void widgetMenuSpinbox_cfgToString(WIDGETMENU_SPINBOX mc,char * s){
+    *s=0;
+}
+
+void widgetMenuSpinbox_cfgFromString(WIDGETMENU_SPINBOX mc,char * s){
     *s=0;
 }
 

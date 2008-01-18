@@ -96,3 +96,4 @@ STRLNG_ICONS_SMALL # petit
 STRLNG_ICONS_STD # std
 STRLNG_ICONS_BIG # grand
 STRLNG_BRIGHTNESS # Luminosite
+STRLNG_LNG_WRONG_VERSION # Mauvaise version de langue 

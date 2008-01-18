@@ -666,7 +666,12 @@ void do_diskFullInfo(unsigned char ** params)
 void do_loadLand(unsigned char ** params)
 {
 #ifdef TARGET_TYPE_STD
-    lang_loadFile(params[0]);
+    MED_RET_T res;
+    res=lang_loadFile(params[0]);
+    if(res==-MED_EBADDATA)
+        printk("Error bad lang version\n");
+    else if(res<0)
+        printk("Error loading lang\n");
 #endif
 }
 

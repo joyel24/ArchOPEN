@@ -30,5 +30,6 @@ else
     rm -Rf lib
     rm -Rf codec
     rm -Rf lang
+    rm -f tools/lang/script/mkLng
     $0 ./;
 fi

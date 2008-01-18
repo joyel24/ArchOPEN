@@ -110,7 +110,7 @@ bool chooser_handleEvent(CHOOSER c,int evt){
 void chooser_autoSize(CHOOSER c)
 {
     int w,h,w2;
-    int of,i,box_size;
+    int of,i;
        
     of=gfx_fontGet(); // save previous font
     gfx_fontSet(c->font);
