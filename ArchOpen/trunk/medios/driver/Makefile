@@ -37,7 +37,7 @@ ifeq ($(HAVE_MAS_SOUND),1)
 endif
 
 ifeq ($(HAVE_AIC23_SOUND),1)
-	SRC += aic23.c
+	SRC += aic23.c mas_dummy.c
 endif
 
 all: do_build

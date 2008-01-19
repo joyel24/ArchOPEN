@@ -771,6 +771,13 @@ int spinLock_isLocked(struct spinLock * lock)
     return (lock->lock==1);   
 }
 
+int spinLock_testAndLock(struct spinLock * lock)
+{
+    if(THREAD_SWAPB(&lock->lock,1))
+        return 0;
+    return 1;
+}
+
 /***********************************************************************************
 ************************************************************************************
 Printing functions

@@ -26,6 +26,10 @@
 #include <driver/aic23.h>
 #endif
 
+#ifdef HAVE_MAS_SOUND
+#include <driver/mas.h>
+#endif
+
 #include <fs/stdfs.h>
 
 #include <snd/buffer.h>
@@ -206,6 +210,9 @@ void output_enableAudioOutput(bool enabled){
 void output_setVolume(int volume){
 #ifdef HAVE_AIC23_SOUND
     aic23_setOutputVolume(volume+AIC23_MAX_OUTPUT_VOLUME-100,AIC23_CHANNEL_BOTH);
+#endif
+#ifdef HAVE_MAS_SOUND
+    mas_codecCtrlConf(MAS_SET,MAS_VOLUME,volume); /*this function expect a value btw 0 & 100*/
 #endif
 }
 

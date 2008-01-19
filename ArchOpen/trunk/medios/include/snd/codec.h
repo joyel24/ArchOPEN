@@ -38,6 +38,7 @@ bool codec_remove(CODEC_INFO * info);
 bool codec_load(CODEC_INFO * info);
 CODEC_INFO * codec_findCodecFor(char * name);
 bool codec_setCodecFor(char * name);
+CODEC_INFO * codec_currentCodec(void);
 
 void codec_trackStart();
 void codec_trackStop();

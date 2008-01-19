@@ -178,5 +178,6 @@ void spinLock_ini(struct spinLock * lock);
 void spinLock_lock(struct spinLock * lock);
 void spinLock_unlock(struct spinLock * lock);
 int spinLock_isLocked(struct spinLock * lock);
+int spinLock_testAndLock(struct spinLock * lock);
 
 #endif

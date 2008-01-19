@@ -49,13 +49,14 @@ static void buffer_updateBounds(int delta){
     }
 }
 
-static int buffer_loadData(int f,int pos,int count){
+static int buffer_loadData(int f,int pos,int count)
+{
+    int red;
     printk("[buffer] loading data, pos=%d count=%d\n",pos,count);
 
     // will we cross the buffer end?
-    if(count>(buffer_size-POS2OFF(pos))){
-        int red;
-
+    if(count>(buffer_size-POS2OFF(pos)))
+    {
         // we'll have to read the file in 2 parts
 
         red=read(f,POS2PTR(pos),buffer_size-POS2OFF(pos));
@@ -64,10 +65,13 @@ static int buffer_loadData(int f,int pos,int count){
             red+=read(f,buffer_data,count-red);
         }
 
+        printk("[buffer] loading data done\n");
         return red;
-    }else{
-
-        return read(f,POS2PTR(pos),count);
+    }else
+    {
+        red=read(f,POS2PTR(pos),count);
+        printk("[buffer] loading data done\n");
+        return red;
     }
 }
 
@@ -87,6 +91,7 @@ static bool buffer_bufferItem(PLAYLIST_ITEM * item){
     free=buffer_size-MAX(0,(buffer_endPos-buffer_curPos));
 
     item->bufferedSize=0;
+    buffer_endPos=(buffer_endPos&0xFFFFFFFC)+((buffer_endPos&0x11)?0x4:0);
     item->startPos=buffer_endPos;
 
     success=false;
@@ -221,7 +226,7 @@ int buffer_seek(int offset,int whence){
 int buffer_read(void * buf,int count){
     int remaining;
 
-//    printk("read %d %d\n",buffer_curPos,buffer_endPos);
+    //printk("read %d %d\n",buffer_curPos,buffer_endPos);
 
     //handle buffering on rewind before buffer start
     if(buffer_curPos<buffer_startPos){
@@ -240,34 +245,28 @@ int buffer_read(void * buf,int count){
         // restore offset
         buffer_seek(offset,SEEK_SET);
     }
-
-
+    
     // make sure we don't read past file end
     remaining=buffer_activeItem->fileSize-(buffer_curPos-buffer_activeItem->startPos+count);
     if(remaining<0){
         count+=remaining;
     }
-
     // wait for the buffer thread to buffer data
     while((buffer_curPos+count)>buffer_endPos){
         yield();
     }
-
     // will we cross the buffer end?
     if(POS2OFF(buffer_curPos+count)<POS2OFF(buffer_curPos)){
         int end;
 
         // we'll have to read the buffer in 2 parts
-
         end=buffer_size-POS2OFF(buffer_curPos);
 
         memcpy(buf,POS2PTR(buffer_curPos),end);
         memcpy(buf+end,buffer_data,count-end);
     }else{
-
         memcpy(buf,POS2PTR(buffer_curPos),count);
     }
-
     buffer_curPos+=count;
 
     return count;

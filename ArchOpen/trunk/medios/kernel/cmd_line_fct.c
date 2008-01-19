@@ -75,8 +75,15 @@ void do_ls(unsigned char ** params);
 void do_cat(unsigned char ** params);
 void do_diskFullInfo(unsigned char ** params);
 void do_loadLand(unsigned char ** params);
+
+void do_launchDecode(unsigned char ** params);
+#ifdef HAVE_MAS_SOUND
+void do_MasStat(unsigned char ** params);
+#endif
+
 void do_brightSet(unsigned char ** params);
 void do_brightGet(unsigned char ** params);
+
 
 struct cmd_line_s cmd_tab[] = {
     {
@@ -267,6 +274,20 @@ struct cmd_line_s cmd_tab[] = {
         cmd_action : do_loadLand,
         nb_args    : 1
     },
+    {
+        cmd        : "lnchDecode",
+        help_str   : "lnchDecode: simulate an INT on MAS",
+        cmd_action : do_launchDecode,
+        nb_args    : 0
+    },
+#ifdef HAVE_MAS_SOUND
+    {
+        cmd        : "masStat",
+        help_str   : "masStat: gives current MAS stat",
+        cmd_action : do_MasStat,
+        nb_args    : 0
+    },
+#endif
     {
         cmd        : "brightSet",
         help_str   : "brightSet val: set lcd brightness",
@@ -674,6 +695,33 @@ void do_loadLand(unsigned char ** params)
         printk("Error loading lang\n");
 #endif
 }
+
+#ifdef HAVE_MAS_SOUND
+#include <driver/mas.h>
+#endif
+
+void do_launchDecode(unsigned char ** params)
+{
+#ifdef HAVE_MAS_SOUND
+    printk("Cur state: %d\n",mas_mp3DecodeState());
+    mas_mp3LaunchDecode();
+#endif
+}
+
+#ifdef HAVE_MAS_SOUND
+extern __IRAM_DATA int cnt_send;
+extern __IRAM_DATA int tot_send;
+extern struct mas_sound_buffer * soundBuffer;
+void do_MasStat(unsigned char ** params)
+{
+    printk("Status: %x / %x(%x)\n",soundBuffer->read,soundBuffer->size,soundBuffer);
+    printk("status %x-%x-(%x,%x,%x,%x)\n",mas_getD0(0x7f7),mas_getD0(0x7f9),
+           mas_getD0(0x7fc),mas_getD0(0x7fd),mas_getD0(0x7fe),mas_getD0(0x7ff));
+    printk("frame count %x, head1: %x, head2: %x, crc err: %x, nb anci: %x\n",mas_getD0(0xFD0),mas_getD0(0xFD1),
+           mas_getD0(0xFD2),mas_getD0(0xFD3),mas_getD0(0xFD4));
+           
+}
+#endif
 
 void do_brightSet(unsigned char ** params)
 {

@@ -52,19 +52,18 @@ static void codec_threadFunction(){
             yield();
         }
         codec_startRequested=false;
-
         // make sure output params are correctly set up
-        output_outputParamsChanged();
-
-        // call trackloop
+        if(codec_current->globalInfo.needOutput)
+            output_outputParamsChanged();
+        // call trackloop if exist
         if(codec_current->globalInfo.trackLoop!=NULL){
             codec_loopRunning=true;
             codec_current->globalInfo.trackLoop();
+            
         }else{
             printk("[codec] error: trackLoop not assigned\n");
         }
         codec_loopRunning=false;
-
         // track end was reached?
         if(!codec_stopRequested){
             sound_trackEnd();
@@ -197,7 +196,10 @@ CODEC_INFO * codec_new(){
     info->globalInfo.seekSupported=false;
     info->globalInfo.trackLoop=NULL;
     info->globalInfo.tagRequest=NULL;
+    info->globalInfo.discardBuffer=NULL;
+    info->globalInfo.output_enable=NULL;
     info->globalInfo.noTimeAdvance=false;
+    info->globalInfo.needOutput=true;
     info->next=NULL;
 
     // handle linked list
@@ -321,6 +323,11 @@ CODEC_INFO * codec_findCodecFor(char * name){
     return info;
 }
 
+CODEC_INFO * codec_currentCodec(void)
+{
+    return codec_current;
+}
+
 bool codec_setCodecFor(char * name){
     CODEC_INFO * info;
 
@@ -344,20 +351,20 @@ bool codec_setCodecFor(char * name){
 void codec_trackStart(){
 
     codec_trackStop();
-
     codec_startOutPos=output_writePos;
     codec_timeDelta=0;
+    
     codec_seekRequested=false;
 
     // we need to have codec iram stuff in iram before the track loop
     med_copyToIram(&codec_current->medInfo);
-
+    
     // set start request, wait for ack from thread if we're not in thread
     codec_startRequested=true;
     while(THREAD_SELF()!=codec_thread && codec_startRequested){
         yield();
     }
-};
+}
 
 void codec_trackStop(){
 
@@ -490,32 +497,10 @@ void codec_init(){
 
     codec_thread=NULL;
 
+    // scan codec folder
     codec_findCodecs();
 
-    //create codec thread
-
+    // create codec thread
     thread_startFct(&codec_thread,codec_threadFunction,"Codec thread",
                      THREAD_STATE_DISABLE,PRIO_HIGH,THREAD_USE_SYS_STACK);
-#if 0
-    /*cInfo=codec_new();
-    cInfo->filename="tremor.c";
-    cInfo->extensions="ogg";
-    tremor_main(cInfo);
-    cInfo->loaded=true;*/
-    
-    
-    cInfo=codec_new();
-    cInfo->filename="mad.c";
-    cInfo->extensions="mp3";
-    mad_main(cInfo);
-    cInfo->loaded=true;
-    
-    /*
-    if(med_loadMed("/medios/codec/wav.cod",&medInfo)==MED_OK)
-        ((void (*)(void))medInfo.entry)();
-    
-    if(med_loadMed("/medios/codec/tremor.cod",&medInfo)==MED_OK)
-        ((void (*)(void))medInfo.entry)();
-*/
-#endif
 }

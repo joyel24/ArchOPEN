@@ -61,18 +61,22 @@ int ata_rwData(int disk,unsigned int lba,void * inData,int inCount,int cmd,int u
     int xfer_size;
     int block_size;
     int nbSector;
-    int useInt=1;
+    int useInt;
     int count;
     void * data;
     int status;
     int tOut;
     int retCount;
-    int use_multiple=1;
-    MED_RET_T ret_val=-MED_ERROR;
+    int use_multiple;
+    MED_RET_T ret_val;
     
-   // printk("[ata-rw] disk=%x buffer=%x lba=%x count=%x cmd=%x use_dma=%x\n",disk,inData,lba,inCount,cmd,use_dma);
+    //printk("[ata-rw] disk=%x buffer=%x lba=%x count=%x cmd=%x use_dma=%x\n",disk,inData,lba,inCount,cmd,use_dma);
     
-    spinLock_lock(&ata_lock);        
+    spinLock_lock(&ata_lock);   
+         
+    use_multiple=1;
+    useInt=1;
+    ret_val=-MED_ERROR;
     
     ata_RW_thread=threadCurrent;
     
@@ -150,6 +154,8 @@ int ata_rwData(int disk,unsigned int lba,void * inData,int inCount,int cmd,int u
         goto end;
     }    
         
+    
+    
     tOut=tick+READ_WRITE_TOUT;
     retCount=0;
 retry:   
@@ -219,6 +225,7 @@ retry:
             use_dma=ATA_NO_DMA;
         }
         i=0;
+        
         while(i<count)
         {
             if (unaligned)

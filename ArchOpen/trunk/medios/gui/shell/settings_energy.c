@@ -128,8 +128,6 @@ void energy_setting(void)
 {
     ICON logo;
         
-    char tmpStr[30];
-       
     char * valFormStr_1[10]={"10s","20s","30s","40s","50s","60s","70s","80s","90s",getLangStr(STRLNG_NRJ_NEVER)};
     char * valFormStr_2[10]={"1min","2min","3min","4min","5min","6min","7min","8min","9min",getLangStr(STRLNG_NRJ_NEVER)};
     

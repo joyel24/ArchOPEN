@@ -28,7 +28,10 @@
  /* tagResolver and associated code copyright 2003 Thomas Paul Diffenbach
  */
 
-#include "medios.h"
+#include <api.h>
+
+#include <sys_def/stdfs.h>
+#include <sys_def/ctype.h>
 
 #include "id3.h"
 #include "mp3_data.h"

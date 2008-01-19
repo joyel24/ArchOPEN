@@ -13,55 +13,29 @@
 #ifndef __MAS_H
 #define __MAS_H
 
+#include <sys_def/errors.h>
+#include <snd_user/mas.h>
 #include <kernel/irq.h>
 
-// NOTE: change this when we will land new sound stuff
-//#include <kernel/sound.h>
-typedef struct _SOUND_BUFFER
-{
-    unsigned char* data;
-    unsigned long  size;
-    unsigned long  read;
-    unsigned long  write;
-    int playing;
-} sound_buffer_s;
+/******************** Sound playback related ******************************/
+MED_RET_T mas_chgMode(int mode);
 
+/******************** Mp3 related high level ******************************/
 
-#define FREE_SPACE_IN_BUFF(BUFF)                           \
-    ({                                                     \
-            int __free_space=BUFF->read-BUFF->write;         \
-            if(__free_space<=0)                            \
-                __free_space+=BUFF->size;                   \
-            __free_space;                                  \
-    })
+MED_RET_T mas_IniMp3(void);
 
-struct av_peak {
-    int left;
-    int right;
-};
+void mas_mp3LaunchDecode(void);
+int mas_mp3DecodeState(void);
+void mas_mp3StopDecode(void);
+void mas_setMp3Buffer(struct mas_sound_buffer * b1,struct mas_sound_buffer * b2);
 
-
-
+/******************** Mp3 related low level ******************************/
+int mas_appSelect(int app);
+int mas_appIsRunning(int app);
+int mas_setClkSpeed(int spd);
+int mas_getFrameCount(void);
 void mas_dspInterrupt(int irq,struct pt_regs * regs);
-int sound_buff_write(sound_buffer_s * sound_buffer, int (*reader_fct)(char * data,int count,void* param),
-            int count,void * param);
-
-/* sound API */
-#define SOUND_INI_MP3             0x0001
-#define SOUND_START_MP3           0x0002
-#define SOUND_STOP_MP3            0x0003
-#define SOUND_PAUSE_MP3           0x0004
-#define SOUND_FRAME_CNT           0x0005
-#define SOUND_IN_PEAK             0x0006
-#define SOUND_OUT_PEAK            0x0007
-#define SOUND_IN_PEAK_REAL        0x0008
-#define SOUND_OUT_PEAK_REAL       0x0009
-#define SOUND_SETCURR_MP3_BUFFER  0x000A
-#define SOUND_GETCURR_MP3_BUFFER  0x000B
-#define SOUND_ADD_MP3_BUFFER      0x000C
-#define SOUND_REMOVE_MP3_BUFFER   0x000D
-void sound_ctl(unsigned int cmd, void * arg);
-
+MED_RET_T mas_startMp3App(void);
 
 /********************* init mas                    ***************************/
 void mas_init(void);
@@ -69,6 +43,8 @@ int mas_reset(void);
 int mas_gio_init(void);
 
 int mas_readBat(void);
+
+MED_RET_T mas_stopApps(void);
 
 /********************* Direct config function       ***************************/
 /* register */
@@ -79,7 +55,6 @@ int mas_readBat(void);
 /********************* Direct config i2c read/write ***************************/
 int mas_read_direct_config(int reg);
 int mas_write_direct_config(int reg,int val);
-
 
 /********************* Register function       ***************************/
 /* subaddress */
@@ -137,19 +112,6 @@ struct mas_version {
 /********************* DSP                    ***************************/
 /* dev functions */
 void    dsp_ctl           (unsigned int cmd, void * arg);
-
-/******************** Mp3 related high level ******************************/
-int mas_IniMp3(sound_buffer_s * ptr);
-void mas_startMp3(void);
-void mas_pauseMp3(void);
-int mas_stopApps(void);
-int mas_startMp3App(void);
-
-/******************** Mp3 related low level ******************************/
-int mas_appSelect(int app);
-int mas_appIsRunning(int app);
-int mas_setClkSpeed(int spd);
-int mas_getFrameCount(void);
 
 /********************* Register i2c read/write ***************************/
 

@@ -90,33 +90,41 @@ unsigned int _svc_IniStack = IRAM_SIZE;
 unsigned int _sys_IniStack = IRAM_SIZE-SVC_STACK_SIZE;
 
 #if 0
-#include <gui/msgBox.h>
-#include <sys_def/font.h>
-
-
-
+#include <kernel/thread.h>
 void test(void)
 {
-    int handler=evt_getHandler(BTN_CLASS);
-    gfx_initGraphics();    
-    gfx_clearScreen(COLOR_TRSP);
-
-    icon_init();
-    msgBox_init();
-    screens_show(SCREEN_GFX);
-
-    msgBox_show("Type OK","Text\ntype 0",MSGBOX_TYPE_OK,MSGBOX_ICON_EXCLAMATION,handler);
-    msgBox_show("Type OK/Cancel","Text\ntype 1",MSGBOX_TYPE_OKCANCEL,MSGBOX_ICON_EXCLAMATION,handler);
-    msgBox_show("Type Yes/No","Text\ntype 2",MSGBOX_TYPE_YESNO,MSGBOX_ICON_EXCLAMATION,handler);
-    msgBox_show("Type Yes/No/Cancel","Text\ntype 3",MSGBOX_TYPE_YESNOCANCEL,MSGBOX_ICON_EXCLAMATION,handler);
-    msgBox_show("Type Info","Text\ntype 4\n pas bouton",MSGBOX_TYPE_INFO,MSGBOX_ICON_EXCLAMATION,handler);
-        
-
-            
-    evt_freeHandler(handler);
+    struct spinLock spLock;
+    spinLock_ini(&spLock);
+    
+    if(spinLock_testAndLock(&spLock))
+        printk("(1) lock ok\n");
+    else
+        printk("(1) lock ko\n");
+    
+    printk("Lock status: %d\n",spinLock_isLocked(&spLock));
+    
+    if(spinLock_testAndLock(&spLock))
+        printk("(2) lock ok\n");
+    else
+        printk("(2) lock ko\n");
+    
+    spinLock_unlock(&spLock);
+    
+    printk("Lock status: %d\n",spinLock_isLocked(&spLock));
+    
+    if(spinLock_testAndLock(&spLock))
+        printk("(3) lock ok\n");
+    else
+        printk("(3) lock ko\n");
+    
+    spinLock_unlock(&spLock);
+    
+    printk("Lock status: %d\n",spinLock_isLocked(&spLock));
+    
+    spinLock_unlock(&spLock);
+    
+    printk("Lock status: %d\n",spinLock_isLocked(&spLock));
 }
-
-
 #endif
 
 
@@ -180,7 +188,7 @@ void kernel_thread(void)
     thread_ps();
 #endif
     
-       //     test();
+         //   test();
     
 #ifdef BUILD_LIB
     app_main(1,&stdalone);
@@ -314,7 +322,6 @@ void kernel_start (void)
     vfs_init();
         
 #ifdef TARGET_TYPE_STD 
-//    sound_init();
 #ifdef HAVE_MAS_SOUND
    mas_init();
 #endif
