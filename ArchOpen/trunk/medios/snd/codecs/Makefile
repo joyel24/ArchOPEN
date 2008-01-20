@@ -1,6 +1,6 @@
 include $(MEDIOS_SRC_PATH)/Makefile.conf
 
-SUBDIRS=wav tremor wavpack musepack mid tinysid
+SUBDIRS=wav tremor wavpack musepack mid tinysid mikmod
 
 ifeq ($(HAVE_MAS_SOUND),1)
 SUBDIRS += mas_mp3

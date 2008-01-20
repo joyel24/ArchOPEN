@@ -273,6 +273,7 @@ bool codec_load(CODEC_INFO * info){
 
 CODEC_INFO * codec_findCodecFor(char * name){
     char * ext;
+    char * extlist;
     char * tok;
     char * context;
     bool found;
@@ -295,16 +296,20 @@ CODEC_INFO * codec_findCodecFor(char * name){
     found=false;
     info=codec_first;
     while(info!=NULL){
+        extlist=strdup(info->extensions);
 
         // scan through | separated extensions
-        tok=strtok_r(info->extensions,"|",&context);
+        tok=strtok_r(extlist,"|",&context);
         while(tok!=NULL){
 
             if(!strcmp(ext,tok)){
                 found=true;
             }
+
             tok=strtok_r(NULL,"|",&context);
         }
+
+        kfree(extlist);
 
         if(found){
             break;
@@ -315,7 +320,7 @@ CODEC_INFO * codec_findCodecFor(char * name){
 
     if(!found)
         info=NULL;
-    
+
     kfree(ext);
 
     return info;

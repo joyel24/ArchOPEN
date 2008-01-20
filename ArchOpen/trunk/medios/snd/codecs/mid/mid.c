@@ -44,7 +44,7 @@ void init_mid(void){
 void mid_tagRequest(char * name,TAG * tag){
   tag->badFile=true;
 
-  tag->sampleRate=32072;
+  tag->sampleRate=32000;
   tag->stereo=2;
   tag->bitRate=1026*1000;
 
