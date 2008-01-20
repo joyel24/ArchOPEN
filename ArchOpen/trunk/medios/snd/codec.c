@@ -53,8 +53,7 @@ static void codec_threadFunction(){
         }
         codec_startRequested=false;
         // make sure output params are correctly set up
-        if(codec_current->globalInfo.needOutput)
-            output_outputParamsChanged();
+        output_outputParamsChanged();
         // call trackloop if exist
         if(codec_current->globalInfo.trackLoop!=NULL){
             codec_loopRunning=true;
@@ -199,7 +198,6 @@ CODEC_INFO * codec_new(){
     info->globalInfo.discardBuffer=NULL;
     info->globalInfo.output_enable=NULL;
     info->globalInfo.noTimeAdvance=false;
-    info->globalInfo.needOutput=true;
     info->next=NULL;
 
     // handle linked list
@@ -321,11 +319,6 @@ CODEC_INFO * codec_findCodecFor(char * name){
     kfree(ext);
 
     return info;
-}
-
-CODEC_INFO * codec_currentCodec(void)
-{
-    return codec_current;
 }
 
 bool codec_setCodecFor(char * name){

@@ -50,45 +50,25 @@ bool sound_started=false;
 
 void sound_play(bool discard)
 {
-    CODEC_INFO * ptr_codecInfo; /* structure for current playing codec*/
-    
     if (sound_activeItem==NULL) return; /*no active item to play ==> exit*/
         
-    ptr_codecInfo=codec_currentCodec();
-    
     printk("[sound] play %s\n",sound_activeItem->name);
 
     // make sure the codec thread is not waiting for output
     if(sound_state==SS_PAUSED)
-    {
-        if(!ptr_codecInfo) /* no codec info, safe output discard buffer */
-            output_discardBuffer();
-        else if(ptr_codecInfo->globalInfo.needOutput) /* codec doesn't manage the output*/
-            output_discardBuffer();
-        else if(ptr_codecInfo->globalInfo.discardBuffer) /* codec manages the output => ask it to discard output buffer*/
-            ptr_codecInfo->globalInfo.discardBuffer();
-            
-    }
+        output_discardBuffer();
 
     codec_trackStop();
 
     /* NOTE: why doing discard twice ? or discard never true when sound_state==SS_PAUSED */
     if(discard)
-    {
-        if(!ptr_codecInfo) /* no codec info, safe output discard buffer */
-            output_discardBuffer();
-        else if(ptr_codecInfo->globalInfo.needOutput) /* codec doesn't manage the output*/
-            output_discardBuffer();
-        else if(ptr_codecInfo->globalInfo.discardBuffer) /* codec manages the output => ask it to discard output buffer*/
-            ptr_codecInfo->globalInfo.discardBuffer();
-    }
+        output_discardBuffer();
 
     buffer_setActiveItem(sound_activeItem);
 
     if(codec_setCodecFor(sound_activeItem->name))
     {
-        if(codec_currentCodec()->globalInfo.needOutput)
-            output_enable(true);
+        output_enable(true);
         sound_state=SS_PLAYING;
 
         codec_trackStart();
@@ -132,21 +112,9 @@ void sound_trackEnd(){
 
 void sound_pause(bool paused)
 {
-    CODEC_INFO * ptr_codecInfo; /* structure for current playing codec*/
     if(sound_state!=SS_STOPPED)
     {
-        ptr_codecInfo=codec_currentCodec();
-        if(ptr_codecInfo)
-        {
-            if(ptr_codecInfo && ptr_codecInfo->globalInfo.needOutput)
-            {
-                output_enable(!paused);
-            }
-            else if(ptr_codecInfo->globalInfo.output_enable)
-            {
-                ptr_codecInfo->globalInfo.output_enable(!paused);
-            }
-        }
+       output_enable(!paused);
         
         if(paused){
             sound_state=SS_PAUSED;
@@ -158,18 +126,8 @@ void sound_pause(bool paused)
 
 void sound_seek(int time)
 {    
-    CODEC_INFO * ptr_codecInfo; /* structure for current playing codec*/
     if(sound_state==SS_STOPPED) return;
-    
-    ptr_codecInfo=codec_currentCodec();
-    
-    if(ptr_codecInfo)
-    {
-        if(ptr_codecInfo->globalInfo.needOutput) /* codec doesn't manage the output*/
-            output_discardBuffer();
-        else if(ptr_codecInfo->globalInfo.discardBuffer) /* codec manages the output => ask it to discard output buffer*/
-            ptr_codecInfo->globalInfo.discardBuffer();
-    }
+    output_discardBuffer();
         
     codec_seekRequest(time);
     while(codec_mustSeek(NULL)) /*nothing*/;
@@ -181,14 +139,12 @@ void sound_setVolume(int volume){
 
 void sound_start(void)
 {
-    CODEC_INFO * ptr_codecInfo; /* structure for current playing codec*/
     if(!sound_started)
     {
-        ptr_codecInfo=codec_currentCodec();
+        
         buffer_start();
         codec_start();
-        if(ptr_codecInfo && ptr_codecInfo->globalInfo.needOutput)
-            output_start();
+        output_start();
                     
         halt_disableTimer(TIMER_DISABLE);
         
@@ -202,22 +158,12 @@ void sound_start(void)
 
 void sound_stop(void)
 {
-    CODEC_INFO * ptr_codecInfo; /* structure for current playing codec*/
     if(sound_started)
     {
-        ptr_codecInfo=codec_currentCodec();
-        if(ptr_codecInfo)
-        {
-            if(ptr_codecInfo->globalInfo.needOutput) /* codec doesn't manage the output*/
-                output_discardBuffer();
-            else if(ptr_codecInfo->globalInfo.discardBuffer)
-                /* codec manages the output => ask it to discard output buffer*/
-                ptr_codecInfo->globalInfo.discardBuffer();
-        }
+        output_discardBuffer();
         codec_stop();
         
-        if(ptr_codecInfo && ptr_codecInfo->globalInfo.needOutput)
-            output_stop();
+        output_stop();
         buffer_stop();
         halt_disableTimer(TIMER_ENABLE);
         

@@ -176,7 +176,6 @@ void codec_main(CODEC_GLOBAL_INFO * info)
     info->tagRequest=mas_tagRequest;
     info->discardBuffer=mp3_discardBuffer;
     info->output_enable=mp3_output_enable;
-    info->needOutput=false;
     
     buff_1.data=dataBuf1;
     buff_1.size=DATA_BUFFER_SIZE;
