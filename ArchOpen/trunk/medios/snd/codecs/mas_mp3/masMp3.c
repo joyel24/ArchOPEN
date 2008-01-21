@@ -18,8 +18,6 @@ char dataBuf1[DATA_BUFFER_SIZE];
 char dataBuf2[DATA_BUFFER_SIZE];
 struct mas_sound_buffer buff_1;
 struct mas_sound_buffer buff_2;
-
-int masMp3_stopPlayback;
         
 void mas_skipId3v2(void)
 {
@@ -91,20 +89,6 @@ void mas_tagRequest(char * name,TAG * tag)
     }
 }
 
-void mp3_discardBuffer(void)
-{
-    mas_mp3StopDecode();
-    masMp3_stopPlayback=1;
-}
-
-void mp3_output_enable(bool enable)
-{
-    if(enable)
-        mas_mp3LaunchDecode();
-    else
-        mas_mp3StopDecode();
-}
-        
 void mp3_trackLoop(void)
 {
     int red=0;
@@ -122,8 +106,6 @@ void mp3_trackLoop(void)
     
     curBuff=&buff_1;
     
-    masMp3_stopPlayback=0;
-    
     /*NOTE: after last read the fction returns while there is still some data to be send to mas*/    
        
     //mas_skipId3v2();
@@ -139,7 +121,7 @@ void mp3_trackLoop(void)
     
     mas_mp3LaunchDecode();
     
-    while(codec_mustContinue() && red>0 && !masMp3_stopPlayback)    
+    while(codec_mustContinue() && red>0)    
     {        
         if(curBuff->state==MAS_BUFFER_END)
         {
@@ -150,13 +132,13 @@ void mp3_trackLoop(void)
             curBuff=curBuff->nxt;
             //printf("masMp3 red=%d\n",red);
             /* NOTE: we might need to relaunch decode*/
-            if(!mas_mp3DecodeState() && !masMp3_stopPlayback)
+            if(!mas_mp3DecodeState())
             {
                 mas_mp3LaunchDecode();
             }
         }
            
-        if(codec_mustSeek(&time) && !masMp3_stopPlayback)
+        if(codec_mustSeek(&time))
         {
             printf("Need to seek %d\n",time);
             codec_setElapsed(time);
@@ -164,6 +146,7 @@ void mp3_trackLoop(void)
         }
     }
     mas_mp3StopDecode();
+    mas_clearMp3Buffer();
     printf("[mas MP3] exit loop\n");
     
 }
@@ -174,8 +157,6 @@ void codec_main(CODEC_GLOBAL_INFO * info)
     info->seekSupported=false;
     info->trackLoop=mp3_trackLoop;
     info->tagRequest=mas_tagRequest;
-    info->discardBuffer=mp3_discardBuffer;
-    info->output_enable=mp3_output_enable;
     
     buff_1.data=dataBuf1;
     buff_1.size=DATA_BUFFER_SIZE;

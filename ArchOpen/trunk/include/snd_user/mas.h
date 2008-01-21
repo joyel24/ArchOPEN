@@ -13,6 +13,7 @@
 #ifndef __MAS_USER_H
 #define __MAS_USER_H
 
+#define MAS_NO_MODE           -1
 #define MAS_MP3_MODE          0
 #define MAS_PCM_DIRECT_MODE   1
 #define MAS_PCM_DSP_MODE      2

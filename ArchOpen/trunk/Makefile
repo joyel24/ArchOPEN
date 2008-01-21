@@ -1,7 +1,8 @@
 include Makefile.conf
 
 SUBDIRS = medios
-SUBDIRS_CLEAN = $(MEDIOS_SRC_PATH)/lib
+SUBDIRS_CLEAN = $(MEDIOS_SRC_PATH)/lib  
+SUBDIRS_FULL_CLEAN = $(MEDIOS_SRC_PATH)/codec
 
 ifeq ("$(TARGET_TYPE)","std")
 TARGET = medios_shell

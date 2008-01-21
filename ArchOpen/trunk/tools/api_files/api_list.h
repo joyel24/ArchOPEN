@@ -380,4 +380,5 @@ MED_RET_T # mas_chgMode         # int mode                         # Sound # MAS
 void      # mas_mp3LaunchDecode # void                             # Sound # MAS specific: launch MP3 decode
 void      # mas_setMp3Buffer    # struct mas_sound_buffer * b1,struct mas_sound_buffer * b2 # Sound # MAS specific: init buffers
 int       # mas_mp3DecodeState  # void                             # Sound # MAS specific: returns decoder state
-void      # mas_mp3StopDecode  # void                             # Sound # MAS specific: stop decoder
+void      # mas_mp3StopDecode   # void                             # Sound # MAS specific: stop decoder
+void      # mas_clearMp3Buffer  # void                             # Sound # MAS specific: clear buffer config

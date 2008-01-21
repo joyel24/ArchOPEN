@@ -164,41 +164,58 @@ void output_outputParamsChanged(){
 
     sampleRate=item->tag.sampleRate;
     stereo=item->tag.stereo;
-
-    if(dspCom->stereo!=stereo || sampleRate!=output_sampleRate){
-        // make sure all previous data is outputted before any change
-        while(!output_dspNoOutput){
-            yield();
-        }
+#ifdef HAVE_MAS_SOUND
+    int mode=mas_getMode();
+    if(mode==MAS_NO_MODE)
+        return;
+    
+    if(mas_getMode()==MAS_MP3_MODE)        
+    {
+        /* MAS specific code */
     }
-
-    // stereo
-
-    dspCom->stereo=stereo;
-
-    // sample rate
-
-    dspCom->dataSampleRate=sampleRate;
-
-    if(sampleRate!=output_sampleRate){
-
-        if(output_setSampleRate(sampleRate)){
-            output_sampleRate=sampleRate;
-        }else{
-            output_sampleRate=OUTPUT_DEFAULT_SAMPLERATE;
-            output_setSampleRate(output_sampleRate);
+    else 
+#endif
+    {  
+        if(dspCom->stereo!=stereo || sampleRate!=output_sampleRate){
+            // make sure all previous data is outputted before any change
+            while(!output_dspNoOutput){
+                yield();
+            }
         }
 
-        dspCom->outputSampleRate=output_sampleRate;
+        // stereo
+    
+        dspCom->stereo=stereo;
+    
+        // sample rate
+    
+        dspCom->dataSampleRate=sampleRate;
+    
+        if(sampleRate!=output_sampleRate){
+    
+            if(output_setSampleRate(sampleRate)){
+                output_sampleRate=sampleRate;
+            }else{
+                output_sampleRate=OUTPUT_DEFAULT_SAMPLERATE;
+                output_setSampleRate(output_sampleRate);
+            }
+    
+            dspCom->outputSampleRate=output_sampleRate;
+        }
     }
 }
 
 bool output_setSampleRate(int rate){
 #ifdef HAVE_AIC23_SOUND
     return aic23_setSampleRate(rate);
-#else
-    return 0;
 #endif
+#ifdef HAVE_MAS_SOUND
+    if(mas_getMode()==MAS_PCM_DSP_MODE)
+        return mas_i2sChgSRate(rate);
+    else
+        return false;
+#endif
+    return false;
 }
 
 void output_enableAudioOutput(bool enabled){
@@ -216,8 +233,26 @@ void output_setVolume(int volume){
 #endif
 }
 
-void output_enable(bool enabled){
-    output_active=enabled;
+void output_enable(bool enabled)
+{
+#ifdef HAVE_MAS_SOUND
+    int mode=mas_getMode();
+    if(mode==MAS_NO_MODE)
+        return;
+    
+    if(mode==MAS_MP3_MODE)        
+    {
+        /* MAS specific code */
+        if(enabled)
+            mas_mp3LaunchDecode();
+        else
+            mas_mp3StopDecode();
+    }
+    else
+#endif
+    {
+        output_active=enabled;
+    }
 }
 
 #ifdef BENCHMARK_MODE
@@ -287,16 +322,30 @@ void output_write(void * buffer, int size){
 #endif
 }
 
-void output_discardBuffer(){
-
-    output_discardingBuffer=true;
-
-    while(!output_dspNoOutput || output_readPos!=output_writePos){
-
-        yield();
+void output_discardBuffer()
+{
+#ifdef HAVE_MAS_SOUND
+    int mode=mas_getMode();
+    if(mode==MAS_NO_MODE)
+        return;
+    
+    if(mode==MAS_MP3_MODE)        
+    {
+        /* MAS specific code */
+        mas_mp3StopDecode();
     }
-
-    output_discardingBuffer=false;
+    else
+#endif
+    {
+        output_discardingBuffer=true;
+    
+        while(!output_dspNoOutput || output_readPos!=output_writePos){
+    
+            yield();
+        }
+    
+        output_discardingBuffer=false;
+    }
 }
 
 void output_start(void)

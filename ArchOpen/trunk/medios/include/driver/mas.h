@@ -19,6 +19,7 @@
 
 /******************** Sound playback related ******************************/
 MED_RET_T mas_chgMode(int mode);
+int mas_getMode(void);
 
 /******************** Mp3 related high level ******************************/
 
@@ -27,6 +28,7 @@ MED_RET_T mas_IniMp3(void);
 void mas_mp3LaunchDecode(void);
 int mas_mp3DecodeState(void);
 void mas_mp3StopDecode(void);
+void mas_clearMp3Buffer(void);
 void mas_setMp3Buffer(struct mas_sound_buffer * b1,struct mas_sound_buffer * b2);
 
 /******************** Mp3 related low level ******************************/
@@ -206,7 +208,7 @@ int mas_codecWrite(int reg,int val);
 /********************* PCM decoding        ***************************/
 
 void mas_i2sInit(int sample_rate);
-void mas_i2sChgSRate(int sample_rate);
+bool mas_i2sChgSRate(int sample_rate);
 
 #define SRATE_5012     0
 #define SRATE_8000     1

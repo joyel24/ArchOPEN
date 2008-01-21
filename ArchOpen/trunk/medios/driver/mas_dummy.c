@@ -37,3 +37,9 @@ void mas_mp3StopDecode(void)
 {
     
 }
+
+void mas_clearMp3Buffer(void)
+{
+    
+}
+

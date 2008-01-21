@@ -224,6 +224,11 @@ MED_RET_T mas_chgMode(int mode)
     return res;
 }
 
+int mas_getMode(void)
+{
+    return mas_curMode;   
+}
+
 MED_RET_T mas_IniMp3(void)
 {
     irq_disable(IRQ_MAS_DATA);
@@ -310,6 +315,11 @@ void mas_mp3StopDecode(void)
     soundPaused=1;
     irq_disable(IRQ_MAS_DATA);
     masPlaying=0;
+}
+
+void mas_clearMp3Buffer(void)
+{
+    soundBuffer=buff_1=buff_2=NULL;
 }
 
 #if 0
@@ -1028,11 +1038,12 @@ void mas_i2sInit(int sampleRate)
 }
 
 
-void mas_i2sChgSRate(int sample_rate)
+bool mas_i2sChgSRate(int sample_rate)
 {
     if(sample_rate<SRATE_5012 || sample_rate>SRATE_48000)
     {
         printk("[MAS-SRATE] Error: unsupported sample rate: %d\n",sample_rate);
+        return false;
     }
     else
     {
@@ -1042,5 +1053,6 @@ void mas_i2sChgSRate(int sample_rate)
         mas_setD0(0x346,0x1a1);
         printk("[MAS-SRATE] wrote %x,%x for %d\n",sample_rate_cfg[sample_rate][0],
             sample_rate_cfg[sample_rate][1],sample_rate);
+        return true;
     }
 }
