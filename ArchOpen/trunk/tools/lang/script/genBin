@@ -1,6 +1,6 @@
 # create files
 
-#rm -f tmp.lng
+rm -f tmp.lng
 
 awk 'BEGIN{FS="[\t ]*#[\t ]*"; numID=0;} \
 NF==0{next} \
@@ -8,4 +8,4 @@ NF==0{next} \
 
 ./script/mkLng tmp.lng $2 $3
 
-#rm -f tmp.lng
+rm -f tmp.lng
