@@ -194,10 +194,11 @@ CODEC_INFO * codec_new(){
     info->globalInfo.description="";
     info->globalInfo.seekSupported=false;
     info->globalInfo.trackLoop=NULL;
+    info->globalInfo.codecDeactivate=NULL;
+    info->globalInfo.codecActivate=NULL;
     info->globalInfo.tagRequest=NULL;
-    info->globalInfo.discardBuffer=NULL;
-    info->globalInfo.output_enable=NULL;
     info->globalInfo.noTimeAdvance=false;
+    info->globalInfo.loadOk=true;
     info->next=NULL;
 
     // handle linked list
@@ -253,20 +254,25 @@ bool codec_load(CODEC_INFO * info){
     use_iram=1;
 #endif
 
-    if(med_loadMed(info->filename,&info->medInfo,info->fOffset,use_iram)==MED_OK){
-
+    if(med_loadMed(info->filename,&info->medInfo,info->fOffset,use_iram)==MED_OK)
+    {
         ((void (*)(CODEC_GLOBAL_INFO * info))info->medInfo.entry)(&info->globalInfo);
-
-        printk("[codec] loaded codec %s, description=%s\n",info->name,info->globalInfo.description);
-
-        info->loaded=true;
-
-        return true;
-
-    }else{
-
+        if(info->globalInfo.loadOk)
+        {
+            printk("[codec] loaded codec %s, description=%s\n",info->name,info->globalInfo.description);
+            info->loaded=true;
+            return true;
+        }
+        else
+        {
+            printk("[codec] loaded codec %s, error during init\n");
+            info->loaded=false;
+            return false;
+        }
+    }
+    else
+    {
         printk("[codec] error loading codec %s\n",info->name);
-
         return false;
     }
 }
@@ -335,28 +341,38 @@ bool codec_setCodecFor(char * name){
         return false;
     }
 
-    // set current codec
+    // call codec deactivate function if it exists  
+    if(codec_current && codec_current!=info)
+    {
+        if(codec_current->globalInfo.codecDeactivate)
+            codec_current->globalInfo.codecDeactivate();
+    }
+    
+    // set current codec  
     codec_current=info;
 
     // make sure it is loaded
-    if(!codec_load(info)){
-        return false;
+    if(codec_load(info))
+    {    
+        // call codec activation if it exists
+        if(codec_current->globalInfo.codecActivate)
+            codec_current->globalInfo.codecActivate();        
     }
+    else
+        return false;
 
     return true;
 }
 
 void codec_trackStart(){
-
     codec_trackStop();
     codec_startOutPos=output_writePos;
     codec_timeDelta=0;
     
     codec_seekRequested=false;
-
+    
     // we need to have codec iram stuff in iram before the track loop
     med_copyToIram(&codec_current->medInfo);
-    
     // set start request, wait for ack from thread if we're not in thread
     codec_startRequested=true;
     while(THREAD_SELF()!=codec_thread && codec_startRequested){
@@ -365,11 +381,9 @@ void codec_trackStart(){
 }
 
 void codec_trackStop(){
-
     //loop not running -> nothing to stop
-    if(!codec_loopRunning){
+    if(!codec_loopRunning)
         return;
-    }
 
     // set stop request, wait for loop to stop running
     codec_stopRequested=true;

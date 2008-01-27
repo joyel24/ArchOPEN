@@ -287,6 +287,14 @@ void codec_main(CODEC_GLOBAL_INFO * info){
 #else
 void mad_main(CODEC_INFO * info){
 #endif
+    int device=getArch();
+    if(device==AV3XX_ARCH || device==AV1XX_ARCH || device==JBMM_ARCH)
+    {
+        printf("Device %s not suported\n",getArchName());
+        info->loadOk=false;
+        return;
+    }
+    
     printf("[mad] main()\n");
 
     info->description="MAD, MPEG audio codec";

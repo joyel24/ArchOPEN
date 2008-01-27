@@ -79,6 +79,7 @@ void # printf        # char *fmt, ...                     # Debug # Prints text 
 void # print_data    # char * data,int length             # Debug # Outputs a buffer to UART and debug screen
 void # do_bkpt       # void                               # Debug # Adds a breakpoint in code for aoMulator (needs specific build option)
 int  # getArch       # void  # Arch_Info # gets arch type, include sys_def/arch.h to get available arch
+char *      # getArchName   # void           # Arch_Info # gets the name of the running device
 void        # getResolution # int * width,int * height # Arch_Info # returns resolution for this arch
 MED_RET_T   # getErrno      # void   # Debug # returns last error number
 
@@ -381,4 +382,5 @@ void      # mas_mp3LaunchDecode # void                             # Sound # MAS
 void      # mas_setMp3Buffer    # struct mas_sound_buffer * b1,struct mas_sound_buffer * b2 # Sound # MAS specific: init buffers
 int       # mas_mp3DecodeState  # void                             # Sound # MAS specific: returns decoder state
 void      # mas_mp3StopDecode   # void                             # Sound # MAS specific: stop decoder
+void      # mas_i2sChgSRate     # int                              # Sound # MAS specific: change the sample rate for I2S PCM decoder
 void      # mas_clearMp3Buffer  # void                             # Sound # MAS specific: clear buffer config

@@ -24,9 +24,25 @@
 
 MED_RET_T errno=0;
 
+char * archName[] = {
+    "AV3XX",
+    "GMINI4XX",
+    "AV1XX_ARCH",
+    "JBMM",
+    "GMINI402",
+    "AV4XX",
+    "PMA",
+    "AV5XX"
+};
+
 int getArch(void)
 {
     return CURRENT_ARCH;
+}
+
+char * getArchName(void)
+{
+    return archName[CURRENT_ARCH];
 }
 
 void getResolution(int * width,int * height)

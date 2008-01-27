@@ -10,6 +10,13 @@
 * KIND, either express of implied.
 */
 
+/**********************************************
+Driver for the STMicroelectronics chip (M41ST84W and similar)
+it implements standard functions to read/write time/date
+from the RTC
+**********************************************/
+
+
 #include <sys_def/errors.h>
 
 #include <kernel/kernel.h>
@@ -19,6 +26,7 @@
 #include <driver/rtc_ST.h>
 #include <driver/time.h>
 
+/* structure representing time for ST chip*/
 struct tm_pv {
     unsigned char tm_ms;
     unsigned char tm_sec;
@@ -30,8 +38,15 @@ struct tm_pv {
     unsigned char tm_year;
 };
 
+/* conversion Macro: ST chip uses hex representation of dec:
+0x22 from chip is in fact 22 not 34*/
 #define pvToUser(val)     ((((val>>4)&0xF)*10)+(val&0xF))
 #define userToPv(val)     ((((val/10)<<4)&0xf0)+((val%10)&0x0F))
+
+/* Macro that put a data in ST chip,
+print an error if one occurs */
+#define sendRTC(addr,val)        {int __ret;int __val=val; __ret=i2c_write(RTC_DEVICE, addr, (void*)(&__val), 1); \
+                                        if(retVal<0) printk("[I2C - rtc] Error, writting (err:%d)\n",retVal);}
 
 MED_RET_T rtc_getTime(struct med_tm * valTime)
 {
@@ -42,8 +57,8 @@ MED_RET_T rtc_getTime(struct med_tm * valTime)
             
     if(retVal<0)
     {
-            printk("[I2C - rtc] Error, reading (err:%d)\n",retVal);
-            return retVal;
+        printk("[I2C - rtc] Error, reading (err:%d)\n",retVal);
+        return retVal;
     }
     
     pv_dt.tm_wday&=0x7;
@@ -59,8 +74,6 @@ MED_RET_T rtc_getTime(struct med_tm * valTime)
     return MED_OK;
 }
 
-#define sendRTC(addr,val)        {int __ret;int __val=val; __ret=i2c_write(RTC_DEVICE, addr, (void*)(&__val), 1); \
-                                        if(retVal<0) printk("[I2C - rtc] Error, writting (err:%d)\n",retVal);}
 
 MED_RET_T rtc_setTime(struct med_tm *newTime)
 {

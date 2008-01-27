@@ -24,6 +24,11 @@
 #include <driver/gio.h>
 #include <driver/mas.h>
 #include <driver/timer.h>
+#include <driver/uart.h>
+
+#include <../../snd/dspshared.h> /* not really nice!! */
+
+#include <snd/output.h>
 
 int mas_curMode;
 
@@ -52,6 +57,8 @@ __IRAM_CODE void mas_dspInterrupt(int irq,struct pt_regs * regs)
     int i;
     int data;
     char * data_buff;
+    
+    //printk("MAS INT\n");
     
     if(!spinLock_testAndLock(&masLock))
     {
@@ -150,6 +157,9 @@ int in_32_val(void)
 #define IN_16_VAL                  in_16_val()
 #define IN_32_VAL                  in_32_val()
 
+#define MAS_I2C_LOCK               {if(!i2c_getLock(I2C_LOOP,0)) {printk("[MAS-I2C] No lock\n"); return 0;}}
+#define MAS_I2C_UNLOCK             i2c_release();
+
 /********************* init mas                    ***************************/
 
 void mas_init(void)
@@ -164,7 +174,7 @@ void mas_init(void)
     printk("S%x:%d:%c%d ",version.major_number,version.derivate,version.char_order_version,version.digit_order_version);
     irq_disable(IRQ_MAS_DATA);
     printk("\n");
-    mas_curMode=-1;
+    mas_curMode=MAS_NO_MODE;
 }
 
 int mas_reset(void)
@@ -202,14 +212,14 @@ MED_RET_T mas_chgMode(int mode)
     {
         switch(mode)
         {
-            case MAS_MP3_MODE: 
+            case MAS_MP3_MODE:
                 res=mas_IniMp3();
                 break;
             case MAS_PCM_DIRECT_MODE:
                 res=-MED_ERROR;
                 break;
             case MAS_PCM_DSP_MODE:
-                res=-MED_ERROR;
+                mas_i2sInit();      
                 break;                  
         }
     }
@@ -231,8 +241,9 @@ int mas_getMode(void)
 
 MED_RET_T mas_IniMp3(void)
 {
+    mas_reset();
     irq_disable(IRQ_MAS_DATA);
-    //mas_reset();
+    
     /* NOTE: all this config is bit too much, as we are changing sound levels too ... */
     mas_codecWrite(MAS_REG_AUDIO_CONF,MAS_INPUT_AD | MAS_L_AD_CONVERTER | MAS_R_AD_CONVERTER | MAS_DA_CONVERTER
                         | 0xf  << 4 // mic gain
@@ -243,8 +254,11 @@ MED_RET_T mas_IniMp3(void)
     mas_codecWrite(MAS_REG_MIX_ADC_SCALE,0x00 << 8);
     mas_codecWrite(MAS_REG_MIX_DSP_SCALE,0x40 << 8);
     mas_codecWrite(MAS_REG_DA_OUTPUT_MODE,0x0);
-    mas_codecCtrlConf(MAS_SET,MAS_BALANCE,50);
-    //mas_codecCtrlConf(MAS_SET,MAS_VOLUME,/*70*/80);
+    mas_codecCtrlConf(MAS_SET,MAS_BALANCE,50);    
+    if(output_volume!=-1)
+        mas_codecCtrlConf(MAS_SET,MAS_VOLUME,output_volume);
+    else
+        mas_codecCtrlConf(MAS_SET,MAS_VOLUME,70);
     
     MAS_DELAY
     
@@ -258,8 +272,11 @@ MED_RET_T mas_IniMp3(void)
 
     mas_setD0(MAS_INTERFACE_CONTROL,0x04);
     mas_setClkSpeed(0x4800);
+#if 0
     mas_setD0(MAS_MAIN_IO_CONTROL,0x125);
-
+#else
+    mas_setD0(MAS_MAIN_IO_CONTROL,0x125);
+#endif
     MAS_DELAY
 
     if(mas_startMp3App()!=MED_OK)
@@ -271,9 +288,6 @@ MED_RET_T mas_IniMp3(void)
     masPlaying=0;
     
     printk("[mas_IniMp3] done\n");
-
-    /* NOTE: we should enable this only when playback is started*/
-    //irq_enable(IRQ_MAS_DATA);
     
     return MED_OK;
 }
@@ -322,34 +336,6 @@ void mas_clearMp3Buffer(void)
     soundBuffer=buff_1=buff_2=NULL;
 }
 
-#if 0
-
-int mas_isPausedMp3(void)
-{
-    unsigned int fCnt=mas_getD0(MAS_MPEG_FRAME_COUNT)&0xFFFFF;
-    printk(" %x ",fCnt);
-    return (fCnt==0);
-}
-
-void mas_pauseMp3(void)
-{
-    soundPaused = 1;
-    printk("Mas pause\n");
-}
-
-void mas_startMp3(void)
-{
-    soundPaused = 0;
-    if(soundBuffer)
-        soundBuffer->playing=1;
-    
-    printk("Mas start\n");
-    
-    irq_enable(IRQ_MAS_DATA);
-    mas_dspInterrupt(IRQ_MAS_DATA,NULL);
-}
-#endif
-
 MED_RET_T mas_stopApps(void)
 {
     int i;
@@ -378,7 +364,11 @@ MED_RET_T mas_startMp3App(void)
         i=mas_getD0(MAS_APP_SELECT);
         if((i & MASS_APP_MPEG3_DEC) && (i & MASS_APP_MPEG2_DEC))
             break;
-        if(nbTry<0) return -MED_ERROR;
+        if(nbTry<0)
+        {
+            printk("[mas_startMp3App] failed\n");
+            return -MED_ERROR;
+        }
         nbTry--;
     }
     return MED_OK;
@@ -442,7 +432,7 @@ int mas_readBat(void)
 int mas_read_direct_config(int reg)
 {
     int ret=0;
-        //i2c_ini_xfer();
+    MAS_I2C_LOCK
     i2c_start();
     OUT_WRITE_DEVICE
     OUT_SUBADDRESS(reg)
@@ -451,17 +441,19 @@ int mas_read_direct_config(int reg)
     ret=IN_16_VAL;
     i2c_notAck();
     i2c_stop();
+    MAS_I2C_UNLOCK
     return ret;
 }
 
 int mas_write_direct_config(int reg,int val)
 {
-    //i2c_ini_xfer();
+    MAS_I2C_LOCK
     i2c_start();
     OUT_WRITE_DEVICE
     OUT_SUBADDRESS(reg)
     OUT_16_VAL(val)
     i2c_stop();
+    MAS_I2C_UNLOCK
     return 0;
 }
 
@@ -471,8 +463,8 @@ int mas_write_direct_config(int reg,int val)
 int mas_read_register(int reg)
 {
     int ret=0;
-        int ret2=0;
-        //i2c_ini_xfer();
+    int ret2=0;
+    MAS_I2C_LOCK
     i2c_start();
     OUT_WRITE_DEVICE
     OUT_SUBADDRESS(MAS_DATA_WRITE)
@@ -490,40 +482,44 @@ int mas_read_register(int reg)
         ret |= (ret2 & 0xFFFF);
     i2c_notAck();
     i2c_stop();
+    MAS_I2C_UNLOCK
     return ret;
 }
 
 int mas_write_register(int reg,unsigned int val)
 {
-    //i2c_ini_xfer();
+    MAS_I2C_LOCK
     i2c_start();
     OUT_WRITE_DEVICE
     OUT_SUBADDRESS(MAS_DATA_WRITE)
     OUT_16_VAL(0xB000 | ((reg&0xFF)<<4) | ((val>>16)&0xf))
     OUT_16_VAL(val&0xFFFF)
     i2c_stop();
+    MAS_I2C_UNLOCK
     return 0;
 }
 
 int mas_freeze(void)
 {
-    //i2c_ini_xfer();
+    MAS_I2C_LOCK
     i2c_start();
     OUT_WRITE_DEVICE
     OUT_SUBADDRESS(MAS_DATA_WRITE)
     OUT_16_VAL(0x0000)
     i2c_stop();
+    MAS_I2C_UNLOCK
     return 0;
 }
 
 int mas_run(void)
 {
-    //i2c_ini_xfer();
+    MAS_I2C_LOCK
     i2c_start();
     OUT_WRITE_DEVICE
     OUT_SUBADDRESS(MAS_DATA_WRITE)
     OUT_16_VAL(0x1000)
     i2c_stop();
+    MAS_I2C_UNLOCK
     return 0;
 }
 
@@ -546,7 +542,7 @@ int mas_read_Di_register(int i,int addr,void * buf,int size) // !!! 20 bit value
     int ret=0;
     int j;
     char * buffer = (char*) buf;
-        //i2c_ini_xfer();
+    MAS_I2C_LOCK
     i2c_start();
     OUT_WRITE_DEVICE
     OUT_SUBADDRESS(MAS_DATA_WRITE)
@@ -562,14 +558,6 @@ int mas_read_Di_register(int i,int addr,void * buf,int size) // !!! 20 bit value
     for(j=0;j<size*4;j+=4)
     {
         ret=IN_32_VAL;
-        /*buffer[j+3]=(ret>>24)&0xFF;
-        buffer[j+2]=(ret>>16)&0xFF;
-        buffer[j+1]=(ret>>8)&0xFF;
-        buffer[j]=ret&0xFF;*/
-                /*buffer[j+3]=(ret>>24)&0xFF;
-                buffer[j+2]=(ret>>16)&0xFF;
-        buffer[j+1]=(ret>>8)&0x0F;
-        buffer[j]=0;*/
         buffer[j+3]=0;
         buffer[j+2]=(ret>>16)&0x0F;
         buffer[j+1]=(ret>>8)&0xFF;
@@ -579,6 +567,7 @@ int mas_read_Di_register(int i,int addr,void * buf,int size) // !!! 20 bit value
     }
     i2c_notAck();
     i2c_stop();
+    MAS_I2C_UNLOCK
     return 0;
 }
 
@@ -587,6 +576,7 @@ int mas_shortRead_Di_register(int i,int addr,void * buf,int size) // no problem 
     int ret=0;
     int j;
     char * buffer = (char*) buf;
+    MAS_I2C_LOCK
         //i2c_ini_xfer();
     i2c_start();
     OUT_WRITE_DEVICE
@@ -611,6 +601,7 @@ int mas_shortRead_Di_register(int i,int addr,void * buf,int size) // no problem 
     }
     i2c_notAck();
     i2c_stop();
+    MAS_I2C_UNLOCK
     return 0;
 }
 
@@ -624,6 +615,7 @@ int mas_write_Di_register(int i,int addr,void * buf,int size) // !!! 20 bit valu
     char * buffer = (char*) buf;
     int j;
     unsigned long outval;
+    MAS_I2C_LOCK
         //i2c_ini_xfer();
     i2c_start();
     OUT_WRITE_DEVICE
@@ -640,6 +632,7 @@ int mas_write_Di_register(int i,int addr,void * buf,int size) // !!! 20 bit valu
         OUT_32_VAL(outval)
     }
     i2c_stop();
+    MAS_I2C_UNLOCK
     return 0;
 }
 
@@ -647,6 +640,7 @@ int mas_shortWrite_Di_register(int i,int addr,void * buf,int size) // no problem
 {
     char * buffer = (char*) buf;
     int j;
+    MAS_I2C_LOCK
         //i2c_ini_xfer();
     i2c_start();
     OUT_WRITE_DEVICE
@@ -657,23 +651,27 @@ int mas_shortWrite_Di_register(int i,int addr,void * buf,int size) // no problem
     for(j=0;j<size*2;j+=2)
         OUT_32_VAL(((buffer[j+1]<<8) & 0x0000FF00) | ((buffer[j]) & 0x000000FF))
     i2c_stop();
+    MAS_I2C_UNLOCK
     return 0;
 }
 
 int mas_clear_sync(void)
 {
+    MAS_I2C_LOCK
     //i2c_ini_xfer();
     i2c_start();
     OUT_WRITE_DEVICE
     OUT_SUBADDRESS(MAS_DATA_WRITE)
     OUT_16_VAL(MAS_CLEAR_SYNC)
     i2c_stop();
+    MAS_I2C_UNLOCK
     return 0;
 }
 
 int mas_read_version(struct mas_version * ptr)
 {
     int ret;
+    MAS_I2C_LOCK
         //i2c_ini_xfer();
     i2c_start();
     OUT_WRITE_DEVICE
@@ -690,6 +688,7 @@ int mas_read_version(struct mas_version * ptr)
     ret=IN_16_VAL;
     i2c_notAck();
     i2c_stop();
+    MAS_I2C_UNLOCK
     ptr->derivate=(ret >> 12) & 0xF;
     ptr->char_order_version=((ret>>4) & 0xFF)+0x41; // it's a char !
     ptr->digit_order_version=ret&0xF;
@@ -895,6 +894,7 @@ int convertVal(int val,int control,int action)
 int mas_codecRead(int reg)
 {
     int ret=0;
+    MAS_I2C_LOCK
     i2c_start();
     OUT_WRITE_DEVICE
     OUT_SUBADDRESS(MAS_CODEC_WRITE)
@@ -908,17 +908,20 @@ int mas_codecRead(int reg)
     ret=IN_16_VAL;
     i2c_notAck();
     i2c_stop();
+    MAS_I2C_UNLOCK
     return ret;
 }
 
 int mas_codecWrite(int reg,int val)
 {
+    MAS_I2C_LOCK
     i2c_start();
     OUT_WRITE_DEVICE
     OUT_SUBADDRESS(MAS_CODEC_WRITE)
     OUT_16_VAL(reg)
     OUT_16_VAL(val)
     i2c_stop();
+    MAS_I2C_UNLOCK
     return 0;
 }
 
@@ -947,63 +950,11 @@ unsigned int sample_rate_cfg[][2]= {
 {0x4E5E,0x306}, /* 44.1    */
 {0x4800,0x306}, /* 48      */
 };
-
-#define WAVE_PERIOD ((volatile unsigned short *)0x40100)
-#define DEBUG_MSG_STATE ((volatile unsigned short *)0x40102)
-#define DEBUG_MSG_TEXT  ((short *)0x40104)
-
-#if 0
-void mas_i2sInit(int sample_rate)
-{
-    int i,val,val2;
-
-    mas_stopApps();
-    printk("\t\tStop & init MAS mem\n");
-    mas_freeze();
-    for(i=0;i<8;i++)
-    {
-        mas_write_register(mas_stop_data[i][0],mas_stop_data[i][1]);
-    }
-    printk("\t\tDownloading\n");
-    mas_write_Di_regFromData(&I2S_codec);
-    printk("\t\tRun code\n");
-    mas_write_register(0x6B,0xC0000);
-    mas_run();
-
-    mas_setD0(0x7f8,0x00008300);    
-    mas_setD0(0x7f2,0x04);
-    //mas_setD0(MAS_MAIN_IO_CONTROL,0x125);
-    
-    dsp_loadProgramFromHDD("/test.out");
-    *WAVE_PERIOD=30;
-    *DEBUG_MSG_STATE=0;
-    dsp_run();
-    
-    /* sample rate config*/
-    mas_codecWrite(0x1,0x106);
-    mas_setD0(0x347,0x0);
-    mas_setD0(0x348,0x4800); 
-    mas_setD0(0x346,0x1a1);
-    /*printk("[MAS-I2S init] wrote %x,%x for %d\n",sample_rate_cfg[sample_rate][0],
-            sample_rate_cfg[sample_rate][1],sample_rate);*/
-
-    mas_codecWrite(MAS_REG_AUDIO_CONF,0x7);
-    mas_codecWrite(MAS_REG_INPUT_MODE,0x0);
-    mas_codecWrite(MAS_REG_MIX_ADC_SCALE,0x0);
-    mas_codecWrite(MAS_REG_MIX_DSP_SCALE,0x4000);
-    mas_codecWrite(MAS_REG_DA_OUTPUT_MODE,0x0);
-
-
-    mas_codecCtrlConf(MAS_SET,MAS_BALANCE,50);
-    mas_codecCtrlConf(MAS_SET,MAS_VOLUME,/*70*/70);
-
-}
-#endif
-
-void mas_i2sInit(int sampleRate)
+                  
+void mas_i2sInit(void)
 {
     int i;
-
+    //mas_reset();
     mas_stopApps();
     mas_freeze();
     for(i=0;i<8;i++)
@@ -1018,23 +969,25 @@ void mas_i2sInit(int sampleRate)
 
     mas_setD0(0x7f8,0x00008300);    
     mas_setD0(0x7f2,0x04);  
-    
-    /* dsp code here */
-    printk("[MAS-I2S init] wrote %x,%x for %d\n",sample_rate_cfg[sampleRate][0],
-            sample_rate_cfg[sampleRate][1],sampleRate);
 
-    mas_codecWrite(0x1,sample_rate_cfg[sampleRate][1]);
+    mas_codecWrite(0x1,sample_rate_cfg[DEFAULT_SRATE][1]);
     mas_setD0(0x347,0x0);
-    mas_setD0(0x348,sample_rate_cfg[sampleRate][0]);
-    mas_setD0(0x346,0x1a1);    
-
+    mas_setD0(0x348,sample_rate_cfg[DEFAULT_SRATE][0]);
+    mas_setD0(0x346,0x1a1);
+    
     mas_codecWrite(MAS_REG_AUDIO_CONF,0x7);
     mas_codecWrite(MAS_REG_INPUT_MODE,0x0);
     mas_codecWrite(MAS_REG_MIX_ADC_SCALE,0x0);
     mas_codecWrite(MAS_REG_MIX_DSP_SCALE,0x4000);
     mas_codecWrite(MAS_REG_DA_OUTPUT_MODE,0x0);
     mas_codecCtrlConf(MAS_SET,MAS_BALANCE,50);
-//   mas_codecCtrlConf(MAS_SET,MAS_VOLUME,/*70*/70);
+    if(output_volume!=-1)
+        mas_codecCtrlConf(MAS_SET,MAS_VOLUME,output_volume);
+    else
+        mas_codecCtrlConf(MAS_SET,MAS_VOLUME,70);
+    
+    printk("[MAS-I2S init] done\n");
+    
 }
 
 

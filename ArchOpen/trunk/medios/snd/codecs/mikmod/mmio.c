@@ -103,6 +103,7 @@ int _mm_fclose(FILE *fp)
 #if 0
 	return fclose(fp);
 #endif
+    return 1;
 }
 
 /* Sets the current file-position as the new _mm_iobase */

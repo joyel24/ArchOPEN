@@ -19,6 +19,7 @@
 
 extern int output_readPos;
 extern int output_writePos;
+extern int output_volume;
 
 void output_outputParamsChanged();
 

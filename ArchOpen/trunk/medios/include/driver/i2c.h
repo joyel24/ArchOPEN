@@ -21,6 +21,15 @@
 #define I2C_WRITE_DEVICE(val)                   (val & ~0x01)
 #define I2C_READ_DEVICE(val)                    (val | 0x01)
 
+#define I2C_NO_YIELD  0
+#define I2C_YIELD     1
+#define I2C_LOOP      2
+
+void i2c_init(void);
+
+int i2c_getLock(int doYield,int delay);
+void i2c_release(void);
+
 void i2c_ini_xfer(void);
 
 void wait_i2c(void);

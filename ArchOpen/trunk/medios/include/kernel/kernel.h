@@ -32,6 +32,7 @@ void print_data(char * data,int length);
 void do_bkpt(void);
 
 int getArch(void);
+char * getArchName(void);
 void getResolution(int * width,int * height);
 
 unsigned int get_sp(void);

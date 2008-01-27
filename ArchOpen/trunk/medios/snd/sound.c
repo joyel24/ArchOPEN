@@ -48,21 +48,31 @@ SOUND_STATE sound_state;
 
 bool sound_started=false;
 
+#include "dspshared.h"
+
 void sound_play(bool discard)
-{
-    if (sound_activeItem==NULL) return; /*no active item to play ==> exit*/
+{       
+    if (sound_activeItem==NULL) 
+    {
+        printk("[sound_play] no active item to play\n");
+        return; /*no active item to play ==> exit*/
+    }
         
     printk("[sound] play %s\n",sound_activeItem->name);
 
     // make sure the codec thread is not waiting for output
     if(sound_state==SS_PAUSED)
+    {
         output_discardBuffer();
+    }
 
     codec_trackStop();
 
     /* NOTE: why doing discard twice ? or discard never true when sound_state==SS_PAUSED */
     if(discard)
+    {
         output_discardBuffer();
+    }
 
     buffer_setActiveItem(sound_activeItem);
 
@@ -141,7 +151,6 @@ void sound_start(void)
 {
     if(!sound_started)
     {
-        
         buffer_start();
         codec_start();
         output_start();
@@ -152,7 +161,6 @@ void sound_start(void)
         sound_state=SS_STOPPED;
         
         sound_started=true;
-        printk("[sound_start] ok\n");
     }
 }
 
@@ -298,5 +306,4 @@ void sound_playFile(char * fName){
     }while(!(b&BTMASK_OFF));
 
     sound_stop();
-
 }

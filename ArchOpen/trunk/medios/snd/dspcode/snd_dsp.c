@@ -18,11 +18,16 @@ MCBSP_Handle aic23_port=INV;
 
 DMA_Handle aic23_dma=INV;
 
-#pragma DATA_SECTION(processBuf , ".saram_d")
-unsigned short processBuf[OUTPUT_CHUNK_SIZE/2];
+/* we are using a buffer 2x bigger tan the data send by arm
+in order to work fine with MAS chip for which 16bit need to be expended
+to 32bit
+on AIC, buffer will be too big, and used only by half*/
 
-unsigned short outBufData[OUTPUT_CHUNK_SIZE];
-unsigned short outBuf2Data[OUTPUT_CHUNK_SIZE];
+#pragma DATA_SECTION(processBuf , ".saram_d")
+unsigned short processBuf[OUTPUT_CHUNK_SIZE];
+
+unsigned short outBufData[OUTPUT_CHUNK_SIZE*2];
+unsigned short outBuf2Data[OUTPUT_CHUNK_SIZE*2];
 
 unsigned short * outBuf = outBufData;
 unsigned short * outBuf2 = outBuf2Data;
@@ -33,25 +38,31 @@ unsigned short outBuf2Size = 0;
 short dmaActive=0;
 
 void debug(const char* msg);
+void sendDbgData(unsigned short data);
 void dmaEnd(void);
 void startDma();
 
-void main(){
+void main()
+{
 	Uint16 dmaEventID=0;
 
     *DSP_COM=0;
-
+    aic23_port=INV;
+    
     // dsp<>arm comm
     dspCom = &dspComBuffer;
 	memset((void *)dspCom,0,sizeof(dspCom));
     *DSP_COM = (unsigned short) dspCom;
 
 	// wait for ARM to finish init
-	while(!dspCom->armInitFinished);
-       
+	while(!dspCom->armInitFinished) /*nothing*/;
+    
 	// libs init
 	CSL_init();
 	libDsp_init(dspCom->chipNum);
+    
+    if(chip_num==25)
+        ibDma_reset();
 
 	// aic23
 	aic23_port=aic23_openPort();
@@ -81,87 +92,97 @@ interrupt void dmaEnd(){
 	unsigned short * tmpBuf;
 	unsigned short tmpSize;
 	unsigned short dmaSize;
-	short hasProcess;
-
-
-
+    unsigned short * in, * out;
+    
 	// swap buffers
-
 	tmpBuf=outBuf;
 	outBuf=outBuf2;
 	outBuf2=tmpBuf;
-
 	tmpSize=outBufSize;
 	outBufSize=outBuf2Size;
-	outBuf2Size=tmpSize;
+	outBuf2Size=tmpSize;    
     
-    //debug("DSPdmaEnd");
-    
-    
-	if(outBufSize>0){
-	//debug("=>stDma");
-		startDma();
-	}
+	if(outBufSize>0) /* launch dma on filled buffer */
+        startDma();
 
-	// request to render a buffer
-
+	// request ARM to render a buffer
     dspCom->decodeDone=0;
 	dspCom->decodeRequest=1;
     armInt_trigger();
-
 	while(dspCom->decodeRequest) /* wait for arm to finish rendering*/;
 
 	if(dspCom->decodeDone){
-
-		// handle buffer size changes
-        //debug("DSPdone");
-		outBuf2Size=dspCom->bufSize/2;
-
-		if(!dspCom->stereo /*|| dspCom->dataSampleRate!=dspCom->outputSampleRate*/){ //TODO: sample rate conversion
-
-			hasProcess=1;
-
-			// output buffer will have to be twice as big as input buffer
-			if(!dspCom->stereo){
-				outBuf2Size*=2;
-			}
-		}else{
-			hasProcess=0;
-		}
-
-		//get data from sdram
+        //TODO: sample rate conversion
 		
-		dmaSize=(outBuf2Size*2+3)&(~3);
+		dmaSize=(dspCom->bufSize+3)&(~3);
 
-		if(!hasProcess){
-			// get data from sdram buffer
-			hpiDma_start(dspCom->bufAddr,outBuf2,dmaSize,HPI_DIR_SD2DSP);
-			while(hpiDma_pending());
-            //debug("Done1");
-		}else{
-            
-			// get data from sdram buffer
-			hpiDma_start(dspCom->bufAddr,processBuf,dmaSize,HPI_DIR_SD2DSP);
-			while(hpiDma_pending());
-            //debug("Done2");
-			// process data
-
-			// process stereo
-			if(!dspCom->stereo){
-				unsigned short * in, * out;
-				in=processBuf;
+		if(dspCom->stereo)
+        {
+            // get data from sdram buffer
+            /* DM270 DM320 code ==> using DMA btw SDRAM & DSP RAM*/
+            if(chip_num==32 || chip_num==27)
+            {
+                hpiDma_start(dspCom->bufAddr,outBuf2,dmaSize,HPI_DIR_SD2DSP);
+                while(hpiDma_pending());
+                outBuf2Size=dmaSize/2;
+            }
+            else if(chip_num==25) /* DSC25 code ==> using ImageBuffer DMA*/
+            {
+				outBuf2Size=dmaSize;
+                ibDma_start(dspCom->bufAddr,dmaSize,
+                    0,dmaSize,
+                    dmaSize,1,
+                    IB_BUF_A,IB_DIR_SD2IB,0);
+                while(ibDma_pending());
+                ibDma_reset(); 
+				in=IB_DSC25_BUFA_ADDR;
 				out=outBuf2;
 				while(out<outBuf2+outBuf2Size){
-					*(out++)=*in;
 					*(out++)=*(in++);
+					*(out++)=0;
 				}
-			}
+            }
+		}else{            
+			// get data from sdram buffer
+            /* DM270 DM320 code ==> using DMA btw SDRAM & DSP RAM*/
+            if(chip_num==32 || chip_num==27)
+            {
+				outBuf2Size=dmaSize;
+                hpiDma_start(dspCom->bufAddr,processBuf,dmaSize,HPI_DIR_SD2DSP);
+                while(hpiDma_pending());
+                // process stereo
+                if(!dspCom->stereo){
+                    in=processBuf;
+                    out=outBuf2;
+                    while(out<outBuf2+outBuf2Size){
+                        *(out++)=*in;
+                        *(out++)=*(in++);
+                    }
+                }                
+            }
+            else if(chip_num==25) /* DSC25 code ==> using ImageBuffer DMA*/
+            {
+				outBuf2Size=dmaSize*4;
+                ibDma_start(dspCom->bufAddr,dmaSize,
+                    0,dmaSize,
+                    dmaSize,1,
+                    IB_BUF_A,IB_DIR_SD2IB,0);
+                while(ibDma_pending());
+                ibDma_reset();
+                in=IB_DSC25_BUFA_ADDR;
+				out=outBuf2; 
+                while(out<outBuf2+outBuf2Size){
+                	*(out++)=*in;
+					*(out++)=0;
+                	*(out++)=*(in++);
+					*(out++)=0;
+                }                
+            }
 		}
 
 	}else{
-        //debug("DSPfill0");
-		outBuf2Size=OUTPUT_CHUNK_SIZE;
-
+        /* this should be enough blank data */
+		outBuf2Size=OUTPUT_CHUNK_SIZE/2;
 		// fill buffer with zeroes
 		memset(outBuf2,0,outBuf2Size);
 	}
@@ -218,4 +239,14 @@ void debug(const char* msg){
     armInt_trigger();
 
 	while(dspCom->hasDbgMsg);
+}
+
+void sendDbgData(unsigned short data)
+{
+    if (!dspCom) return;
+    
+    sprintf((char*)dspCom->dbgMsg,"%x",data);
+    dspCom->hasDbgMsg=1;
+    armInt_trigger();
+    while(dspCom->hasDbgMsg);       
 }

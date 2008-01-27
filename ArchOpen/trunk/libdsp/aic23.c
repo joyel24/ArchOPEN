@@ -1,7 +1,8 @@
 #include "aic23.h"
 
+
 // port config
-static MCBSP_Config aic23_portCfg= {
+static MCBSP_Config aic23_DM270_DM320_portCfg= {
   0x0000,0x0200, /* SPCR : free running mode */
   0x00A0,0x00A1, /* RCR  : 32 bit receive data length */  
   0x00A0,0x00A0, /* XCR  : 32 bit transmit data length */            
@@ -9,6 +10,20 @@ static MCBSP_Config aic23_portCfg= {
   0x0000,0x0000, /* MCR  : single channel */
   // VP : frame transmit polarity was wrong (bit 3 has to be cleared)
   0x000E - 8,        /* PCR  : FSX, FSR active low, external FS/CLK source */
+  0x0000,
+  0x0000,
+  0x0000,
+  0x0000
+};  
+
+MCBSP_Config aic23_DSC25_portCfg= {
+  0x0200,0x0200, /* SPCR : free running mode */
+  0x01A0,0x00A0, /* RCR  : 32 bit receive data length */  
+  0x01A0,0x00A0, /* XCR  : 32 bit transmit data length */            
+  0x0000,0x0000, /* SRGR 1 & 2 */
+  0x0000,0x0000, /* MCR  : single channel */
+  // VP : frame transmit polarity was wrong (bit 3 has to be cleared)
+  0x0003 ,        /* PCR  : FSX, FSR active low, external FS/CLK source */
   0x0000,
   0x0000,
   0x0000,
@@ -44,12 +59,31 @@ static interrupt void aic23_dmaEnd(void){
 	if(aic23_callback!=NULL) aic23_callback(aic23_sndBuf2);
 }
 
-MCBSP_Handle aic23_openPort(){
+MCBSP_Handle aic23_openPort()
+{
+    MCBSP_Config * cfg;
+    switch(chip_num)
+    {
+        case 25:
+            cfg=&aic23_DSC25_portCfg;
+            break;
+        case 27:
+            cfg=&aic23_DM270_DM320_portCfg;
+            break;
+        case 32:
+            cfg=&aic23_DM270_DM320_portCfg;
+            break;
+    }
 	aic23_port = MCBSP_open(MCBSP_PORT0, MCBSP_OPEN_RESET);
-	MCBSP_config(aic23_port,&aic23_portCfg);
+	MCBSP_config(aic23_port,cfg);
 	MCBSP_start(aic23_port,MCBSP_XMIT_START | MCBSP_RCV_START,0);
 
 	return aic23_port;	
+}
+
+void aic23_closePort(MCBSP_Handle aic23_port)
+{
+	MCBSP_close(aic23_port);
 }
 
 void aic23_setupDma(unsigned short len,short(*callback)(void*)){

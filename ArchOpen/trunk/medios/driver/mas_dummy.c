@@ -38,6 +38,16 @@ void mas_mp3StopDecode(void)
     
 }
 
+void mas_i2sInit(void)
+{
+    
+}
+
+void mas_i2sChgSRate(int sample_rate)
+{
+    
+}
+
 void mas_clearMp3Buffer(void)
 {
     

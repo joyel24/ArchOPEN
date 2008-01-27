@@ -20,9 +20,10 @@ typedef struct{
     bool seekSupported;
     void (*trackLoop) (void);
     void (*tagRequest) (char *, TAG *);
-    void (*discardBuffer)(void);
-    void (*output_enable)(bool enable);
+    void (*codecActivate) (void);
+    void (*codecDeactivate) (void);
     bool noTimeAdvance;
+    bool loadOk;
 } CODEC_GLOBAL_INFO;
 
 #endif

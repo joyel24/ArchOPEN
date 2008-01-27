@@ -97,8 +97,7 @@ void mp3_trackLoop(void)
     
     printf("[mp3_trackLoop] start\n");
     
-    mas_chgMode(MAS_MP3_MODE);
-    
+#if 1    
     buff_1.read=buff_2.read=0;
     buff_2.state=buff_2.state=MAS_BUFFER_END;
     
@@ -110,7 +109,7 @@ void mp3_trackLoop(void)
        
     //mas_skipId3v2();
     
-    buffer_seek(0x1a1,SEEK_SET);
+//    buffer_seek(0x1a1,SEEK_SET);
         
     red=buffer_read(curBuff->data,DATA_BUFFER_SIZE);
     curBuff->size=red;
@@ -147,27 +146,59 @@ void mp3_trackLoop(void)
     }
     mas_mp3StopDecode();
     mas_clearMp3Buffer();
+#else
+    printf("Starting playback");
+    do
+    {
+        red=buffer_read(dataBuf1,DATA_BUFFER_SIZE);
+        output_write(dataBuf1,red);
+        if(codec_mustSeek(&time))
+        {
+            printf("Need to seek %d\n",time);
+            codec_setElapsed(time);
+            codec_seekDone();
+        }
+    }while(codec_mustContinue() && red>0);
+#endif
     printf("[mas MP3] exit loop\n");
-    
+                   
+}
+
+void mas_activate(void)
+{
+    mas_chgMode(MAS_MP3_MODE);
 }
 
 void codec_main(CODEC_GLOBAL_INFO * info)
 {
-    info->description="Mp3 Codec for MAS chip";
-    info->seekSupported=false;
-    info->trackLoop=mp3_trackLoop;
-    info->tagRequest=mas_tagRequest;
+    int arch;
     
-    buff_1.data=dataBuf1;
-    buff_1.size=DATA_BUFFER_SIZE;
-    buff_1.read=0;
-    buff_1.state=MAS_BUFFER_END;
-    
-    buff_2.data=dataBuf2;
-    buff_2.size=DATA_BUFFER_SIZE;
-    buff_2.read=0;
-    buff_2.state=MAS_BUFFER_END;
-    
-    buff_1.nxt=&buff_2;
-    buff_2.nxt=&buff_1;       
+    arch=getArch();    
+    if(arch!=AV3XX_ARCH && arch!=AV1XX_ARCH)
+    {
+        info->loadOk=false;
+        printf("%s not supported by Mp3 Codec for MAS chip\n",getArchName());
+    }
+    else
+    {    
+        printf("Starting Mp3 Codec for MAS chip (device=%s)\n",getArchName());
+        info->description="Mp3 Codec for MAS chip";
+        info->seekSupported=false;
+        info->trackLoop=mp3_trackLoop;
+        info->tagRequest=mas_tagRequest;
+        info->codecActivate=mas_activate;
+        
+        buff_1.data=dataBuf1;
+        buff_1.size=DATA_BUFFER_SIZE;
+        buff_1.read=0;
+        buff_1.state=MAS_BUFFER_END;
+        
+        buff_2.data=dataBuf2;
+        buff_2.size=DATA_BUFFER_SIZE;
+        buff_2.read=0;
+        buff_2.state=MAS_BUFFER_END;
+        
+        buff_1.nxt=&buff_2;
+        buff_2.nxt=&buff_1;
+    }
 }

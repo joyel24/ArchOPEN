@@ -61,6 +61,7 @@
 #include <driver/fm_remote.h>
 #include <driver/lcd.h>
 #include <driver/bus.h>
+#include <driver/i2c.h>
 
 #ifdef HAVE_EXT_MODULE
 #include <driver/ext_module.h>
@@ -88,45 +89,6 @@ extern int app_main(int argc, char * argv[]);
 
 unsigned int _svc_IniStack = IRAM_SIZE;
 unsigned int _sys_IniStack = IRAM_SIZE-SVC_STACK_SIZE;
-
-#if 0
-#include <kernel/thread.h>
-void test(void)
-{
-    struct spinLock spLock;
-    spinLock_ini(&spLock);
-    
-    if(spinLock_testAndLock(&spLock))
-        printk("(1) lock ok\n");
-    else
-        printk("(1) lock ko\n");
-    
-    printk("Lock status: %d\n",spinLock_isLocked(&spLock));
-    
-    if(spinLock_testAndLock(&spLock))
-        printk("(2) lock ok\n");
-    else
-        printk("(2) lock ko\n");
-    
-    spinLock_unlock(&spLock);
-    
-    printk("Lock status: %d\n",spinLock_isLocked(&spLock));
-    
-    if(spinLock_testAndLock(&spLock))
-        printk("(3) lock ok\n");
-    else
-        printk("(3) lock ko\n");
-    
-    spinLock_unlock(&spLock);
-    
-    printk("Lock status: %d\n",spinLock_isLocked(&spLock));
-    
-    spinLock_unlock(&spLock);
-    
-    printk("Lock status: %d\n",spinLock_isLocked(&spLock));
-}
-#endif
-
 
 void kernel_thread(void)
 {
@@ -187,8 +149,6 @@ void kernel_thread(void)
     tmr_print();
     thread_ps();
 #endif
-    
-         //   test();
     
 #ifdef BUILD_LIB
     app_main(1,&stdalone);
@@ -262,6 +222,7 @@ void kernel_start (void)
 #endif
 #endif
     
+    /* main init of the thread system, creates kernel/system thread and also th eidle thread*/
     if(thread_init(kernel_thread)!=MED_OK)
     {
         printk("no kernel thread CAN'T BOOT\n");
@@ -278,15 +239,19 @@ void kernel_start (void)
     /* init the watchdog timer */
     wdt_init();
     /* init the irq */
-    irq_init();
+    irq_init();    
     /* init the tick timer */
     tmr_init();
 
-    /* driver init */
+    /* init the i2c bus */
+    i2c_init();
+    
+    /* cpld init: port used for buttons, ata, CF, modules, ... */
     cpld_init();
     
     lcd_init();
     
+    /* cmd line over the uart/serial port*/
     init_cmd_line();
    
 #ifdef HAVE_EVT

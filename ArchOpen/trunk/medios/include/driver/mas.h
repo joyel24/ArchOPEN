@@ -207,7 +207,7 @@ int mas_codecWrite(int reg,int val);
 
 /********************* PCM decoding        ***************************/
 
-void mas_i2sInit(int sample_rate);
+void mas_i2sInit(void);
 bool mas_i2sChgSRate(int sample_rate);
 
 #define SRATE_5012     0
@@ -220,6 +220,8 @@ bool mas_i2sChgSRate(int sample_rate);
 #define SRATE_32000    7
 #define SRATE_44100    8
 #define SRATE_48000    9
+
+#define DEFAULT_SRATE  SRATE_44100
 
 #endif
 

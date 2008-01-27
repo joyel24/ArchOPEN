@@ -66,8 +66,7 @@ __IRAM_CODE void output_dspInterrupt(int irq,struct pt_regs * regs){
     // debug message coming from the dsp
     if (dspCom->hasDbgMsg){
         char * str=malloc(256);
-        int i;
-
+        int i;        
         for(i=0;i<256;++i){
             str[i]=dspCom->dbgMsg[i];
         }
@@ -76,10 +75,8 @@ __IRAM_CODE void output_dspInterrupt(int irq,struct pt_regs * regs){
         dspCom->hasDbgMsg=0;
         kfree(str);
     }
-
     // the dsp requests a decoding
     if(dspCom->decodeRequest){
-
         // we got a decode request -> we are now sure that the dsp has retrieved previous data
         if(output_dspRetrievingData){
 
@@ -87,23 +84,24 @@ __IRAM_CODE void output_dspInterrupt(int irq,struct pt_regs * regs){
             output_dspRetrievingData=false;
         }
 
-
-        if(output_active && (output_writePos-output_readPos)>0){
+        if(output_active && (output_writePos-output_readPos)>0)
+        {
             // update states
-            if(!output_dspWaitingData){
+            if(!output_dspWaitingData)
                 output_dspNoOutput=false;
-            }
+            
             output_dspWaitingData=false;
 
-            // buffer size is the smallest of: what's left in the buffer, what's left before the buffer boundary, chunk size
-            dspCom->bufSize=MIN(MIN(output_writePos-output_readPos,OUTPUT_BUFFER_SIZE-POS2OFF(output_readPos)),OUTPUT_CHUNK_SIZE);
-
+      // buffer size is the smallest of: what's left in the buffer, what's left before the buffer boundary, chunk size
+            dspCom->bufSize=MIN(MIN(output_writePos-output_readPos,
+                                OUTPUT_BUFFER_SIZE-POS2OFF(output_readPos)),
+                    OUTPUT_CHUNK_SIZE);
             dsp_write32(&dspCom->bufAddr,((unsigned long)POS2PTR(output_readPos))-SDRAM_START);
-
             output_dspRetrievingData=true;
 
             dspCom->decodeDone=1;
-        }else{
+        }else
+        {
             // update states
             if(output_dspWaitingData){
                 output_dspNoOutput=true;
@@ -115,18 +113,13 @@ __IRAM_CODE void output_dspInterrupt(int irq,struct pt_regs * regs){
 
         if(output_discardingBuffer){
             output_readPos=output_writePos;
-        };
-
+        }
         dspCom->decodeRequest=0;
     }
 }
 
-void output_initDsp(){
-
-    // dsp irq handler
-    irq_changeHandler(IRQ_DSP,output_dspInterrupt);
-    irq_enable(IRQ_DSP);
-
+void output_initDsp()
+{
     *DSP_COM=0;
 
     if(dsp_loadProgramFromHDD("/medios/codec/snd_dsp.out")!=MED_OK)
@@ -151,9 +144,12 @@ void output_initDsp(){
     dspCom->decodeRequest=0;
     dspCom->decodeDone=0;
     dspCom->bufAddr=0;
-
-    dspCom->armInitFinished=1;
-};
+  
+    irq_changeHandler(IRQ_DSP,output_dspInterrupt);
+    irq_enable(IRQ_DSP);
+    
+    dspCom->armInitFinished=1;    
+}
 
 void output_outputParamsChanged(){
     PLAYLIST_ITEM * item;
@@ -165,10 +161,11 @@ void output_outputParamsChanged(){
     sampleRate=item->tag.sampleRate;
     stereo=item->tag.stereo;
 #ifdef HAVE_MAS_SOUND
-    int mode=mas_getMode();
-    if(mode==MAS_NO_MODE)
-        return;
-    
+    if(mas_getMode()==MAS_NO_MODE)
+    {
+        printk("[output_outputParamsChanged] no MAS mode define\n");
+        return;   
+    }
     if(mas_getMode()==MAS_MP3_MODE)        
     {
         /* MAS specific code */
@@ -178,6 +175,7 @@ void output_outputParamsChanged(){
     {  
         if(dspCom->stereo!=stereo || sampleRate!=output_sampleRate){
             // make sure all previous data is outputted before any change
+            //printk("waiting for end of buffer\n");
             while(!output_dspNoOutput){
                 yield();
             }
@@ -199,10 +197,12 @@ void output_outputParamsChanged(){
                 output_sampleRate=OUTPUT_DEFAULT_SAMPLERATE;
                 output_setSampleRate(output_sampleRate);
             }
-    
             dspCom->outputSampleRate=output_sampleRate;
+            //printk("DSP config send\n");
         }
+
     }
+                           
 }
 
 bool output_setSampleRate(int rate){
@@ -210,10 +210,12 @@ bool output_setSampleRate(int rate){
     return aic23_setSampleRate(rate);
 #endif
 #ifdef HAVE_MAS_SOUND
+    /*printk("Changing S rate\n");
     if(mas_getMode()==MAS_PCM_DSP_MODE)
         return mas_i2sChgSRate(rate);
     else
-        return false;
+        return false;*/
+    return true;
 #endif
     return false;
 }
@@ -224,7 +226,11 @@ void output_enableAudioOutput(bool enabled){
 #endif
 }
 
-void output_setVolume(int volume){
+int output_volume;
+
+void output_setVolume(int volume)
+{
+    output_volume=volume;
 #ifdef HAVE_AIC23_SOUND
     aic23_setOutputVolume(volume+AIC23_MAX_OUTPUT_VOLUME-100,AIC23_CHANNEL_BOTH);
 #endif
@@ -236,17 +242,17 @@ void output_setVolume(int volume){
 void output_enable(bool enabled)
 {
 #ifdef HAVE_MAS_SOUND
-    int mode=mas_getMode();
-    if(mode==MAS_NO_MODE)
-        return;
-    
-    if(mode==MAS_MP3_MODE)        
+    if(mas_getMode()==MAS_MP3_MODE)        
     {
         /* MAS specific code */
+#if 1
         if(enabled)
             mas_mp3LaunchDecode();
         else
             mas_mp3StopDecode();
+#else        
+        output_active=enabled;
+#endif
     }
     else
 #endif
@@ -291,7 +297,6 @@ void output_write(void * buffer, int size){
     // copy data, handle buffer boundary crossing
     continuous=OUTPUT_BUFFER_SIZE-POS2OFF(output_writePos);
     if(size<=continuous){
-
         memcpy(POS2PTR(output_writePos),buffer,size);
     }else{
 
@@ -325,22 +330,25 @@ void output_write(void * buffer, int size){
 void output_discardBuffer()
 {
 #ifdef HAVE_MAS_SOUND
-    int mode=mas_getMode();
-    if(mode==MAS_NO_MODE)
-        return;
-    
-    if(mode==MAS_MP3_MODE)        
+    if(mas_getMode()==MAS_NO_MODE)
+    {
+        printk("[output_outputParamsChanged] no MAS mode define\n");
+        return;   
+    }
+#if 1
+    if(mas_getMode()==MAS_MP3_MODE)        
     {
         /* MAS specific code */
         mas_mp3StopDecode();
     }
     else
 #endif
+#endif
     {
+        //printk("doing discard (%d %d %d)\n",output_dspNoOutput,output_readPos,output_writePos);
         output_discardingBuffer=true;
     
-        while(!output_dspNoOutput || output_readPos!=output_writePos){
-    
+        while(!output_dspNoOutput || output_readPos!=output_writePos){    
             yield();
         }
     
@@ -370,6 +378,8 @@ void output_start(void)
 
 void output_init()
 {
+    dspCom=NULL;
+    output_volume=-1;
 #ifndef HAVE_DBUG
     output_initDsp();
 #endif

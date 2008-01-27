@@ -130,10 +130,10 @@ void wav_trackLoop(){
     int size;
     int red;
     int time;
+    
     WAV_FMT fmt;
     bool is8Bit;
     int dataSize,dataStart,dataPos;
-
 
     dataSize=dataStart=dataPos=0;
     is8Bit=false;
@@ -141,7 +141,6 @@ void wav_trackLoop(){
     printf("[wav] trackStart()\n");
 
     // parse headers
-
     if (wav_verifyHeader(true,0)){
 
         size=wav_findChunk("fmt ",true,0);
@@ -159,7 +158,7 @@ void wav_trackLoop(){
             }
         }
     }
-
+    
     // read / write loop
     red=0;
     do{
@@ -209,11 +208,21 @@ void wav_trackLoop(){
 
 }
 
+void wav_activate(void)
+{
+    int arch;
+    arch=getArch();
+    printf("Wav activation\n");
+    if(arch==AV3XX_ARCH || arch==AV1XX_ARCH) /* for device with MAS chip we need specific init*/
+        mas_chgMode(MAS_PCM_DSP_MODE);
+}        
+
 void codec_main(CODEC_GLOBAL_INFO * info)
 {
     info->description="Uncompressed WAV Codec";
     info->seekSupported=true;
     info->trackLoop=wav_trackLoop;
     info->tagRequest=wav_tagRequest;
+    info->codecActivate=wav_activate;
 }
 

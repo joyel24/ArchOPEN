@@ -21,21 +21,23 @@
 
 typedef volatile struct {
   // init
-  unsigned short armInitFinished;
-  unsigned short chipNum;
+/*00*/  unsigned short armInitFinished;
+/*02*/  unsigned short chipNum; 
+  
+/*04*/  unsigned long dataSampleRate;
+/*08*/  unsigned long outputSampleRate;
+/*0C*/  unsigned short stereo;
 
-  unsigned long dataSampleRate;
-  unsigned long outputSampleRate;
-  unsigned short stereo;
+/*0E*/  unsigned short decodeRequest;
+/*10*/  unsigned short decodeDone;
+/*12*/  unsigned short bufSize;  
+/*14*/  unsigned long  bufAddr;  
 
-  unsigned short decodeRequest;
-  unsigned short decodeDone;
-  unsigned long bufAddr;
-  unsigned short bufSize;
+/*18*/  unsigned short dummy1;
 
   // debug messages
-  unsigned short hasDbgMsg;
-  short dbgMsg[255];
+/*1a*/  unsigned short hasDbgMsg;
+/*1c*/  short dbgMsg[255];
 } tDspCom;
 
 
