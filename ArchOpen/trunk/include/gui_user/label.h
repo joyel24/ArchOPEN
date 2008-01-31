@@ -17,6 +17,7 @@
 #include <gui_user/widget.h>
 
 typedef enum {LA_LEFT, LA_CENTER, LA_RIGHT} LABEL_ALIGNMENT;
+typedef enum {LA_CUT_WORD, LA_SMART_CUT} LABEL_AUTOCUT;
 
 //*****************************************************************************
 // LABEL
@@ -37,6 +38,7 @@ struct label_line {
     char * internal_str;               \
     int nbLines;                       \
     int interline;                     \
+    LABEL_AUTOCUT cutWord;             \
     LABEL_SETTEXT setText;             \
     LABEL_GETMAXSIZE getMaxSize;       \
     LABEL_GETNBLINES getNbLines;       \

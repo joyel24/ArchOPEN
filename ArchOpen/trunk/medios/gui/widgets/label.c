@@ -49,7 +49,8 @@ void label_init(LABEL l){
     l->internal_str=NULL;
     l->lines=NULL;
     l->nbLines=0;
-    l->interline=1;    
+    l->interline=1;   
+    l->cutWord=LA_CUT_WORD;
 }
 
 void label_getMaxSize(LABEL l,int * w,int * h)
@@ -279,7 +280,7 @@ void label_paint(LABEL l){
 
 int label_cutBigLine(LABEL l,int charWidth,char * endPtr)
 {
-    int nbChar,w;
+    int nbChar,w,nbChar_sav;
     char * tmp;    
     int nbLines=l->nbLines;
         
@@ -287,6 +288,7 @@ int label_cutBigLine(LABEL l,int charWidth,char * endPtr)
     {
         nbChar=(l->lines[nbLines].width)/charWidth; /* average char position using std char size*/
         gfx_getStringNSize(l->lines[nbLines].str,nbChar,&w,0);
+        
         if(w!=l->width)
         {
             if(w<l->width)
@@ -299,6 +301,15 @@ int label_cutBigLine(LABEL l,int charWidth,char * endPtr)
             {
                 for(;w>l->width;nbChar--) gfx_getStringNSize(l->lines[nbLines].str,nbChar,&w,0);
             }
+        }
+        
+        /* we found the place where we should cut*/        
+        if(l->cutWord==LA_SMART_CUT) /* do we need to do a smart cut*/
+        {
+            /*yes, let's find the beg of current word*/
+            nbChar_sav=nbChar;
+            while(nbChar>0 && l->lines[nbLines].str[nbChar-1]!=' ') nbChar--;
+            if(nbChar==0) nbChar=nbChar_sav; /* word is taking the whole line => doing LA_CUT_WORD*/
         }
         
         for(tmp=endPtr;tmp>=(l->lines[nbLines].str+nbChar);tmp--)

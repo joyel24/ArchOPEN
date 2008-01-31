@@ -49,6 +49,7 @@ void settings_initScreen(char * title,ICON logo,int * menu_x,int * menu_y)
     title_label->setRect(title_label,x, ICON_Y,LCD_WIDTH-x-1,0);
     title_label->font=STD8X13;
     title_label->alignment=LA_CENTER;
+    title_label->cutWord=LA_SMART_CUT;
     title_label->setText(title_label,title);    
     title_label->paint(title_label);
     title_label->getMaxSize(title_label,NULL,&h);
