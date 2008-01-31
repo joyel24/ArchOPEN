@@ -1,3 +1,4 @@
+#!/bin/sh
 # create files
 
 awk 'BEGIN{FS="[\t ]*#[\t ]*"} NF==0{next} {if ($2=="api_inc") {print "#include <" $3 ">" }}' $1 > api_inc_h.tmp

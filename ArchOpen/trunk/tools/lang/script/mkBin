@@ -1,3 +1,4 @@
+#!/bin/sh
 # create all bin files from lang
 
 ./script/genBin english.lang english.lng 1

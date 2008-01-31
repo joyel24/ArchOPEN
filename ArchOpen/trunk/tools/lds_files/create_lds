@@ -1,10 +1,11 @@
+#!/bin/sh
 # lds file creation
 
-function conv_hexa {
+conv_hexa {
 	cur_txt=`echo $1 | awk '{ printf("0x%x",$1)}'`
 }
 
-function get_data {
+get_data {
 	cur_txt=`cat $include_file | grep -m1 $1 | awk '{print $3}'`
 }
 

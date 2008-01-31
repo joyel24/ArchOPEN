@@ -1,3 +1,4 @@
+#!/bin/sh
 subfolder="small std big"
 
 # make sure bmp2medios is build
