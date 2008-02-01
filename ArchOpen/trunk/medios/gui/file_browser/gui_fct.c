@@ -59,6 +59,8 @@ void iniBrowser(void)
     browser_loadCfg();
 }
 
+/* oldname is used to go up in the dir tree */
+
 MED_RET_T viewNewDir(struct browser_data *bdata,char *name,char * oldName)
 {
     MED_RET_T ret_val;

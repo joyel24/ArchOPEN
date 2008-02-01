@@ -372,7 +372,7 @@ bool gui_browse(){
     gfx_clearScreen(COLOR_WHITE);
 
     if (gui_browserNeedInit){
-        viewNewDir(browser,NULL);
+        viewNewDir(browser,NULL,NULL);
         gui_browserNeedInit=false;
     }
 

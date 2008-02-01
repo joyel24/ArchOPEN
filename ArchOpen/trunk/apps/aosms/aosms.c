@@ -123,7 +123,7 @@ void dsp_init(){
     dspCom->armInitFinished=1;
 }
 
-void codec_init(){
+void sms_codec_init(){
 #ifdef HAVE_AIC23_SOUND
     aic23_setSampleRate(SAMPLE_RATE);
     aic23_enableOutput(true);
@@ -131,13 +131,13 @@ void codec_init(){
 #endif
 }
 
-void codec_close(){
+void sms_codec_close(){
 #ifdef HAVE_AIC23_SOUND
     aic23_enableOutput(false);
 #endif
 }
 
-void codec_setVolume(int vol){
+void sms_codec_setVolume(int vol){
 #ifdef HAVE_AIC23_SOUND
     aic23_setOutputVolume(vol+27,AIC23_CHANNEL_BOTH);
 #endif
@@ -543,7 +543,7 @@ void sram_loadSave(bool save){
 
 int app_main(){
     display_init();
-    codec_init();
+    sms_codec_init();
     dsp_init();
     emu_init();
     gui_init();
@@ -587,7 +587,7 @@ int app_main(){
     gui_showText("Saving settings...");
 
     clk_overclock(false);
-    codec_close();
+    sms_codec_close();
     gui_close();
     videnc_setup(VIDENC_MODE_LCD,false);
     gfx_closeGraphics();

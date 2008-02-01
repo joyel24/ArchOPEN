@@ -125,6 +125,6 @@ extern char romname[256];
 
 void clk_overclock(bool en);
 void screen_init();
-void codec_setVolume(int vol);
+void sms_codec_setVolume(int vol);
 
 #endif

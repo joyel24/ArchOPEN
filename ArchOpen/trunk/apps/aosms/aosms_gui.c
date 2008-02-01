@@ -376,7 +376,7 @@ void gui_applySettings(){
  
 
     screen_init();
-    codec_setVolume(vol);
+    sms_codec_setVolume(vol);
     lcd_setBrightness(bl);
 
     clk_overclock(true);
@@ -387,7 +387,7 @@ bool gui_browse(){
     gui_showGuiPlane();
 
     if (gui_browserNeedInit){
-        viewNewDir(browser,NULL);
+        viewNewDir(browser,NULL,NULL);
         gui_browserNeedInit=false;
     }
 
