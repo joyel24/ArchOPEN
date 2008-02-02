@@ -418,6 +418,8 @@ int gfx_planeGetState(int vplane)
 void gfx_planeSetSize(int vplane,int width,int height,int bitsPerPixel)
 {
     buffers[vplane]->real_width=width;
+    if(vplane==VID1 || vplane==VID2)
+        width=width/2;
     if(width%32)
         buffers[vplane]->width=width+(32-(width%32));
     else
@@ -426,7 +428,11 @@ void gfx_planeSetSize(int vplane,int width,int height,int bitsPerPixel)
     buffers[vplane]->bitsPerPixel=bitsPerPixel;
     if(screens_current() == SCREEN_GFX)
     {
+#ifdef AV5XX
+        osd_setComponentSize(buffers_comp[vplane], buffers[vplane]->real_width, height);
+#else
         osd_setComponentSize(buffers_comp[vplane], 2*buffers[vplane]->real_width, height);
+#endif
         osd_setComponentSourceWidth(buffers_comp[vplane], ((buffers[vplane]->width*bitsPerPixel)/32)/8);
     }
 }

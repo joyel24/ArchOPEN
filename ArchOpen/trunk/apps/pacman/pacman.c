@@ -37,20 +37,24 @@ void Show(char* string);
 
 char levelchoice[15][20];
 
-int screen_x,screen_y;
-char (*levelmap)[15][20] = levelmap_320x240;
+int screen_x,screen_y,disp_x,disp_y;
+char (*levelmap)[15][20];
 
 int app_main(int argc, char * * argv)
 {
     int i,j,c;
-    int total=0,totalsv=0,count=0,countb=0,life=3,score=0,bonusx=0,bonusy=0,start[5][2],x_ori,y_ori,nbLev=NB_LEVEL_320x240;//,delay=3333;
+    int total=0,totalsv=0,count=0,countb=0,life=3;
+    int score=0,bonusx=0,bonusy=0,start[5][2];
+    int x_ori,y_ori,nbLev;
+    int arch;
+    int a,b,d;
+    
+    int pac_bmap1_cfg,pac_bmap2_cfg,pac_vid1_cfg;
+            
     char buf[14];
-    unsigned long * splash = splash_320x240_data;
+    unsigned long * splash;
     int prevTick;
-
-    printf("splash at %x\n",splash);
-    print_data((void*)splash,0x20);
-
+    
     gfx_openGraphics();
 
     gfx_planeHide(BMAP1);
@@ -60,29 +64,59 @@ int app_main(int argc, char * * argv)
 
    // gfx_planeGetSize(BMAP1,,&depth);
     getResolution(&screen_x,&screen_y);
-    if(screen_x != 320 || screen_y != 240) {          //Gmini or not Gmini...?
-      screen_x=224;
-      screen_y=176;
+    arch=getArch();
+        
+    gfx_planeGetPos(BMAP1,&x_ori,&y_ori);
+    
+    if(screen_x >= 320 || screen_y >= 240) /* big screen or not*/
+    {
+        splash = splash_320x240_data;
+        nbLev=NB_LEVEL_320x240;
+        levelmap = levelmap_320x240;
+        disp_x=320;disp_y=240;
+    }
+    else            
+    {
+      disp_x=224;
+      disp_y=176;
       splash = splash_224x176_data;
       nbLev=NB_LEVEL_224x176;
       levelmap = levelmap_224x176;
+      pac_bmap1_cfg=gfx_planeGetState(BMAP1);
     }
 
-    gfx_planeGetPos(BMAP1,&x_ori,&y_ori);
-
-    gfx_planeSetSize(VID1,screen_x,screen_y,32);
-    gfx_planeSetSize(BMAP1,screen_x,screen_y,8);
+    if(arch==AV5XX_ARCH)
+    {
+        x_ori=x_ori+(screen_x-disp_x)/2;
+        y_ori=y_ori+(screen_y-disp_y)/2;
+        pac_bmap1_cfg=gfx_planeGetState(BMAP1)|0x0010;
+        pac_bmap2_cfg=gfx_planeGetState(BMAP1)|0x0010;
+        pac_vid1_cfg=gfx_planeGetState(VID1);
+        gfx_planeSetPos(BMAP2,x_ori+(disp_x-96)/2,y_ori+(disp_y-32)/2);
+        gfx_planeSetSize(VID1,disp_x,disp_y,32);
+        
+    }
+    else
+    {
+        pac_bmap1_cfg=gfx_planeGetState(BMAP1);        
+        pac_bmap2_cfg=gfx_planeGetState(BMAP2);
+        pac_vid1_cfg=gfx_planeGetState(VID1);
+        gfx_planeSetPos(BMAP2,x_ori+disp_x-96,y_ori+(disp_y-32)/2);
+        gfx_planeSetSize(VID1,disp_x,disp_y,32);        
+    }
+           
+    
+    gfx_planeSetSize(BMAP1,disp_x,disp_y,8);
     gfx_planeSetSize(BMAP2,96,32,8);
-
-    gfx_planeSetPos(BMAP2,x_ori+screen_x-96,y_ori+(screen_y-32)/2);
+    
     gfx_planeSetPos(VID1,x_ori,y_ori);
     gfx_planeSetPos(BMAP1,x_ori,y_ori);
     
-    gfx_planeSetState(VID1,0);
+    //gfx_planeSetState(VID1,0);
     
-    gfx_planeSetState(BMAP1,(gfx_planeGetState(BMAP1) & 0xFFC7) | osd_getTrspBit() 
+    gfx_planeSetState(BMAP1,(pac_bmap1_cfg & 0xFFC7) | osd_getTrspBit() 
             | osd_getBlendFactorBit(0));
-    gfx_planeSetState(BMAP2,(gfx_planeGetState(BMAP2) & 0xFFC7) | osd_getTrspBit() 
+    gfx_planeSetState(BMAP2,(pac_bmap2_cfg & 0xFFC7) | osd_getTrspBit() 
             | osd_getBlendFactorBit(0));
 
     set_timer_status(LCD_TIMER,TIMER_MODE_BAT,MODE_DISABLE);
@@ -97,9 +131,13 @@ int app_main(int argc, char * * argv)
     (unsigned int*)screenDirect=gfx_planeGetBufferOffset(VID1);
     (unsigned char*)screenDirect2=gfx_planeGetBufferOffset(BMAP1);
 
-    for(i=0;i<screen_y;i++){
-        for(j=0;j<screen_x;j++){
-            screenDirect[screen_x*i+j] = splash[screen_x*i+j] |((splash[screen_x*i+j]>>8)<<24);
+    d=disp_x/2;
+    
+    for(i=0;i<disp_y;i++){
+        for(j=0;j<disp_x;j+=2){
+            a=((splash[disp_x*i+j]&0xff)+(splash[disp_x*i+j+1]&0xff))/2;
+            b=(((splash[disp_x*i+j]>>16)&0xff)+((splash[disp_x*i+j+1]>>16)&0xff))/2;
+            screenDirect[d*i+j/2] = a | (splash[disp_x*i+j] & 0xFF00) | (b<<16) | ((splash[disp_x*i+j+1]>>8)<<24);
         }
     }
 
@@ -122,8 +160,8 @@ startb:
     gfx_setPlane(BMAP1);
     gfx_clearScreen(COLOR_BLACK);
 
-    for(i=0;i<screen_y/16;i++){
-        for(j=0;j<screen_x/16;j++){
+    for(i=0;i<disp_y/16;i++){
+        for(j=0;j<disp_x/16;j++){
             levelchoice[i][j]=0;
                 if(levelmap[level-1][i][j]!=1) {
                 if(levelmap[level-1][i-1][j]!=1) levelchoice[i][j]++;
@@ -156,8 +194,8 @@ startb:
     count=0;
     countb=0;
     total=0;
-    for(i=0;i<screen_y/16;i++){
-        for(j=0;j<screen_x/16;j++) {
+    for(i=0;i<disp_y/16;i++){
+        for(j=0;j<disp_x/16;j++) {
             if(levelmap[level-1][i][j]==2) total++;
             else if(levelmap[level-1][i][j]==110) {start[0][0]=j;start[0][1]=i;}
             else if(levelmap[level-1][i][j]==111) {start[1][0]=j;start[1][1]=i;}
@@ -173,14 +211,14 @@ startb:
 
     gfx_setPlane(BMAP1);
     gfx_clearScreen(COLOR_TRSP);
-    gfx_putS(0x2F,0x01, 18, screen_y-14, "Score:");
-    gfx_putS(0x2F,0x01, 18 /*188*/, /*screen_y-14*/1, "Level:");
+    gfx_putS(0x2F,0x01, 18, disp_y-14, "Score:");
+    gfx_putS(0x2F,0x01, 18 /*188*/, /*disp_y-14*/1, "Level:");
     sprintf(buf,"%d",score);
-    gfx_putS(0x2F,0x01, 66, screen_y-14, buf);
+    gfx_putS(0x2F,0x01, 66, disp_y-14, buf);
     sprintf(buf,"%d",level);
-    gfx_putS(0x2F,0x01, 66/*236*/, /*screen_y-14*/1, buf);
+    gfx_putS(0x2F,0x01, 66/*236*/, /*disp_y-14*/1, buf);
     
-   // gfx_putS(0x2F,0x01, 100 /*188*/, /*screen_y-14*/1, "Speed:");
+   // gfx_putS(0x2F,0x01, 100 /*188*/, /*disp_y-14*/1, "Speed:");
    // sprintf(buf,"%d",delay);
    // gfx_putS(0x2F,0x01, 148, 1, buf);
 
@@ -215,14 +253,14 @@ startb:
     ghost[2].vuln=0;
     ghost[3].vuln=0;
 
-    for(i=1;i<(screen_y/16)-1;i++){
-        for(j=1;j<(screen_x/16)-1;j++){
+    for(i=1;i<(disp_y/16)-1;i++){
+        for(j=1;j<(disp_x/16)-1;j++){
             if(levelmap[level-1][i][j]>=2) PutIcon16B(j*16,i*16,levelmap[level-1][i][j],0);
         }
     }
 
-    if(life>1)  {PutIcon16B(7*16,screen_y-16,29,0); sprintf(buf,"X %d",life-1); gfx_putS(0x2F,0x01,8*16+8,screen_y-14, buf);}
-    else PutIcon16B(7*16,screen_y-16,100,0);
+    if(life>1)  {PutIcon16B(7*16,disp_y-16,29,0); sprintf(buf,"X %d",life-1); gfx_putS(0x2F,0x01,8*16+8,disp_y-14, buf);}
+    else PutIcon16B(7*16,disp_y-16,100,0);
     PutIcon16B(pac.x,pac.y,69,1);
     for(i=0;i<4;i++) PutIcon16B(ghost[i].x,ghost[i].y,69+4*(i+1),1);
 
@@ -294,7 +332,7 @@ startb:
             total--;
             score++;
             sprintf(buf,"%d",score);
-            gfx_putS(0x2F,0x01, 66, screen_y-14, buf);
+            gfx_putS(0x2F,0x01, 66, disp_y-14, buf);
         }
         else if(levelmap[level-1][pac.y/16][pac.x/16]==3 && !pac.loop) {
             levelmap[level-1][pac.y/16][pac.x/16]=0;
@@ -317,7 +355,7 @@ startb:
             levelmap[level-1][pac.y/16][pac.x/16]=0;
             score+=60;
             sprintf(buf,"%d",score);
-            gfx_putS(0x2F,0x01, 66, screen_y-14, buf);
+            gfx_putS(0x2F,0x01, 66, disp_y-14, buf);
         }
 
         if(!pac.loop) pac.direction=0;
@@ -325,11 +363,11 @@ startb:
         if(!ghost[1].loop) ghost[1].direction=0;
         if(!ghost[2].loop) ghost[2].direction=0;
         if(!ghost[3].loop) ghost[3].direction=0;
-        if(pac.x>=screen_x-16 || pac.x<=0) {pac.x=screen_x-16-pac.x; pac.loop=16; pac.direction=pac.last_dir;}
-        if(pac.y>=screen_y-16 || pac.y<=0) {pac.y=screen_y-16-pac.y; pac.loop=16; pac.direction=pac.last_dir;}
+        if(pac.x>=disp_x-16 || pac.x<=0) {pac.x=disp_x-16-pac.x; pac.loop=16; pac.direction=pac.last_dir;}
+        if(pac.y>=disp_y-16 || pac.y<=0) {pac.y=disp_y-16-pac.y; pac.loop=16; pac.direction=pac.last_dir;}
         for(c=0;c<4;c++) {
-            if(ghost[c].x>=screen_x-16 || ghost[c].x<=0) {ghost[c].x=screen_x-16-ghost[c].x; ghost[c].loop=16; ghost[c].direction=ghost[c].last_dir;}
-            if(ghost[c].y>=screen_y-16 || ghost[c].y<=0) {ghost[c].y=screen_y-16-ghost[c].y; ghost[c].loop=16; ghost[c].direction=ghost[c].last_dir;}
+            if(ghost[c].x>=disp_x-16 || ghost[c].x<=0) {ghost[c].x=disp_x-16-ghost[c].x; ghost[c].loop=16; ghost[c].direction=ghost[c].last_dir;}
+            if(ghost[c].y>=disp_y-16 || ghost[c].y<=0) {ghost[c].y=disp_y-16-ghost[c].y; ghost[c].loop=16; ghost[c].direction=ghost[c].last_dir;}
             if(abs(pac.x-ghost[c].x)<15 && abs(pac.y-ghost[c].y)<15) {
                 if(!ghost[c].vuln) {
                     for(i=0;i<4;i++) {
@@ -351,17 +389,17 @@ startb:
                     ghost[c].last_dir=2;
                     score+=20;
                     sprintf(buf,"%d",score);
-                    gfx_putS(0x2F,0x01, 66, screen_y-14, buf);
+                    gfx_putS(0x2F,0x01, 66, disp_y-14, buf);
                 }
             }
         }
         if(total==totalsv) {
             totalsv=-1;
-            bonusx=rand() % screen_x/16;
-            bonusy=rand() % screen_y/16;
+            bonusx=rand() % disp_x/16;
+            bonusy=rand() % disp_y/16;
             while(levelmap[level-1][bonusy][bonusx]!=0) {
-               bonusx=rand() % screen_x/16;
-               bonusy=rand() % screen_y/16;
+               bonusx=rand() % disp_x/16;
+               bonusy=rand() % disp_y/16;
             }
             levelmap[level-1][bonusy][bonusx]=64+(rand()%4)+32*(rand()%2);
             PutIcon16B(bonusx*16,bonusy*16,levelmap[level-1][bonusy][bonusx],0);
@@ -381,11 +419,15 @@ void PutIcon16V(int x, int y, int nb)
 {
     int i,j,k;
     unsigned int* sprite = (unsigned int*) gfx_data;
+    int a,b;
     k = nb/4;
     nb = nb % 4;
     for(i=0;i<16;i++){
-        for(j=0;j<16;j++){
-            screenDirect[screen_x*(y+i)+x+j] = sprite[64*(16*k+i)+16*nb+j]|((sprite[64*(16*k+i)+16*nb+j]>>8)<<24);
+        for(j=0;j<16;j+=2){
+            a=((sprite[64*(16*k+i)+16*nb+j] & 0xFF) + (sprite[64*(16*k+i)+16*nb+j+1] & 0xFF))/2;
+            b=(((sprite[64*(16*k+i)+16*nb+j]>>16) & 0xFF) + ((sprite[64*(16*k+i)+16*nb+j+1]>>16) & 0xFF))/2;
+            screenDirect[(disp_x*(y+i)+x+j)/2] = a | (sprite[64*(16*k+i)+16*nb+j]&0xFF00) 
+                    | (b<<16) | ((sprite[64*(16*k+i)+16*nb+j+1]>>8)<<24);
         }
     }
 }
@@ -397,13 +439,13 @@ void PutIcon16B(int x, int y, int nb, int limit)
     nb=nb%32;
     if(limit) {
         if(x<16) j1=16-x;
-        else if(x>(screen_x-32)) j2=screen_x-16-x;
+        else if(x>(disp_x-32)) j2=disp_x-16-x;
         if(y<16) i1=16-y;
-        else if(y>(screen_y-32)) i2=screen_y-16-y;
+        else if(y>(disp_y-32)) i2=disp_y-16-y;
     }
     for(i=i1;i<i2;i++){
         for(j=j1;j<j2;j++){
-            screenDirect2[(screen_x*(y+i)+x+j)] = gfx2[512*(16*k+i)+16*nb+j];
+            screenDirect2[(disp_x*(y+i)+x+j)] = gfx2[512*(16*k+i)+16*nb+j];
         }
     }
 }
@@ -414,9 +456,9 @@ void LineV16(int x, int y, int sprite, int sx)
     if(sprite) {
         k=sprite/32;
         sprite=sprite%32;
-        for(i=0;i<16;i++) screenDirect2[(screen_x*(y+i)+x)] = gfx2[512*(16*k+i)+16*sprite+sx];
+        for(i=0;i<16;i++) screenDirect2[(disp_x*(y+i)+x)] = gfx2[512*(16*k+i)+16*sprite+sx];
     }
-    else for(i=0;i<16;i++) screenDirect2[(screen_x*(y+i)+x)] = 0x00;
+    else for(i=0;i<16;i++) screenDirect2[(disp_x*(y+i)+x)] = 0x00;
 }
 
 void LineH16(int x, int y, int sprite, int sy)
@@ -425,9 +467,9 @@ void LineH16(int x, int y, int sprite, int sy)
     if(sprite) {
         k=sprite/32;
         sprite=sprite%32;
-        for(i=0;i<16;i++) screenDirect2[(screen_x*y+x+i)] = gfx2[512*(16*k+sy)+16*sprite+i];
+        for(i=0;i<16;i++) screenDirect2[(disp_x*y+x+i)] = gfx2[512*(16*k+sy)+16*sprite+i];
     }
-    else for(i=0;i<16;i++) screenDirect2[(screen_x*y+x+i)] = 0x00;
+    else for(i=0;i<16;i++) screenDirect2[(disp_x*y+x+i)] = 0x00;
 }
 
 void End(void)
