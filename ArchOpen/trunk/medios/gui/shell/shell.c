@@ -179,7 +179,7 @@ static bool shell_executeMed(char * medfile,char * param){
 
     //prepare return to shell
     gfx_openGraphics();
-    
+    bgImg_loadPref();
 
     return retval;
 }
