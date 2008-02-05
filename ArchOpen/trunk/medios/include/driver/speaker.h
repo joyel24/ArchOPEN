@@ -19,6 +19,8 @@
 #define SPKR_AVAILABLE() (0)
 #endif
 
+extern int spkrState; /*used if there is no way to know from HW speacker state*/
+
 void speaker_enable(int enable);
 int  speaker_state(void);
 int  speaker_available(void);

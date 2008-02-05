@@ -113,6 +113,7 @@ void icon_kernelInit(void)
     icon_add("mediosLogo",(unsigned char*)medios_logo, 51, 10);
     icon_add("usbIcon",(unsigned char*)usb_icon, 15, 6);
     icon_add("fwExtIcon",(unsigned char*)fw_ext_icon, 15, 6);
+    icon_add("intHPIcon",(unsigned char*)intHP_icon, 9, 8);
     icon_add("cfIcon",(unsigned char*)cf_icon, 15, 6);
     icon_add("powerIcon",(unsigned char*)power_icon, 13, 6);
     icon_add("upBitmap",(unsigned char*)upArrow, 9, 9);

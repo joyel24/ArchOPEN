@@ -42,12 +42,12 @@ static WIDGETMENU_CHECKBOX develFct;
 static WIDGETMENU_CHECKBOX virtKbdLY;
 
 int has_develFct;
+int orgSpkr;
 
 void miscSet_sav(void)
 {
     int needSave=0;
     int fmSate=FM_getState();
-    int spkrState;
     CFG_DATA * cfg;
     /* opening config file */
     
@@ -55,8 +55,7 @@ void miscSet_sav(void)
     TEST_VAR(has_develFct,develFct->checkbox->checked,needSave);
     if(SPKR_AVAILABLE())
     {
-        spkrState=SPKR_STATE();
-        TEST_VAR(spkrState,ExtSpkr->checkbox->checked,needSave);
+        TEST_VAR(orgSpkr,ExtSpkr->checkbox->checked,needSave);
     }
     TEST_VAR(paramVirtKbd,virtKbdLY->checkbox->checked,needSave);
     
@@ -120,6 +119,21 @@ void miscSet_sav(void)
     cfg_clear(cfg);
 }
 
+void spkr_chk_chg(CHECKBOX chk)
+{
+    if(SPKR_AVAILABLE())
+    {
+        if(ExtSpkr->checkbox->checked)
+        {
+            SPKR_ON();
+        }
+        else
+        {
+            SPKR_OFF();
+        }
+    }
+}
+
 void misc_setting(void)
 {
     ICON logo;
@@ -158,6 +172,8 @@ void misc_setting(void)
         ExtSpkr->caption=NULL;
         ExtSpkr->checkbox->caption=getLangStr(STRLNG_MISC_SPEAKER);
         ExtSpkr->checkbox->checked=SPKR_STATE();
+        orgSpkr=ExtSpkr->checkbox->checked;
+        ExtSpkr->checkbox->onChange=(CHECKBOX_CHANGEEVENT)spkr_chk_chg;
         ExtSpkr->doAutoSize=true;
         widgetMenu->addItem(widgetMenu,ExtSpkr);
     }
@@ -198,7 +214,10 @@ void misc_loadPref(void)
         }
         cfg_writeInt(cfg,"fmRemote",1);
         if(SPKR_AVAILABLE())
+        {
             cfg_writeInt(cfg,"ExtSpkr",0);
+            SPKR_OFF();
+        }
         cfg_writeInt(cfg,"develFct",0);
         paramVirtKbd=defaultVirtKbdLY();
         cfg_writeInt(cfg,"VkbdLY",paramVirtKbd);        

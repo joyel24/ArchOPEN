@@ -22,7 +22,8 @@
 /*#define GIO_I2C_CLOCK 0x4
 #define GIO_I2C_DATA  0x5*/
 
-#define GIO_BTN_SELECT_UDLR   0x11
+#define GIO_SPKR              0x11
+
 #define GIO_BTN_SELECT_FN     0x12
 #define GIO_BTN_SELECT_SQCR   0x13
 

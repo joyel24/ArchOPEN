@@ -40,5 +40,7 @@ struct statusLine_data lineData = {
     pwr_x:208,
     pwr_y:4,
     usb_x:227,
-    usb_y:4
+    usb_y:4,
+    intHP_x:182,
+    intHP_y:3
 };

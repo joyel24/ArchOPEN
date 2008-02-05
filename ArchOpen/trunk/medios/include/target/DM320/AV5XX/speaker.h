@@ -11,16 +11,13 @@
 */
 
 
-/* AV4 definition
-#include <driver/cpld.h>
+/* AV5 definition */
+#include <kernel/io.h>
+#include <driver/gio.h>
 
-#define SPKR_ON()         {CPLD_CLEAR_PORT3(CPLD_SPKR);}
-#define SPKR_OFF()        {CPLD_SET_PORT3(CPLD_SPKR);}
-#define SPKR_STATE()      (cpld_read(CPLD3)&0x2?0:1)
+#define SPKR_ON()         {GIO_DIRECTION(GIO_SPKR,GIO_OUT); GIO_SET(GIO_SPKR);spkrState=1;printk("spkr enable\n");}
+#define SPKR_OFF()        {GIO_DIRECTION(GIO_SPKR,GIO_OUT); GIO_CLEAR(GIO_SPKR);spkrState=0;printk("spkr disable\n");}
+/* we have no way to know what is current speacker state ==> let's use medios internal car*/
+#define SPKR_STATE()      ({printk("spkr %d\n",spkrState);spkrState&0x1;})
 #define SPKR_AVAILABLE()  (1)
-*/
 
-#define SPKR_ON()         {}
-#define SPKR_OFF()        {}
-#define SPKR_STATE()      (0)
-#define SPKR_AVAILABLE()  (0)

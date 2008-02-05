@@ -8,15 +8,19 @@
 
 #include <driver/speaker.h>
 
+int spkrState=0;
+
 void speaker_enable(int enable)
 {
     if(enable)
     {
         SPKR_ON();
+        spkrState=1;
     }
     else
     {
         SPKR_OFF();
+        spkrState=0;
     }
 }
 

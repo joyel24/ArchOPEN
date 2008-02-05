@@ -39,6 +39,7 @@ struct statusLine_data {
     int module_x,module_y;
     int pwr_x,pwr_y;
     int usb_x,usb_y;
+    int intHP_x,intHP_y;
 };
 
 #endif

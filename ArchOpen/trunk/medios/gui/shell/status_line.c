@@ -22,6 +22,7 @@
 #include <driver/usb_fw.h>
 #include <driver/batDc.h>
 #include <driver/cf.h>
+#include <driver/speaker.h>
 #include <driver/fm_remote.h>
 
 #include <gfx/graphics.h>
@@ -36,6 +37,7 @@ int time_format;
 #include <fs/cfg_file.h>
 
 BITMAP * st_fwExtIcon;
+BITMAP * st_intHPIcon;
 BITMAP * st_cfIcon;
 BITMAP * st_usbIcon;
 BITMAP * st_powerIcon;
@@ -46,6 +48,7 @@ int batteryRefreshValue = 10;
 int pwrState=0;
 int usbState=0;
 int fwExtState=0;
+int intHPState=0;
 int cfState=0;
 int power = 0;
 int color = 0;
@@ -198,6 +201,13 @@ void drawStatus(void)
     if(!cfState && !fwExtState)
         gfx_fillRect(lineData.bg_color,lineData.module_x,lineData.module_y,15,6);
 
+    if(speaker_available())
+    {
+        if(intHPState)
+            gfx_drawBitmap(st_intHPIcon, lineData.intHP_x, lineData.intHP_y);
+        else
+            gfx_fillRect(lineData.bg_color,lineData.intHP_x,lineData.intHP_y,9,8);
+    }
 
     if(pwrState)
         gfx_drawBitmap(st_powerIcon, lineData.pwr_x, lineData.pwr_y);
@@ -251,6 +261,7 @@ void statusLine_handleEvent(int evt)
             usbState=kusbIsConnected();
             fwExtState=kFWIsConnected();
             cfState=CF_IS_CONNECTED;
+            intHPState=speaker_state();
             drawStatusLine();
             break;
         case EVT_TIMER:
@@ -294,6 +305,7 @@ void statusLine_init(void)
     
     /* get icons */
     st_fwExtIcon=&icon_get("fwExtIcon")->bmap_data;
+    st_intHPIcon=&icon_get("intHPIcon")->bmap_data;
     st_cfIcon=&icon_get("cfIcon")->bmap_data;
     st_usbIcon=&icon_get("usbIcon")->bmap_data;
     st_powerIcon=&icon_get("powerIcon")->bmap_data;
@@ -302,6 +314,7 @@ void statusLine_init(void)
     pwrState=POWER_CONNECTED;
     usbState=kusbIsConnected();
     fwExtState=kFWIsConnected();
+    intHPState=speaker_state();
 
     first_plug_dc = 0;
     old_level = -1;
