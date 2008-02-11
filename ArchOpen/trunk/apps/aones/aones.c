@@ -48,6 +48,8 @@ int dspFrequency=0;
 
 #ifdef SCREEN_USE_RESIZE
 bool useResize=true;
+#else
+bool useResize=false;
 #endif
 
 int tvOut=0;
@@ -355,7 +357,7 @@ void display_tvOutSet(){
     }
 
     gfx_planeSetPos(BMAP1,screen_initialX+gx,screen_initialY+gy);
-    gfx_planeSetSize(BMAP1,gw,gh,8);
+    gfx_planeSetSize(BMAP1,gw,gh,8,GFX_SMODE_STD);
 
     // resize browser
     if (gw!=browser->width || gh!=browser->height){
@@ -369,7 +371,7 @@ void display_tvOutSet(){
     gfx_planeSetPos(VID1,screen_initialX+x,screen_initialY+y);
 #ifdef SCREEN_USE_RESIZE
     if(useResize) {
-        gfx_planeSetSize(VID1,w,h,32);
+        gfx_planeSetSize(VID1,w,h,32,GFX_SMODE_STD);
         resize_init(w,h);
     }
 #endif
@@ -389,6 +391,8 @@ void display_init(){
     gfx_planeHide(BMAP2);
     gfx_planeHide(VID1);
     gfx_planeHide(VID2);
+    
+    gfx_planeSetState(VID1,0);
 
     lj_curRenderingScreenPtr=malloc(NES_WIDTH*NES_PAL_HEIGHT*4+64);
     lj_curRenderingScreenPtr=(unsigned long*)(((unsigned long)lj_curRenderingScreenPtr+32)&0xffffffe0);
@@ -424,11 +428,11 @@ void screen_init() {
     }
     else {
         gfx_planeSetBufferOffset(VID1,lj_curRenderingScreenPtr);
-        gfx_planeSetSize(VID1,NES_WIDTH,NES_PAL_HEIGHT,32);
+        gfx_planeSetSize(VID1,NES_WIDTH,NES_PAL_HEIGHT,32,GFX_SMODE_STD);
     }
 #else
     gfx_planeSetBufferOffset(VID1,lj_curRenderingScreenPtr);
-    gfx_planeSetSize(VID1,NES_WIDTH,NES_PAL_HEIGHT,32);
+    gfx_planeSetSize(VID1,NES_WIDTH,NES_PAL_HEIGHT,32,GFX_SMODE_STD);
 #endif
 }
 
@@ -625,7 +629,7 @@ int emu_frameCompleted()
 
     tick=tmr_getTick();
     if ((tick-prevFpsTick)>=100){
-        printf("%d fps\n",frameCount-prevFpsFrame);
+       // printf("%d fps\n",frameCount-prevFpsFrame);
         prevFpsTick=tick;
         prevFpsFrame=frameCount;
     }

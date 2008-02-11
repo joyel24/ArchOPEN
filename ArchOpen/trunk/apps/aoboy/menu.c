@@ -527,12 +527,12 @@ static void do_opt2_menu(void) {
     mi = do_menu(OPT2_MENU_TITLE, (char**) opt2_menu, num_items, mi);
     switch(mi) {
   /*    case OM2_ITEM_ZX:
-        gfx_planeSetSize(BMAP1,320,288,8);
+        gfx_planeSetSize(BMAP1,320,288,8,GFX_SMODE_STD);
         gfx_planeSetPos(BMAP1,0x14,0x12);
         (*(volatile unsigned short *)(0x30684))+=0x100;
         break;
       case OM2_ITEM_ZN:
-        gfx_planeSetSize(BMAP1,160,144,8);
+        gfx_planeSetSize(BMAP1,160,144,8,GFX_SMODE_STD);
         gfx_planeSetPos(BMAP1,168,68);
         break;                  
       case OM2_ITEM_OCS:
@@ -550,12 +550,12 @@ static void do_opt2_menu(void) {
         if(!RotScreen) {
            ZoomX=!ZoomX;
            if(ZoomX) {
-              gfx_planeSetSize(BMAP1,320,144,8);
+              gfx_planeSetSize(BMAP1,320,144,8,GFX_SMODE_STD);
               gfx_planeSetPos(BMAP1, X_OFFSET,(LCD_HEIGHT-OSD_BITMAP1_HEIGHT)/2 + Y_OFFSET);
               fb.pitch=320;
            }
            else {
-              gfx_planeSetSize(BMAP1,160,144,8);
+              gfx_planeSetSize(BMAP1,160,144,8,GFX_SMODE_STD);
               gfx_planeSetPos(BMAP1,(LCD_WIDTH-OSD_BITMAP1_WIDTH) + X_OFFSET,(LCD_HEIGHT-OSD_BITMAP1_HEIGHT)/2 + Y_OFFSET);
               fb.pitch=OSD_BITMAP1_WIDTH;
            }
@@ -568,7 +568,7 @@ static void do_opt2_menu(void) {
            snprintf((char *)opt2_menu[1], 17, "Rotate Scr.    %1d", RotScreen);
            if(RotScreen==2) {
               fb.pitch=-1;
-              gfx_planeSetSize(BMAP1,144,160,8);
+              gfx_planeSetSize(BMAP1,144,160,8,GFX_SMODE_STD);
               
               #if defined(AV3XX)
               bt_UP = BTMASK_RIGHT;
@@ -622,7 +622,7 @@ static void do_opt2_menu(void) {
            }
            else if(RotScreen==1) {
               fb.pitch=1;
-              gfx_planeSetSize(BMAP1,144,160,8);
+              gfx_planeSetSize(BMAP1,144,160,8,GFX_SMODE_STD);
               
               #if defined(AV3XX)
               bt_UP = BTMASK_LEFT;
@@ -676,7 +676,7 @@ static void do_opt2_menu(void) {
            }
            else {
               fb.pitch=OSD_BITMAP1_WIDTH;
-              gfx_planeSetSize(BMAP1,160,144,8);
+              gfx_planeSetSize(BMAP1,160,144,8,GFX_SMODE_STD);
 
               #if defined(AV3XX)
               bt_UP = BTMASK_UP;

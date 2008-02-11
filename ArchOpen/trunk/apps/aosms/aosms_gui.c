@@ -438,7 +438,7 @@ void gui_welcomeScreen(){
     gfx_setPlane(VID2);
 
 #if defined(PMA) || defined(AV400)
-    gfx_planeSetSize(VID2,320,240,32);
+    gfx_planeSetSize(VID2,320,240,32,GFX_SMODE_STD);
 
     ip=intro_320x240_data;
     op=gfx_planeGetBufferOffset(VID2);
@@ -447,7 +447,7 @@ void gui_welcomeScreen(){
         ip++;
     }
 #else
-    gfx_planeSetSize(VID2,220,176,32);   // Gmini size, the welcome screen will be clear for all arch
+    gfx_planeSetSize(VID2,220,176,32,GFX_SMODE_STD);   // Gmini size, the welcome screen will be clear for all arch
 
     ip=intro_gmini4_data;
     op=gfx_planeGetBufferOffset(VID2);

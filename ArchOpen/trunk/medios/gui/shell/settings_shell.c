@@ -57,6 +57,12 @@ void shellSet_save(void)
     if(needSave) reloadShell=1;    
     TEST_VAR(init_bright,brightVal->trackbar->value,needSave);
              
+    if(!needSave)
+    {
+        printk("No change ==> no save\n");
+        return;
+    }
+    
     msgBox_info(getLangStr(STRLNG_SAVE_SETTINGS));
     
     cfg=cfg_readFile("/medios/medios.cfg");
@@ -74,23 +80,19 @@ void shellSet_save(void)
     
     /* setting the config */
     
-    if(hasCaption->checkbox->checked != shellHasCaption || forceWrite)
-        cfg_writeInt(cfg,"shellHasCaption",shellHasCaption);
+    cfg_writeInt(cfg,"shellHasCaption",shellHasCaption);
     
-    if(iconSize->chooser->index != folderType || forceWrite)
-    {
-        cfg_writeInt(cfg,"iconSize",folderType);
-        icon_setPath();
-    }
+    cfg_writeInt(cfg,"iconSize",folderType);
     
-    if(init_bright!=brightVal->trackbar->value || forceWrite)
-        cfg_writeInt(cfg,"lcdBrightness",brightVal->trackbar->value);
+    
+    cfg_writeInt(cfg,"lcdBrightness",brightVal->trackbar->value);
     
     cfg_writeFile(cfg,"/medios/medios.cfg");
     cfg_clear(cfg);
     /* need to reload shell */
     if(reloadShell)
     {
+        icon_setPath();
         shellMenu_close();
         shellMenu_init();
         shell_restore();

@@ -90,7 +90,7 @@ __attribute__((section(".fwuncomp_code"))) void arch_reload_firmware(void){
     gfx_planeHide(CUR2);
 
     gfx_planeSetBufferOffset(BMAP1,fwfb);
-    gfx_planeSetSize(BMAP1,240*2,176,8);
+    gfx_planeSetSize(BMAP1,240*2,176,8,GFX_SMODE_STD);
     gfx_planeSetState(BMAP1,OSD_BITMAP_8BIT);
 
     gfx_clearScreen(0); // color black in ROM

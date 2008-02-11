@@ -279,7 +279,7 @@ void msgBox_draw(unsigned char* caption, unsigned char* msg, int type, int icon,
     {
         value = width/8;
         width = value*8;
-        gfx_planeSetSize(BMAP2,width,height,8);
+        gfx_planeSetSize(BMAP2,width,height,8,GFX_SMODE_STD);
     }
     // center box
     if(useOwnPlane)

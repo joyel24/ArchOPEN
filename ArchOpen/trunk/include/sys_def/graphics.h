@@ -41,6 +41,9 @@ typedef struct spriteBuffer       BITMAP;
 #define S24bit     5
 #define S32bit     6
 
+#define GFX_SMODE_STD    0
+#define GFX_SMODE_PACKED 1
+
 #define PALETTE unsigned int
 
 // resize modes

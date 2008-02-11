@@ -3,7 +3,7 @@
 #include "aones_gui.h"
 #include "unes.h"
 
-#if defined(PMA) || defined(AV400)
+#if defined(PMA) || defined(AV4XX)
 #include "intro_320x240.h"
 #else
 #include "intro_gmini4.h"
@@ -61,6 +61,8 @@ void gui_init(){
 
     getResolution(&sw,&sh);
 
+    printk("Resolution %d,%d\n",sw,sh);
+    
     gui_eventHandler = evt_getHandler(BTN_CLASS|GUI_CLASS);
 
     // browser init
@@ -368,25 +370,16 @@ void gui_applySettings(){
 }
 
 bool gui_browse(){
-
-    gfx_clearScreen(COLOR_WHITE);
-
-    if (gui_browserNeedInit){
-        viewNewDir(browser,NULL,NULL);
-        gui_browserNeedInit=false;
-    }
-
-    redrawBrowser(browser);
-
-    if(browserEvt(browser)==MED_OK){
-        sprintf(CurrentROMFile,"%s/%s",browser->path,browser->list[browser->pos+browser->nselect].name);
-        return true;
-    }else{
+    
+    if(browser_browse(browser,NULL,CurrentROMFile)!=MED_OK)
+    {        
         return false;
     }
+    return true;
 }
 
 void gui_welcomeScreen(){
+    int a,b;
 #if 0
     int y=0;
 
@@ -419,22 +412,31 @@ void gui_welcomeScreen(){
     gfx_planeHide(BMAP1);
     gfx_setPlane(VID2);
 
-#if defined(PMA) || defined(AV400)
-    gfx_planeSetSize(VID2,320,240,32);
+#if defined(PMA) || defined(AV4XX)
+    gfx_planeSetSize(VID2,320,240,32,GFX_SMODE_STD);
 
     ip=intro_320x240_data;
     op=gfx_planeGetBufferOffset(VID2);
+#if 0
+    for(i=0;i<(intro_320x240_X*intro_320x240_Y/2);++i){
+        a=(((*ip)&0xff)+((*(ip+1))&0xff))/2;
+        b=((((*ip)>>16)&0xff)+(((*(ip+1))>>16)&0xff))/2;
+        *(op++) = a | ((*ip) & 0xFF00) | (b<<16) | ((((*(ip+1))>>8)&0xFF)<<24);
+        ip+=2;
+    }
+#else
     for(i=0;i<intro_320x240_X*intro_320x240_Y;++i){
         *(op++)=(*ip)|((*ip>>8)<<24);
         ip++;
     }
+#endif
 #else
-    gfx_planeSetSize(VID2,220,176,32);   // Gmini size, the welcome screen will be clear for all arch
+    gfx_planeSetSize(VID2,220,176,32,,GFX_SMODE_STD);   // Gmini size, the welcome screen will be clear for all arch
 
     ip=intro_gmini4_data;
     op=gfx_planeGetBufferOffset(VID2);
     for(i=0;i<intro_gmini4_X*intro_gmini4_Y;++i){
-        *(op++)=(*ip)|((*ip>>8)<<24);
+       *(op++)=(*ip)|((*ip>>8)<<24);
         ip++;
     }
 #endif
@@ -452,7 +454,7 @@ void gui_welcomeScreen(){
 bool gui_confirmQuit(){
     int bt;
 
-#if defined(PMA) || defined(AV400)
+#if defined(PMA) || defined(AV4XX)
     gui_showText("Really quit? (F2=yes, any other=no)");
 #else
     gui_showText("Really quit? (OFF=yes, any other=no)");

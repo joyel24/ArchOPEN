@@ -296,7 +296,7 @@ int choose_number(){
     int evt;
     bool first;
 
-    gfx_planeSetSize(BMAP2,64,64,8);
+    gfx_planeSetSize(BMAP2,64,64,8,GFX_SMODE_STD);
     gfx_planeSetPos(BMAP2,plane_x+screen_width-64,plane_y+(screen_height-64)/2);
     gfx_planeShow(BMAP2);
 

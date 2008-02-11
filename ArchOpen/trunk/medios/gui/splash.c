@@ -84,7 +84,7 @@ void splash_show(void)
         gfx_restoreComponent(BMAP2,&splash_gfxBmapStruct);
         gfx_fontSet(STD8X13);    
         gfx_getStringSize(splashStr,&w,&h);
-        gfx_planeSetSize(BMAP2,w+4,h+4,8);
+        gfx_planeSetSize(BMAP2,w+4,h+4,8,GFX_SMODE_STD);
         osd_setComponentSize(OSD_BITMAP2, 2*(w+4), h+4);
         osd_setComponentSourceWidth(OSD_BITMAP2, (splash_gfxBmapStruct.width/32));
         osd_setComponentPosition(OSD_BITMAP2,SCREEN_ORIGIN_X,SCREEN_ORIGIN_Y+SCREEN_HEIGHT-h-4);

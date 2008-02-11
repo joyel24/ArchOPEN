@@ -519,7 +519,7 @@ void display_set()
     }
 
     gfx_planeSetPos(VID1,screen_initialX+x+4,screen_initialY+y);
-    gfx_planeSetSize(VID1,w,h,32);
+    gfx_planeSetSize(VID1,w,h,32,GFX_SMODE_STD);
 
 #if defined(GMINI402) || defined(GMINI4XX)
     if ( !tvOut )
@@ -537,7 +537,7 @@ void display_set()
     printf("VID1 size : %d - %d\n", w,h);
 
     gfx_planeSetPos(BMAP1,screen_initialX+gx,screen_initialY+gy);
-    gfx_planeSetSize(BMAP1,gw,gh,8);
+    gfx_planeSetSize(BMAP1,gw,gh,8,GFX_SMODE_STD);
 
     videnc_setup(mode,false);
 

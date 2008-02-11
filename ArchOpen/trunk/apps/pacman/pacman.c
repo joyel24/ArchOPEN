@@ -93,7 +93,7 @@ int app_main(int argc, char * * argv)
         pac_bmap2_cfg=gfx_planeGetState(BMAP1)|0x0010;
         pac_vid1_cfg=gfx_planeGetState(VID1);
         gfx_planeSetPos(BMAP2,x_ori+(disp_x-96)/2,y_ori+(disp_y-32)/2);
-        gfx_planeSetSize(VID1,disp_x,disp_y,32);
+        gfx_planeSetSize(VID1,disp_x,disp_y,32,GFX_SMODE_PACKED);
         
     }
     else
@@ -102,12 +102,12 @@ int app_main(int argc, char * * argv)
         pac_bmap2_cfg=gfx_planeGetState(BMAP2);
         pac_vid1_cfg=gfx_planeGetState(VID1);
         gfx_planeSetPos(BMAP2,x_ori+disp_x-96,y_ori+(disp_y-32)/2);
-        gfx_planeSetSize(VID1,disp_x,disp_y,32);        
+        gfx_planeSetSize(VID1,disp_x,disp_y,32,GFX_SMODE_PACKED);        
     }
            
     
-    gfx_planeSetSize(BMAP1,disp_x,disp_y,8);
-    gfx_planeSetSize(BMAP2,96,32,8);
+    gfx_planeSetSize(BMAP1,disp_x,disp_y,8,GFX_SMODE_STD);
+    gfx_planeSetSize(BMAP2,96,32,8,GFX_SMODE_STD);
     
     gfx_planeSetPos(VID1,x_ori,y_ori);
     gfx_planeSetPos(BMAP1,x_ori,y_ori);

@@ -182,7 +182,7 @@ int app_main(int argc,char** argv)
 	while(1)
 	{
 		osd_setEntirePalette(gui_pal,256,true);
-		gfx_planeSetSize(BMAP1,LCD_WIDTH,LCD_HEIGHT,8);
+		gfx_planeSetSize(BMAP1,LCD_WIDTH,LCD_HEIGHT,8,GFX_SMODE_STD);
 		gfx_planeSetPos(BMAP1,X_OFFSET,Y_OFFSET);
 		icon_init();
 		gfx_openGraphics();
@@ -203,7 +203,7 @@ int app_main(int argc,char** argv)
 		}
 		gfx_openGraphics();
 		OSD_BITMAP1_ADDRESS = (int)gfx_planeGetBufferOffset(BMAP1);
-		gfx_planeSetSize(BMAP1,160,144,8);
+		gfx_planeSetSize(BMAP1,160,144,8,GFX_SMODE_STD);
 		gfx_planeSetPos(BMAP1,(LCD_WIDTH-OSD_BITMAP1_WIDTH) + X_OFFSET,(LCD_HEIGHT-OSD_BITMAP1_HEIGHT)/2 + Y_OFFSET);
 		
 		gfx_fillRect(0x00,0,0,160,144);
@@ -226,7 +226,7 @@ int app_main(int argc,char** argv)
 		//this uses the avBoy browser and is the default
     gfx_openGraphics();
     OSD_BITMAP1_ADDRESS = (int)gfx_planeGetBufferOffset(BMAP1);
-    gfx_planeSetSize(BMAP1,160,144,8);
+    gfx_planeSetSize(BMAP1,160,144,8,GFX_SMODE_STD);
     gfx_planeSetPos(BMAP1,((LCD_WIDTH-OSD_BITMAP1_WIDTH) + X_OFFSET),(LCD_HEIGHT-OSD_BITMAP1_HEIGHT)/2 + Y_OFFSET);
 
     gfx_setPlane(BMAP1);
@@ -249,7 +249,7 @@ int app_main(int argc,char** argv)
     else strcpy(rom,argv[1]);
 
     if(!(*rom)) {
-      gfx_planeSetSize(BMAP1,LCD_WIDTH,LCD_HEIGHT,8);
+      gfx_planeSetSize(BMAP1,LCD_WIDTH,LCD_HEIGHT,8,GFX_SMODE_STD);
       gfx_planeSetPos(BMAP1,X_OFFSET,Y_OFFSET);
       gfx_clearScreen(COLOR_WHITE);
       gfx_putS(COLOR_BLACK,COLOR_WHITE,0,0, "No ROMs in /aoBoy/roms!");

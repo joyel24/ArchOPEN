@@ -287,7 +287,7 @@ void screen_init(){
     }
 
     gfx_planeSetPos(VID1,screen_initialX+x,screen_initialY+y);
-    gfx_planeSetSize(VID1,w,h,32);
+    gfx_planeSetSize(VID1,w,h,32,GFX_SMODE_STD);
 
     // when no resize, gg screen is 160px wide but buffer width is 256px
     if(!tvOut && !useResize){
@@ -295,7 +295,7 @@ void screen_init(){
     }
 
     gfx_planeSetPos(BMAP1,screen_initialX+gx,screen_initialY+gy);
-    gfx_planeSetSize(BMAP1,gw,gh,8);
+    gfx_planeSetSize(BMAP1,gw,gh,8,GFX_SMODE_STD);
 
     videnc_setup(mode,false);
 

@@ -448,7 +448,7 @@ void I_InitGraphics(void)
   screens[0]=offset1;
   gfx_planeSetBufferOffset (BMAP1,offset2);
 
-  gfx_planeSetSize(BMAP1,SCREENWIDTH,SCREENHEIGHT,8);
+  gfx_planeSetSize(BMAP1,SCREENWIDTH,SCREENHEIGHT,8,GFX_SMODE_STD);
 
   gfx_planeGetPos(BMAP1,&screen_initialX,&screen_initialY);
 /*

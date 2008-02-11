@@ -37,6 +37,7 @@
 #define CPLD_HD_POWER          0x0
 #define CPLD_HD_RESET          0x1
 #define CPLD_LCD_POWER         0x2
+#define CPLD_FX2_BIT0          0x3
 
 /* PORT 2*/
 

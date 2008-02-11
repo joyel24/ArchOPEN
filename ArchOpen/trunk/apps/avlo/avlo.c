@@ -86,7 +86,7 @@ int app_main(int argc,char** argv)
     gfx_openGraphics();
     
     //gfx_planeSetState(VID1,0xF0);
-    //gfx_planeSetSize(VID1,SCREEN_WIDTH,SCREEN_HEIGHT,32);
+    //gfx_planeSetSize(VID1,SCREEN_WIDTH,SCREEN_HEIGHT,32,GFX_SMODE_STD);
     
     /* load image ini_graphics((unsigned int)bg_img); */
     /*

@@ -55,7 +55,7 @@ void miscSet_sav(void)
     TEST_VAR(has_develFct,develFct->checkbox->checked,needSave);
     if(SPKR_AVAILABLE())
     {
-        TEST_VAR(orgSpkr,ExtSpkr->checkbox->checked,needSave);
+        TEST_VAR(orgSpkr,ExtSpkr->checkbox->checked,needSave);        
     }
     TEST_VAR(paramVirtKbd,virtKbdLY->checkbox->checked,needSave);
     
@@ -87,16 +87,13 @@ void miscSet_sav(void)
             FM_enable();
         else
             FM_disable();
-        cfg_writeInt(cfg,"fmRemote",FmRemote->checkbox->checked);
+        
     }
     
-    if(develFct->checkbox->checked != has_develFct)
-    {
-        has_develFct=develFct->checkbox->checked;
-        cfg_writeInt(cfg,"develFct",has_develFct);
-    }
+    cfg_writeInt(cfg,"fmRemote",FmRemote->checkbox->checked);
+    cfg_writeInt(cfg,"develFct",has_develFct);
     
-    if(SPKR_AVAILABLE() && ExtSpkr->checkbox->checked!=SPKR_STATE())
+    if(SPKR_AVAILABLE())
     {
         if(ExtSpkr->checkbox->checked)
         {
@@ -106,14 +103,11 @@ void miscSet_sav(void)
         {
             SPKR_OFF();
         }
+        printk("saved: %d\n",ExtSpkr->checkbox->checked);
         cfg_writeInt(cfg,"ExtSpkr",ExtSpkr->checkbox->checked);
     }
-    
-    if(virtKbdLY->checkbox->checked != paramVirtKbd)
-    {
-        paramVirtKbd=virtKbdLY->checkbox->checked;
-        cfg_writeInt(cfg,"VkbdLY",paramVirtKbd);
-    }
+
+    cfg_writeInt(cfg,"VkbdLY",paramVirtKbd);
     
     cfg_writeFile(cfg,"/medios/medios.cfg");
     cfg_clear(cfg);

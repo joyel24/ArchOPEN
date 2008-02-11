@@ -415,11 +415,16 @@ int gfx_planeGetState(int vplane)
     return buffers[vplane]->state;
 }
 
-void gfx_planeSetSize(int vplane,int width,int height,int bitsPerPixel)
+void gfx_planeSetSize(int vplane,int width,int height,int bitsPerPixel,int mode)
 {
     buffers[vplane]->real_width=width;
-    if(vplane==VID1 || vplane==VID2)
-        width=width/2;
+    
+    if(mode==GFX_SMODE_PACKED)
+    {
+        if(vplane==VID1 || vplane==VID2)
+            width=width/2;
+    }
+    
     if(width%32)
         buffers[vplane]->width=width+(32-(width%32));
     else

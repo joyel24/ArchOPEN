@@ -88,7 +88,7 @@ void  gfx_planeShow            (int vplane);
 int   gfx_planeIsShown         (int vplane);
 void  gfx_planeSetState        (int vplane,int state);
 int   gfx_planeGetState        (int vplane);
-void  gfx_planeSetSize         (int vplane,int width,int height,int bitsPerPixel);
+void  gfx_planeSetSize         (int vplane,int width,int height,int bitsPerPixel,int mode);
 void  gfx_planeGetSize         (int vplane,int * width,int * height,int * bitsPerPixel);
 void  gfx_planeSetPos          (int vplane,int x,int y);
 void  gfx_planeGetPos          (int vplane,int * x,int * y);

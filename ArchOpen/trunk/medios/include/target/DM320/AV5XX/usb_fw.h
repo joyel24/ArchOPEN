@@ -30,7 +30,7 @@
                                                            \
     mdelay(100);                                           \
                                                            \
-    CPLD_CLEAR_PORT1(3);                                   \
+    CPLD_CLEAR_PORT1(CPLD_FX2_BIT0);                                   \
                                                            \
     mdelay(10);                                            \
                                                            \
@@ -56,7 +56,7 @@
                                                            \
     CPLD_CLEAR_PORT2(CPLD_FX2_SELECT);                     \
                                                            \
-    CPLD_SET_PORT1(3);                                     \
+    CPLD_SET_PORT1(CPLD_FX2_BIT0);                                     \
                                                            \
 }
 

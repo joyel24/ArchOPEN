@@ -164,7 +164,7 @@ void   # gfx_planeShow             # int vplane                                 
 int    # gfx_planeIsShown          # int vplane                                                # GFX
 void   # gfx_planeSetState         # int vplane,int state                                      # GFX
 int    # gfx_planeGetState         # int vplane                                                # GFX
-void   # gfx_planeSetSize          # int vplane,int width,int height,int bitsPerPixel          # GFX
+void   # gfx_planeSetSize          # int vplane,int width,int height,int bitsPerPixel,int mode # GFX
 void   # gfx_planeGetSize          # int vplane,int * width,int * height,int * bitsPerPixel    # GFX
 void   # gfx_planeSetPos           # int vplane,int x,int y                                    # GFX
 void   # gfx_planeGetPos           # int vplane,int * x,int * y                                # GFX
