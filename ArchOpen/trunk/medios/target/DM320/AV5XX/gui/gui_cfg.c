@@ -41,5 +41,5 @@ struct statusLine_data lineData = {
     usb_x:390,
     usb_y:4,
     intHP_x:358,
-    intHP_y:3
+    intHP_y:2
 };

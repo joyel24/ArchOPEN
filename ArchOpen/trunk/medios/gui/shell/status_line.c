@@ -206,7 +206,7 @@ void drawStatus(void)
         if(intHPState)
             gfx_drawBitmap(st_intHPIcon, lineData.intHP_x, lineData.intHP_y);
         else
-            gfx_fillRect(lineData.bg_color,lineData.intHP_x,lineData.intHP_y,9,8);
+            gfx_fillRect(lineData.bg_color,lineData.intHP_x,lineData.intHP_y,8,10);
     }
 
     if(pwrState)
