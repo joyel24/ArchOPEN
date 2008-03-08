@@ -40,8 +40,16 @@
 #define ATA_NO_MULTY
 #endif
 
-//#define ATA_USE_POLL
-//#define ATA_NO_MULTY
+#ifdef JBMM
+#warning JBMM needs DMA support
+#ifndef ATA_USE_POLL
+#define ATA_USE_POLL
+#endif
+#ifndef ATA_NO_MULTY
+#define ATA_NO_MULTY
+#endif
+#define NO_DMA
+#endif
 
 int ata_sectorBuffer[SECTOR_SIZE];
 
@@ -280,7 +288,7 @@ retry:
                 }
     
 #ifdef DM320
-            cache_invalidateRange(CACHE_DATA,buffer,block_size);
+                cache_invalidateRange(CACHE_DATA,buffer,block_size);
 #endif                    
                 /* ata can't work without irq */
                 if(useInt)

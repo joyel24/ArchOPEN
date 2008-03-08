@@ -30,19 +30,39 @@
 
 #include <fs/stdfs.h>
 
+/*********************************************************************
+* This code displays all debug string outputed by
+* printk (called by medios) or printf (called by med applications)
+* a ring buffer is used in order to keep a backlog
+* the console can be displayed at boot time if BOOT_WITH_CONSOLE is defined
+* by configure (used in init/main.c)
+* from the shell, console is called by key combo: F1+ON
+* key layout in console: ON: back to shell, F2: clear console, F3: flush to HDD
+* UP/DOWN: move in the log
+*********************************************************************/
 
+/* Macro that returns a pointer to char in console buffer at pos*/
 #define CON_RING_BUFFER(pos) (con_buffer[(pos)%CON_BUFFER_SIZE])
+/* Macro that returns the color of the char at pos (8bit color=>in palette*/
 #define CON_RING_COLORBUFFER(pos) (con_colorBuffer[(pos)%CON_BUFFER_SIZE])
 
 #define CON_LAST_LINE_Y() ((con_numLines-1)*CON_FONT->height+CON_MARGIN_Y)
 
-fnt_needFont(CON_FONT);
-
+/**************************************
+* grabbing some external data:
+* - graphical operation structure for 8bit plane
+* - graphical palette
+***************************************/
 extern struct graphics_operations g8ops;
 extern int gui_pal[256][3];
 
+/* NOTE: this is somehow deprecated */
+fnt_needFont(CON_FONT);
+
+/* BMAP buffer containing console screen */
 char * con_gfxBuffer;
 
+/* GFX data structure holding config of console BMAP plane */
 struct graphicsBuffer con_gfxStruct = {
     offset             : 0,
     state              : OSD_BMAP_1_CFG,
@@ -56,26 +76,36 @@ struct graphicsBuffer con_gfxStruct = {
     gops               : &g8ops
 };
 
+/*
+* array to store current palette: console used std medios palette, if
+* current screen is using another palette, it will be saved in this array
+* and restore when switching back to it => this is done auto by screens code
+*/ 
 int con_paletteSave[256][3];
 
+/* Screen structure used by screens code */
 struct screen_data console_screenData = {
     show:con_screenShow,
     palette:(int (*)[])con_paletteSave,
     hide:con_screenHide
 };
 
+/* txt buffer of the console */
 char con_buffer[CON_BUFFER_SIZE];
+/* color code of each char of con_buffer */
 char con_colorBuffer[CON_BUFFER_SIZE];
 
-int con_bufferStart;
-int con_bufferEnd;
-int con_screenEnd;
-int con_lastUpdateScreenEnd;
-int con_lastUpdateEndY;
-bool con_screenVisible;
+/* start of history: when data buffer is overriden, this is the top of the displayable char*/
+int con_bufferStart; 
+int con_bufferEnd; /* last char of the data buffer */
+int con_screenEnd; /* ????????? */
+int con_lastUpdateScreenEnd; /* ????????????????? */
+int con_lastUpdateEndY; /* ????????????????? */
 
-int con_numLines;
-int con_numCols;
+bool con_screenVisible; /* true if console is currently displayed, false if another screen is displayed*/
+
+int con_numLines; /* max number of lines to be displayed */
+int con_numCols; /* max number of char per line that can be displayed*/
 
 static int con_nextLineEnd(int pos,bool up){
   int i=pos;
@@ -110,12 +140,21 @@ static int con_nextLineEnd(int pos,bool up){
   return i;
 }
 
-static void con_drawLine(int start,int end, int y){
+/**********************************************
+* draw a whole line on screens
+* position on screen is (CON_MARGIN_X,y)
+* not drawing char before buffer_start
+* draw chars between start and end (included)
+*************************************************/
+static void con_drawLine(int start,int end, int y)
+{
   int i;
   int x=CON_MARGIN_X;
 
   // draw the chars
-  for(i=start;i<=end;++i){
+  for(i=start;i<=end;++i)
+  {
+    // NOTE: changed start<con_bufferStart by i<con_bufferStart
     if(start<con_bufferStart || CON_RING_BUFFER(i)=='\n') continue;
 
     g8ops.drawChar(CON_FONT,CON_RING_COLORBUFFER(i),CON_BGCOLOR,x,y,CON_RING_BUFFER(i),&con_gfxStruct);
@@ -123,31 +162,39 @@ static void con_drawLine(int start,int end, int y){
   }
 
   //clear the remaining part of the line
-  //NOTE LCD_WIDTH g8ops.fillRect(CON_BGCOLOR,x,y,SCREEN_WIDTH-x,CON_FONT->height,&con_gfxStruct);
   g8ops.fillRect(CON_BGCOLOR,x,y,LCD_WIDTH-x,CON_FONT->height,&con_gfxStruct);
 }
 
-static void con_drawScroll(int start,int end,int delta){
-
-  // copy the block of pixels
-  if (delta<=0){
-    memcpy(&con_gfxBuffer[(start+delta)*SCREEN_WIDTH],&con_gfxBuffer[start*SCREEN_WIDTH],(end-start)*SCREEN_WIDTH);
-
-#ifdef DM320
-    cache_invalidateRange(CACHE_DATA,&con_gfxBuffer[start*SCREEN_WIDTH],(end-start)*SCREEN_WIDTH);
-#endif
-
-  }else{
+/********************************************
+* copy gfx data UP or DOWN
+* start, end and delta are screen line number
+********************************************/
+static void con_drawScroll(int start,int end,int delta)
+{
     int i;
-    for (i=end;i>=start;--i){
-      memcpy(&con_gfxBuffer[(i+delta)*SCREEN_WIDTH],&con_gfxBuffer[i*SCREEN_WIDTH],SCREEN_WIDTH);
-
-#ifdef DM320
-      cache_invalidateRange(CACHE_DATA,&con_gfxBuffer[i*SCREEN_WIDTH],SCREEN_WIDTH);
+#ifdef JBMM /* JBMM has a specific gfx code 1 pixel is expanded to 4*/    
+    start*=2;
+    end*=2;
+    delta*=2;
 #endif
-
+    
+    if (delta<=0)
+    {
+        memcpy(&con_gfxBuffer[(start+delta)*SCREEN_WIDTH],&con_gfxBuffer[start*SCREEN_WIDTH],(end-start)*SCREEN_WIDTH);
+#ifdef DM320
+        cache_invalidateRange(CACHE_DATA,&con_gfxBuffer[start*SCREEN_WIDTH],(end-start)*SCREEN_WIDTH);
+#endif
     }
-  }
+    else
+    {
+        for (i=end;i>=start;--i)
+        {
+            memcpy(&con_gfxBuffer[(i+delta)*SCREEN_WIDTH],&con_gfxBuffer[i*SCREEN_WIDTH],SCREEN_WIDTH);
+#ifdef DM320
+            cache_invalidateRange(CACHE_DATA,&con_gfxBuffer[i*SCREEN_WIDTH],SCREEN_WIDTH);
+#endif
+        }
+    }
 }
 
 void con_screenUpdate(){
@@ -266,7 +313,6 @@ void con_screenSwitch()
 
 void con_flushToDisk(void)
 {
-#warning we should add a test on disk INIT
    int fd=open("/dbgFlush.log",O_WRONLY|O_CREAT|O_TRUNC);
    int size;
    size=con_bufferEnd<CON_BUFFER_SIZE?con_bufferEnd:CON_BUFFER_SIZE;

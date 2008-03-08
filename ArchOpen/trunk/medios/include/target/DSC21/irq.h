@@ -54,8 +54,8 @@
 
 #define IRQ_OSD              7
 
-#define IRQ_UART0            12
-#define IRQ_UART1            13
+#define IRQ_UART0            13
+#define IRQ_UART1            12
 
 // badly named and/or should not be there
 #define IRQ_IDE              15  // ide

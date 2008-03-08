@@ -86,7 +86,7 @@ extern int app_main(int argc, char * argv[]);
 #ifdef TARGET_TYPE_AVLO
 #include "../../apps/avlo/include/avlo.h"
 #endif
-
+                 
 unsigned int _svc_IniStack = IRAM_SIZE;
 unsigned int _sys_IniStack = IRAM_SIZE-SVC_STACK_SIZE;
 
@@ -121,7 +121,11 @@ void kernel_thread(void)
     
 #ifdef TARGET_TYPE_STD
 #ifndef BUILD_LIB
+#if defined(MAS_SOUND) || defined(AIC_SOUND)
     sound_init();
+#else
+    #warning Building with no Sound chip
+#endif
 #endif
 #endif
     
@@ -149,7 +153,7 @@ void kernel_thread(void)
     tmr_print();
     thread_ps();
 #endif
-    
+
 #ifdef BUILD_LIB
     app_main(1,&stdalone);
     reload_firmware();
@@ -173,7 +177,7 @@ void kernel_start (void)
    /* need uart ok for printk init */   
     uart_init();
     printk_init();
-    
+        
     /* malloc of max space in SDRAM */
     mem_init((void*)MALLOC_START,MALLOC_SIZE);
     
