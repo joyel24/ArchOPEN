@@ -26,6 +26,10 @@
 #include <fs/disk.h>
 
 #include <gfx/graphics.h>
+#include <gfx/screens.h>
+
+#include <gui/splash.h>
+
 
 void reset_device(void);
 
@@ -40,17 +44,9 @@ void arch_reload_firmware(void)
 
 void arch_HaltMsg(void)
 {
-    int h,w;
-    char * msg = "Halting device";
-    
-    gfx_openGraphics();
-    
-    gfx_clearScreen(COLOR_TRSP);
-    
-    gfx_fontSet(STD8X13);
-    
-    gfx_getStringSize(msg,&w,&h);
-    
-    
-    gfx_putS(COLOR_RED,COLOR_TRSP,(LCD_WIDTH-w)/2,(LCD_HEIGHT-h)/2,msg);
+
+#ifdef TARGET_TYPE_STD
+    splash_setString(getLangStr(STRLNG_SPLASH_SHUTDOWN));
+    screens_show(SCREEN_SPLASH);    
+#endif
 }

@@ -122,7 +122,8 @@
 #define     OSD_MAIN_VIDEO_SCALESM        0x10
 #define     OSD_MAIN_SWAPRB               0x80
 
-#define     OSD_COMPONENT_ENABLE(component)          0x0001      /* 0000000000000001 */
+#define     OSD_COMPONENT_ENABLE_BIT(component)          0x0001      /* 0000000000000001 */
+#define     OSD_COMPONENT_ENABLE(component,val,status) (status?val|0x1:val&(~1))
 
 /* VIDEO Configuration options */
 

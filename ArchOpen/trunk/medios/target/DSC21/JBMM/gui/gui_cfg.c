@@ -24,7 +24,7 @@ struct statusLine_data lineData = {
     x:0,y:0,
     w:SCREEN_WIDTH/4,
     bg_color:COLOR_LIGHT_BLUE,
-    bat_x:139,
+    bat_x:135,
     bat_y:2,
     clk_x:72,
     clk_y:3,

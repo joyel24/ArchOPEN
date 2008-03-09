@@ -83,7 +83,11 @@ void splash_show(void)
     {
         gfx_restoreComponent(BMAP2,&splash_gfxBmapStruct);
         gfx_fontSet(STD8X13);    
-        gfx_getStringSize(splashStr,&w,&h);
+        gfx_getStringSize(splashStr,&w,&h);       
+#ifdef JBMM
+        /* nothing to do for now */
+        osd_setComponentConfig(OSD_BITMAP2,OSD_COMPONENT_ENABLE(OSD_BITMAP2,0,0));
+#else
         gfx_planeSetSize(BMAP2,w+4,h+4,8,GFX_SMODE_STD);
         osd_setComponentSize(OSD_BITMAP2, 2*(w+4), h+4);
         osd_setComponentSourceWidth(OSD_BITMAP2, (splash_gfxBmapStruct.width/32));
@@ -92,7 +96,10 @@ void splash_show(void)
         g8ops.drawString(fnt_fontFromId(STD8X13),COLOR_WHITE,COLOR_TRSP,
                          2,2,splashStr,-1,&splash_gfxBmapStruct);
         gfx_planeShow(BMAP2);
-        osd_setComponentConfig(OSD_BITMAP2,OSD_SPLASH_BMAP_CFG|OSD_COMPONENT_ENABLE(OSD_BITMAP2));
+        osd_setComponentConfig(OSD_BITMAP2,OSD_COMPONENT_ENABLE(OSD_BITMAP2,OSD_SPLASH_BMAP_CFG,1));
+#endif
+        
+        
     }
 }
 

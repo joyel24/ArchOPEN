@@ -29,6 +29,7 @@ void         graphics8_DrawChar          (struct graphicsFont * font, unsigned i
 void         graphics8_DrawSprite        (unsigned int * palette, SPRITE * sprite, unsigned int trsp,int x, int y, 
                                             struct graphicsBuffer * buff);
 void         graphics8_DrawBITMAP        (BITMAP * bitmap, unsigned int trsp, int x, int y, struct graphicsBuffer * buff);
+void         graphics8_DrawResizedBITMAP (BITMAP * bitmap, int x, int y, int xinc, int yinc , struct graphicsBuffer * buff);
 void         graphics8_ScrollWindowVert  (unsigned int bgColor, int x, int y, int width, int height, int scroll, int UP,
                                             struct graphicsBuffer * buff);
 void         graphics8_ScrollWindowHoriz (unsigned int bgColor, int x, int y, int width, int height, int scroll, int RIGHT,
@@ -40,7 +41,7 @@ void         graphics8_DrawString    (struct graphicsFont * font, unsigned int c
                                       unsigned char * s, int n, struct graphicsBuffer * buff);
 
 struct graphics_operations g8ops =  {
-        clearScreen       : graphics8_clearScreen,
+    clearScreen       : graphics8_clearScreen,
 	drawPixel         : graphics8_DrawPixel,
 	readPixel         : graphics8_ReadPixel,
 	drawRect          : graphics8_DrawRect,
@@ -48,11 +49,13 @@ struct graphics_operations g8ops =  {
 	drawSprite        : graphics8_DrawSprite,
 	drawChar          : graphics8_DrawChar,
 	drawBITMAP        : graphics8_DrawBITMAP,
+    drawResizedBITMAP : graphics8_DrawResizedBITMAP,
 	drawString        : graphics8_DrawString,
 	scrollWindowVert  : graphics8_ScrollWindowVert,
 	scrollWindowHoriz : graphics8_ScrollWindowHoriz,
-        drawHLine         : graphics8_DrawHLine,
-        drawVLine         : graphics8_DrawVLine
+    drawHLine         : graphics8_DrawHLine,
+    drawVLine         : graphics8_DrawVLine,
+            
 };
 
 #define putPix(color,offset,buff) { \
@@ -227,7 +230,7 @@ void graphics8_DrawBITMAP(BITMAP * bitmap, unsigned int trsp, int x, int y, stru
 
 void graphics8_DrawResizedBITMAP (BITMAP * bitmap, int x, int y, int xinc, int yinc , struct graphicsBuffer * buff){
     int i,j,c;
-    unsigned char * baseDest=getOffset(x,y,buff,unsigned char);
+    unsigned char * baseDest=getOffset_big(x,y,buff,unsigned char);
     unsigned char * baseSrc=(unsigned char*)bitmap->data;
     unsigned char * dest=baseDest;
     unsigned char * src=baseSrc;
@@ -236,12 +239,13 @@ void graphics8_DrawResizedBITMAP (BITMAP * bitmap, int x, int y, int xinc, int y
     for(j=0;j<bitmap->height<<16;j+=yinc)
     {
         dest=baseDest;
-        baseDest+=buff->width*2;
+        baseDest+=buff->width*2; /* skipping 2 lines*/
         for(i=0;i<bitmap->width<<16;i+=xinc)
         {
-            tmp=dest++;
+            tmp=dest;
             c=*(src+(i>>16));
             putPix(c,tmp,buff);
+            dest+=4;
         }
         src=baseSrc+bitmap->width*(j>>16);
     }

@@ -169,10 +169,10 @@ void osd_setComponentPosition (int component, int x, int y)
 void osd_setComponentSourceWidth (int component, int width)
 {
 #warning need to see what to do here !
-    /*if(component == OSD_VIDEO)
+    if(component == OSD_VIDEO)
     {
-        outw(width,OSD_VID0_BUFF_W);
-    }*/
+        outw(width*8,OSD_VID0_BUFF_W);
+    }
 }
 
 void osd_setComponentConfig (int component, int config)
@@ -190,8 +190,10 @@ void osd_restorePlane(int component, unsigned int address, int x, int y, int w, 
     
     if(enable)
     {
-        osd_setComponentConfig(component,state|OSD_COMPONENT_ENABLE(component));
+        osd_setComponentConfig(component,OSD_COMPONENT_ENABLE(component,state,1));
     }
+    else
+        osd_setComponentConfig(component,OSD_COMPONENT_ENABLE(component,0,0));
 }
 
 void osd_init()

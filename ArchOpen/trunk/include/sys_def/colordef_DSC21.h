@@ -23,30 +23,30 @@
     INIT_COLOR(color_pwr_frame_dc_on,color_pwr_frame_dc_on_index,14)//COLOR_DARK_GRAY)
     INIT_COLOR(color_pwr_frame_dc_off,color_pwr_frame_dc_off_index,14)//COLOR_DARK_GRAY)
  */   
-#define COLOR_TRSP         0
+#define COLOR_TRSP         7
 #define COLOR_WHITE        7
 #define COLOR_BLACK        0
-#define COLOR_DARK_BLUE    4
-#define COLOR_DARK_GREEN   0
+#define COLOR_DARK_BLUE    161
+#define COLOR_DARK_GREEN   131
 #define COLOR_DARK_RED     51
-#define COLOR_DARK_BROWN   14
-#define COLOR_GREY         15
-#define COLOR_GRAY         15
+#define COLOR_DARK_BROWN   66
+#define COLOR_GREY         17
+#define COLOR_GRAY         17
 #define COLOR_BLUE         4
 #define COLOR_LIGHT_GREEN  6
-#define COLOR_PURPLE       0
+#define COLOR_PURPLE       236
 #define COLOR_RED          1
 #define COLOR_BLUE2        0
 #define COLOR_YELLOW       3
 #define COLOR_WHITE2       0
-#define COLOR_LIGHT_GREY   0
-#define COLOR_LIGHT_GRAY   0
-#define COLOR_LIGHT_WHITE  0
+#define COLOR_LIGHT_GREY   25
+#define COLOR_LIGHT_GRAY   25
+#define COLOR_LIGHT_WHITE  7
 #define COLOR_DARK_GREY    0
 #define COLOR_DARK_GRAY    0
-#define COLOR_GREEN        0
+#define COLOR_GREEN        123
 #define COLOR_BLUE3        0
-#define COLOR_LIGHT_BLUE   6
+#define COLOR_LIGHT_BLUE   170
 #define COLOR_PINK         0
 #define COLOR_ORANGE       49
 #define COLOR_PURPLE2      0
@@ -56,11 +56,11 @@
 #define COLOR_PURPLE4      0
 #define COLOR_RED3         5
 #define COLOR_RED4         0
-#define COLOR_BROWN        0
+#define COLOR_BROWN        95
 #define COLOR_BROWN2       0
 #define COLOR_BROWN3       0
 #define COLOR_LIGHT_RED    0
-#define COLOR_ORANGE2      50
+#define COLOR_ORANGE2      58
 #define COLOR_LIGHT_PURPLE 0
 #define COLOR_TURQUOISE    6
 

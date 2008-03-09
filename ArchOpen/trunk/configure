@@ -191,8 +191,7 @@ if [ $CONFIGURE_TARGET_DEVICE == "3" ]; then
             CONFIGURE_HAVE_CF="1"            
 	        TARGET_OK=1
             CONFIGURE_FM_REMOTE_VERSION="v1"
-            CONFIGURE_BOOT_WITH_CONSOLE="1"
-            CONFIGURE_SPLASH_TYPE="NONE"
+            CONFIGURE_SPLASH_TYPE="SPLASH_320x234"
             CONFIGURE_HAS_SPKR="0"
             CONFIGURE_HAVE_ST_RTC="1"
             CONFIGURE_HAVE_TIME="1"
@@ -211,10 +210,9 @@ if [ $CONFIGURE_TARGET_DEVICE == "4" ]; then
             CONFIGURE_CHIP_TYPE="DSC21"
             CONFIGURE_HAVE_EXT_MODULE="1"
             CONFIGURE_HAVE_CF="1"            
-            CONFIGURE_BOOT_WITH_CONSOLE="1"
 	        TARGET_OK=1
             CONFIGURE_FM_REMOTE_VERSION="v1"
-            CONFIGURE_SPLASH_TYPE="NONE"
+            CONFIGURE_SPLASH_TYPE="SPLASH_320x234"
             CONFIGURE_HAS_SPKR="0"
             CONFIGURE_HAVE_ST_RTC="1"
             CONFIGURE_HAVE_TIME="1"
@@ -222,6 +220,7 @@ if [ $CONFIGURE_TARGET_DEVICE == "4" ]; then
             CONFIGURE_HAVE_DBUG="0"
             CONFIGURE_CHK_USB_FW="1"
             CONFIGURE_HAVE_EVT="1"
+            CONFIGURE_BOOT_WITH_CONSOLE="0"
             fi
 fi
 

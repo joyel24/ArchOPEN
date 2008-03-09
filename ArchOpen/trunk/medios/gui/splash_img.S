@@ -27,7 +27,11 @@ splash_img:
 .ifdef SPLASH_AVLO_320x240
 .incbin "splash_avlo_320x240.img"
 .else
+.ifdef SPLASH_320x234
+.incbin "splash_320x234.img"
+.else
 .space 480*272*4
+.endif
 .endif
 .endif
 .endif

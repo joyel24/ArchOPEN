@@ -193,12 +193,12 @@ void gfx_init(void)
     osd_init();
 
     /* reset everything */
-    osd_setComponentConfig(OSD_VIDEO1,  0);
-    osd_setComponentConfig(OSD_VIDEO2,  0);
-    osd_setComponentConfig(OSD_BITMAP1, 0);
-    osd_setComponentConfig(OSD_BITMAP2, 0);
-    osd_setComponentConfig(OSD_CURSOR1, 0);
-    osd_setComponentConfig(OSD_CURSOR2, 0);
+    osd_setComponentConfig(OSD_VIDEO1,  OSD_COMPONENT_ENABLE(OSD_VIDEO1,0,0));
+    osd_setComponentConfig(OSD_VIDEO2,  OSD_COMPONENT_ENABLE(OSD_VIDEO2,0,0));
+    osd_setComponentConfig(OSD_BITMAP1, OSD_COMPONENT_ENABLE(OSD_BITMAP1,0,0));
+    osd_setComponentConfig(OSD_BITMAP2, OSD_COMPONENT_ENABLE(OSD_BITMAP2,0,0));
+    osd_setComponentConfig(OSD_CURSOR1, OSD_COMPONENT_ENABLE(OSD_CURSOR1,0,0));
+    osd_setComponentConfig(OSD_CURSOR2, OSD_COMPONENT_ENABLE(OSD_CURSOR2,0,0));
 
     osd_setEntirePalette(gui_pal,256,true);
     osd_savePalette(gfx_paletteSave,256);
@@ -233,7 +233,7 @@ void gfx_restoreComponent(int vplane,struct graphicsBuffer * buff)
     osd_setComponentSourceWidth(buffers_comp[vplane], ((buff->width*buff->bitsPerPixel)/32)/8);*/
     
     if(buff->enable)
-        osd_setComponentConfig(buffers_comp[vplane],buff->state|OSD_COMPONENT_ENABLE(buffers_comp[vplane]));
+        osd_setComponentConfig(buffers_comp[vplane],OSD_COMPONENT_ENABLE(buffers_comp[vplane],buff->state,1));
 }
 
 void gfx_restoreAllComponents(void)
@@ -389,7 +389,8 @@ void gfx_planeHide(int vplane)
 {
     buffers[vplane]->enable=0;
     if(screens_current() == SCREEN_GFX)
-        osd_setComponentConfig(buffers_comp[vplane],0);
+        osd_setComponentConfig(buffers_comp[vplane],
+                    OSD_COMPONENT_ENABLE(buffers_comp[vplane],0,0));
 }
 
 void gfx_planeShow(int vplane)
@@ -397,7 +398,7 @@ void gfx_planeShow(int vplane)
     buffers[vplane]->enable=1;
     if(screens_current() == SCREEN_GFX)
         osd_setComponentConfig(buffers_comp[vplane],
-           buffers[vplane]->state|OSD_COMPONENT_ENABLE(buffers_comp[vplane]));
+           OSD_COMPONENT_ENABLE(buffers_comp[vplane],buffers[vplane]->state,1));
 }
 
 int gfx_planeIsShown(int vplane)
@@ -628,7 +629,7 @@ void gfx_drawResizedBitmap (BITMAP * bitmap, int x, int y,int width, int height,
             yinc=xinc;
         }
     }
-
+    
     if(mode==RESIZE_INTEGER)
     {
         if(xinc>=0x10000)
@@ -655,7 +656,7 @@ void gfx_drawResizedBitmap (BITMAP * bitmap, int x, int y,int width, int height,
     {
         xp=x+(width-(bitmap->width<<16)/xinc)/2;
         yp=y+(height-(bitmap->height<<16)/yinc)/2;
-
+        
         buffers[current_plane]->gops->drawResizedBITMAP(bitmap,xp,yp,xinc,yinc,buffers[current_plane]);
     }
 }

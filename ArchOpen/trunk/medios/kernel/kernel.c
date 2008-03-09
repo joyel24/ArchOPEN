@@ -47,8 +47,8 @@ char * getArchName(void)
 
 void getResolution(int * width,int * height)
 {
-    if(width) *width=SCREEN_REAL_WIDTH;
-    if(height) *height=SCREEN_HEIGHT;
+    if(width) *width=LCD_WIDTH;
+    if(height) *height=LCD_HEIGHT;
 }
 
 MED_RET_T getErrno(void)

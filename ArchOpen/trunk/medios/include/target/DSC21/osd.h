@@ -101,7 +101,11 @@
 #define     OSD_MAIN_VIDEO_SCALESM        0x10
 #define     OSD_MAIN_SWAPRB               0x80
 
-#define     OSD_COMPONENT_ENABLE(component)    (component==OSD_VIDEO?0x4:0x1)
+#define     OSD_COMPONENT_ENABLE_BIT(component)           (component==OSD_VIDEO?0x4:0x1)
+#define     OSD_ENABLE_VIDEO(val,status)                  (status?val&(~0x4):val|0x4)
+#define     OSD_ENABLE_BMAP(val,status)                   (status?val|1:val&(~0x1))
+#define     OSD_COMPONENT_ENABLE(component,val,status)   \
+ (component==OSD_VIDEO?OSD_ENABLE_VIDEO(val,status):OSD_ENABLE_BMAP(val,status))
 
 /* VIDEO Configuration options */
 

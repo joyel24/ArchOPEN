@@ -24,7 +24,8 @@
 
 void arch_osd_init(void)
 {
-    osd_setMainConfig(0x1400);
+    //osd_setMainConfig(0x1400);
+    osd_setMainConfig(0x00);
     osd_setMainShift(SCREEN_LCD_SHIFT_X, SCREEN_LCD_SHIFT_Y);
     
     outw(0x0001,0x30700);
