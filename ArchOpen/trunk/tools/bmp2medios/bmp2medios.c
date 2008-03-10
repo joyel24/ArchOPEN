@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#if 1
 #include "../../medios/include/gfx/gui_pal.h"
+#else
+#include "../../medios/include/gfx/gui_pal_DSC21.h"
+#endif
 
 #pragma pack(1)
 

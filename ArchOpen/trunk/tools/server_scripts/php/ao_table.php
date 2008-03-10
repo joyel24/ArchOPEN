@@ -60,6 +60,8 @@ $nb_arch=count($arch_list);
  
 The full medios folder with icons and config files :  <a href='builds/iconsCfg.zip'>ZIP</a><br>
 Unpack the zip and put the medios folder it contains in the root folder of your device. Make sure you overwrite existing files.
+        
+<p>Icons for Jbmm are available here: <a href='builds/jbmm_icons.zip'>Jbmm</a>
 
 <H1><a name='dist'>Full distribution<a></H1>
 
