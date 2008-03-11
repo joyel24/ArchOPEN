@@ -36,6 +36,7 @@
 #include "ata_featuresList.h"
 
 #ifdef HAVE_DBUG
+#warning Debug mode => ATA in low speed
 #define ATA_USE_POLL
 #define ATA_NO_MULTY
 #endif
@@ -225,6 +226,7 @@ retry:
         __asm__ volatile ("nop");
         __asm__ volatile ("nop");
 #ifdef NO_DMA
+#warning forcing no DMA
     use_dma=ATA_NO_DMA;
 #endif
     

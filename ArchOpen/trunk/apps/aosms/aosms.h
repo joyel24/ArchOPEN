@@ -86,6 +86,33 @@
     #define LCD_SMS_HEIGHT_DELTA  0
 #endif
 
+#if defined(AV3XX)
+
+    //#define ENABLE_OVERCLOCKING
+
+    #define SMS_BTN_1             BTMASK_BTN1
+    #define SMS_BTN_2             BTMASK_ON
+    #define SMS_BTN_MOD_12        0
+    #define SMS_BTN_INGAME_MENU   BTMASK_F1
+    #define SMS_BTN_START         BTMASK_F3
+    #define SMS_BTN_RESET         BTMASK_F2
+    #define SMS_BTN_QUIT          BTMASK_OFF
+
+    #define GG_WIDTH_DELTA        0
+    #define GG_HEIGHT_DELTA       0
+    #define LCD_GG_X              0
+    #define LCD_GG_Y              0
+    #define LCD_GG_WIDTH_DELTA    0
+    #define LCD_GG_HEIGHT_DELTA   0
+
+    #define SMS_WIDTH_DELTA       0
+    #define SMS_HEIGHT_DELTA      0
+    #define LCD_SMS_X             0
+    #define LCD_SMS_Y             0
+    #define LCD_SMS_WIDTH_DELTA   0
+    #define LCD_SMS_HEIGHT_DELTA  0
+#endif
+
 #if defined(PMA)
 
     #define ENABLE_OVERCLOCKING

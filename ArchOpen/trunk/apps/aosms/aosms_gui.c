@@ -1,7 +1,7 @@
 #include "shared.h"
 #include "aosms_gui.h"
 
-#if defined(PMA) || defined(AV400)
+#if defined(PMA) || defined(AV4XX) || defined(AV3XX)
 #include "intro_320x240.h"
 #else
 #include "intro_gmini4.h"
@@ -402,7 +402,7 @@ bool gui_browse(){
 }
 
 void gui_welcomeScreen(){
-#if 0//defined(AV4XX) || defined(PMA)
+#if 0//defined(AV4XX) || defined(PMA) || defined(AV3XX)
     int sw,sh;
     int y=0;
 
@@ -437,7 +437,7 @@ void gui_welcomeScreen(){
     gfx_planeHide(BMAP1);
     gfx_setPlane(VID2);
 
-#if defined(PMA) || defined(AV400)
+#if defined(PMA) || defined(AV4XX) || defined(AV3XX)
     gfx_planeSetSize(VID2,320,240,32,GFX_SMODE_STD);
 
     ip=intro_320x240_data;

@@ -3,7 +3,7 @@
 #include "aones_gui.h"
 #include "unes.h"
 
-#if defined(PMA) || defined(AV4XX)
+#if defined(PMA) || defined(AV4XX) || defined(AV3XX)
 #include "intro_320x240.h"
 #else
 #include "intro_gmini4.h"
@@ -412,7 +412,7 @@ void gui_welcomeScreen(){
     gfx_planeHide(BMAP1);
     gfx_setPlane(VID2);
 
-#if defined(PMA) || defined(AV4XX)
+#if defined(PMA) || defined(AV4XX) || defined(AV3XX)
     gfx_planeSetSize(VID2,320,240,32,GFX_SMODE_STD);
 
     ip=intro_320x240_data;
@@ -431,7 +431,7 @@ void gui_welcomeScreen(){
     }
 #endif
 #else
-    gfx_planeSetSize(VID2,220,176,32,,GFX_SMODE_STD);   // Gmini size, the welcome screen will be clear for all arch
+    gfx_planeSetSize(VID2,220,176,32,GFX_SMODE_STD);   // Gmini size, the welcome screen will be clear for all arch
 
     ip=intro_gmini4_data;
     op=gfx_planeGetBufferOffset(VID2);
@@ -454,7 +454,7 @@ void gui_welcomeScreen(){
 bool gui_confirmQuit(){
     int bt;
 
-#if defined(PMA) || defined(AV4XX)
+#if defined(PMA) || defined(AV4XX) || defined(AV3XX)
     gui_showText("Really quit? (F2=yes, any other=no)");
 #else
     gui_showText("Really quit? (OFF=yes, any other=no)");
