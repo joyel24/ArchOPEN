@@ -121,7 +121,7 @@ void kernel_thread(void)
     
 #ifdef TARGET_TYPE_STD
 #ifndef BUILD_LIB
-#if defined(MAS_SOUND) || defined(AIC_SOUND)
+#if defined(HAVE_MAS_SOUND) || defined(HAVE_AIC23_SOUND)
     sound_init();
 #else
     #warning Building with no Sound chip
