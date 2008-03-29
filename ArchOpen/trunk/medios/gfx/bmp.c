@@ -953,8 +953,8 @@ int get_nearest(unsigned char r,unsigned char g,unsigned char b)
     
     /* DB0073 (219,000,115) */
     
-    if(r==0xfe && g==0xfe && b==0xfe)
-        return 0;
+    /*if(r==0xfe && g==0xfe && b==0xfe)
+        return 0;*/
     
     for(i=1;i<256;i++)
     {

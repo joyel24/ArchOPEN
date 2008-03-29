@@ -18,12 +18,15 @@
 #include <fs/cfg_file.h>
 
 #include <gfx/graphics.h>
+#include <gfx/bmp.h>
 
 #include <gui/icons.h>
 #include <gui/icons_data.h>
 #include <gui/shellmenu.h>
 
 #include <init/boot_error.h>
+
+#include <sys_def/colordef.h>
 
 int arch_icon_type[]=
 {
@@ -206,6 +209,252 @@ ICON icon_load(char * filename)
     return icon_loadFlag(filename,0);
 }
         
+#define ICO_READ2(BUFF,POS) ((BUFF[(POS)+1]<<8)|BUFF[(POS)])
+#define ICO_READ4(BUFF,POS) ((BUFF[(POS)+3]<<24)|(BUFF[(POS)+2]<<16)|(BUFF[(POS)+1]<<8)|BUFF[(POS)])
+        
+struct ico_head {
+    short header;
+    short type;
+    short img_count;
+};
+
+struct ico_struct {
+    char width;
+    char height;
+    char colour_count;
+    char reserved;
+    short color_planes;
+    short bpp;
+    unsigned int size;
+    unsigned int offset;
+};
+    
+struct ico_bmap_head {
+      unsigned int  biSize;
+      unsigned int  biWidth;
+      unsigned int  biHeight;
+      short   biPlanes;
+      short   biBitCount;
+      unsigned int  biCompression;
+      unsigned int  biSizeImage;
+      unsigned int  biXPelsPerMeter;
+      unsigned int  biYPelsPerMeter;
+      unsigned int  biClrUsed;
+      unsigned int  biClrImportant;
+
+} ;
+        
+#define GET_COLOR_NB(BPP) ((BPP)==1?2:((BPP)==2?4:((BPP)==4?16:((BPP)==8?256:0))))
+        
+#define WR_ICON_HEAD(DATA,BUFF) {         \
+        DATA.header=ICO_READ2(BUFF,0);    \
+        DATA.type=ICO_READ2(BUFF,2);      \
+        DATA.img_count=ICO_READ2(BUFF,4); \
+}
+        
+#define WR_ICON_DATA(DATA,BUFF) {       \
+        DATA.width=BUFF[0];             \
+        DATA.height=BUFF[1];            \
+        DATA.colour_count=BUFF[2];      \
+        DATA.reserved=BUFF[3];          \
+        DATA.color_planes=ICO_READ2(BUFF,4); \
+        DATA.bpp=ICO_READ2(BUFF,6);     \
+        DATA.size=ICO_READ4(BUFF,8);    \
+        DATA.offset=ICO_READ4(BUFF,12); \
+}
+
+#define WR_ICON_BMAP_HEAD(DATA,BUFF)  { \
+        DATA.biSize=ICO_READ4(BUFF,0);           \
+        DATA.biWidth=ICO_READ4(BUFF,4);          \
+        DATA.biHeight=ICO_READ4(BUFF,8);         \
+        DATA.biPlanes=ICO_READ2(BUFF,12);        \
+        DATA.biBitCount=ICO_READ2(BUFF,14);      \
+        DATA.biCompression=ICO_READ4(BUFF,16);   \
+        DATA.biSizeImage=ICO_READ4(BUFF,20);     \
+        DATA.biXPelsPerMeter=ICO_READ4(BUFF,24); \
+        DATA.biYPelsPerMeter=ICO_READ4(BUFF,28); \
+        DATA.biClrUsed=ICO_READ4(BUFF,32);       \
+        DATA.biClrImportant=ICO_READ4(BUFF,36);  \
+}
+        
+#define READ_FROM_FILE(FILE,BUFF,SIZE,ERROR) { \
+    if(read(FILE,BUFF,SIZE)!=(SIZE))  \
+    {                               \
+        printk(ERROR);              \
+        goto err1;                  \
+    }                               \
+}
+
+extern int gui_pal[256][3];
+       
+MED_RET_T icon_convIco(char * fname,char * filename)
+{
+    int i,j;
+    int infile;
+    
+    char * pal_conv=NULL;
+    char * tmp_pal=NULL;
+    char * bmp_data;
+    char * mask_data;
+    char * ptr;
+    char buff[50];
+    
+    int nbColor=0;
+    
+    int bmp_scanline,mask_scanline;
+    
+    struct ico_head icon_head;
+    struct ico_struct icon_data;
+    struct ico_bmap_head icon_bitmap_head;
+    
+    infile = open(fname, O_RDONLY);
+    if(infile<0)
+    {
+        printk("[icon_load] can't open file '%s' for reading!\n", fname);
+        return -MED_ERROR;
+    }
+    
+    READ_FROM_FILE(infile,buff,6,"[icon_load] can't load icon header!\n");        
+    WR_ICON_HEAD(icon_head,buff);
+    
+    /* reading only first image */
+    READ_FROM_FILE(infile,buff,16,"[icon_load] can't load icon data structure!\n");        
+    WR_ICON_DATA(icon_data,buff);
+            
+    /*jumping to first img data*/
+    lseek(infile,icon_data.offset,SEEK_SET);
+    READ_FROM_FILE(infile,buff,45,"[icon_load] can't load icon data structure!\n");        
+    WR_ICON_BMAP_HEAD(icon_bitmap_head,buff);
+                    
+    /* processing palette */        
+    nbColor=GET_COLOR_NB(icon_data.bpp);
+            
+    pal_conv=(char*)malloc(nbColor);        
+    if(!pal_conv) {printk("[icon_load] Can't get mem for pal_conv\n"); goto err1;}
+    
+    tmp_pal=(char*)malloc(nbColor*4);
+    if(!tmp_pal) {printk("[icon_load] Can't get mem for pal_conv\n"); goto err1;}
+    
+    lseek(infile,icon_data.offset+icon_bitmap_head.biSize,SEEK_SET);
+            
+    READ_FROM_FILE(infile,tmp_pal,nbColor*4,"[icon_load] can't load palette data!\n");
+                
+    for(j=0;j<nbColor;j++)
+    {
+        if(gui_pal[j][0] != tmp_pal[j*4+2] || gui_pal[j][1] != tmp_pal[j*4+1] ||
+            gui_pal[j][2] != tmp_pal[j*4])
+        {
+            
+            if(tmp_pal[j*4]==0 && tmp_pal[j*4+1]==0 && tmp_pal[j*4+2]==0)
+            {
+                pal_conv[j]=COLOR_BLACK;
+            }
+            else
+            {  
+                pal_conv[j]=get_nearest(tmp_pal[j*4+2],tmp_pal[j*4+1],tmp_pal[j*4]);
+                if(pal_conv[j]==0)
+                    pal_conv[j]=COLOR_WHITE;
+            }
+        }
+        else
+            pal_conv[j]=j;
+    }
+    
+    free(tmp_pal); tmp_pal=NULL;
+    
+    bmp_scanline=((icon_data.width*8+31)/32)*4;
+    mask_scanline=((icon_data.width+31)/32)*4;
+    
+    bmp_data=(char*)malloc(icon_data.width*icon_data.height);
+    if(!bmp_data) { printk("Can't malloc for bmp data\n"); goto err1; }
+        
+    
+    mask_data=(char*)malloc(mask_scanline);
+    if(!mask_data) { printk("Can't malloc for mask data\n"); goto err2; }
+    
+    /* reading bitmap data */
+    lseek(infile,icon_data.offset+icon_bitmap_head.biSize+nbColor*4,SEEK_SET);
+        
+    for(i=icon_data.height-1;i>=0;i--)
+    {
+        if(read(infile, bmp_data+icon_data.width*i,icon_data.width)<icon_data.width)
+        {
+            printk("[icon_load] end of file reached - reading bmp data\n");
+            goto err3;
+        }
+        
+        if(bmp_scanline>icon_data.width)
+        {
+            printk("Read more\n");
+            read(infile,buff,bmp_scanline-icon_data.width);            
+        }
+        
+    }
+    
+    /* processing transparency + palette conversion */
+    for(i=icon_data.height-1;i>=0;i--)
+    {
+        if(read(infile,mask_data,mask_scanline)<mask_scanline)
+        {
+            printk("[icon_load] end of file reached - reading mask\n");
+            goto err3;
+        }
+        for(j=0;j<icon_data.width;j++)
+        {
+            if((mask_data[j/8]>>(7-(j%8)))&0x1)
+                *(bmp_data+icon_data.width*i+j)=COLOR_TRSP;
+            else
+                *(bmp_data+icon_data.width*i+j)=pal_conv[(int)*(bmp_data+icon_data.width*i+j)];
+        }
+    }
+    
+    /* some clean up */
+    close(infile);
+    free(mask_data);
+    free(pal_conv);
+
+    /* writting new ico file */
+    infile = open(fname, O_WRONLY|O_TRUNC);
+    if(infile<0)
+    {
+        printk("[icon_load] can't open file '%s' for writting!\n", fname);
+        free(bmp_data);
+        return -MED_ERROR;
+    }    
+    
+    write(infile,"AVICO",5);
+    
+    ptr=strrchr(filename,'.');
+        
+    /* name size */
+    buff[0]=(ptr-filename)&0xFF;
+    write(infile,buff,1);
+    
+    /*name*/
+    write(infile,filename,buff[0]);
+    
+    /* ico size */
+    buff[0]=icon_data.width;
+    buff[1]=icon_data.height;
+    write(infile,buff,2);
+    
+    /*bitmap data*/
+    write(infile,bmp_data,icon_data.height*icon_data.width);
+    free(bmp_data);
+    close(infile);
+    return MED_OK;
+err3:
+    free(mask_data);    
+err2:
+    free(bmp_data);
+err1:
+    if(tmp_pal) free(tmp_pal);
+    if(pal_conv) free(pal_conv);
+    close(infile);
+    return -MED_ERROR;
+}
+
+       
 ICON icon_loadFlag(char * filename,int force)        
 {
     int infile;
@@ -214,9 +463,9 @@ ICON icon_loadFlag(char * filename,int force)
     ICON ptr;
     char * tmpF;
     char * name;
-    char buff[6];
+    char buff[10];
     int found=0;
-
+    
     /* create the filename+path */
     tmpF=(char*)malloc(sizeof(char)*(iconPathLen+1+strlen(filename)+1));
     if(!tmpF)
@@ -227,7 +476,7 @@ ICON icon_loadFlag(char * filename,int force)
     sprintf(tmpF,"%s/%s",iconPath,filename);
 
     /* open the icon file */
-    infile = open(tmpF, O_RDONLY);
+    infile = open(tmpF, O_RDWR);
     if(infile<0)
     {
         printk("[icon_load] can't open file '%s' (%s) for reading!\n", tmpF,filename);
@@ -235,12 +484,26 @@ ICON icon_loadFlag(char * filename,int force)
     }
 
     /* check if it has the correct ident. string */
-    if(read(infile,buff,5)!=5)
-    {
-        printk("[icon_load] bad ident (length)\n");
-        goto err1;
-    }
+    READ_FROM_FILE(infile,buff,5,"[icon_load] bad ident (length)\n");
 
+    if(buff[0]==0 && buff[1]==0 && buff[2]==1 && buff[3]==0)
+    {    
+        close(infile);    
+        if(icon_convIco(tmpF,filename)!=MED_OK)
+        {
+            printk("[icon_load] Error converting ico to medios icon\n");
+            goto err1;
+        }
+        
+        infile = open(tmpF, O_RDWR);
+        if(infile<0)
+        {
+            printk("[icon_load] can't open file '%s' (%s) for reading!\n", tmpF,filename);
+            return NULL;
+        } 
+        READ_FROM_FILE(infile,buff,5,"[icon_load] bad ident (length)\n");
+    }   
+        
     for(i=0;i<5;i++)
     {
         if(buff[i]!=ident_str[i])
@@ -307,7 +570,7 @@ ICON icon_loadFlag(char * filename,int force)
         }
         ptr->name=name;
     }
-
+    
     /* read width and height */
     if(read(infile,buff,1)<=0)
     {
@@ -333,21 +596,7 @@ ICON icon_loadFlag(char * filename,int force)
     }
     
     len=ptr->bmap_data.width*ptr->bmap_data.height;
-
-   /* printk("[icon_load] loading icon %s from %s size (%d,%d)\n",ptr->name,
-        tmpF,ptr->bmap_data.width,ptr->bmap_data.height);*/
-
-    /* read icon data */
-    /*for(i=0;i<ptr->bmap_data.width*ptr->bmap_data.height;i++)
-    {
-        if(read(infile,buff,1)<=0)
-        {
-            printk("[icon_load] end of file reached - Step6\n");
-            //goto err4;
-        }
-        ptr->data[i]=buff[0];
-    }*/
-
+       
     for(i=0;i<ptr->bmap_data.height;i++)
     {
         if(read(infile,ptr->data+ptr->bmap_data.width*i,ptr->bmap_data.width)<ptr->bmap_data.width)
@@ -357,12 +606,6 @@ ICON icon_loadFlag(char * filename,int force)
         }
     }
     
-    /*if(read(infile,ptr->data,len)<len)
-    {
-        printk("[icon_load] end of file reached - reading icon data\n");
-        goto err4;
-    }*/
-
     /* fill BITMAP structure */
     ptr->bmap_data.data=(unsigned int)ptr->data;
     ptr->bmap_data.type=0;
@@ -389,6 +632,7 @@ err3:
 err2:
     kfree(name);
 err1:
+
     close(infile);
     kfree(tmpF);
     return NULL;
