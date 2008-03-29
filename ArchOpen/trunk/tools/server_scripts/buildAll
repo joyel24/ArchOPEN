@@ -51,8 +51,6 @@ cp -Rf build/trunk/tools/medios_files/* ${distribPath}/medios/
 cd ${iconPath}
 cp -Rf big small std ${distribPath}/medios/icons
 
-exit
-
 cd ${distribPath}
 zip -r iconsCfg.zip  ./
 mvFtp builds iconsCfg.zip
