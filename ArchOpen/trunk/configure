@@ -124,7 +124,7 @@ if [ "$1" != "-d" ]; then
 CONFIG_QUERY_MULTI $CONFIGURE_TARGET_DEVICE "AV3XX GMINI4XX AV1XX JBMM GMINI402 AV4XX PMA AV5XX" "Please pick a target device" "1"
 CONFIGURE_TARGET_DEVICE=$?
 
-CONFIG_QUERY_MULTI $CONFIGURE_TARGET_LANG "English Francais" "Please pick the default lang" "1"
+CONFIG_QUERY_MULTI $CONFIGURE_TARGET_LANG "English Francais Deutsch" "Please pick the default lang" "1"
 CONFIGURE_TARGET_LANG=$?
 fi
 
@@ -327,6 +327,9 @@ if [ $CONFIGURE_TARGET_LANG == "1" ]; then
 fi
 if [ $CONFIGURE_TARGET_LANG == "2" ]; then
     CONFIGURE_TARGET_LANG_NAME="francais"
+fi
+if [ $CONFIGURE_TARGET_LANG == "3" ]; then
+    CONFIGURE_TARGET_LANG_NAME="deutsch"
 fi
 if [ $CONFIGURE_TARGET_LANG == "X" ]; then
     echo ""

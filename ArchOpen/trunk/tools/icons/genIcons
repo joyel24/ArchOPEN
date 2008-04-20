@@ -2,9 +2,9 @@
 subfolder="small std big"
 
 # make sure bmp2medios is build
-cd ../bmp2medios
-make
-cd ../icons
+#cd ../bmp2medios
+#make
+#cd ../icons
 
 for type in $subfolder; do
 
