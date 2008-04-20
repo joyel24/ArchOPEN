@@ -306,7 +306,7 @@ static bool shellMenu_build(){
                     icon=shellMenu_appIcon;
                 }
             }else{
-                icon=icon_loadFlag(item->icon,1);
+                icon=icon_loadForce(item->icon);
             }
     
             if(icon!=NULL){
@@ -371,9 +371,9 @@ bool shellMenu_init(){
     shellMenu_firstItem = NULL;
     shellMenu_lastItem = NULL;
     // load icons
-    shellMenu_folderIcon = icon_loadFlag(SHELL_FOLDER_ICON,1);
-    shellMenu_backIcon = icon_loadFlag(SHELL_BACK_ICON,1);
-    shellMenu_appIcon = icon_loadFlag(SHELL_APP_ICON,1);
+    shellMenu_folderIcon = icon_loadForce(SHELL_FOLDER_ICON);
+    shellMenu_backIcon = icon_loadForce(SHELL_BACK_ICON);
+    shellMenu_appIcon = icon_loadForce(SHELL_APP_ICON);
 
     // parse menu file
     if(!shellMenu_parse(SHELL_MENU_FILE)){

@@ -49,7 +49,7 @@ cd ~/archopen_src
 cp -Rf build/trunk/tools/medios_files/* ${distribPath}/medios/
 
 cd ${iconPath}
-cp -Rf big small std ${distribPath}/medios/icons
+cp -Rf big small std others ${distribPath}/medios/icons
 
 cd ${distribPath}
 zip -r iconsCfg.zip  ./

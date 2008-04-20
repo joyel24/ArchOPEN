@@ -24,7 +24,7 @@ else
     rm -f medios/kernel/lang_data.bin
     rm -f medios/kernel/api_fct_list.h
     rm -f medios/include/kernel/version_svn.h
-    rm -Rf tools/icons/big tools/icons/small tools/icons/std
+    rm -Rf tools/icons/big tools/icons/small tools/icons/std tools/icons/others
     rm -f apps/avlo/include/default_cfg.h
     rm -f *.lds *.conf *.out *.map
     rm -Rf lib

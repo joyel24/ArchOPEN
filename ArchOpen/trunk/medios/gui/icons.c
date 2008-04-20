@@ -203,12 +203,21 @@ void icon_setPath(void)
            iconPath,iconPathLen,folderType,shellHasCaption);
 }
     
-
 ICON icon_load(char * filename)
 {
-    return icon_loadFlag(filename,0);
+    return icon_loadFlag(filename,0,0);
 }
-        
+
+ICON icon_loadForce(char * filename)
+{
+    return icon_loadFlag(filename,1,0);
+}
+
+ICON icon_loadOther(char * filename)
+{
+    return icon_loadFlag(filename,0,1);
+}     
+
 #define ICO_READ2(BUFF,POS) ((BUFF[(POS)+1]<<8)|BUFF[(POS)])
 #define ICO_READ4(BUFF,POS) ((BUFF[(POS)+3]<<24)|(BUFF[(POS)+2]<<16)|(BUFF[(POS)+1]<<8)|BUFF[(POS)])
         
@@ -385,7 +394,6 @@ MED_RET_T icon_convIco(char * fname,char * filename)
         
         if(bmp_scanline>icon_data.width)
         {
-            printk("Read more\n");
             read(infile,buff,bmp_scanline-icon_data.width);            
         }
         
@@ -453,9 +461,8 @@ err1:
     close(infile);
     return -MED_ERROR;
 }
-
        
-ICON icon_loadFlag(char * filename,int force)        
+ICON icon_loadFlag(char * filename,int force,int other)        
 {
     int infile;
     int i;
@@ -467,13 +474,26 @@ ICON icon_loadFlag(char * filename,int force)
     int found=0;
     
     /* create the filename+path */
-    tmpF=(char*)malloc(sizeof(char)*(iconPathLen+1+strlen(filename)+1));
-    if(!tmpF)
+    if(other)
     {
-        printk("[icon_load] can't create filename string\n");
-        return NULL;
+        tmpF=(char*)malloc(sizeof(char)*(strlen(ICON_OTHER_DIR)+1+strlen(filename)+1));
+        if(!tmpF)
+        {
+            printk("[icon_load (other)] can't create filename string\n");
+            return NULL;
+        }
+        sprintf(tmpF,"%s/%s",ICON_OTHER_DIR,filename);
     }
-    sprintf(tmpF,"%s/%s",iconPath,filename);
+    else        
+    {
+        tmpF=(char*)malloc(sizeof(char)*(iconPathLen+1+strlen(filename)+1));
+        if(!tmpF)
+        {
+            printk("[icon_load (menu)] can't create filename string\n");
+            return NULL;
+        }
+        sprintf(tmpF,"%s/%s",iconPath,filename);
+    }
 
     /* open the icon file */
     infile = open(tmpF, O_RDWR);

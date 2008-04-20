@@ -1,10 +1,10 @@
 #!/bin/sh
-subfolder="small std big"
 
-# make sure bmp2medios is build
-#cd ../bmp2medios
-#make
-#cd ../icons
+#################################################
+# Step 1 : menu icons
+#################################################
+
+subfolder="small std big"
 
 for type in $subfolder; do
 
@@ -25,13 +25,34 @@ for type in $subfolder; do
 # convert all png to right format
     for file in *.png; do 
         fname=`basename $file .png`
+        echo -n $fname
 # change size
         if [ $size -ne 64 ]; then
-            echo "$type => convert"
+            echo -n " $type => convert"
             convert -scale ${size}x${size} -quality 100 $file $file
         fi
         convert -map ../colormap.ico +dither $file $fname.ico;
+        echo " done"
     done        
     rm -f *.png
     cd ../
 done
+
+#################################################
+# Step 2 : other icons (usb, DC, ...)
+#################################################
+
+rm -Rf others
+mkdir others
+cp -f png/others/*.png others
+cd others
+
+for file in *.png; do 
+    fname=`basename $file .png`
+    echo "Convert others " $fname
+    convert -map ../colormap.ico +dither $file $fname.ico;
+done
+rm -f *.png
+cd ../
+
+

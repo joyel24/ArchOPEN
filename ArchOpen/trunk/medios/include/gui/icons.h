@@ -18,6 +18,7 @@
 #include <gui/shell.h>
 
 #define ICON_DIR SHELL_DIR"/icons"
+#define ICON_OTHER_DIR SHELL_DIR"/icons/others"
 
 void icon_init(void);
 void icon_kernelInit(void);
@@ -25,7 +26,9 @@ void icon_kernelInit(void);
 extern int folderType;
 
 struct icon_elem * icon_load(char * filename);
-struct icon_elem * icon_loadFlag(char * filename,int force);
+struct icon_elem * icon_loadForce(char * filename);
+struct icon_elem * icon_loadOther(char * filename);
+struct icon_elem * icon_loadFlag(char * filename,int force, int other);
 struct icon_elem * icon_add(char * name,unsigned char * data,int w,int h);
 struct icon_elem * icon_get(char * name);
 

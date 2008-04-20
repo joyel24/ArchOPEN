@@ -19,11 +19,13 @@
 #include <kernel/evt.h>
 
 #include <driver/time.h>
+#include <driver/lcd.h>
 #include <driver/usb_fw.h>
 #include <driver/batDc.h>
 #include <driver/cf.h>
 #include <driver/speaker.h>
 #include <driver/fm_remote.h>
+#include <driver/osd.h>
 
 #include <gfx/graphics.h>
 
@@ -42,6 +44,14 @@ BITMAP * st_cfIcon;
 BITMAP * st_usbIcon;
 BITMAP * st_powerIcon;
 BITMAP * st_mediosLogo;
+BITMAP * st_usbIn;
+BITMAP * st_usbOut;
+BITMAP * st_cfIn;
+BITMAP * st_cfOut;
+BITMAP * st_dcIn;
+BITMAP * st_dcOut;
+
+ICON tmpIco;
 
 int batteryRefresh=0;
 int batteryRefreshValue = 10;
@@ -54,6 +64,7 @@ int power = 0;
 int color = 0;
 int level = 0;
 int chargeProgress = 0;
+int st_PopUp=0;
 
 int initDone=0;
 
@@ -251,6 +262,33 @@ void drawStatusLine(void)
     drawLogo();
 }
 
+void drawPopup(BITMAP * cur_UsbIco)
+{
+    int curState;
+       
+        
+    if(!cur_UsbIco)
+    {
+        printk("Missing icon\n");
+        return;   
+    }
+    
+    gfx_planeSetSize(BMAP2,cur_UsbIco->width+2,cur_UsbIco->height+2,8,0);
+    gfx_planeSetPos(BMAP2,SCREEN_ORIGIN_X+(LCD_WIDTH-cur_UsbIco->width-2),
+                    SCREEN_ORIGIN_Y+(LCD_HEIGHT-cur_UsbIco->height-2)/2);
+    gfx_setPlane(BMAP2);
+    gfx_clearScreen(COLOR_TRSP);
+    gfx_drawRect(COLOR_RED,0,0,cur_UsbIco->width+2,cur_UsbIco->height+2);
+    gfx_drawBitmap(cur_UsbIco,1,1);
+    curState=gfx_planeGetState(BMAP2);
+    gfx_planeSetState(BMAP2,OSD_BITMAP_TRSP_ENABLE(curState,1));
+    curState=gfx_planeGetState(BMAP2);
+    gfx_planeSetState(BMAP2,OSD_BITMAP_SET_BLEND_FACTOR(curState,OSD_BITMAP_BLEND_FACTOR_MAX));
+    gfx_planeShow(BMAP2);
+    st_PopUp=1;
+    gfx_setPlane(BMAP1);
+}
+
 /* events */
 void statusLine_handleEvent(int evt)
 {
@@ -264,7 +302,16 @@ void statusLine_handleEvent(int evt)
             intHPState=speaker_state();
             drawStatusLine();
             break;
-        case EVT_TIMER:
+        case EVT_TIMER:            
+            if(st_PopUp==2) /* second time we are here, hide popup*/
+            {
+                gfx_planeHide(BMAP2);
+                st_PopUp=0;
+            }
+            if(st_PopUp==1) /* if it is the first time we are here with popup enable, skip hide*/
+            {
+                st_PopUp=2;
+            }
             drawTime();
             if(batteryRefresh == 0)
                 drawBat();
@@ -278,23 +325,36 @@ void statusLine_handleEvent(int evt)
             pwrState=POWER_CONNECTED;
             batteryRefresh = 0;
             drawStatus();
+            drawPopup(evt==EVT_PWR_IN?st_dcIn:st_dcOut);
             break;
         case EVT_USB_IN:
         case EVT_USB_OUT:
             usbState=kusbIsConnected();
             drawStatus();
+            drawPopup(evt==EVT_USB_IN?st_usbIn:st_usbOut);
             break;
         case EVT_FW_EXT_IN:
         case EVT_FW_EXT_OUT:
             fwExtState=kFWIsConnected();
             drawStatus();
+            drawPopup(evt==EVT_FW_EXT_IN?st_usbIn:st_usbOut);
             break;
         case EVT_CF_IN:
         case EVT_CF_OUT:
             cfState=CF_IS_CONNECTED;
             drawStatus();
+            drawPopup(evt==EVT_CF_IN?st_cfIn:st_cfOut);
             break;
     }
+}
+
+
+#define LOAD_OTHER_ICO(NAME,FNAME,VAR) { \
+    tmpIco=icon_get(NAME);                \
+    if(!tmpIco)                             \
+        tmpIco=icon_loadOther(FNAME);  \
+    if(!tmpIco) VAR=NULL;                   \
+    VAR=&tmpIco->bmap_data;                 \
 }
 
 void statusLine_init(void)
@@ -311,6 +371,17 @@ void statusLine_init(void)
     st_powerIcon=&icon_get("powerIcon")->bmap_data;
     st_mediosLogo=&icon_get("mediosLogo")->bmap_data;
 
+    LOAD_OTHER_ICO("usb_in","usb_in.ico",st_usbIn);
+    LOAD_OTHER_ICO("usb_out","usb_out.ico",st_usbOut);
+    
+    LOAD_OTHER_ICO("dc_in","dc_in.ico",st_dcIn);
+    LOAD_OTHER_ICO("dc_out","dc_out.ico",st_dcOut);
+    
+    LOAD_OTHER_ICO("cf_in","cf_in.ico",st_cfIn);
+    LOAD_OTHER_ICO("cf_out","cf_out.ico",st_cfOut);
+        
+    st_PopUp=0;
+    
     pwrState=POWER_CONNECTED;
     usbState=kusbIsConnected();
     fwExtState=kFWIsConnected();
