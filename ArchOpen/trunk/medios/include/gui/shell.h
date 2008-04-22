@@ -22,7 +22,13 @@
 
 #define SHELL_HANDLERS_FILE SHELL_DIR"/handlers.cfg"
 
+//#define ALWAYS_DISPLAY_ST_LINE
+
+#ifdef ALWAYS_DISPLAY_ST_LINE
 #define SHELL_STATUS_HEIGHT 17
+#else
+#define SHELL_STATUS_HEIGHT 0
+#endif
 
 bool shell_execute(char * command,char * param);
 void shell_restore();

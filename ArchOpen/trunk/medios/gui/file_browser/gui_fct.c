@@ -224,7 +224,9 @@ int browser_browse(struct browser_data *bdata,char * path,char * res)
     if(browser_has_statusbar)
     {
         statusLine_init();
+#ifdef ALWAYS_DISPLAY_ST_LINE
         drawStatusLine();
+#endif
     }
     
     /* start evt loop */

@@ -148,7 +148,9 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
                 if(browser_has_statusbar)
                 {
                     statusLine_init();
+#ifdef ALWAYS_DISPLAY_ST_LINE
                     drawStatusLine();
+#endif
                 }
                 browser_doDraw(mainBdata);
                 break;
@@ -333,7 +335,9 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
                                 if(browser_has_statusbar)
                                 {
                                     statusLine_init();
+#ifdef ALWAYS_DISPLAY_ST_LINE
                                     drawStatusLine();
+#endif
                                 }
                                 browser_doDraw(mainBdata);
                             }

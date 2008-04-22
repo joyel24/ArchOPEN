@@ -35,6 +35,7 @@ int date_format;
 int time_format;
 
 #include <gui/status_line.h>
+#include <gui/shell.h>
 
 #include <fs/cfg_file.h>
 
@@ -65,6 +66,7 @@ int color = 0;
 int level = 0;
 int chargeProgress = 0;
 int st_PopUp=0;
+int st_StatusLine=0;
 
 int initDone=0;
 
@@ -292,6 +294,7 @@ void drawPopup(BITMAP * cur_UsbIco)
 /* events */
 void statusLine_handleEvent(int evt)
 {
+    struct evt_t myEvt;
     switch (evt) {
         case EVT_REDRAW:
             pwrState=POWER_CONNECTED;
@@ -300,8 +303,19 @@ void statusLine_handleEvent(int evt)
             fwExtState=kFWIsConnected();
             cfState=CF_IS_CONNECTED;
             intHPState=speaker_state();
+#ifdef ALWAYS_DISPLAY_ST_LINE
             drawStatusLine();
+#endif
             break;
+#ifndef ALWAYS_DISPLAY_ST_LINE
+        case BTN_F2:
+            if(st_StatusLine==0)
+            {
+                drawStatusLine();
+                st_StatusLine=1;
+            }
+            break;
+#endif
         case EVT_TIMER:            
             if(st_PopUp==2) /* second time we are here, hide popup*/
             {
@@ -312,6 +326,23 @@ void statusLine_handleEvent(int evt)
             {
                 st_PopUp=2;
             }
+#ifndef ALWAYS_DISPLAY_ST_LINE            
+            if(st_StatusLine==2) /* second time we are here, hide popup*/
+            {
+                /*hiding status line with a redraw */
+                myEvt.evt=EVT_REDRAW;
+                myEvt.evt_class=GUI_CLASS;
+                myEvt.data=(void*)0;
+                evt_send(&myEvt);
+                st_StatusLine=0;
+            }
+            if(st_StatusLine==1) /* if it is the first time we are here with popup enable, skip hide*/
+            {
+                st_StatusLine=2;
+            }
+#endif
+                        
+#ifdef ALWAYS_DISPLAY_ST_LINE
             drawTime();
             if(batteryRefresh == 0)
                 drawBat();
@@ -319,30 +350,39 @@ void statusLine_handleEvent(int evt)
                 batteryRefresh++;
             else
                 batteryRefresh = 0;
+#endif
             break;
         case EVT_PWR_IN:
         case EVT_PWR_OUT:
             pwrState=POWER_CONNECTED;
             batteryRefresh = 0;
+#ifdef ALWAYS_DISPLAY_ST_LINE
             drawStatus();
+#endif
             drawPopup(evt==EVT_PWR_IN?st_dcIn:st_dcOut);
             break;
         case EVT_USB_IN:
         case EVT_USB_OUT:
             usbState=kusbIsConnected();
+#ifdef ALWAYS_DISPLAY_ST_LINE
             drawStatus();
+#endif
             drawPopup(evt==EVT_USB_IN?st_usbIn:st_usbOut);
             break;
         case EVT_FW_EXT_IN:
         case EVT_FW_EXT_OUT:
             fwExtState=kFWIsConnected();
+#ifdef ALWAYS_DISPLAY_ST_LINE
             drawStatus();
+#endif
             drawPopup(evt==EVT_FW_EXT_IN?st_usbIn:st_usbOut);
             break;
         case EVT_CF_IN:
         case EVT_CF_OUT:
             cfState=CF_IS_CONNECTED;
+#ifdef ALWAYS_DISPLAY_ST_LINE
             drawStatus();
+#endif
             drawPopup(evt==EVT_CF_IN?st_cfIn:st_cfOut);
             break;
     }
@@ -381,6 +421,7 @@ void statusLine_init(void)
     LOAD_OTHER_ICO("cf_out","cf_out.ico",st_cfOut);
         
     st_PopUp=0;
+    st_StatusLine=0;
     
     pwrState=POWER_CONNECTED;
     usbState=kusbIsConnected();
