@@ -87,7 +87,7 @@ void browser_setting(void)
     
     logo=icon_get("browser_icon");
     if(!logo)
-        icon_load("browser_icon.ico");
+        logo=icon_load("browser_icon.ico");
     
     settings_initScreen(getLangStr(STRLNG_BROWSER_SETTINGS),logo,&minX,&minY);
 

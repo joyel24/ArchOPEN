@@ -136,7 +136,7 @@ void misc_setting(void)
     
     logo=icon_get("misc");
     if(!logo)
-        icon_load("misc.ico");
+        logo=icon_load("misc.ico");
     
     settings_initScreen(getLangStr(STRLNG_MISC_SETTINGS),logo,&minX,&minY);
     

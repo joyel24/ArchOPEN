@@ -478,7 +478,7 @@ void bgImg_setting(void)
 
     logo=icon_get("bgCfg");
     if(!logo)
-        icon_load("bgCfg.ico");
+        logo=icon_load("bgCfg.ico");
     
     settings_initScreen(getLangStr(STRLNG_BG_SETTING),logo,&minX,&minY);
 

@@ -141,7 +141,7 @@ void energy_setting(void)
     
     logo=icon_get("energy");
     if(!logo)
-        icon_load("energy.ico");
+        logo=icon_load("energy.ico");
     
     settings_initScreen(getLangStr(STRLNG_NRJ_SETTINGS),logo,&minX,&minY);
     

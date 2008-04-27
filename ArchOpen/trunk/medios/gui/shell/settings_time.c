@@ -226,7 +226,7 @@ void clock_setting(void)
     
     logo=icon_get("clock_icon");
     if(!logo)
-        icon_load("clock_icon.ico");
+        logo=icon_load("clock_icon.ico");
     gfx_drawBitmap(&logo->bmap_data,ICON_X,ICON_Y);
     
     minX = ICON_X + logo->bmap_data.width;

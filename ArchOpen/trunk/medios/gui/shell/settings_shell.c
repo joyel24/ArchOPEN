@@ -116,7 +116,7 @@ void shell_setting(void)
     
     logo=icon_get("shell_setting");
     if(!logo)
-        icon_load("shell_setting.ico");
+        logo=icon_load("shell_setting.ico");
     
     settings_initScreen(getLangStr(STRLNG_SHELL_SETTINGS),logo,&minX,&minY);
     

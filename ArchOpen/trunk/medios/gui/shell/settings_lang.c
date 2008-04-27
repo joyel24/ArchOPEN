@@ -272,7 +272,7 @@ void lang_setting(void)
     
     logo=icon_get("lang");
     if(!logo)
-        icon_load("lang.ico");
+        logo=icon_load("lang.ico");
     settings_initScreen(getLangStr(STRLNG_LANG_SETTINGS),logo,&minX,&minY);
         
     // menuList

@@ -38,11 +38,12 @@ void settings_initScreen(char * title,ICON logo,int * menu_x,int * menu_y)
        smallScreen=0;
     
     gfx_clearScreen(COLOR_TRSP);
-    gfx_drawBitmap(&logo->bmap_data,ICON_X,ICON_Y);
-    if(!smallScreen)
+    if(logo)
+        gfx_drawBitmap(&logo->bmap_data,ICON_X,ICON_Y);
+    if(!smallScreen && logo)
         gfx_drawLine(COLOR_RED,ICON_X+logo->bmap_data.width+3,5,ICON_X+logo->bmap_data.width+3,LCD_HEIGHT-5);
     
-    x=ICON_X + logo->bmap_data.width + 8;
+    x=logo!=NULL?ICON_X + logo->bmap_data.width + 8:2;
     y=0;
     
     title_label=label_create();    
@@ -58,7 +59,10 @@ void settings_initScreen(char * title,ICON logo,int * menu_x,int * menu_y)
     if(smallScreen)     
     {   
         x=2;
-        y=ICON_Y+MAX(logo->bmap_data.height,h)+1;
+        if(logo!=NULL)
+            y=ICON_Y+MAX(logo->bmap_data.height,h)+1;
+        else
+            y=ICON_Y;
     }
     else
     {        
