@@ -21,17 +21,34 @@
 #include <sys_def/colordef.h>
 #include <sys_def/font.h>
 
+#include <fs/cfg_file.h>
+
 /* color define */
 #define BG_COLOR            COLOR_WHITE
 #define TXT_B_COLOR         COLOR_RED
-#define TXT_NUM_COLOR       COLOR_BLUE
+
+#define TXT_ONE_COLOR		COLOR_BLUE
+#define TXT_TWO_COLOR		COLOR_GREEN
+#define TXT_THREE_COLOR		COLOR_RED
+#define TXT_FOUR_COLOR		COLOR_DARK_BLUE
+#define TXT_FIVE_COLOR		COLOR_BROWN
+#define TXT_SIX_COLOR		COLOR_LIGHT_GREEN
+#define TXT_SEVEN_COLOR		COLOR_ORANGE
+#define TXT_EIGHT_COLOR		COLOR_BLACK
+
 #define FIELD_BG_COLOR      COLOR_GREY
 #define FIELD_FOUND_COLOR   COLOR_LIGHT_GREY
 #define CROSS_COLOR         COLOR_RED
-#define CURSOR_COLOR        COLOR_RED
+#define CURSOR_COLOR        COLOR_BLUE
 #define UI_TXT_COLOR        COLOR_GREEN
 
 #include "minesweeper.h"
+
+/*Cfg Functions*/
+void WriteCfg(void);
+void ReadCfg(void);
+
+void MinesResult(void);
 
 /* percentage of mines on minefield used durring generation */
 int p=22;
@@ -112,8 +129,7 @@ void discover(int x, int y){
 
 
 
-void printNumberOfMines(void)
-{
+void printNumberOfMines(void){
      char tmp[20];
      int i=0;
      int j=0;
@@ -215,7 +231,6 @@ void settings_screen()
     trackWidth=trackbar_create();
 
     gfx_putS(UI_TXT_COLOR, BG_COLOR, 2,y, "Width");
-    //trackWidth->caption="Width";
     trackWidth->maximum=max_width;
     trackWidth->minimum=5;
     trackWidth->value=width;
@@ -279,6 +294,8 @@ void settings_screen()
     {
         width=trackHeight->value;
         height=trackHeight->value;
+		p=trackPercent->value;			
+		WriteCfg();						
         computeSizePos();
         init_field();
     }
@@ -286,6 +303,85 @@ void settings_screen()
     displayMineField();
     setCursor(0);
     
+}
+
+void WriteCfg(void)
+{	
+
+	CFG_DATA * cfg;
+		cfg=cfg_readFile("minesweeper.cfg");
+		if (!cfg) //if not exists
+			{
+			cfg=cfg_newFile();
+			}
+		cfg_writeInt(cfg,"MinesPercentage",p);
+		cfg_writeFile(cfg,"minesweeper.cfg");
+		
+		cfg_clear(cfg);
+
+}
+
+void ReadCfg(void)
+{	
+	int a;
+	
+	a=0;
+	CFG_DATA * cfg;
+	cfg=cfg_readFile("minesweeper.cfg");
+		if (!cfg) //if not exists
+			{
+			cfg=cfg_newFile();
+			a=1;
+			}	
+		cfg=cfg_readFile("minesweeper.cfg");
+		p=cfg_readInt(cfg,"MinesPercentage");
+		cfg_clear(cfg);
+	
+	if (a==1) {
+	p=22;
+	WriteCfg();
+	}
+	
+}
+
+
+void MinesResult(void)
+{
+    int i,j;
+    for(i=0;i<height;i++){
+        for(j=0;j<width;j++)
+		{
+		    if(MINE_FIELD(i,j).known)
+            {
+
+                if(MINE_FIELD(i,j).mine)
+                {
+					if (MINE_FIELD(i,j).flag)
+					{gfx_drawBitmap (&Flag_bitmap,FIELD_X+j*PIECE_DIM,FIELD_Y+i*PIECE_DIM);	}
+					else {	gfx_drawBitmap (&Mine_bitmap,FIELD_X+j*PIECE_DIM,FIELD_Y+i*PIECE_DIM);}
+                }
+                else
+                {
+                        gfx_drawBitmap (&num_bitmap[MINE_FIELD(i,j).neighbors],
+                                            FIELD_X+j*PIECE_DIM,FIELD_Y+i*PIECE_DIM);
+                }
+			}
+			else
+            {
+                if(MINE_FIELD(i,j).mine)
+                {
+					if (MINE_FIELD(i,j).flag)
+					{gfx_drawBitmap (&Flag_bitmap,FIELD_X+j*PIECE_DIM,FIELD_Y+i*PIECE_DIM);	}
+					else {	gfx_drawBitmap (&Mine_bitmap,FIELD_X+j*PIECE_DIM,FIELD_Y+i*PIECE_DIM);}
+                }
+                else
+                {
+					gfx_drawBitmap (&num_bitmap[MINE_FIELD(i,j).neighbors],
+                                            FIELD_X+j*PIECE_DIM,FIELD_Y+i*PIECE_DIM);
+                }
+            }
+		}
+	}
 }
 
 int winLoose_screen(char * msg)
@@ -370,15 +466,16 @@ void eventHandlerLoop(void)
         }
         else if(evt==ACTION_DISCOVER)
         {
-            /* do not discover on a flagged cell */
-            if(MINE_FIELD(y,x).flag) break;
+            /* do not discover on a flagged cell --> change to continue to do not escape if user not want... */
+            if(MINE_FIELD(y,x).flag) continue;
             /* we init the mines position on first discover
-            in order not to loose immediatly*/
+			in order not to loose immediatly*/
             if(tiles_left == width*height) minesweeper_putmines(p,x,y);
             /* show blank */
             discover(x,y);
             if(MINE_FIELD(y,x).mine)
             {
+				MinesResult();
                 stop=winLoose_screen("!! You loose !!");
             }
             else
@@ -417,7 +514,7 @@ void eventHandlerLoop(void)
             settings_screen();
         }
 	}
-}
+}	
 
 void displayMineField()
 {
@@ -448,12 +545,13 @@ void displayMineField()
                 gfx_fillRect(FIELD_BG_COLOR,
                                 FIELD_X+j*PIECE_DIM+1,FIELD_Y+i*PIECE_DIM+1,
                                 PIECE_DIM-2,PIECE_DIM-2);
-                gfx_drawLine(CROSS_COLOR,
-                                FIELD_X+j*PIECE_DIM+2,FIELD_Y+i*PIECE_DIM+2,
-                                FIELD_X+j*PIECE_DIM+PIECE_DIM-2,FIELD_Y+i*PIECE_DIM+PIECE_DIM-2);
-                gfx_drawLine(CROSS_COLOR,
-                                FIELD_X+j*PIECE_DIM+2,FIELD_Y+i*PIECE_DIM+PIECE_DIM-2,
-                                FIELD_X+j*PIECE_DIM+PIECE_DIM-2,FIELD_Y+i*PIECE_DIM+2);
+
+				gfx_drawBitmap (&Flag_bitmap,FIELD_X+j*PIECE_DIM,FIELD_Y+i*PIECE_DIM);
+					
+				gfx_drawRect(CURSOR_COLOR, 
+								FIELD_X+x*PIECE_DIM, FIELD_Y+y*PIECE_DIM,
+								PIECE_DIM, PIECE_DIM);
+								
             }
             else
             {
@@ -516,6 +614,8 @@ void app_main(int argc,char * * argv)
     gfx_fontSet(STD6X9);
 /* getting arch config */
     arch_init();
+/*Get Cfg*/
+	ReadCfg();
 /* real init */
 	minefield = (tile*)malloc(sizeof(tile)*height*width);
     init_field();
