@@ -102,6 +102,7 @@ int color_used[256];
 
 int main(int argc, char* argv[]) {
     int w,h,i,j,c,s;
+    int line_w;
     int stop=0;
     unsigned char rgb[3];
     int match_col;
@@ -160,17 +161,23 @@ int main(int argc, char* argv[]) {
     w=bmpinfo.width;
     h=bmpinfo.height;
 
+    line_w = ((w*3+3)/4)*4;
+    
+    printf("Line width: %d (real=%d)\n",line_w,w);
+    
     fseek(infile,0,SEEK_END);
     s=ftell(infile);
     
-    printf("(s=%d, w=%d, h=%d => %d)\n", s,w,h,w*h*3+bmphdr.offsetbits);
+    printf("(s=%d, w=%d(%d), h=%d => %d)\n", s,w,line_w,h,line_w*h+bmphdr.offsetbits);
     
-    if(s<(w*h*3+bmphdr.offsetbits))
+    if(s<(line_w*h+bmphdr.offsetbits))
     {
-        printf("'%s' size is wrong! (s=%d, w=%d, h=%d => %d)\n", argv[2],s,w,h,w*h*3+bmphdr.offsetbits);
+        printf("'%s' size is wrong! (s=%d, w=%d(%d), h=%d => %d)\n", argv[2],s,w,line_w,h,line_w*h+bmphdr.offsetbits);
         exit(1);
     }
 
+    
+    
     // convert
 
     if(binOut)
@@ -199,7 +206,7 @@ int main(int argc, char* argv[]) {
    }
 
     //seek to first line start
-    fseek(infile,-3*w,SEEK_END);
+    fseek(infile,-line_w,SEEK_END);
 
     for(i=0;i<h && !stop;i++)
     {
@@ -248,7 +255,7 @@ int main(int argc, char* argv[]) {
         }
 
         //seek to next line start
-        fseek(infile,-6*w,SEEK_CUR);
+        fseek(infile,-3*w-line_w,SEEK_CUR);
 
         if(!binOut)
         {
