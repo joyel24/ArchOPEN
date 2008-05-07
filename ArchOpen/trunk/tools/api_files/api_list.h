@@ -307,6 +307,9 @@ ICON   # icon_get                  # char * name                                
 int    # msgBox_show    # unsigned char* caption, unsigned char* msg, int type, int icon,int evt_hanlder  # GUI
 void   # msgBox_info    # unsigned char* msg                                                              # GUI
 
+#k_inc#gui/virtKbd.h
+void   # virtKbd        # int evt_hanlder, char * str          # GUI # Virtual Keyboard, str will be changed by the string inputed, evt_handler should be an active event pipe get from evt_getHandler
+
 #api_inc#sys_def/cfg_file.h
 #k_inc#fs/cfg_file.h
 
