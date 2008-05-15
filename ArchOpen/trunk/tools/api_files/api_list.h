@@ -170,6 +170,11 @@ void   # gfx_planeSetPos           # int vplane,int x,int y                     
 void   # gfx_planeGetPos           # int vplane,int * x,int * y                                # GFX
 void*  # gfx_planeGetBufferOffset  # int vplane                                                # GFX
 void   # gfx_planeSetBufferOffset  # int vplane, void * offset                                 # GFX
+void   # gfx_setRectCursorColor    # int color,int ram_palette                                 # GFX
+void   # gfx_setRectCursorBorder   # int horiz,int verti                                       # GFX
+void   # gfx_enableRectCursor      # int state                                                 # GFX
+void   # gfx_setRectCursorPos      # int x,int y                                               # GFX
+void   # gfx_setRectCursorSize     # int width,int height                                      # GFX
 void   # gfx_clearScreen           # unsigned int color                                        # Drawing
 void   # gfx_drawPixel             # unsigned int color,int x, int y                           # Drawing
 unsigned int # gfx_readPixel       # int x, int y                                              # Drawing

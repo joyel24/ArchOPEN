@@ -1,85 +1,130 @@
 #include 	<api.h>
 #include 	<math.h>
 
+//#define PAD_ON_MAIN_BMAP
+
 #define BRIQUE(X,Y) (briques[(Y)*nbbriquesx+(X)])
 
-//Si le jeu doit etre relanc�
+//if game has to be restarted
 int restart=1;
-//Pour stocker la largeur et hauteur de l'�cran
+//screen size (depends on arch)
 int screenw,screenh;
-//Pour r�cup�rer les �v�nements
+//event handler pipe ID
 int evt_handler;
-//Existence des briques
+//brick existence
 static int *briques;
-//dimensions des briques
+//size of bricks
 static unsigned int widthbrique, heightbrique;
-//Nb de briques en x et en y
+//number of bricks in x and y
 static unsigned int nbbriquesx=10,nbbriquesy=3;
-//Propri�t�s balle
-int rayonballe=7;
+//ball properties
+int rayonballe=4;
 int xballe,yballe;
 int angle;
 
-//Propri�t�s du pad
+//Pad properties
 int padw,padh,padx,pady;
-//Pas de d�placement du pad
+//pad move offset
 int pas;
 
 //tests
 int tw,th;
 
+int lcd_x,lcd_y;
+
 int touche(int xbrique,int ybrique,int xba,int yba){
 	xbrique*=widthbrique;
 	ybrique*=heightbrique;
-	//Arrive par le bas
-	if((yba-rayonballe)<heightbrique+ybrique&&(yba-rayonballe)>ybrique+heightbrique/2&&xba<widthbrique+xbrique-1&&xba>=xbrique)
+	//from back
+	if((yba-rayonballe) < heightbrique+ybrique
+           && (yba-rayonballe) > ybrique+heightbrique/2
+           && xba < widthbrique+xbrique-1
+           && xba >= xbrique)
 		return -2;
-	//Arrive par le haut	
-	if((yba+rayonballe)<ybrique+heightbrique/2&&(yba+rayonballe)>ybrique&&xba<widthbrique+xbrique-1&&xba>=xbrique)
+	// from top	
+	if((yba+rayonballe) < ybrique+heightbrique/2
+           && (yba+rayonballe) > ybrique
+           && xba < widthbrique+xbrique-1
+           && xba >= xbrique)
 		return 2;
-	//Arrive par la droite
-	if((xba-rayonballe)<xbrique+widthbrique&&(xba-rayonballe)>xbrique+widthbrique/2&&yba<ybrique+heightbrique-1&&yba>=ybrique)
+	// from right
+	if((xba-rayonballe) < xbrique+widthbrique
+           && (xba-rayonballe) > xbrique+widthbrique/2
+           && yba < ybrique+heightbrique-1
+           && yba >= ybrique)
 		return -1;
-	//Arrive par la gauche
-	if((xba+rayonballe)<xbrique+widthbrique/2&&(xba+rayonballe)>xbrique&&yba<heightbrique+ybrique-1&&yba>=ybrique)
+	// from left
+	if((xba+rayonballe) < xbrique+widthbrique/2
+           && (xba+rayonballe) > xbrique
+           && yba < heightbrique+ybrique-1
+           && yba >= ybrique)
 		return 1;
 	return 0;
 }
 
-void dessinerballe(int x, int y, int dx, int dy){
-	int xx,zone;
-	zone=0;
-	
-	//effacer la balle pr�c�dente
-	for(xx=(x)-rayonballe-4;xx<=(x)+rayonballe+4;xx++){
-			
-			if(xx<=x){
-				zone=sqrt(rayonballe*rayonballe-(x-xx)*(x-xx));
-			}else{
-				zone=sqrt(rayonballe*rayonballe-(xx-x)*(xx-x));
-			}
-			gfx_drawLine(COLOR_BLACK,xx,y-zone-4,xx,y+zone+4);
-			
-			
-	}
-	//dessiner la nouvelle balle
-	for(xx=(x+dx)-rayonballe;xx<=(x+dx)+rayonballe;xx++){
-			if(xx<=x){
-				zone=sqrt(rayonballe*rayonballe-(x-xx)*(x-xx));
-			}else{
-				zone=sqrt(rayonballe*rayonballe-(xx-x)*(xx-x));
-			}
-			//if(xx==x+dx){
-			//	gfx_drawLine(COLOR_WHITE,xx,y+dy-zone+1,xx,y+dy+zone-1);
-			//}else{
-				gfx_drawLine(COLOR_WHITE,xx,y+dy-zone,xx,y+dy+zone);
-			//}
-	}
+void initBall(int x,int y)
+{       
+    int xx,zone;
+    x-=rayonballe;
+    y-=rayonballe;
+    
+    gfx_planeSetSize(BMAP2,rayonballe*4,rayonballe*4,8,GFX_SMODE_STD);
+    gfx_planeSetPos(BMAP2,lcd_x+2*x,lcd_y+y);
+    gfx_planeShow(BMAP2);
+    gfx_setPlane(BMAP2);
+    gfx_clearScreen(COLOR_BLACK);
+    for(xx=0;xx<=2*rayonballe;xx++)
+    {
+        if(xx<=rayonballe) zone=sqrt(rayonballe*rayonballe-(rayonballe-xx)*(rayonballe-xx));
+        else zone=sqrt(rayonballe*rayonballe-(xx-rayonballe)*(xx-rayonballe));
+        
+        gfx_drawLine(COLOR_WHITE,xx,rayonballe-zone,xx,rayonballe+zone);
+    }
+    
+    gfx_setPlane(BMAP1);
 }
 
+void dessinerballe(int x, int y, int dx, int dy)
+{
+	/* NOTE: used if ball is a rect cursor
+    gfx_setRectCursorPos(lcd_x+(x-rayonballe+dx)*2,lcd_y+y-rayonballe+dy);
+    */
+    /* NOTE: used when drawing on main BMAP
+    int xx,zone;
+    zone=0;
+    
+    //effacer la balle pr�c�dente
+    for(xx=(x)-rayonballe-4;xx<=(x)+rayonballe+4;xx++){
+            
+            if(xx<=x){
+                zone=sqrt(rayonballe*rayonballe-(x-xx)*(x-xx));
+            }else{
+                zone=sqrt(rayonballe*rayonballe-(xx-x)*(xx-x));
+            }
+            gfx_drawLine(COLOR_BLACK,xx,y-zone-4,xx,y+zone+4);
+            
+            
+    }
+    //dessiner la nouvelle balle
+    for(xx=(x+dx)-rayonballe;xx<=(x+dx)+rayonballe;xx++){
+            if(xx<=x){
+                zone=sqrt(rayonballe*rayonballe-(x-xx)*(x-xx));
+            }else{
+                zone=sqrt(rayonballe*rayonballe-(xx-x)*(xx-x));
+            }
+            //if(xx==x+dx){
+            //  gfx_drawLine(COLOR_WHITE,xx,y+dy-zone+1,xx,y+dy+zone-1);
+            //}else{
+                gfx_drawLine(COLOR_WHITE,xx,y+dy-zone,xx,y+dy+zone);
+            //}
+    }
+    */
+    
+    gfx_planeSetPos(BMAP2,lcd_x+2*(x+dx),lcd_y+y+dy);
+}
 
 void dessinerbriques(){
-	//Redessine les "briques"
+	//Redraw bricks
 	int i=0,j=0;
 	for(i=0;i<nbbriquesx ;i++){
 		for(j=0;j<nbbriquesy;j++){
@@ -109,7 +154,6 @@ void effacerbrique(int x,int y,int w,int h){
 
 int game_init(void)
 {
-	
 	briques=(int*)malloc(nbbriquesx*nbbriquesy*sizeof(int));
 	//we init the graphics
   	gfx_openGraphics();
@@ -119,15 +163,15 @@ int game_init(void)
 	
 	
 	
-	//R�cup�ration des dimensions de l'�cran
+	//Get Screen dimension
 	getResolution(&screenw,&screenh);
-	//Dimensionnement des briques
+	//Compute size of bricks
 	widthbrique=screenw/10;
 	heightbrique = screenw/10;
 	
+	gfx_planeGetPos(BMAP1,&lcd_x,&lcd_y);
 	
-	
-	//Mise en place des "briques"
+	//putting bricks at the right place
 	int i=0,j=0;
 	for(i=0;i<nbbriquesx ;i++){
 		for(j=0;j<nbbriquesy;j++){
@@ -137,22 +181,38 @@ int game_init(void)
 		}
 	}
 	
-	//Position et dimensions du pad
+	//Position and size of pad
 	padw=screenw/5;
 	padh=screenw/15;
 	padx=screenw/2-padw/2;
 	pady=screenh-padh;
 	pas = 3;
-	//Position balle
+	//Position of balle
 	xballe=screenw/2;
 	yballe=screenh-padh*2-rayonballe;
-	//Angle valeur absolue (4 valeurs possibles 0,1,2,3)
+	//Angle absolute value (4 possible value 0,1,2,3)
 	angle=0;
-	//Mise en place du pad
+	// drawing pad
+#ifdef PAD_ON_MAIN_BMAP
 	gfx_fillRect(COLOR32_GREENYELLOW,padx,pady,padw,padh);
+#else
+    /* NOTE: using rect cursor for pad*/
+    gfx_setRectCursorColor(COLOR_YELLOW,1); /* 1 => use RAM palette */
+    gfx_setRectCursorBorder(0,0x7); /* horiz,vert */
+    gfx_setRectCursorSize(2*padw,padh-14);
+    gfx_enableRectCursor(1);
+    gfx_setRectCursorPos(lcd_x+2*padx,lcd_y+pady);
+#endif
 	
-
-	dessinerballe(xballe,yballe,0,0);
+    initBall(xballe,yballe);
+//  dessinerballe(xballe,yballe,0,0);
+    
+    
+    /* NOTE: drawing ball on rect cursor
+    drawBall();
+    dessinerballe(xballe,yballe,0,0);
+    */
+    
 	int evt;
 	while(1)
 	{
@@ -317,16 +377,28 @@ void eventHandlerLoop(void)
 			switch(evt)
 			{
 				case BTN_LEFT:
+#ifdef PAD_ON_MAIN_BMAP
 					gfx_fillRect(COLOR_BLACK,padx,pady,padw, padh);
 					if(padx-pas>=0) padx-=pas;
 					gfx_fillRect(COLOR32_GREENYELLOW,padx,pady,padw,padh);
+#else
+                    /* NOTE: using rect cursor for pad */
+                    if(padx-pas>=0) padx-=pas;
+                    gfx_setRectCursorPos(lcd_x+2*padx,lcd_y+pady);
+#endif
 					break;
 				case BTN_DOWN:
 					break;
 				case BTN_RIGHT:
-					gfx_fillRect(COLOR_BLACK,padx,pady,padw, padh);
+#ifdef PAD_ON_MAIN_BMAP
+                    gfx_fillRect(COLOR_BLACK,padx,pady,padw, padh);
 					if(padx+pas<=screenw-padw) padx+=pas;
-					gfx_fillRect(COLOR32_GREENYELLOW,padx,pady,padw,padh);
+                    gfx_fillRect(COLOR32_GREENYELLOW,padx,pady,padw,padh);
+#else
+                    /* NOTE: using rect cursor for pad */
+                    if(padx+pas<=screenw-padw) padx+=pas;
+                    gfx_setRectCursorPos(lcd_x+2*padx,lcd_y+pady);
+#endif
 					break;
 				case BTN_UP:
 					break;
@@ -339,8 +411,11 @@ void eventHandlerLoop(void)
 					break;
 			}
 		}else{
-			gfx_fillRect(COLOR32_GREENYELLOW,padx,pady,padw,padh);
-			yield();
+#ifdef PAD_ON_MAIN_BMAP
+            gfx_fillRect(COLOR32_GREENYELLOW,padx,pady,padw,padh);
+#endif
+                /*NOTE: rm by oxy ==> why should we yield ? 
+                yield(); */
 			}
 	
 	mdelay(40);
@@ -362,5 +437,6 @@ void app_main(int argc, char ** argv){
 	//we free the handler on button
 	evt_freeHandler(evt_handler);
 	if(briques) free(briques);
+    //gfx_enableRectCursor(0);
 }
 

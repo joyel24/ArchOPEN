@@ -19,6 +19,9 @@
 
 int  osd_RGB2Packed(int r, int g, int b);
 void osd_setCursor2Bitmap (int index, int data);
+void osd_setRectCursorBorder(int horiz,int verti);
+void osd_setRectCursorBorder(int width,int height);
+void osd_enableRectCursor(int state);
 void osd_setMainConfig (int config);
 void osd_setMainShift (int horizontal,int vertical);
 void osd_setEntirePalette (int palette[][3],int size,bool isRgb);

@@ -80,6 +80,21 @@ void osd_setCursor2Bitmap (int index, int data)
     /* no palette in DSC21*/
 }
 
+void osd_setRectCursorColor(int color,int ram_palette)
+{
+
+}
+
+void osd_setRectCursorBorder(int horiz,int verti)
+{
+
+}
+
+void osd_enableRectCursor(int state)
+{
+
+}
+
 void osd_setBorderColor (int color)
 {
 	//outw((inw(OSD_CONF) & 0xFF00) | color,OSD_CONF);

@@ -45,6 +45,28 @@ void osd_setCursor2Bitmap (int index, int data)
     outw(val | index | 0x80,OSD_CURSOR2_ADD_LATCH);       /* Set the data... */
 }
 
+void osd_setRectCursorColor(int color,int ram_palette)
+{
+    outw((inw(OSD_CURSOR0_CONF)&0xFF)|((color&0xff)<<8),OSD_CURSOR0_CONF);
+    if(ram_palette)
+        outw(inw(OSD_CURSOR0_CONF)|0x80,OSD_CURSOR0_CONF);
+    else
+        outw(inw(OSD_CURSOR0_CONF)&(0xFF7F),OSD_CURSOR0_CONF);
+}
+
+void osd_setRectCursorBorder(int horiz,int verti)
+{
+    outw((inw(OSD_CURSOR0_CONF)&0xFF81)|((verti&0x7)<<1)|((horiz&0x7)<<4),OSD_CURSOR0_CONF);
+}
+
+void osd_enableRectCursor(int state)
+{
+    if(state)
+        outw(inw(OSD_CURSOR0_CONF)|0x1,OSD_CURSOR0_CONF);
+    else
+        outw((inw(OSD_CURSOR0_CONF)&0xFFFE),OSD_CURSOR0_CONF);
+}
+
 void osd_setBorderColor (int color)
 {
 	outw((inw(OSD_CONF) & 0xFF00) | color,OSD_CONF);

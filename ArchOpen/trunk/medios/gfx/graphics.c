@@ -439,7 +439,8 @@ void gfx_planeSetSize(int vplane,int width,int height,int bitsPerPixel,int mode)
 #else
         osd_setComponentSize(buffers_comp[vplane], 2*buffers[vplane]->real_width, height);
 #endif
-        osd_setComponentSourceWidth(buffers_comp[vplane], ((buffers[vplane]->width*bitsPerPixel)/32)/8);
+        if(vplane!=CUR1 && vplane!=CUR2)
+            osd_setComponentSourceWidth(buffers_comp[vplane], ((buffers[vplane]->width*bitsPerPixel)/32)/8);
     }
 }
 
@@ -478,6 +479,31 @@ void gfx_planeSetBufferOffset(int vplane, void * offset)
 {
     buffers[vplane]->offset=(unsigned int)offset;
     osd_setComponentOffset(buffers_comp[vplane],buffers[vplane]->offset);
+}
+
+void gfx_setRectCursorColor(int color,int ram_palette)
+{
+    osd_setRectCursorColor(color,ram_palette);
+}
+
+void gfx_setRectCursorBorder(int horiz,int verti)
+{
+    osd_setRectCursorBorder(horiz,verti);
+}
+
+void gfx_enableRectCursor(int state)
+{
+    osd_enableRectCursor(state);
+}
+
+void gfx_setRectCursorPos(int x,int y)
+{
+    osd_setComponentPosition(OSD_CURSOR1,x,y);
+}
+
+void gfx_setRectCursorSize(int width,int height)
+{
+    osd_setComponentSize(OSD_CURSOR1,width,height);
 }
 
 void gfx_clearScreen(unsigned int color)
