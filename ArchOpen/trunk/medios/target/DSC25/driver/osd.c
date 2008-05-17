@@ -46,7 +46,7 @@ void osd_setCursor2Bitmap (int index, int data)
 }
 
 
-oid osd_setRectCursorColor(int color,int ram_palette)
+void osd_setRectCursorColor(int color,int ram_palette)
 {
     outw((inw(OSD_CURSOR0_CONF)&0xFF)|((color&0xff)<<8),OSD_CURSOR0_CONF);
     if(ram_palette)
