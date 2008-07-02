@@ -28,9 +28,12 @@ void widgetList_init(WIDGETLIST l);
 bool widgetList_handleEvent(WIDGETLIST l,int evt);
 void widgetList_paint(WIDGETLIST l);
 void widgetList_addWidget(WIDGETLIST l,WIDGET w);
+int  widgetList_delWidget(WIDGETLIST l,WIDGET w);
 void widgetList_clearWidgets(WIDGETLIST l);
 int widgetList_indexOf(WIDGETLIST l,WIDGET w);
+WIDGET widgetList_widgetAt(WIDGETLIST l,int numWidget);
 void widgetList_setFocusedWidget(WIDGETLIST l,WIDGET w);
 void widgetList_changeFocus(WIDGETLIST l,WL_DIRECTION dir);
+void widgetList_setFont(WIDGETLIST l,int  f);
 
 #endif

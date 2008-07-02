@@ -16,7 +16,6 @@
 
 #include <gui_user/widget.h>
 
-typedef enum {LA_LEFT, LA_CENTER, LA_RIGHT} LABEL_ALIGNMENT;
 typedef enum {LA_CUT_WORD, LA_SMART_CUT} LABEL_AUTOCUT;
 
 //*****************************************************************************
@@ -25,7 +24,7 @@ typedef enum {LA_CUT_WORD, LA_SMART_CUT} LABEL_AUTOCUT;
 
 struct label_line {
     char * str;
-    int width;   
+    int width;
 };
 
 // members of the LABEL object
@@ -38,15 +37,24 @@ struct label_line {
     char * internal_str;               \
     int nbLines;                       \
     int interline;                     \
+    int frameWidth;                    \
+    int frameHeight;                   \
     LABEL_AUTOCUT cutWord;             \
     LABEL_SETTEXT setText;             \
     LABEL_GETMAXSIZE getMaxSize;       \
     LABEL_GETNBLINES getNbLines;       \
-    LABEL_ALIGNMENT alignment;
+    LABEL_FRAMESIZESETTER setFrameSize; \
+    LABEL_FRAMESIZEGETTER getFrameSize; \
+    LABEL_PARAMSETTER setParam;        \
+    LABEL_PARAMGETTER getParam;
 
 typedef void(*LABEL_SETTEXT)(void *,char *);
 typedef void(*LABEL_GETMAXSIZE)(void *,int *,int *);
 typedef int(*LABEL_GETNBLINES)(void*);
+typedef void(*LABEL_FRAMESIZESETTER)(void *,int,int);
+typedef void(*LABEL_FRAMESIZEGETTER)(void *,int *,int *);
+typedef void(*LABEL_PARAMSETTER)(void*,int,int,int);
+typedef void(*LABEL_PARAMGETTER)(void*,int*,int*,int*);
 
 typedef struct {
     LABEL_MEMBERS

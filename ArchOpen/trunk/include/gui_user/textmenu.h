@@ -16,8 +16,6 @@
 
 #include <gui_user/menu.h>
 
-typedef enum {TMA_LEFT, TMA_CENTER, TMA_RIGHT} TM_ALIGNMENT;
-
 //*****************************************************************************
 // TEXTMENU_ITEM
 //*****************************************************************************
@@ -27,7 +25,7 @@ typedef enum {TMA_LEFT, TMA_CENTER, TMA_RIGHT} TM_ALIGNMENT;
     /* we inherit from MENUITEM */     \
     MENU_ITEM_MEMBERS                  \
                                        \
-    TM_ALIGNMENT alignment;
+    int txtX,txtY;
 
 typedef struct {
     TEXTMENU_ITEM_MEMBERS
@@ -42,8 +40,7 @@ typedef struct {
     /* we inherit from MENU */         \
     MENU_MEMBERS                       \
                                        \
-    TEXTMENU_FOCUSSETTER setFocus;     \
-    int itemHeight;
+    TEXTMENU_FOCUSSETTER setFocus;
 
 typedef void(*TEXTMENU_FOCUSSETTER)(void *,void *);
 

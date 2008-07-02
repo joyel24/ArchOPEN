@@ -465,7 +465,7 @@ void menu_init(){
 
     menu=widgetMenu_create();
     menu->setRect(menu,0,0,screen_width,screen_height);
-    menu->ownItems=true;
+    menu->ownWidgets=true;
     menu->onClick=(MENU_CLICKEVENT)menu_onClick;
 
     mt=widgetMenuTrackbar_create();
@@ -475,6 +475,8 @@ void menu_init(){
     mt->trackbar->value=30;
     menu->addItem(menu,mt);
 
+    menu->setFocusedWidget(menu,mt);
+    
     mi=widgetMenuItem_create();
     mi->caption="";
     mi->canFocus=false;

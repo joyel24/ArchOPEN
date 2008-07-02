@@ -74,7 +74,6 @@ static void shell_loop(){
         // event handlers
         shellMenu_handleEvent(event);
         statusLine_handleEvent(event);
-
     };
 }
 

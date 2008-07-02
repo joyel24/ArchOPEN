@@ -67,10 +67,13 @@ MED_RET_T rtc_getTime(struct med_tm * valTime)
     valTime->tm_sec=pvToUser(pv_dt.tm_sec);
     valTime->tm_min=pvToUser(pv_dt.tm_min);
     valTime->tm_hour=pvToUser(pv_dt.tm_hour);
-    valTime->tm_wday=pvToUser(pv_dt.tm_wday);
+    
     valTime->tm_mday=pvToUser(pv_dt.tm_mday);
     valTime->tm_mon=pvToUser(pv_dt.tm_mon);
     valTime->tm_year=2000+pvToUser(pv_dt.tm_year);
+    
+    valTime->tm_wday=pvToUser(pv_dt.tm_wday);
+    //valTime->tm_wday=time_getDayOfWeek(valTime->tm_mday,valTime->tm_mon,valTime->tm_year);
     return MED_OK;
 }
 

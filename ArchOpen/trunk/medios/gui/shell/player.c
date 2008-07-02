@@ -262,6 +262,7 @@ void player_eventLoop(){
         }
 
         player_widgetList->handleEvent(player_widgetList,event);
+        
         statusLine_handleEvent(event);
 
         switch(event){
@@ -332,14 +333,14 @@ static void player_buildGui(){
     player_remainingLabel=label_create();
     player_remainingLabel->setRect(player_remainingLabel,LCD_WIDTH/3,LCD_HEIGHT-4*fontH,LCD_WIDTH/3,fontH);
     player_remainingLabel->caption=player_remainingText;
-    player_remainingLabel->alignment=LA_CENTER;
+    player_remainingLabel->alignment=WA_CENTER;
     player_remainingLabel->font=player_font;
     player_widgetList->addWidget(player_widgetList,player_remainingLabel);
 
     player_lengthLabel=label_create();
     player_lengthLabel->setRect(player_lengthLabel,2*LCD_WIDTH/3,LCD_HEIGHT-4*fontH,LCD_WIDTH/3,fontH);
     player_lengthLabel->caption=player_lengthText;
-    player_lengthLabel->alignment=LA_RIGHT;
+    player_lengthLabel->alignment=WA_RIGHT;
     player_lengthLabel->font=player_font;
     player_widgetList->addWidget(player_widgetList,player_lengthLabel);
 

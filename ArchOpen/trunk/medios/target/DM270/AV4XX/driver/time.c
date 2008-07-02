@@ -30,6 +30,7 @@ MED_RET_T time_archGet(struct med_tm * val_time)
         return -ret_val;
     val_time->tm_year+=4;
     time_rtc2time_Offset(val_time,offset);
+    val_time->tm_wday=time_getDayOfWeek(val_time->tm_mday,val_time->tm_mon,val_time->tm_year);
     return MED_OK;
 }
 

@@ -18,12 +18,6 @@ void statusLine_init(void);
 void statusLine_handleEvent(int evt);
 void drawStatusLine(void);
 
-#define FORMAT_MMDDYYYY    1
-#define FORMAT_DDMMYYYY    0
-
-#define FORMAT_12          1
-#define FORMAT_24          0
-
 extern int time_format;
 extern int date_format;
 

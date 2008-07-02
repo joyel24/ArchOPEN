@@ -52,6 +52,7 @@ void buildhelpMenu(void) {
 	helpList=widgetList_create();
 	helpList->ownWidgets=true;
 	helpList->backColor=COLOR_GREY;
+    helpList->fillColor=COLOR_GREY;
 	helpList->setRect(helpList,0,0,screen_width,screen_height);
 	
 	btn=button_create();
@@ -63,14 +64,14 @@ void buildhelpMenu(void) {
 	lab->caption="Help";
 	lab->font=STD8X13;
 	lab->setRect(lab,2,2,(screen_width-4),20);
-	lab->alignment=LA_CENTER;
+	lab->alignment=WA_CENTER;
 	lab->backColor=COLOR_GREY;
 	helpList->addWidget(helpList,lab);
 	
 	lab=label_create();
 	lab->setRect(lab,4,50,(screen_width-4),15);
 	lab->caption="aoTodo";
-	lab->alignment=LA_LEFT;
+	lab->alignment=WA_LEFT;
 	lab->backColor=COLOR_GREY;
 	helpList->addWidget(helpList,lab);
 	
@@ -78,14 +79,14 @@ void buildhelpMenu(void) {
 	lab=label_create();
 	lab->setRect(lab,4,60,(screen_width-4),15);
 	lab->caption="Version 2.0";
-	lab->alignment=LA_LEFT;
+	lab->alignment=WA_LEFT;
 	lab->backColor=COLOR_GREY;
 	helpList->addWidget(helpList,lab);
 	
 	lab=label_create();
 	lab->setRect(lab,4,85,(screen_width-4),15);
 	lab->caption="This application handle your tasks and notes!";
-	lab->alignment=LA_LEFT;
+	lab->alignment=WA_LEFT;
 	lab->backColor=COLOR_GREY;
 	helpList->addWidget(helpList,lab);
 	
@@ -93,14 +94,14 @@ void buildhelpMenu(void) {
 	lab=label_create();
 	lab->setRect(lab,4,110,(screen_width-4),10);
 	lab->caption="Use on own risks!";
-	lab->alignment=LA_LEFT;
+	lab->alignment=WA_LEFT;
 	lab->backColor=COLOR_GREY;
 	helpList->addWidget(helpList,lab);
 
 	lab=label_create();
 	lab->setRect(lab,4,120,(screen_width-4),20);
 	lab->caption="by Pr112";
-	lab->alignment=LA_LEFT;
+	lab->alignment=WA_LEFT;
 	lab->backColor=COLOR_GREY;
 	helpList->addWidget(helpList,lab);	
 	
@@ -112,8 +113,9 @@ int i;
 TEXTMENU_ITEM mi;
 
 	textMenu=textMenu_create();
-	textMenu->ownItems=true;
+	textMenu->ownWidgets=true;
 	textMenu->backColor=COLOR_GREY;
+    textMenu->fillColor=COLOR_GREY;
     textMenu->setRect(textMenu,5,20,(screen_width-10),(screen_height-2*25));
 	
 	/**Loading Screen**/
@@ -130,7 +132,6 @@ TEXTMENU_ITEM mi;
 		mi->margin=2;
 		mi->backColor=COLOR_GREY;
 		mi->focusColor=COLOR_LIGHT_GREY;
-		mi->focusPosition=i;
 		//provisorisch
 		mi->canFocus=true;
 		
@@ -157,11 +158,12 @@ void buildeditMenu(void) {
 	editList=widgetList_create();
 	editList->ownWidgets=true;
 	editList->backColor=COLOR_GREY;
+    editList->fillColor=COLOR_GREY;
 	editList->setRect(editList,0,0,screen_width,(screen_height-30));
 	
 	lab=label_create();
 	lab->setRect(lab,2,2,screen_width,screen_height);
-	lab->alignment=LA_CENTER;
+	lab->alignment=WA_CENTER;
 	lab->font=STD8X13;
 	lab->caption="Add Item...";
 	lab->backColor=COLOR_GREY;
@@ -171,7 +173,6 @@ void buildeditMenu(void) {
 	btn->setRect(btn,5,(screen_height-25),((screen_width-20)/2),20);
 	btn->caption="OK (F1)";
 	btn->clickOnRightLeft=false;
-	btn->focusPosition=1;
 	btn->focusColor=COLOR_BLUE;
 	editList->addWidget(editList,btn);
 	
@@ -179,46 +180,41 @@ void buildeditMenu(void) {
 	btn1->setRect(btn1,(5*2+((screen_width-20)/2)),(screen_height-25),((screen_width-20)/2),20);
 	btn1->caption="Back (F3)";
 	btn1->clickOnRightLeft=false;
-	btn1->focusPosition=2;
 	btn1->focusColor=COLOR_BLUE;
 	editList->addWidget(editList,btn1);
 	
 	
 	/**Widgetmenu**/
     editMenu=widgetMenu_create();
-    editMenu->ownItems=true;
 	editMenu->backColor=COLOR_WHITE;
+    editMenu->ownWidgets=true;
     editMenu->setRect(editMenu,5,20,(screen_width-10),(screen_height-20-30));
 	editMenu->onClick=(MENU_CLICKEVENT) editMenu_onClick;
 	
 	mi=widgetMenuItem_create();
     mi->caption="Topic:";
     mi->canFocus=false;
-    mi->widgetWidth=0;
     editMenu->addItem(editMenu,mi);
 
 	mi=widgetMenuItem_create();
     mi->caption="...";
     mi->canFocus=true;
-    mi->widgetWidth=0;
     editMenu->addItem(editMenu,mi);
 	
 	//dummy
 	mi=widgetMenuItem_create();
 	mi->caption=" ";
-	mi->canFocus=false;
+    mi->canFocus=false;
 	editMenu->addItem(editMenu,mi);
 	
 	mi=widgetMenuItem_create();
     mi->caption="Description:";
     mi->canFocus=false;
-    mi->widgetWidth=0;
     editMenu->addItem(editMenu,mi);
 	
 	mi=widgetMenuItem_create();
     mi->caption="...";
     mi->canFocus=true;
-    mi->widgetWidth=0;
     editMenu->addItem(editMenu,mi);	
 
 	//dummy
@@ -230,35 +226,28 @@ void buildeditMenu(void) {
 	mi=widgetMenuItem_create();
     mi->caption="Date:";
     mi->canFocus=false;
-    mi->widgetWidth=0;
     editMenu->addItem(editMenu,mi);
 	
 	tr=widgetMenuTrackbar_create();
 	tr->caption="Day";
-	tr->trackbar->minimum=1;
-	tr->trackbar->maximum=31;
-	tr->trackbar->numTicks=0;
 	tr->trackbar->value=1;
 	tr->trackbar->onChange=getDay;
 	editMenu->addItem(editMenu,tr);
+    tr->trackbar->setParam(tr->trackbar,1,31,0);
 
 	tr=widgetMenuTrackbar_create();
 	tr->caption="Month";
-	tr->trackbar->minimum=1;
-	tr->trackbar->maximum=12;
-	tr->trackbar->numTicks=0;
 	tr->trackbar->value=1;
 	tr->trackbar->onChange=getDay;
 	editMenu->addItem(editMenu,tr);
+    tr->trackbar->setParam(tr->trackbar,1,12,0);
 	
 	tr=widgetMenuTrackbar_create();
 	tr->caption="Year 20**";
-	tr->trackbar->minimum=0;
-	tr->trackbar->maximum=99;
-	tr->trackbar->numTicks=0;
 	tr->trackbar->value=8;
 	tr->trackbar->onChange=getDay;
 	editMenu->addItem(editMenu,tr);
+    tr->trackbar->setParam(tr->trackbar,0,99,0);
 
 	//dummy
 	mi=widgetMenuItem_create();
@@ -270,7 +259,6 @@ void buildeditMenu(void) {
 	mi=widgetMenuItem_create();
     mi->caption="Importance:";
     mi->canFocus=false;
-    mi->widgetWidth=0;
     editMenu->addItem(editMenu,mi);
 	
 	ch=widgetMenuChooser_create();
@@ -295,10 +283,11 @@ void buildmainMenu(void) {
 	mainMenu->setRect(mainMenu,0,0,screen_width,screen_height);
     mainMenu->ownWidgets=true;
 	mainMenu->backColor=COLOR_GREY;
+    mainMenu->fillColor=COLOR_GREY;
 	
 	l=label_create();
     l->font=STD8X13;
-    l->alignment=LA_CENTER;
+    l->alignment=WA_CENTER;
     l->foreColor=COLOR_BLACK;
 	l->caption="aoTODO";
 	l->backColor=COLOR_GREY;
@@ -309,7 +298,6 @@ void buildmainMenu(void) {
 	b->setRect(b,5,(screen_height-25),((screen_width-20)/3),20);
 	b->caption="Add (F1)";
 	b->clickOnRightLeft=false;
-	b->focusPosition=1;
 	b->onClick=(BUTTON_CLICKEVENT) handletextMenu;
 	b->focusColor=COLOR_BLUE;
 	mainMenu->addWidget(mainMenu,b);
@@ -319,7 +307,6 @@ void buildmainMenu(void) {
 	b1->caption="  Delete (F2)";
 	b1->clickOnRightLeft=false;
 	b1->onClick=(BUTTON_CLICKEVENT) handleeditMenu;
-	b1->focusPosition=2;
 	b1->focusColor=COLOR_BLUE;
 	mainMenu->addWidget(mainMenu,b1);
 	
@@ -327,7 +314,6 @@ void buildmainMenu(void) {
 	b2->setRect(b2,5*3+((screen_width-20)/3)*2,(screen_height-25),((screen_width-20)/3),20);
 	b2->caption="Help (F3)";	//Options? later?
 	b2->clickOnRightLeft=false;
-	b2->focusPosition=3;
 	b2->focusColor=COLOR_BLUE;
 	mainMenu->addWidget(mainMenu,b2);
 	

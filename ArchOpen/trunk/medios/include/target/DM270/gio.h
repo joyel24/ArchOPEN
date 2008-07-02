@@ -30,6 +30,7 @@
 #define GIO_BITCLEAR0                     (GIO_BASE+0x12)  // GIO 0-15
 #define GIO_BITCLEAR1                     (GIO_BASE+0x14)  // GIO 16-31
 #define GIO_BITCLEAR2                     (GIO_BASE+0x16)
-#define GIO_ENABLE_IRQ                    (GIO_BASE+0x24)  // GIO 0-7
+#define GIO_ENABLE_IRQ                    (GIO_BASE+0x18)  // GIO 0-7
+#define GIO_EDGE_IRQ                      (GIO_BASE+0x1a)  // GIO 0-7
 
 #endif

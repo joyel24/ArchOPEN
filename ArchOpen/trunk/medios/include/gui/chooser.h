@@ -24,5 +24,12 @@ void chooser_init(CHOOSER c);
 bool chooser_handleEvent(CHOOSER c,int evt);
 void chooser_paint(CHOOSER c);
 void chooser_autoSize(CHOOSER c);
+void chooser_setItemList(CHOOSER c,char ** items,int itemCount);
+void chooser_setIndex(CHOOSER c,int index);
+int chooser_getIndex(CHOOSER c);
+void chooser_setHandleEvt(CHOOSER c, int evt_prev, int evt_nxt);
+void chooser_getHandleEvt(CHOOSER c, int * evt_prev, int * evt_nxt);
+void chooser_setParam(CHOOSER c, int orientation, int wrap);
+void chooser_getParam(CHOOSER c, int * orientation, int * wrap);
 
 #endif

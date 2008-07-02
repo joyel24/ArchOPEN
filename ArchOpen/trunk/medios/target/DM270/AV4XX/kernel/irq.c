@@ -75,6 +75,11 @@ __IRAM_DATA struct irq_data_s irq_table[] = {
         name    : "DSP intr",
     },
     {
+        irq     : 0x20,
+        action  : NULL,
+        name    : "Bat (gio13) intr",
+    },
+    {
         irq     : -1,
         action  : NULL,
         name    : NULL,

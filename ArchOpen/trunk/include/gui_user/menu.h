@@ -26,13 +26,18 @@ typedef struct MENU_STRUCT * MENU;
 //*****************************************************************************
 
 // members of the MENU_ITEM object
-#define MENU_ITEM_MEMBERS              \
-    /* we inherit from WIDGET */       \
-    WIDGET_MEMBERS                     \
-                                       \
-    char * caption;                    \
-    MENU parentMenu;                   \
+#define MENU_ITEM_MEMBERS                   \
+    /* we inherit from WIDGET */            \
+    WIDGET_MEMBERS                          \
+                                            \
+    char * caption;                         \
+    MENU_ITEM_CAPTIONSETTER setCaption;     \
+    MENU_ITEM_VISIBILITYTESTER isVisible;   \
+    MENU parentMenu;                        \
     MENU subMenu;
+
+typedef void(*MENU_ITEM_CAPTIONSETTER)(void *,char *);
+typedef bool(*MENU_ITEM_VISIBILITYTESTER)(void*);
 
 typedef struct {
     MENU_ITEM_MEMBERS
@@ -45,32 +50,33 @@ typedef struct {
 // members of the MENU object
 #define MENU_MEMBERS                   \
     /* we inherit from WIDGET */       \
-    WIDGET_MEMBERS                     \
+    WIDGETLIST_MEMBERS                 \
                                        \
     MENU_CLICKEVENT onClick;           \
     MENU_ITEMADDER addItem;            \
+    MENU_ITEMDEL   delItem;            \
     MENU_ITEMSCLEARER clearItems;      \
-    MENU_INDEXGETTER indexOf;          \
     MENU_INDEXFROMCAPTIONGETTER indexFromCaption;\
-    MENU_ITEM * items;                 \
-    int itemCount;                     \
-    bool ownItems;                     \
-    int index;                         \
-    int previousIndex;                 \
-    int topIndex;                      \
+    MENU_ITEMFROMCAPTIONGETTER itemFromCaption; \
+    MENU_POSUPDATER updatePos;         \
+    MENU_ITEM index;                         \
+    MENU_ITEM previousIndex;                 \
+    MENU_ITEM topIndex;                      \
     int visibleCount;                  \
-    bool fastRepaint;                  \
     WIDGETLIST menuList;               \
     int hasScrollBar;                  \
     struct scroll_bar scrollBar;       \
+    bool packed;                       \
     MENU parentMenu;
 
 
 typedef void(*MENU_CLICKEVENT)(void *,void *);
 typedef void(*MENU_ITEMADDER)(void *,void *);
+typedef int(*MENU_ITEMDEL)(void *,void *);
 typedef void(*MENU_ITEMSCLEARER)(void *);
-typedef int(*MENU_INDEXGETTER)(void *,void *);
 typedef int(*MENU_INDEXFROMCAPTIONGETTER)(void *,char *);
+typedef void*(*MENU_ITEMFROMCAPTIONGETTER)(void *,char *);
+typedef void (*MENU_POSUPDATER)(void*,bool);
 
 struct MENU_STRUCT {
     MENU_MEMBERS

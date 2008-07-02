@@ -103,7 +103,6 @@ void miscSet_sav(void)
         {
             SPKR_OFF();
         }
-        printk("saved: %d\n",ExtSpkr->checkbox->checked);
         cfg_writeInt(cfg,"ExtSpkr",ExtSpkr->checkbox->checked);
     }
 
@@ -143,40 +142,33 @@ void misc_setting(void)
     // menuList
     widgetMenu=widgetMenu_create();
     widgetMenu->setRect(widgetMenu,minX,minY,LCD_WIDTH-minX,LCD_HEIGHT-minY);
-    widgetMenu->ownItems=true; // the menu will handle items destroy
+    widgetMenu->ownWidgets=true; // the menu will handle items destroy
+    widgetMenu->font=WIDGET_CONFIG_FONT;
     
     // standardMenu
     FmRemote=widgetMenuCheckbox_create();
-    FmRemote->caption=NULL;
-    FmRemote->checkbox->caption=getLangStr(STRLNG_MISC_REMOTE);
+    FmRemote->caption=getLangStr(STRLNG_MISC_REMOTE);
     FmRemote->checkbox->checked=FM_getState();
-    FmRemote->doAutoSize=true;
     widgetMenu->addItem(widgetMenu,FmRemote);
     
     develFct=widgetMenuCheckbox_create();
-    develFct->caption=NULL;
-    develFct->checkbox->caption=getLangStr(STRLNG_MISC_DEV);
+    develFct->caption=getLangStr(STRLNG_MISC_DEV);
     develFct->checkbox->checked=has_develFct;
-    develFct->doAutoSize=true;
     widgetMenu->addItem(widgetMenu,develFct);
         
     if(SPKR_AVAILABLE())
     {
         ExtSpkr=widgetMenuCheckbox_create();
-        ExtSpkr->caption=NULL;
-        ExtSpkr->checkbox->caption=getLangStr(STRLNG_MISC_SPEAKER);
+        ExtSpkr->caption=getLangStr(STRLNG_MISC_SPEAKER);
         ExtSpkr->checkbox->checked=SPKR_STATE();
         orgSpkr=ExtSpkr->checkbox->checked;
         ExtSpkr->checkbox->onChange=(CHECKBOX_CHANGEEVENT)spkr_chk_chg;
-        ExtSpkr->doAutoSize=true;
         widgetMenu->addItem(widgetMenu,ExtSpkr);
     }
     
     virtKbdLY=widgetMenuCheckbox_create();
-    virtKbdLY->caption=NULL;
-    virtKbdLY->checkbox->caption="Kbd, text at top";
+    virtKbdLY->caption="Kbd, text at top";
     virtKbdLY->checkbox->checked=paramVirtKbd;
-    virtKbdLY->doAutoSize=true;
     widgetMenu->addItem(widgetMenu,virtKbdLY);
             
     // intial paint
@@ -225,11 +217,13 @@ void misc_loadPref(void)
                 FM_enable();
             else
                 FM_disable();
+            printk("Found cfg for fmRemote (%d)\n",cfg_readInt(cfg,"fmRemote"));
         }
         else
         {
             cfg_writeInt(cfg,"fmRemote",1);
             FM_enable();
+            printk("no cfg for fmRemote\n");
             needWrite=1;
         }
         

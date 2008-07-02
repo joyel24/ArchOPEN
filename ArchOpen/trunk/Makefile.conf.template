@@ -28,6 +28,7 @@ HAVE_TIME = %CONFIGURE_HAVE_TIME%
 IS_RELEASE = %CONFIGURE_IS_RELEASE%
 MEDIOS_LANG = %CONFIGURE_TARGET_LANG_NAME%
 BUILD_AVLO = %CONFIGURE_AVLO%
+LCD_TYPE = %CONFIGURE_LCD_TYPE%
 
 #
 # Makefile core
@@ -72,6 +73,8 @@ GCCFLAGS += -I$(MEDIOS_SRC_PATH)/medios/lib/jpeg-6b
 endif
 
 #LDFLAGS =  -L/home/christophe/toolchain_arm_nofpu/arm-linux-uclibc/lib/ -L$(LIB_DIR) -ljpeg -lfloat -lm -lgcc
+
+GCCFLAGS += -DLCDTYPE_$(LCD_TYPE)
 
 ifeq ("$(SPLASH_TYPE)","NONE")
 	GCCFLAGS += -DNO_SPLASH

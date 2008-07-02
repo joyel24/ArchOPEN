@@ -63,6 +63,7 @@ int screen_height;
 int screen_width;
 
 int evt_handler;
+int stop;
 
 /* the minefield */
 tile * minefield;
@@ -205,57 +206,44 @@ void setCursor(int del)
 
 void settings_screen()
 {
-    int h,w2,w,event,y;
+    int h,w,event,y;
     char tmp[50];
-    TRACKBAR trackWidth;
-    TRACKBAR trackHeight;
-    TRACKBAR trackPercent;
-    WIDGETLIST menuList;
+    WIDGETMENU_TRACKBAR trackWidth;
+    WIDGETMENU_TRACKBAR trackHeight;
+    WIDGETMENU_TRACKBAR trackPercent;
+    WIDGETMENU widgetMenu;
        
     gfx_clearScreen(BG_COLOR); // clear
     gfx_getStringSize("SETTINGS",&w,&h);
     gfx_putS(UI_TXT_COLOR, BG_COLOR, (screen_width-w)/2, 5,  "SETTINGS");
     gfx_drawLine(UI_TXT_COLOR,(screen_width-w)/2-1,5+h+1,(screen_width-w)/2+w+1,5+h+1);
     
-    menuList=widgetList_create();
-    menuList->ownWidgets=true;
-    
     y=5+h+2;
 
-    gfx_getStringSize("Width",&w,&h);
-    gfx_getStringSize("Height",&w2,&h);
-    w=MAX(w,w2);
-    gfx_getStringSize("Percent",&w2,&h);
-    w=MAX(w,w2);
+    widgetMenu=widgetMenu_create();
+    widgetMenu->setRect(widgetMenu,5,y,screen_width-5,3*(5+h+2));
+    widgetMenu->ownWidgets=true; // the menu will handle items destroy
     
-    trackWidth=trackbar_create();
+    trackWidth=widgetMenuTrackbar_create();
+    trackWidth->caption="Width";
+    widgetMenu->addItem(widgetMenu,trackWidth);
+    trackWidth->trackbar->setParam(trackWidth->trackbar,5,max_width,1);
+    trackWidth->trackbar->setValue(trackWidth->trackbar,width);
 
-    gfx_putS(UI_TXT_COLOR, BG_COLOR, 2,y, "Width");
-    trackWidth->maximum=max_width;
-    trackWidth->minimum=5;
-    trackWidth->value=width;
-    trackWidth->setRect(trackWidth,2+w+2,y,60,h+2);
-    menuList->addWidget(menuList,trackWidth);
-    y+=h+2;
+    trackHeight=widgetMenuTrackbar_create();
+    trackHeight->caption="Height";
+    widgetMenu->addItem(widgetMenu,trackHeight);
+    trackHeight->trackbar->setParam(trackHeight->trackbar,5,max_height,1);
+    trackHeight->trackbar->setValue(trackHeight->trackbar,height);
     
-    trackHeight=trackbar_create();
-    gfx_putS(UI_TXT_COLOR, BG_COLOR, 2,y, "Height");
-    trackHeight->maximum=max_height;
-    trackHeight->minimum=5;
-    trackHeight->value=height;
-    trackHeight->setRect(trackHeight,2+w+2,y,60,h+2);
-    menuList->addWidget(menuList,trackHeight);
-    y+=h+5;
+    trackPercent=widgetMenuTrackbar_create();
+    trackPercent->caption="Percent";
+    widgetMenu->addItem(widgetMenu,trackPercent);
+    trackPercent->trackbar->setParam(trackPercent->trackbar,0,100,5);
+    trackPercent->trackbar->setValue(trackPercent->trackbar,p);
 
-    trackPercent=trackbar_create();
-    gfx_putS(UI_TXT_COLOR, BG_COLOR, 2,y, "Percent");
-    trackPercent->maximum=100;
-    trackPercent->minimum=0;
-    trackPercent->value=p;
-    trackPercent->setRect(trackPercent,2+w+2,y,60,h+2);
-    menuList->addWidget(menuList,trackPercent);
-    y+=h+5;
-
+    y+=3*(5+h+2)+5;
+    
     gfx_getStringSize("M",&w,&h);
     gfx_putS(UI_TXT_COLOR, BG_COLOR, 10,y, "Direction: Joystick");
     y = y+h+2;
@@ -271,30 +259,34 @@ void settings_screen()
     sprintf(tmp,"Exit: %s",getBtnName(ACTION_EXIT));
     gfx_putS(UI_TXT_COLOR, BG_COLOR, 10,y, tmp);
 
-    menuList->setFocusedWidget(menuList,trackWidth);
-    menuList->paint(menuList);
+    widgetMenu->setFocusedWidget(widgetMenu,trackWidth);
+    widgetMenu->paint(widgetMenu);
     
     do{
         event=evt_getStatusBlocking(evt_handler);
         if (!event) continue; // no new events
-        switch(event)
-        {
-            case BTN_UP:
-                menuList->changeFocus(menuList,WLD_PREVIOUS);
-                break;
-            case BTN_DOWN:
-                menuList->changeFocus(menuList,WLD_NEXT);
-                break;
-            default:
-                menuList->handleEvent(menuList,event);
-                break;
-        }
+        if(widgetMenu->handleEvent(widgetMenu,event))
+            continue;
     }while(event!=BTN_OFF && event!=BTN_ON);
     if(event==BTN_ON)
     {
-        width=trackHeight->value;
-        height=trackHeight->value;
-		p=trackPercent->value;			
+        if(trackHeight->trackbar->value != width || trackHeight->trackbar->value != height)
+        {
+            free(minefield);
+            minefield = (tile*)malloc(sizeof(tile)*height*width);
+            if(!minefield)
+            {
+                msgBox_show("Memory error", "No more memory => exit\n", 
+                            MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR, evt_handler);
+                stop=1;
+                widgetMenu->destroy(widgetMenu);
+                return;
+            }
+        }
+        
+        width=trackHeight->trackbar->value;
+        height=trackHeight->trackbar->value;
+		p=trackPercent->trackbar->value;			
 		WriteCfg();						
         computeSizePos();
         init_field();
@@ -302,46 +294,37 @@ void settings_screen()
     gfx_clearScreen(BG_COLOR);
     displayMineField();
     setCursor(0);
-    
+    widgetMenu->destroy(widgetMenu);
 }
 
 void WriteCfg(void)
 {	
-
 	CFG_DATA * cfg;
-		cfg=cfg_readFile("minesweeper.cfg");
-		if (!cfg) //if not exists
-			{
-			cfg=cfg_newFile();
-			}
-		cfg_writeInt(cfg,"MinesPercentage",p);
-		cfg_writeFile(cfg,"minesweeper.cfg");
-		
-		cfg_clear(cfg);
-
+    cfg=cfg_readFile("minesweeper.cfg");
+    if (!cfg) //if not exists
+    {
+        cfg=cfg_newFile();
+    }
+    cfg_writeInt(cfg,"MinesPercentage",p);
+    cfg_writeFile(cfg,"minesweeper.cfg");
+    
+    cfg_clear(cfg);
 }
 
 void ReadCfg(void)
 {	
-	int a;
-	
-	a=0;
 	CFG_DATA * cfg;
 	cfg=cfg_readFile("minesweeper.cfg");
-		if (!cfg) //if not exists
-			{
-			cfg=cfg_newFile();
-			a=1;
-			}	
-		cfg=cfg_readFile("minesweeper.cfg");
+    if (!cfg) //if not exists
+    {
+        p=20;
+        WriteCfg();
+    }	
+    else
+    {
 		p=cfg_readInt(cfg,"MinesPercentage");
 		cfg_clear(cfg);
-	
-	if (a==1) {
-	p=22;
-	WriteCfg();
-	}
-	
+    }
 }
 
 
@@ -415,7 +398,6 @@ int winLoose_screen(char * msg)
 void eventHandlerLoop(void)
 {
     int i=0,j=0;
-	int stop=0;
 	int evt;
     while(!stop)
     {
@@ -585,6 +567,8 @@ void arch_init(void)
     gfx_getStringSize("M",0,&h);
     max_height = height = (screen_height-h-2)/PIECE_DIM;
     max_width = width = screen_width/PIECE_DIM;
+    
+    printf("Init size: %d,%d\n",width,height);
     computeSizePos();
 }
 
@@ -616,16 +600,28 @@ void app_main(int argc,char * * argv)
     arch_init();
 /*Get Cfg*/
 	ReadCfg();
+    stop=0;
 /* real init */
 	minefield = (tile*)malloc(sizeof(tile)*height*width);
-    init_field();
-/* initial draw */    
-    displayMineField();
-    setCursor(0);
-/* evt loop */
-    evt_handler=evt_getHandler(BTN_CLASS);
-	eventHandlerLoop();
-/* some cleanup */
-    evt_freeHandler(evt_handler);
-    free(minefield);
+    if(!minefield)
+    {
+        evt_handler=evt_getHandler(BTN_CLASS);
+        msgBox_show("Memory error", "No more memory => exit\n", 
+                            MSGBOX_TYPE_OK, MSGBOX_ICON_ERROR, evt_handler);
+        evt_freeHandler(evt_handler);
+    }
+    else
+    {
+        init_field();
+    /* initial draw */    
+        displayMineField();
+        setCursor(0);
+    /* evt loop */
+        evt_handler=evt_getHandler(BTN_CLASS);
+        eventHandlerLoop();
+    /* some cleanup */
+        evt_freeHandler(evt_handler);
+        if(minefield)
+            free(minefield);
+    }
 }

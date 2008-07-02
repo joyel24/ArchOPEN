@@ -28,11 +28,14 @@ typedef enum {WLD_NEXT, WLD_PREVIOUS} WL_DIRECTION;
     WIDGET_MEMBERS                                         \
                                                            \
     WIDGETLIST_WIDGETADDER addWidget;                      \
+    WIDGETLIST_WIDGETDEL delWidget;                        \
     WIDGETLIST_WIDGETSCLEARER clearWidgets;                \
     WIDGETLIST_INDEXGETTER indexOf;                        \
     WIDGETLIST_FOCUSEDWIDGETSETTER setFocusedWidget;       \
     WIDGETLIST_FOCUSCHANGER changeFocus;                   \
-    WIDGET * widgets;                                      \
+    WIDGETLIST_WIDGETGETTER widgetAt;                      \
+    WIDGET firstWidget;                                    \
+    WIDGET lastWidget;                                     \
     int widgetCount;                                       \
     bool ownWidgets;                                       \
     WIDGET previousWidget;                                 \
@@ -41,10 +44,12 @@ typedef enum {WLD_NEXT, WLD_PREVIOUS} WL_DIRECTION;
     bool repaintAllWidgets;
 
 typedef void(*WIDGETLIST_WIDGETADDER)(void *,void *);
+typedef int(*WIDGETLIST_WIDGETDEL)(void *,void *);
 typedef void(*WIDGETLIST_WIDGETSCLEARER)(void *);
 typedef int(*WIDGETLIST_INDEXGETTER)(void *,void *);
 typedef void(*WIDGETLIST_FOCUSEDWIDGETSETTER)(void *,void *);
 typedef void(*WIDGETLIST_FOCUSCHANGER)(void *,WL_DIRECTION);
+typedef void *(*WIDGETLIST_WIDGETGETTER)(void*,int);
 
 typedef struct {
     WIDGETLIST_MEMBERS

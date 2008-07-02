@@ -26,6 +26,8 @@ TEXTMENU_ITEM textMenuItem_create();
 void textMenuItem_destroy(TEXTMENU_ITEM mi);
 void textMenuItem_init(TEXTMENU_ITEM mi);
 void textMenuItem_paint(TEXTMENU_ITEM mi);
+void textMenuItem_setPos(TEXTMENU_ITEM mi,int x,int y);
+void textMenuItem_autoSize(TEXTMENU_ITEM mi);
 
 //*****************************************************************************
 // TEXTMENU
@@ -36,7 +38,7 @@ void textMenu_destroy(TEXTMENU m);
 void textMenu_init(TEXTMENU m);
 bool textMenu_handleEvent(TEXTMENU m,int evt);
 void textMenu_addItem(TEXTMENU m, TEXTMENU_ITEM item);
-void textMenu_updateItems(TEXTMENU m, bool fast);
+void textMenu_updatePos(TEXTMENU m, bool fast);
 void textMenu_setFocus(TEXTMENU m, MENU_ITEM item);
 
 #endif

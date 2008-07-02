@@ -19,6 +19,7 @@
 
 void settings_initScreen(char * title,ICON logo,int * menu_x,int * menu_y);
 void settings_evtLoop(WIDGETMENU widgetMenu,void(*sav_fct)(void),int evtHandle);
+void settings_stopLoop(void);
 
 #define TEST_VAR(V1,V2,RES) {if((V1)!=(V2)){V1=(V2);RES=1;}}
 

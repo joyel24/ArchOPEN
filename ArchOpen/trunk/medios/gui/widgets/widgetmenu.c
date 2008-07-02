@@ -25,28 +25,41 @@
 // WIDGETMENU_ITEM
 //*****************************************************************************
 
+/***********************************************
+* Creator => only malloc
+* create item and also subItem
+* all real job is done in init
+************************************************/
 WIDGETMENU_ITEM widgetMenuItem_create(){
     WIDGETMENU_ITEM mi;
 
     // allocate WIDGETMENUITEM memory
     mi=malloc(sizeof(*mi));
-
+    DEBUGWI_CD("wMenuItem create => (1) %x\n",mi);
     // create the widget
     mi->widget=widget_create();
-
+    DEBUGWI_CD("wMenuItem create => (2) malloc subWidget: %x\n",mi->widget);
     // init members
     widgetMenuItem_init(mi);
 
     return mi;
 }
 
+/***********************************************
+* Destructor: destroy subWidget
+* and call menuItem destroy
+************************************************/
 void widgetMenuItem_destroy(WIDGETMENU_ITEM mi){
     // destroy the widget
+    DEBUGWI_CD("wMenuItem destroy => (1) call sub widget destroy\n");
     mi->widget->destroy(mi->widget);
-
+    DEBUGWI_CD("wMenuItem destroy => (2) call mItem destroy\n");
     menuItem_destroy((MENU_ITEM)mi);
 }
 
+/***********************************************
+* Real init: method and properties
+************************************************/
 void widgetMenuItem_init(WIDGETMENU_ITEM mi){
     menuItem_init((MENU_ITEM)mi);
 
@@ -57,15 +70,134 @@ void widgetMenuItem_init(WIDGETMENU_ITEM mi){
     mi->cfgToString=(WIDGETMENU_ITEM_CFGGETTER)widgetMenuItem_cfgToString;
     mi->cfgFromString=(WIDGETMENU_ITEM_CFGSETTER)widgetMenuItem_cfgFromString;
     mi->rePaint=(WIDGETMENU_ITEM_REPAINT)widgetMenuItem_rePaint;
+    mi->autoSize=(WIDGET_AUTOSIZE)widgetMenuItem_autoSize;
+    mi->setFont=(WIDGET_FONTSETTER)widgetMenuItem_setFont;
+    mi->update=(WIDGET_UPDATER)widgetMenuItem_update;
+    mi->setPos=(WIDGET_POSSETTER)widgetMenuItem_setPos;
+    mi->setAlignAt=(WIDGETMENU_ITEM_ALIGNSETTER)widgetMenuItem_setAlignAt;
 
     // properties
     mi->caption="WidgetMenuItem";
     mi->cfgStored=false;
     mi->cfgName="CfgName";
-    mi->widgetWidth=128;
-    mi->doAutoSize=false;
+    mi->tx=mi->ty=0;
+    mi->alignAt=NO_ALIGN_AT;
 }
 
+/***********************************************
+* Update for WIMenu item
+* this should be called by subItem when its
+* size has changed
+************************************************/
+void widgetMenuItem_update(WIDGETMENU_ITEM mi,WIDGET subItem)
+{
+    DEBUGWI("[WIMenuItem|update] for %s\n",mi->caption);
+    WIDGETMENU m = (WIDGETMENU)mi->parentMenu;
+    mi->autoSize(mi);
+    if(m && m->update) m->update(m,mi);
+}
+
+/***********************************************
+* setFont
+* sync font of caption and subItem
+************************************************/
+void widgetMenuItem_setFont(WIDGETMENU_ITEM mi, int font)
+{
+    mi->widget->font=font;
+    widget_setFont((WIDGET)mi,font);
+}
+
+/***********************************************
+* setAlign
+* specify a different alignAt for the item
+* if setAlign is called on menu itself, this
+* will be overwritten
+************************************************/
+void widgetMenuItem_setAlignAt(WIDGETMENU_ITEM mi,int alignAt)
+{
+    int oldAlign = mi->alignAt;
+    if(alignAt < 0) mi->alignAt = NO_ALIGN_AT;
+    else mi->alignAt=alignAt;
+    if(oldAlign != mi->alignAt) mi->autoSize(mi);
+}
+
+/***********************************************
+* setPos
+* call ancestor and recompute internal position
+************************************************/
+void widgetMenuItem_setPos(WIDGETMENU_ITEM mi,int x,int y)
+{
+    /* menuItem setPos */
+    menuItem_setPos((MENU_ITEM)mi,x,y);
+    /* sync caption pos*/
+    mi->autoSize(mi);
+}
+
+/***********************************************
+* autoSize
+* reposition caption and subWidget
+* uses several param: alignAt, useMaxWidth
+* steps: compute txt size in order to know
+* remaining width for widget, start positionning
+* the widget at this pos or at alignAt, call
+* widget autoSize to get its size/pos
+************************************************/
+void widgetMenuItem_autoSize(WIDGETMENU_ITEM mi)
+{
+    int w,h,wh,wx;
+    int of;
+
+    /* sync useMaxWidth */
+    mi->widget->useMaxWidth=mi->useMaxWidth;
+
+    of=gfx_fontGet(); // save previous font
+    gfx_fontSet(mi->font);
+    /* find text size */
+    w=0;
+    if(mi->caption)
+        gfx_getStringSize(mi->caption,&w,&h);
+    else
+        gfx_getStringSize("M",NULL,&h);
+    gfx_fontSet(of);
+
+    DEBUGWI("[WIMenuItem|autoSize] txt size %d,%d\n",w,h);
+
+    /* compute widget position */
+    if(mi->alignAt!=NO_ALIGN_AT)
+        wx=mi->x+mi->alignAt+2+mi->margin;
+    else
+        wx=mi->x+w+2+mi->margin;
+
+    /* find widget internal size */
+    if(mi->widget->autoSize)
+    {
+        /* give remaining size to widget */
+        mi->widget->updateSize(mi->widget,mi->width-wx-mi->margin,h);
+        mi->widget->autoSize(mi->widget);
+        mi->widget->getInternalSize(mi->widget,NULL,&wh);
+    }
+    else
+        wh=0;
+
+    DEBUGWI("[WIMenuItem|autoSize] widget autoSize height=%d\n",wh);
+
+    mi->updateSize(mi,mi->width,MAX(h,wh));
+
+    /* set text position */
+    mi->ty=mi->y+(mi->height-h)/2;
+    mi->tx=mi->x+mi->margin;
+
+    mi->widget->setPos(mi->widget,wx,mi->y+(mi->height-wh)/2);
+
+    DEBUGWI("[WIMenuItem|autoSize] (%s) pos (%d,%d): txt (%d,%d-%d,%d), widget (%d,%d-%d,%d) + size (%d,%d), alignAt %d (%d)\n",
+            mi->caption,mi->x,mi->y,mi->tx,mi->ty,w,h,
+            mi->widget->x,mi->widget->y,-1,wh,mi->width,mi->height,mi->alignAt,NO_ALIGN_AT);
+}
+
+/***********************************************
+* evt handler:
+* pass event to subWidget, except for REDRAW
+************************************************/
 bool widgetMenuItem_handleEvent(WIDGETMENU_ITEM mi,int evt){
     if(evt==EVT_REDRAW){
         // the menu item handles widget painting too
@@ -76,6 +208,10 @@ bool widgetMenuItem_handleEvent(WIDGETMENU_ITEM mi,int evt){
     }
 }
 
+/***********************************************
+* rePaint:
+************************************************/
+#warning is rePaint still needed ?
 void widgetMenuItem_rePaint(WIDGETMENU_ITEM mi)
 {
     bool clearState;
@@ -85,371 +221,94 @@ void widgetMenuItem_rePaint(WIDGETMENU_ITEM mi)
     mi->clearBackground=clearState;
 }
 
-void widgetMenuItem_paint(WIDGETMENU_ITEM mi){
-    int txt_x,txt_y;
-    int txt_w,txt_h;
-    int w2;
+/***********************************************
+* item Paint:
+* only done if item is visible
+* draw string and call subWidget Paint
+************************************************/
+void widgetMenuItem_paint(WIDGETMENU_ITEM mi)
+{
     int color;
     int of;
-    int no_caption=0;
     bool ocb;
 
-    if(!menuItem_isVisible((MENU_ITEM)mi))
+    DEBUGWI("[WIMenuItem|paint] of %s\n",mi->caption);
+
+    if(!mi->isVisible(mi))
     {
+        printk("[WMItem|Paint] Trying to paint an item not visible\n");
         return;
     }
 
-    widget_paint((WIDGET)mi);
+    widget_paint((WIDGET)mi); /* handles background clear*/
 
     color=(mi->focused)?mi->focusColor:mi->backColor;
-
-    txt_x=mi->x;
-    txt_y=mi->y;
 
     // caption
     if(mi->caption && (*mi->caption)!='\0')
     {
         of=gfx_fontGet(); // save previous font
         gfx_fontSet(mi->font);
-        gfx_getStringSize(mi->caption,&txt_w,&txt_h);
-        txt_y=mi->y+(mi->height-txt_h)/2;
-        txt_x=mi->x+mi->margin;
-
-        gfx_putS(mi->foreColor,color,txt_x,txt_y,mi->caption);
-
+        gfx_putS(mi->foreColor,color,mi->tx,mi->ty,mi->caption);
         gfx_fontSet(of); // restore previous font
-    }
-    else
-    {
-        no_caption=1;
     }
 
     // widget
-
-    //  sync widget props with the menuitem ones
     mi->widget->focused=mi->focused;
-    if(!no_caption)
-    {
-        if(mi->doAutoSize)
-        {
-            mi->widget->autoSize(mi->widget);
-            w2=mi->width*mi->widgetWidth/256-mi->margin;
-            if(mi->widget->width==0 || mi->widget->width>w2)
-            {
-                mi->widget->width=mi->width*mi->widgetWidth/256-mi->margin;
-                mi->widget->x=mi->x+mi->width-mi->margin-mi->widget->width;
-            }
-            else
-            {
-               mi->widget->x=txt_x+txt_w+2;
-            }
-
-            if(mi->widget->height==0)
-            {
-                mi->widget->height=mi->height-2*mi->margin;
-                mi->widget->y=mi->y+mi->margin;
-            }
-            else if(mi->widget->height > mi->height)
-            {
-                mi->widget->height=mi->height;
-                mi->widget->y=mi->y;
-            }
-            else
-                mi->widget->y=mi->y+(mi->height-mi->widget->height)/2;
-        }
-        else /* no autoSize */
-        {
-            mi->widget->width=mi->width*mi->widgetWidth/256-mi->margin;
-            mi->widget->height=mi->height-2*mi->margin;
-            mi->widget->x=mi->x+mi->width-mi->margin-mi->widget->width;
-            mi->widget->y=mi->y+mi->margin;
-        }
-    }
-    else
-    {
-        if(mi->doAutoSize)
-        {
-            mi->widget->autoSize(mi->widget);
-            w2=mi->width-2*mi->margin;
-            if(mi->widget->width==0 || mi->widget->width>w2)
-                mi->widget->width=w2;
-            if(mi->widget->height==0)
-                mi->widget->height=mi->height-2*mi->margin;
-            else if(mi->widget->height > mi->height)
-                mi->widget->height=mi->height;
-
-        }
-        else /* no autosize */
-        {
-            mi->widget->width=mi->width-2*mi->margin;
-            mi->widget->height=mi->height-2*mi->margin;
-        }
-        mi->widget->x=mi->x+mi->margin;
-        mi->widget->y=mi->y+(mi->height-mi->widget->height)/2;
-    }
-
     ocb=mi->widget->clearBackground;
     mi->widget->clearBackground=false; // done by the menu
-
-    //  paint it
-    mi->widget->paint(mi->widget);
-
+    mi->widget->paint(mi->widget);     //  paint it
     mi->widget->clearBackground=ocb; // restore previous state
+
+
+    DEBUGWI("[WIMenuItem|paint] done\n");
 }
 
+/***********************************************
+* convert item value to a config string
+************************************************/
 void widgetMenuItem_cfgToString(WIDGETMENU_ITEM mi,char * s){
     *s=0;
 }
 
+/***********************************************
+* change item value using config string
+************************************************/
 void widgetMenuItem_cfgFromString(WIDGETMENU_ITEM mi,char * s){
     *s=0;
 }
 
-//*****************************************************************************
-// WIDGETMENU_BUTTON
-//*****************************************************************************
-
-WIDGETMENU_BUTTON widgetMenuButton_create(){
-    WIDGETMENU_BUTTON mc;
-
-    // allocate WIDGETMENUCHECKBOX memory
-    mc=malloc(sizeof(*mc));
-
-    // create the widget
-    mc->button=button_create();
-    mc->widget=(WIDGET)mc->button;
-
-    // init members
-    widgetMenuButton_init(mc);
-
-    return mc;
-}
-
-void widgetMenuButton_destroy(WIDGETMENU_BUTTON mc){
-    widgetMenuItem_destroy((WIDGETMENU_ITEM)mc);
-}
-
-void widgetMenuButton_init(WIDGETMENU_BUTTON mc){
-    widgetMenuItem_init((WIDGETMENU_ITEM)mc);
-
-    // methods
-    mc->destroy=(WIDGET_DESTROYER)widgetMenuButton_destroy;
-    mc->cfgToString=(WIDGETMENU_ITEM_CFGGETTER)widgetMenuButton_cfgToString;
-    mc->cfgFromString=(WIDGETMENU_ITEM_CFGSETTER)widgetMenuButton_cfgFromString;
-
-    // properties
-    mc->caption="WidgetMenuButton";
-    mc->widget->margin=WIDGETMENU_WIDGET_MARGIN;
-}
-
-void widgetMenuButton_cfgToString(WIDGETMENU_BUTTON mc,char * s){
-    *s=0;
-}
-
-void widgetMenuButton_cfgFromString(WIDGETMENU_BUTTON mc,char * s){
-    *s=0;
-}
-
-//*****************************************************************************
-// WIDGETMENU_SPINBOX
-//*****************************************************************************
-
-WIDGETMENU_SPINBOX widgetMenuSpinbox_create(){
-    WIDGETMENU_SPINBOX mc;
-
-    // allocate WIDGETSPINBOX memory
-    mc=malloc(sizeof(*mc));
-
-    // create the widget
-    mc->spinbox=spinbox_create();
-    mc->widget=(WIDGET)mc->spinbox;
-
-    // init members
-    widgetMenuSpinbox_init(mc);
-
-    return mc;
-}
-
-void widgetMenuSpinbox_destroy(WIDGETMENU_SPINBOX mc){
-    widgetMenuItem_destroy((WIDGETMENU_ITEM)mc);
-}
-
-void widgetMenuSpinbox_init(WIDGETMENU_SPINBOX mc){
-    widgetMenuItem_init((WIDGETMENU_ITEM)mc);
-
-    // methods
-    mc->destroy=(WIDGET_DESTROYER)widgetMenuSpinbox_destroy;
-    mc->cfgToString=(WIDGETMENU_ITEM_CFGGETTER)widgetMenuSpinbox_cfgToString;
-    mc->cfgFromString=(WIDGETMENU_ITEM_CFGSETTER)widgetMenuSpinbox_cfgFromString;
-
-    // properties
-    mc->caption="WidgetMenuSpinbox";
-    mc->widget->margin=WIDGETMENU_WIDGET_MARGIN;
-}
-
-void widgetMenuSpinbox_cfgToString(WIDGETMENU_SPINBOX mc,char * s){
-    *s=0;
-}
-
-void widgetMenuSpinbox_cfgFromString(WIDGETMENU_SPINBOX mc,char * s){
-    *s=0;
-}
-
-//*****************************************************************************
-// WIDGETMENU_CHECKBOX
-//*****************************************************************************
-
-WIDGETMENU_CHECKBOX widgetMenuCheckbox_create(){
-    WIDGETMENU_CHECKBOX mc;
-
-    // allocate WIDGETMENUCHECKBOX memory
-    mc=malloc(sizeof(*mc));
-
-    // create the widget
-    mc->checkbox=checkbox_create();
-    mc->widget=(WIDGET)mc->checkbox;
-
-    // init members
-    widgetMenuCheckbox_init(mc);
-
-    return mc;
-}
-
-void widgetMenuCheckbox_destroy(WIDGETMENU_CHECKBOX mc){
-    widgetMenuItem_destroy((WIDGETMENU_ITEM)mc);
-}
-
-void widgetMenuCheckbox_init(WIDGETMENU_CHECKBOX mc){
-    widgetMenuItem_init((WIDGETMENU_ITEM)mc);
-
-    // methods
-    mc->destroy=(WIDGET_DESTROYER)widgetMenuCheckbox_destroy;
-    mc->cfgToString=(WIDGETMENU_ITEM_CFGGETTER)widgetMenuCheckbox_cfgToString;
-    mc->cfgFromString=(WIDGETMENU_ITEM_CFGSETTER)widgetMenuCheckbox_cfgFromString;
-
-    // properties
-    mc->caption="WidgetMenuCheckbox";
-    mc->widget->margin=WIDGETMENU_WIDGET_MARGIN;
-}
-
-void widgetMenuCheckbox_cfgToString(WIDGETMENU_CHECKBOX mc,char * s){
-    strcpy(s,(mc->checkbox->checked)?"1":"0");
-}
-
-void widgetMenuCheckbox_cfgFromString(WIDGETMENU_CHECKBOX mc,char * s){
-    mc->checkbox->checked=(atoi(s))?true:false;
-}
-
-//*****************************************************************************
-// WIDGETMENU_TRACKBAR
-//*****************************************************************************
-
-WIDGETMENU_TRACKBAR widgetMenuTrackbar_create(){
-    WIDGETMENU_TRACKBAR mt;
-
-    // allocate WIDGETMENUCHECKBOX memory
-    mt=malloc(sizeof(*mt));
-
-    // create the widget
-    mt->trackbar=trackbar_create();
-    mt->widget=(WIDGET)mt->trackbar;
-
-    // init members
-    widgetMenuTrackbar_init(mt);
-
-    return mt;
-}
-
-void widgetMenuTrackbar_destroy(WIDGETMENU_TRACKBAR mt){
-    widgetMenuItem_destroy((WIDGETMENU_ITEM)mt);
-}
-
-void widgetMenuTrackbar_init(WIDGETMENU_TRACKBAR mt){
-    widgetMenuItem_init((WIDGETMENU_ITEM)mt);
-
-    // methods
-    mt->destroy=(WIDGET_DESTROYER)widgetMenuTrackbar_destroy;
-    mt->cfgToString=(WIDGETMENU_ITEM_CFGGETTER)widgetMenuTrackbar_cfgToString;
-    mt->cfgFromString=(WIDGETMENU_ITEM_CFGSETTER)widgetMenuTrackbar_cfgFromString;
-
-    // properties
-    mt->caption="WidgetMenuTrackbar";
-    mt->widget->margin=WIDGETMENU_WIDGET_MARGIN;
-}
-
-void widgetMenuTrackbar_cfgToString(WIDGETMENU_TRACKBAR mt,char * s){
-    sprintf(s,"%d",mt->trackbar->value);
-}
-
-void widgetMenuTrackbar_cfgFromString(WIDGETMENU_TRACKBAR mt,char * s){
-    mt->trackbar->value=atoi(s);
-}
-
-//*****************************************************************************
-// WIDGETMENU_CHOOSER
-//*****************************************************************************
-
-WIDGETMENU_CHOOSER widgetMenuChooser_create(){
-    WIDGETMENU_CHOOSER mc;
-
-    // allocate WIDGETMENUCHECKBOX memory
-    mc=malloc(sizeof(*mc));
-
-    // create the widget
-    mc->chooser=chooser_create();
-    mc->widget=(WIDGET)mc->chooser;
-
-    // init members
-    widgetMenuChooser_init(mc);
-
-    return mc;
-}
-
-void widgetMenuChooser_destroy(WIDGETMENU_CHOOSER mc){
-    widgetMenuItem_destroy((WIDGETMENU_ITEM)mc);
-}
-
-void widgetMenuChooser_init(WIDGETMENU_CHOOSER mc){
-    widgetMenuItem_init((WIDGETMENU_ITEM)mc);
-
-    // methods
-    mc->destroy=(WIDGET_DESTROYER)widgetMenuChooser_destroy;
-    mc->cfgToString=(WIDGETMENU_ITEM_CFGGETTER)widgetMenuChooser_cfgToString;
-    mc->cfgFromString=(WIDGETMENU_ITEM_CFGSETTER)widgetMenuChooser_cfgFromString;
-
-    // properties
-    mc->caption="WidgetMenuChooser";
-    mc->widget->margin=WIDGETMENU_WIDGET_MARGIN;
-}
-
-void widgetMenuChooser_cfgToString(WIDGETMENU_CHOOSER mc,char * s){
-    sprintf(s,"%d",mc->chooser->index);
-}
-
-void widgetMenuChooser_cfgFromString(WIDGETMENU_CHOOSER mc,char * s){
-    mc->chooser->index=atoi(s);
-}
 
 //*****************************************************************************
 // WIDGETMENU
 //*****************************************************************************
 
+/***********************************************
+* Creator => only malloc, all is done in init
+************************************************/
 WIDGETMENU widgetMenu_create(){
     WIDGETMENU m;
 
     // allocate widget memory
     m=malloc(sizeof(*m));
-
+    DEBUGWI_CD("wMenu create => %x\n",m);
     // init members
     widgetMenu_init(m);
 
     return m;
 }
 
+/***********************************************
+* Destructor: only call txtMenu destroy
+************************************************/
 void widgetMenu_destroy(WIDGETMENU m){
+    DEBUGWI_CD("wMenu destroy=>call txtMenu destroy\n");
     textMenu_destroy((TEXTMENU)m);
 }
 
+/***********************************************
+* Real init: method and properties
+************************************************/
 void widgetMenu_init(WIDGETMENU m){
     textMenu_init((TEXTMENU)m);
 
@@ -459,19 +318,63 @@ void widgetMenu_init(WIDGETMENU m){
     m->getCheckbox=(WIDGETMENU_CHECKBOXGETTER)widgetMenu_getCheckbox;
     m->getTrackbar=(WIDGETMENU_TRACKBARGETTER)widgetMenu_getTrackbar;
     m->getChooser=(WIDGETMENU_CHOOSERGETTER)widgetMenu_getChooser;
+    m->addItem=(MENU_ITEMADDER)widgetMenu_addItem;
     m->cfgLoad=(WIDGETMENU_CFGLOADER)widgetMenu_cfgLoad;
     m->cfgSave=(WIDGETMENU_CFGSAVER)widgetMenu_cfgSave;
+    m->setAlignAt=(WIDGETMENU_ALIGNSETTER)widgetMenu_setAlignAt;
 
     // properties
-    m->itemHeight=13;
+    m->alignAt=NO_ALIGN_AT;
 }
 
+/***********************************************
+* setAlignAt
+* change alignAt property and sync it for all
+* item in the menu (call also item autoSize
+************************************************/
+void widgetMenu_setAlignAt(WIDGETMENU m,int alignAt)
+{
+    WIDGETMENU_ITEM mi;
+    if(alignAt < 0) m->alignAt = NO_ALIGN_AT;
+    else m->alignAt=alignAt;
+
+    for(mi=(WIDGETMENU_ITEM)m->firstWidget;mi!=NULL;mi=mi->nxt)
+    {
+        mi->alignAt=alignAt;
+        mi->autoSize(mi);
+    }
+    m->updatePos(m,false);
+}
+
+/***********************************************
+* Adding an item to txtMenu
+* using textmenuAddItem
+************************************************/
+void widgetMenu_addItem(WIDGETMENU m, WIDGETMENU_ITEM item)
+{
+    item->widget->font=m->font; /*NOTE:choosing not to use setFont, maybe a bad idea*/
+    item->widget->foreColor=m->foreColor;
+    item->widget->backColor=m->backColor;
+    item->widget->fillColor=m->fillColor;
+    item->widget->focusColor=m->focusColor;
+    item->widget->updateSize(item->widget,m->width,m->height);
+    /* this is a conservative value, it will be updated during autoSize*/
+    textMenu_addItem((TEXTMENU)m,(TEXTMENU_ITEM)item);
+    item->alignAt=m->alignAt;
+}
+
+/***********************************************
+* Event handler
+* give priority to focused item for handling
+* all event except REDRAW
+************************************************/
 bool widgetMenu_handleEvent(WIDGETMENU m,int evt){
     bool handled=false;
 
     // the widget has priority on events, except EVT_REDRAW,BTN_UP and BTN_DOWN
-    if (m->index>=0 && m->index<m->itemCount && evt!=EVT_REDRAW && evt!=BTN_UP && evt!=BTN_DOWN){
-        handled=m->items[m->index]->handleEvent(m->items[m->index],evt);
+    // Oxy: remove priority over UP/DOWN event for menuline management
+    if (m->index && evt!=EVT_REDRAW ){
+        handled=m->index->handleEvent(m->index,evt);
     }
 
     if (!handled) handled=textMenu_handleEvent((TEXTMENU)m,evt);
@@ -479,28 +382,46 @@ bool widgetMenu_handleEvent(WIDGETMENU m,int evt){
     return handled;
 }
 
+/***********************************************
+* Get button subWidget
+************************************************/
 BUTTON widgetMenu_getButton(WIDGETMENU m,int index){
-    if(index<0 ||index>=m->itemCount) return NULL;
-    return ((WIDGETMENU_BUTTON)m->items[index])->button;
+    WIDGETMENU_BUTTON wi = m->widgetAt(m,index);
+    if(!wi) return NULL;
+    return wi->button;
 }
 
+/***********************************************
+* Get chkBox subWidget
+************************************************/
 CHECKBOX widgetMenu_getCheckbox(WIDGETMENU m,int index){
-    if(index<0 ||index>=m->itemCount) return NULL;
-    return ((WIDGETMENU_CHECKBOX)m->items[index])->checkbox;
+    WIDGETMENU_CHECKBOX wi = m->widgetAt(m,index);
+    if(!wi) return NULL;
+    return wi->checkbox;
 }
 
+/***********************************************
+* Get trkBar subWidget
+************************************************/
 TRACKBAR widgetMenu_getTrackbar(WIDGETMENU m,int index){
-    if(index<0 ||index>=m->itemCount) return NULL;
-    return ((WIDGETMENU_TRACKBAR)m->items[index])->trackbar;
+    WIDGETMENU_TRACKBAR wi = m->widgetAt(m,index);
+    if(!wi) return NULL;
+    return wi->trackbar;
 }
 
+/***********************************************
+* Get chooser subWidget
+************************************************/
 CHOOSER widgetMenu_getChooser(WIDGETMENU m,int index){
-    if(index<0 ||index>=m->itemCount) return NULL;
-    return ((WIDGETMENU_CHOOSER)m->items[index])->chooser;
+    WIDGETMENU_CHOOSER wi = m->widgetAt(m,index);
+    if(!wi) return NULL;
+    return wi->chooser;
 }
 
+/***********************************************
+* Read cfg file and store value in menu
+************************************************/
 bool widgetMenu_cfgLoad(WIDGETMENU m,char * filename){
-    int i;
     WIDGETMENU_ITEM mi;
     CFG_DATA * data;
 
@@ -511,9 +432,7 @@ bool widgetMenu_cfgLoad(WIDGETMENU m,char * filename){
     }
 
     // read stored items value
-    for(i=0;i<m->itemCount;++i){
-
-        mi=(WIDGETMENU_ITEM)m->items[i];
+    for(mi=(WIDGETMENU_ITEM)m->firstWidget;mi!=NULL;mi=mi->nxt){
 
         if(mi->cfgStored && cfg_itemExists(data,mi->cfgName)){
             mi->cfgFromString(mi,cfg_readString(data,mi->cfgName));
@@ -525,8 +444,10 @@ bool widgetMenu_cfgLoad(WIDGETMENU m,char * filename){
     return true;
 }
 
+/***********************************************
+* Save menu status into config file
+************************************************/
 bool widgetMenu_cfgSave(WIDGETMENU m,char * filename){
-    int i;
     WIDGETMENU_ITEM mi;
     char * s = malloc(256);
     CFG_DATA * data;
@@ -538,17 +459,14 @@ bool widgetMenu_cfgSave(WIDGETMENU m,char * filename){
     }
 
     // write stored items value
-    for(i=0;i<m->itemCount;++i){
-
-        mi=(WIDGETMENU_ITEM)m->items[i];
-
+    for(mi=(WIDGETMENU_ITEM)m->firstWidget;mi!=NULL;mi=mi->nxt){
         if(mi->cfgStored){
             mi->cfgToString(mi,s);
             cfg_writeString(data,mi->cfgName,s);
         }
     }
 
-    kfree(s);
+    free(s);
 
     // update or write cfg file
     if (!cfg_writeFile(data,filename)){

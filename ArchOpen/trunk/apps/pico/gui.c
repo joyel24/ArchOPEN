@@ -67,7 +67,7 @@ void gui_init()
 
     standardMenu=widgetMenu_create();
     standardMenu->setRect(standardMenu, 0, 0, w, h);
-    standardMenu->ownItems=true;
+    standardMenu->ownWidgets=true;
     standardMenu->onClick=(MENU_CLICKEVENT)menu_onClick;
     standardMenu->menuList=menuList;
     menuList->addWidget(menuList,standardMenu);
@@ -162,7 +162,7 @@ void gui_init()
     // Gfx menu
     gfxMenu=widgetMenu_create();
     gfxMenu->setRect(gfxMenu, 0, 0, w, h);
-    gfxMenu->ownItems=true;
+    gfxMenu->ownWidgets=true;
     gfxMenu->onClick=(MENU_CLICKEVENT)menu_onClick;
     gfxMenu->menuList=menuList;
     menuList->addWidget(menuList,gfxMenu);
@@ -192,7 +192,7 @@ void gui_init()
     // sound menu
     soundMenu=widgetMenu_create();
     soundMenu->setRect(soundMenu, 0, 0, w, h);
-    soundMenu->ownItems=true;
+    soundMenu->ownWidgets=true;
     soundMenu->onClick=(MENU_CLICKEVENT)menu_onClick;
     soundMenu->menuList=menuList;
     menuList->addWidget(menuList,soundMenu);
@@ -221,7 +221,7 @@ void gui_init()
     // inputs menu
     inputsMenu=widgetMenu_create();
     inputsMenu->setRect(inputsMenu, 0, 0, w, h);
-    inputsMenu->ownItems=true;
+    inputsMenu->ownWidgets=true;
     inputsMenu->onClick=(MENU_CLICKEVENT)menu_onClick;
     inputsMenu->menuList=menuList;
     menuList->addWidget(menuList,inputsMenu);

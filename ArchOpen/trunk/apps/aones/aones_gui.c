@@ -79,7 +79,7 @@ void gui_init(){
     // standardMenu
     standardMenu=widgetMenu_create();
     standardMenu->setRect(standardMenu,0,0,sw,sh);
-    standardMenu->ownItems=true; // the menu will handle items destroy
+    standardMenu->ownWidgets=true; // the menu will handle items destroy
     standardMenu->onClick=(MENU_CLICKEVENT)menu_onClick;
     standardMenu->menuList=menuList;
     menuList->addWidget(menuList,standardMenu);
@@ -194,7 +194,7 @@ void gui_init(){
     // advancedMenu
     advancedMenu=widgetMenu_create();
     advancedMenu->setRect(advancedMenu,0,0,sw,sh);
-    advancedMenu->ownItems=true; // the menu will handle items destroy
+    advancedMenu->ownWidgets=true; // the menu will handle items destroy
     advancedMenu->onClick=(MENU_CLICKEVENT)menu_onClick;
     advancedMenu->menuList=menuList;
     menuList->addWidget(menuList,advancedMenu);

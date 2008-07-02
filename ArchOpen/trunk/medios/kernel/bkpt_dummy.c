@@ -10,6 +10,19 @@
 * KIND, either express of implied.
 */
 
+/**************************************
+ * dummy bkpt when bkpt.S is not build
+ * do_bkpt is not doing anything
+ * see bkpt.S for the real function: it is used by aomulator
+ * if Makefile define HAVE_DBUG is set to 1
+ * bkpt.S is build, otherwise bkpt_dummy.c is
+ * build.
+ * Device priori to AV400 were not caching the arm bkpt
+ * instruction, so it was safe to leave them in medios. For Av400
+ * and later this dummy function is needed in order to not call
+ * arm bkpt instruction
+ **************************************/
+
 void do_bkpt(void)
 {
 

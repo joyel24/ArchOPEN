@@ -145,13 +145,13 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
                 break;
             case BTN_F3:
                 browser_contMenu(bdata);
+#ifdef ALWAYS_DISPLAY_ST_LINE
                 if(browser_has_statusbar)
                 {
                     statusLine_init();
-#ifdef ALWAYS_DISPLAY_ST_LINE
                     drawStatusLine();
-#endif
                 }
+#endif
                 browser_doDraw(mainBdata);
                 break;
             case EVT_CF_IN:
@@ -332,13 +332,13 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
 
                                 //TODO: not very nice, browser should be able to recieve EVT_REDRAW and process it
                                 evt_purgeHandler(evt_handler);
+#ifdef ALWAYS_DISPLAY_ST_LINE
                                 if(browser_has_statusbar)
                                 {
                                     statusLine_init();
-#ifdef ALWAYS_DISPLAY_ST_LINE
                                     drawStatusLine();
-#endif
                                 }
+#endif
                                 browser_doDraw(mainBdata);
                             }
                             break;
@@ -363,8 +363,10 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
                 }
                 break;
         }
+#ifdef ALWAYS_DISPLAY_ST_LINE
         if(browser_has_statusbar)
             statusLine_handleEvent(evt);
+#endif
     }
     return ret;
 }

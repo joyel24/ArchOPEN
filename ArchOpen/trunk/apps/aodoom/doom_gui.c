@@ -103,7 +103,7 @@ void gui_init(){
 #else
     menu->setRect(menu,0,0,320,200);
 #endif
-    menu->ownItems=true; // the menu will handle items destroy
+    menu->ownWidgets=true; // the menu will handle items destroy
     menu->onClick=(MENU_CLICKEVENT)menu_onClick;
 
     mi=widgetMenuItem_create();

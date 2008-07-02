@@ -120,9 +120,9 @@ void playlistMenu_build(){
     while(pi!=NULL){
 
         mi=textMenuItem_create();
-        mi->caption=pi->name;
+        
+        mi->setCaption(mi,pi->name);
         mi->data=pi;
-        mi->font=player_playlistFont;
         mi->paint=(WIDGET_PAINTHANDLER)playlistMenu_itemPaint;
 
         playlistMenu->addItem(playlistMenu,mi);
@@ -173,8 +173,8 @@ void playlistMenu_init(){
     playlistMenu=textMenu_create();
     playlistMenu->setRect(playlistMenu,0,SHELL_STATUS_HEIGHT,LCD_WIDTH,LCD_HEIGHT-SHELL_STATUS_HEIGHT);
     playlistMenu->onClick=(MENU_CLICKEVENT)playlistMenu_onClick;
-    playlistMenu->font=player_playlistFont;
-    playlistMenu->itemHeight=h;
+    
+    playlistMenu->setFont(playlistMenu,player_playlistFont);
 
     playlistMenu_eventHandler=evt_getHandler(ALL_CLASS);
 

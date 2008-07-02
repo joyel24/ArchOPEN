@@ -16,6 +16,7 @@
 
 #include <lib/string.h>
 
+#include <kernel/kernel.h>
 #include <kernel/malloc.h>
 #include <kernel/evt.h>
 
@@ -27,6 +28,7 @@ SPINBOX spinbox_create(void){
 
     // allocate widget memory
     t=malloc(sizeof(*t));
+    DEBUGWI_CD("spinBox create => %x\n",t);
 
     // init members
     spinbox_init(t);
@@ -35,30 +37,8 @@ SPINBOX spinbox_create(void){
 }
 
 void spinbox_destroy(SPINBOX t){
+    DEBUGWI_CD("spinbox destroy=>call widget\n");
     widget_destroy((WIDGET)t);
-}
-
-void spinbox_computeSize(SPINBOX t)
-{
-    FONT f;
-    f=fnt_fontFromId(t->font);
-    t->height = MAX(0,f->height)+4;
-    t->width = MAX(0,t->nbDigits*f->width)+4;
-}
-
-void spinbox_setFont(SPINBOX t,int font)
-{
-    t->font=font;
-    spinbox_computeSize(t);
-}
-
-void spinbox_setParam(SPINBOX t,int minimum,int maximum,int increment,int nbDigits)
-{
-    t->minimum=minimum;
-    t->maximum=maximum;
-    t->increment=increment;
-    t->nbDigits=nbDigits;
-    spinbox_computeSize(t);
 }
 
 void spinbox_init(SPINBOX t)
@@ -71,20 +51,60 @@ void spinbox_init(SPINBOX t)
     t->paint=(WIDGET_PAINTHANDLER)spinbox_paint;
     t->onChange=NULL;
     t->setParam=(SPINBOX_SETPARAM)spinbox_setParam;
-    t->setFont=(SPINBOX_SETFONT)spinbox_setFont;
-    t->setPos=(SPINBOX_SETPOS)spinbox_setPos;
+    t->getParam=(SPINBOX_GETPARAM)spinbox_getParam;
     t->setValue=(SPINBOX_SETVALUE)spinbox_setValue;
     t->getValue=(SPINBOX_GETVALUE)spinbox_getValue;
+    t->setWrap=(SPINBOX_SETWRAP)spinbox_setWrap;
+    t->getWrap=(SPINBOX_GETWRAP)spinbox_getWrap;
     t->autoSize=(WIDGET_AUTOSIZE)spinbox_autoSize;
     
     // properties
-    spinbox_setParam(t,0,99,1,2);    
+    t->setWrap(t,WIDGET_WRAP_ON);
+    t->setParam(t,0,99,1,2); /* autoSize will be called here */
+    t->setValue(t,0);
 }
 
-void spinbox_setPos(SPINBOX t,int x,int y)
+void spinbox_setParam(SPINBOX t,int minimum,int maximum,int increment,int nbDigits)
 {
-    t->x=x;
-    t->y=y;
+    int tmp;
+    if(minimum>maximum)
+    {
+        tmp=minimum;
+        minimum=maximum,
+        maximum=tmp;
+    }
+    t->minimum=minimum;
+    t->maximum=maximum;
+    
+    if(increment<1) increment=1;
+    t->increment=increment;
+    
+    if(nbDigits<1) nbDigits=1;
+    t->nbDigits=nbDigits;
+    
+    t->autoSize(t);
+    
+    if(t->value<minimum) t->value=minimum;
+    if(t->value>maximum) t->value=maximum;
+}
+
+void spinbox_setWrap(SPINBOX t,int wrap_value)
+{
+    if(wrap_value==WIDGET_WRAP_ON || wrap_value==WIDGET_WRAP_OFF)
+        t->wrap=wrap_value;
+}
+
+int spinbox_getWrap(SPINBOX t)
+{
+    return t->wrap;   
+}
+
+void spinbox_getParam(SPINBOX t,int * minimum,int * maximum,int * increment,int * nbDigits)
+{
+    if(minimum) *minimum=t->minimum;
+    if(maximum) *maximum=t->maximum;
+    if(increment) *increment=t->increment;
+    if(nbDigits) *nbDigits=t->nbDigits;
 }
 
 int spinbox_getValue(SPINBOX t)
@@ -95,10 +115,7 @@ int spinbox_getValue(SPINBOX t)
 void spinbox_setValue(SPINBOX t,int value)
 {
     if(value!=t->value && value >= t->minimum && value <= t->maximum)
-    {
         t->value=value;
-        if (t->onChange!=NULL) t->onChange(t);
-    }    
 }
 
 bool spinbox_handleEvent(SPINBOX t,int evt){
@@ -111,14 +128,20 @@ bool spinbox_handleEvent(SPINBOX t,int evt){
     switch(evt){        
         case BTN_DOWN:
             if(t->value-t->increment<t->minimum)
-                t->value=t->maximum;
+            {
+                if(t->wrap==WIDGET_WRAP_ON)
+                    t->value=t->maximum;
+            }
             else
-                t->value-=t->increment;                
+                t->value-=t->increment;             
             t->paint(t);
             break;  
         case BTN_UP:
             if(t->value+t->increment>t->maximum)
-                t->value=t->minimum;
+            {
+                if(t->wrap==WIDGET_WRAP_ON)
+                    t->value=t->minimum;
+            }
             else
                 t->value+=t->increment;
             t->paint(t);
@@ -140,41 +163,36 @@ void spinbox_autoSize(SPINBOX t)
     int of;
        
     of=gfx_fontGet(); // save previous font
-    gfx_fontSet(t->font);
-    
+    gfx_fontSet(t->font);    
     gfx_getStringSize("H",&w,&h);
-    t->width=t->nbDigits*w+4;
-    t->height=h+4; 
     gfx_fontSet(of);
+    
+    t->internalWidth=t->nbDigits*w+4;
+    t->internalHeight=h+4;
+    
+    if(t->internalHeight>t->height)
+        t->height=t->internalHeight;
+    
+    //t->updateSize(t,t->nbDigits*w+4,h+4);    
 }
 
 #define STR_SPINBOX(A) ((A)==1?"%01d":(A)==2?"%02d":(A)==3?"%03d":"%04d")
 
 void spinbox_paint(SPINBOX t){
-       
-    int valw;
-    int valh;
     int color;
     int oldf;
-    FONT f;
     char vs[10];
+    char * str;
 
     widget_paint((WIDGET)t);
-
-    
-    f=fnt_fontFromId(t->font);
-    char * str;
-    
-    valw=MAX(0,t->nbDigits*f->width)+4;
-    valh=MAX(0,f->height)+4;
-    
+        
     oldf=gfx_fontGet(); // save previous font
     gfx_fontSet(t->font);
     
-    /* paint all spinbox */    
+    /* paint all spinbox */   
     str=STR_SPINBOX(t->nbDigits);
     color=(t->focused)?t->focusColor:t->fillColor;
-    gfx_drawRect(color,t->x,t->y,valw,valh);
+    gfx_drawRect(color,t->x,t->y,t->internalWidth,t->internalHeight);
     snprintf(vs,10,str,t->value);
     gfx_putS(t->foreColor,t->backColor,t->x+2,t->y+2,vs);
     gfx_fontSet(oldf); // restore previous font

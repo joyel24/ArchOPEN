@@ -48,14 +48,14 @@ struct SHELLMENU_ITEM_STRUCT {
 
     int event;
     bool global;
-    
+
     bool listView;
 
     SHELLMENU_ITEM parent;
     SHELLMENU_ITEM next;
 };
 
-SHELLMENU_ITEM shellMenu_firstItem = NULL;
+SHELLMENU_ITEM shellMenu_firstWidget = NULL;
 SHELLMENU_ITEM shellMenu_lastItem = NULL;
 
 bool rootListView=false;
@@ -98,7 +98,7 @@ static SHELLMENU_ITEM shellMenu_addItem(){
     item->next=NULL;
 
     // handle linked list
-    if(shellMenu_firstItem==NULL) shellMenu_firstItem=item;
+    if(shellMenu_firstWidget==NULL) shellMenu_firstWidget=item;
     if(shellMenu_lastItem!=NULL) shellMenu_lastItem->next=item;
     shellMenu_lastItem=item;
 
@@ -118,7 +118,7 @@ static bool shellMenu_parse(char * filename){
         return false;
     }
 
-    printk("[shell menu] parsing '%s'\n",filename);
+    printk("[shell menu] parsing '%s' (tick=%d)\n",filename,tick);
 
     cfg_rewindItems(data);
 
@@ -139,7 +139,7 @@ static bool shellMenu_parse(char * filename){
             SHELLMENU_ITEM parent;
 
             // find parent
-            parent=shellMenu_firstItem;
+            parent=shellMenu_firstWidget;
             while(parent!=NULL){
                 if(!strcmp(parent->name,value)){
                     item->parent=parent;
@@ -177,6 +177,8 @@ static bool shellMenu_parse(char * filename){
 
     cfg_clear(data);
 
+    printk("[shell menu] parsing '%s' success (tick=%d)\n",filename,tick);
+
     return true;
 }
 
@@ -184,10 +186,10 @@ static bool shellMenu_build(){
     SHELLMENU_ITEM item;
     ICONMENU menu;
     ICONMENU_ITEM menuItem;
+    WIDGET wi;
     ICON icon;
-    int i;
 
-    printk("[shell menu] building menu\n");
+    printk("[shell menu] build (tick=%d)\n",tick);
 
     // create menu list & root menu
     shellMenu_menuList=widgetList_create();
@@ -201,20 +203,18 @@ static bool shellMenu_build(){
 
     if(!shellHasCaption)
         iconMenu_setCaptionType(shellMenu_rootMenu,IM_NO_CAPTION);
-    
+
     if(rootListView){
-        shellMenu_rootMenu->itemWidth=SHELL_MENU_LISTVIEW_WIDTH;
-        shellMenu_rootMenu->itemHeight=SHELL_MENU_LISTVIEW_HEIGHT;
+        shellMenu_rootMenu->setItemSize(shellMenu_rootMenu,SHELL_MENU_LISTVIEW_WIDTH,SHELL_MENU_LISTVIEW_HEIGHT);
     }else{
-        shellMenu_rootMenu->itemWidth=icon_size[folderType];
-        shellMenu_rootMenu->itemHeight=icon_size[folderType];
+        shellMenu_rootMenu->setItemSize(shellMenu_rootMenu,icon_size[folderType],icon_size[folderType]);
     }
-    
+
     shellMenu_menuList->addWidget(shellMenu_menuList,shellMenu_rootMenu);
     //shellMenu_menuList->setFocusedWidget(shellMenu_menuList,shellMenu_rootMenu);
 
-    item=shellMenu_firstItem;
-    
+    item=shellMenu_firstWidget;
+
     // create items & submenus
     while(item!=NULL){
 
@@ -226,9 +226,9 @@ static bool shellMenu_build(){
                 menu=NULL;
 
                 // find the menu of the item
-                for(i=0;i<shellMenu_menuList->widgetCount;++i){
-                    if(shellMenu_menuList->widgets[i]->data==item->parent){
-                        menu=(ICONMENU)shellMenu_menuList->widgets[i];
+                for(wi=shellMenu_menuList->firstWidget;wi!=NULL;wi=wi->nxt){
+                    if(wi->data==item->parent){
+                        menu=(ICONMENU)wi;
                         break;
                     }
                 }
@@ -238,9 +238,9 @@ static bool shellMenu_build(){
                     MENU parentMenu = NULL;
 
                     // find the parent menu of the menu
-                    for(i=0;i<shellMenu_menuList->widgetCount;++i){
-                        if(shellMenu_menuList->widgets[i]->data==item->parent->parent){
-                            parentMenu=(MENU)shellMenu_menuList->widgets[i];
+                    for(wi=shellMenu_menuList->firstWidget;wi!=NULL;wi=wi->nxt){
+                        if(wi->data==item->parent->parent){
+                            parentMenu=(MENU)wi;
                             break;
                         }
                     }
@@ -248,9 +248,9 @@ static bool shellMenu_build(){
                     // find the folder item in the parent menu of the menu
                     menuItem=NULL;
                     if(parentMenu!=NULL){
-                        for(i=0;i<parentMenu->itemCount;++i){
-                            if(parentMenu->items[i]->data==item->parent){
-                                menuItem=(ICONMENU_ITEM)parentMenu->items[i];
+                        for(wi=parentMenu->firstWidget;wi!=NULL;wi=wi->nxt){
+                            if(wi->data==item->parent){
+                                menuItem=(ICONMENU_ITEM)wi;
                                 break;
                             }
                         }
@@ -268,34 +268,34 @@ static bool shellMenu_build(){
                     menu->parentMenu=parentMenu;
                     menu->data=item->parent;
                     menu->onClick=(MENU_CLICKEVENT)shellMenu_onClick;
-                    
+
                     if(!shellHasCaption)
                         iconMenu_setCaptionType(menu,IM_NO_CAPTION);
-                    
-                    if(item->parent->listView){
-                        menu->itemWidth=SHELL_MENU_LISTVIEW_WIDTH;
-                        menu->itemHeight=SHELL_MENU_LISTVIEW_HEIGHT;
-                    }else{
-                        menu->itemWidth=icon_size[folderType];
-                        menu->itemHeight=icon_size[folderType];
+
+                    if(item->parent->listView)
+                    {
+                        menu->setItemSize(menu,SHELL_MENU_LISTVIEW_WIDTH,SHELL_MENU_LISTVIEW_HEIGHT);
+                    }else
+                    {
+                        menu->setItemSize(menu,icon_size[folderType],icon_size[folderType]);
                     }
-                    
+
                     shellMenu_menuList->addWidget(shellMenu_menuList,menu);
-    
+
                     // link the folder item to the menu
                     menuItem->subMenu=(MENU)menu;
                 }
             }
-    
+
             // build menu item
             menuItem=iconMenuItem_create();
             menuItem->data=item;
-            menuItem->caption=item->name;
+            menuItem->setCaption(menuItem,item->name);
 
             if((item->parent!=NULL && item->parent->listView) || (item->parent==NULL && rootListView)){
-                menuItem->iconPosition=IMIP_LEFT;
+                menuItem->setIPosition(menuItem,IMIP_LEFT);
             }else{
-                menuItem->iconPosition=IMIP_TOP;
+                menuItem->setIPosition(menuItem,IMIP_TOP);
             }
 
             icon=NULL;
@@ -308,21 +308,22 @@ static bool shellMenu_build(){
             }else{
                 icon=icon_loadForce(item->icon);
             }
-    
+
             if(icon!=NULL){
                 menuItem->icon=icon->bmap_data;
             }
-    
+
             menu->addItem(menu,menuItem);
         }
 
         item=item->next;
     }
 
+
     shellMenu_menuList->setFocusedWidget(shellMenu_menuList,shellMenu_rootMenu);
-    
-    printk("[shell menu] menu build\n");
-    
+
+    printk("[shell menu] build done (tick=%d)\n",tick);
+
     return true;
 }
 
@@ -332,7 +333,7 @@ void shellMenu_handleEvent(int event){
     shellMenu_menuList->handleEvent(shellMenu_menuList,event);
 
     // handle event based items
-    item=shellMenu_firstItem;
+    item=shellMenu_firstWidget;
     while(item!=NULL){
         if(item->event==event){
 
@@ -350,7 +351,7 @@ void shellMenu_handleEvent(int event){
 void shellMenu_printItems(){
     SHELLMENU_ITEM i;
 
-    i=shellMenu_firstItem;
+    i=shellMenu_firstWidget;
     while(i){
         printk("* name='%s'",i->name);
         if (i->event) printk(" event=%d%s",i->event,(i->global)?" global":"");
@@ -366,9 +367,9 @@ void shellMenu_printItems(){
 }
 
 bool shellMenu_init(){
-    
+
     rootListView=SHELL_MENU_MODE;
-    shellMenu_firstItem = NULL;
+    shellMenu_firstWidget = NULL;
     shellMenu_lastItem = NULL;
     // load icons
     shellMenu_folderIcon = icon_loadForce(SHELL_FOLDER_ICON);
@@ -399,7 +400,7 @@ void shellMenu_close(){
     }
 
     // free item list
-    item=shellMenu_firstItem;
+    item=shellMenu_firstWidget;
     while(item!=NULL){
         // free strings
         if (item->name!=NULL) kfree(item->name);
@@ -414,5 +415,4 @@ void shellMenu_close(){
 
         kfree(prev);
     }
-    
 }

@@ -13,6 +13,9 @@
 #ifndef __TIME_H
 #define __TIME_H
 
+typedef enum {FORMAT_MMDDYYYY, FORMAT_DDMMYYYY} DT_DATE_FORMAT;
+typedef enum {FORMAT_12, FORMAT_24} DT_TIME_FORMAT;
+
 struct med_tm {
     int tm_ms;
     int tm_sec;

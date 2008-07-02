@@ -23,20 +23,23 @@
                                        \
     SPINBOX_CHANGEEVENT onChange;      \
     SPINBOX_SETPARAM    setParam;      \
-    SPINBOX_SETFONT     setFont;       \
-    SPINBOX_SETPOS      setPos;        \
+    SPINBOX_GETPARAM    getParam;      \
     SPINBOX_SETVALUE    setValue;      \
     SPINBOX_GETVALUE    getValue;      \
+    SPINBOX_SETWRAP     setWrap;       \
+    SPINBOX_GETWRAP     getWrap;       \
     int value;                         \
     int minimum;                       \
     int maximum;                       \
     int increment;                     \
+    bool wrap;                         \
     int nbDigits;
 
 typedef void(*SPINBOX_CHANGEEVENT)(void *);
 typedef void(*SPINBOX_SETPARAM)(void *,int,int,int,int);
-typedef void(*SPINBOX_SETFONT)(void *,int);
-typedef void(*SPINBOX_SETPOS)(void *,int,int);
+typedef void(*SPINBOX_GETPARAM)(void *,int*,int*,int*,int*);
+typedef void(*SPINBOX_SETWRAP)(void*,int);
+typedef int(*SPINBOX_GETWRAP)(void*);
 typedef void(*SPINBOX_SETVALUE)(void *,int);
 typedef int(*SPINBOX_GETVALUE)(void *);
 

@@ -22,6 +22,8 @@
 #include <gui/chooser.h>
 #include <gui/button.h>
 #include <gui/spinbox.h>
+#include <gui/date_time.h>
+#include <gui/widgetmenuline.h>
 
 //*****************************************************************************
 // WIDGETMENU_ITEM
@@ -37,6 +39,11 @@ void widgetMenuItem_paint(WIDGETMENU_ITEM mi);
 void widgetMenuItem_cfgToString(WIDGETMENU_ITEM mi,char * s);
 void widgetMenuItem_cfgFromString(WIDGETMENU_ITEM mi,char * s);
 void widgetMenuItem_rePaint(WIDGETMENU_ITEM mi);
+void widgetMenuItem_autoSize(WIDGETMENU_ITEM mi);
+void widgetMenuItem_setFont(WIDGETMENU_ITEM mi, int font);
+void widgetMenuItem_update(WIDGETMENU_ITEM mi,WIDGET subItem);
+void widgetMenuItem_setPos(WIDGETMENU_ITEM mi,int x,int y);
+void widgetMenuItem_setAlignAt(WIDGETMENU_ITEM mi,int alignAt);
 
 //*****************************************************************************
 // WIDGETMENU_BUTTON
@@ -57,6 +64,26 @@ void widgetMenuCheckbox_destroy(WIDGETMENU_CHECKBOX mc);
 void widgetMenuCheckbox_init(WIDGETMENU_CHECKBOX mc);
 void widgetMenuCheckbox_cfgToString(WIDGETMENU_CHECKBOX mc,char * s);
 void widgetMenuCheckbox_cfgFromString(WIDGETMENU_CHECKBOX mc,char * s);
+
+//*****************************************************************************
+// WIDGETMENU_DATE_TIME
+//*****************************************************************************
+
+WIDGETMENU_DATE_TIME widgetMenuDateTime_create();
+void widgetMenuDateTime_destroy(WIDGETMENU_DATE_TIME mc);
+void widgetMenuDateTime_init(WIDGETMENU_DATE_TIME mc);
+void widgetMenuDateTime_cfgToString(WIDGETMENU_DATE_TIME mc,char * s);
+void widgetMenuDateTime_cfgFromString(WIDGETMENU_DATE_TIME mc,char * s);
+
+//*****************************************************************************
+// WIDGETMENU_MENULINE
+//*****************************************************************************
+
+WIDGETMENU_MENULINE widgetMenuMenuLine_create();
+void widgetMenuMenuLine_destroy(WIDGETMENU_MENULINE mc);
+void widgetMenuMenuLine_init(WIDGETMENU_MENULINE mc);
+void widgetMenuMenuLine_cfgToString(WIDGETMENU_MENULINE mc,char * s);
+void widgetMenuMenuLine_cfgFromString(WIDGETMENU_MENULINE mc,char * s);
 
 //*****************************************************************************
 // WIDGETMENU_TRACKBAR
@@ -102,6 +129,8 @@ CHECKBOX widgetMenu_getCheckbox(WIDGETMENU m,int index);
 TRACKBAR widgetMenu_getTrackbar(WIDGETMENU m,int index);
 CHOOSER widgetMenu_getChooser(WIDGETMENU m,int index);
 SPINBOX widgetMenu_getSpinbox(WIDGETMENU m,int index);
+void widgetMenu_addItem(WIDGETMENU m, WIDGETMENU_ITEM item);
+void widgetMenu_setAlignAt(WIDGETMENU m,int alignAt);
 
 bool widgetMenu_cfgLoad(WIDGETMENU m,char * filename);
 bool widgetMenu_cfgSave(WIDGETMENU m,char * filename);

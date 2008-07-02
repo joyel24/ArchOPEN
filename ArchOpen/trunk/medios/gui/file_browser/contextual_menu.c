@@ -43,7 +43,6 @@
 
 #define CONT_MENU_NB_ITEM 9
 
-WIDGETLIST menuList;
 WIDGETMENU contMenu;
 
 extern int evt_handler;
@@ -127,7 +126,7 @@ void contMenu_onClick(MENU m, WIDGETMENU_ITEM mi)
         {
             case 0: /*Info*/
                 browser_drawInfo(selected_entry);
-                menuList->focusedWidget->paint(menuList->focusedWidget);
+                contMenu->paint(contMenu);
                 break;
             case 1: /*Create Folder*/
                 fullname[0]=0;
@@ -404,72 +403,74 @@ void browser_mkMenu(struct browser_data * bdata)
     gfx_drawRect(COLOR_GRAY,contM_X,contM_Y,contM_W,contM_H);
     gfx_drawRect(COLOR_DARK_GRAY,contM_X+1,contM_Y+1,contM_W-2,contM_H-2);
     
-    // menuList
-    menuList=widgetList_create();
-    menuList->ownWidgets=true;
-        
+       
     contMenu=widgetMenu_create();
     contMenu->setRect(contMenu,contM_X+5,contM_Y+5,contM_W-10,contM_H-10);
-    contMenu->ownItems=true; // the menu will handle items destroy
+    contMenu->ownWidgets=true; // the menu will handle items destroy
     contMenu->onClick=(MENU_CLICKEVENT)contMenu_onClick;
-    contMenu->menuList=menuList;
+    contMenu->menuList=NULL;
     contMenu->hasScrollBar=1;
-    menuList->addWidget(menuList,contMenu);
 
     /*0*/
     mi=widgetMenuItem_create();
-    mi->caption=selected_entry->type==TYPE_FILE?getLangStr(STRLNG_BROWSER_FILE_INFO):getLangStr(STRLNG_BROWSER_FOLDER_INFO);
+    mi->setCaption(mi,selected_entry->type==TYPE_FILE ?
+                   getLangStr(STRLNG_BROWSER_FILE_INFO) : 
+                   getLangStr(STRLNG_BROWSER_FOLDER_INFO));
     mi->foreColor=MENU_COLOR;
-    mi->widgetWidth=0;
     contMenu->addItem(contMenu,mi);
     miTab[i++]=mi;
             
     
     /*1*/
     mi=widgetMenuItem_create();
-    mi->caption=getLangStr(STRLNG_BROWSER_CREATE_FOLDER);
+    mi->setCaption(mi,getLangStr(STRLNG_BROWSER_CREATE_FOLDER));
     mi->foreColor=MENU_COLOR;
-    mi->widgetWidth=0;
     contMenu->addItem(contMenu,mi);
     miTab[i++]=mi;
 
     /*2*/
     mi=widgetMenuItem_create();
-    mi->caption=nbSelected(bdata)>0?getLangStr(STRLNG_BROWSER_DELETE_SELECTED):(selected_entry->type==TYPE_FILE?getLangStr(STRLNG_BROWSER_DELETE_FILE):getLangStr(STRLNG_BROWSER_DELETE_FOLDER));
+    mi->setCaption(mi,nbSelected(bdata)>0 ? 
+            getLangStr(STRLNG_BROWSER_DELETE_SELECTED) : 
+            (selected_entry->type==TYPE_FILE ? 
+                    getLangStr(STRLNG_BROWSER_DELETE_FILE) : 
+                    getLangStr(STRLNG_BROWSER_DELETE_FOLDER)));
     mi->foreColor=MENU_COLOR;
-    mi->widgetWidth=0;
     contMenu->addItem(contMenu,mi);
     miTab[i++]=mi;
 
     /*3*/
     mi=widgetMenuItem_create();
-    mi->caption=selected_entry->type==TYPE_FILE?getLangStr(STRLNG_BROWSER_SELECT_FILE):getLangStr(STRLNG_BROWSER_SELECT_FOLDER);
+    mi->setCaption(mi,selected_entry->type==TYPE_FILE ? 
+            getLangStr(STRLNG_BROWSER_SELECT_FILE) : 
+            getLangStr(STRLNG_BROWSER_SELECT_FOLDER));
     mi->foreColor=MENU_COLOR;
-    mi->widgetWidth=0;
     contMenu->addItem(contMenu,mi);
     miTab[i++]=mi;
 
     /*4*/
     mi=widgetMenuItem_create();
-    mi->caption=nbSelected(curBdata)==curBdata->listused?getLangStr(STRLNG_BROWSER_UNSELECT_ALL):getLangStr(STRLNG_BROWSER_SELECT_ALL);
+    mi->setCaption(mi,nbSelected(curBdata)==curBdata->listused ? 
+            getLangStr(STRLNG_BROWSER_UNSELECT_ALL) : 
+            getLangStr(STRLNG_BROWSER_SELECT_ALL));
     mi->foreColor=MENU_COLOR;
-    mi->widgetWidth=0;
     contMenu->addItem(contMenu,mi);
     miTab[i++]=mi;
 
     /*5*/
     mi=widgetMenuItem_create();
-    mi->caption=selected_entry->type==TYPE_FILE?getLangStr(STRLNG_BROWSER_RENAME_FILE):getLangStr(STRLNG_BROWSER_RENAME_FOLDER);
+    mi->setCaption(mi,selected_entry->type==TYPE_FILE ?
+            getLangStr(STRLNG_BROWSER_RENAME_FILE) : 
+            getLangStr(STRLNG_BROWSER_RENAME_FOLDER));
     mi->foreColor=MENU_COLOR;
-    mi->widgetWidth=0;
     contMenu->addItem(contMenu,mi);
     miTab[i++]=mi;
 
     /*6*/
     mi=widgetMenuItem_create();
-    mi->caption=selected_entry->type==TYPE_FILE?getLangStr(STRLNG_BROWSER_OPEN_FILE):getLangStr(STRLNG_BROWSER_OPEN_FILE);
+    mi->setCaption(mi,selected_entry->type==TYPE_FILE ?
+            getLangStr(STRLNG_BROWSER_OPEN_FILE):getLangStr(STRLNG_BROWSER_OPEN_FOLDER));
     mi->foreColor=MENU_COLOR;
-    mi->widgetWidth=0;
     contMenu->addItem(contMenu,mi);
     miTab[i++]=mi;
         
@@ -477,17 +478,23 @@ void browser_mkMenu(struct browser_data * bdata)
     {
         /*7*/
         mi=widgetMenuItem_create();
-        mi->caption=nbSelected(bdata)>0?getLangStr(STRLNG_BROWSER_COPY_SELECTED):(selected_entry->type==TYPE_FILE?getLangStr(STRLNG_BROWSER_COPY_FILE):getLangStr(STRLNG_BROWSER_COPY_FOLDER));
+        mi->setCaption(mi,nbSelected(bdata)>0 ?
+                getLangStr(STRLNG_BROWSER_COPY_SELECTED) :
+                (selected_entry->type==TYPE_FILE ?
+                        getLangStr(STRLNG_BROWSER_COPY_FILE) :
+                        getLangStr(STRLNG_BROWSER_COPY_FOLDER)));
         mi->foreColor=MENU_COLOR;
-        mi->widgetWidth=0;
         contMenu->addItem(contMenu,mi);
         miTab[i++]=mi;
 
         /*8*/
         mi=widgetMenuItem_create();
-        mi->caption=nbSelected(bdata)>0?getLangStr(STRLNG_BROWSER_MOVE_SELECTED):(selected_entry->type==TYPE_FILE?getLangStr(STRLNG_BROWSER_MOVE_FILE):getLangStr(STRLNG_BROWSER_MOVE_FOLDER));
+        mi->setCaption(mi,nbSelected(bdata)>0 ?
+                getLangStr(STRLNG_BROWSER_MOVE_SELECTED) :
+                (selected_entry->type==TYPE_FILE ?
+                        getLangStr(STRLNG_BROWSER_MOVE_FILE) :
+                        getLangStr(STRLNG_BROWSER_MOVE_FOLDER)));
         mi->foreColor=MENU_COLOR;
-        mi->widgetWidth=0;
         contMenu->addItem(contMenu,mi);
         miTab[i++]=mi;
     }
@@ -505,14 +512,12 @@ void browser_contMenu(struct browser_data * bdata)
     
     browser_mkMenu(bdata);
     
-    menuList->setFocusedWidget(menuList,contMenu);
-    menuList->focusedWidget->paint(menuList->focusedWidget);
     printk("Initial Draw\n");
-        
+    contMenu->paint(contMenu);
     do{
         event=evt_getStatusBlocking(evt_handler);
         if (!event) continue; // no new events
-        menuList->handleEvent(menuList,event);
+        contMenu->handleEvent(contMenu,event);
     }while(event!=BTN_OFF && !browser_ContM_exit);
     
 }

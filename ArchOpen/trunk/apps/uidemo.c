@@ -13,7 +13,7 @@
 #ifdef BUILD_STDALONE
     #include <kernel/malloc.h>
     #include <kernel/evt.h>
-    
+
     #include <gui/widget.h>
     #include <gui/checkbox.h>
     #include <gui/trackbar.h>
@@ -106,7 +106,7 @@ void buildMainMenu(){
 
     mainMenu=textMenu_create();
     mainMenu->setRect(mainMenu,0,20,220,156);
-    mainMenu->ownItems=true; // the menu will handle items destroy
+    mainMenu->ownWidgets=true; // the menu will handle items destroy
 
     mi=textMenuItem_create();
     mi->caption="Text menu demo";
@@ -123,7 +123,7 @@ void buildMainMenu(){
     // add to menu list
     menuList->addWidget(menuList,mainMenu);
     mainMenu->menuList=menuList;
-    
+
     // set as active menu
     menuList->setFocusedWidget(menuList,mainMenu);
 }
@@ -135,7 +135,7 @@ void buildTextMenu(){
 
     textMenu=textMenu_create();
     textMenu->setRect(textMenu,0,20,220,156);
-    textMenu->ownItems=true; // the menu will handle items destroy
+    textMenu->ownWidgets=true; // the menu will handle items destroy
     textMenu->onClick=(MENU_CLICKEVENT)menu_onClick;
 
     mi=textMenuItem_create();
@@ -150,12 +150,12 @@ void buildTextMenu(){
 
     mi=textMenuItem_create();
     mi->caption="Centered item";
-    mi->alignment=TMA_CENTER;
+    mi->alignment=WA_CENTER;
     textMenu->addItem(textMenu,mi);
 
     mi=textMenuItem_create();
     mi->caption="Right aligned item";
-    mi->alignment=TMA_RIGHT;
+    mi->alignment=WA_RIGHT;
     textMenu->addItem(textMenu,mi);
 
     for(i=1;i<51;++i){
@@ -175,7 +175,7 @@ void buildTextMenu(){
     textMenu->parentMenu=(MENU)mainMenu;
 
     // link mainMenu item to this menu
-    mainMenu->items[0]->subMenu=(MENU)textMenu;
+    ((MENU_ITEM)mainMenu->firstWidget)->subMenu=(MENU)textMenu;
 }
 
 void buildWidgetMenu(){
@@ -188,18 +188,16 @@ void buildWidgetMenu(){
 
     widgetMenu=widgetMenu_create();
     widgetMenu->setRect(widgetMenu,0,20,220,156);
-    widgetMenu->ownItems=true; // the menu will handle items destroy
+    widgetMenu->ownWidgets=true; // the menu will handle items destroy
     widgetMenu->onClick=(MENU_CLICKEVENT)widgetMenu_onClick;
 
 
     mi=widgetMenuItem_create();
     mi->caption="Load config";
-    mi->widgetWidth=0;
     widgetMenu->addItem(widgetMenu,mi);
 
     mi=widgetMenuItem_create();
     mi->caption="Save config";
-    mi->widgetWidth=0;
     widgetMenu->addItem(widgetMenu,mi);
 
     mic=widgetMenuCheckbox_create();
@@ -225,18 +223,15 @@ void buildWidgetMenu(){
 
     mi=widgetMenuItem_create();
     mi->caption="Simple widgetMenuItem example";
-    mi->widgetWidth=0;
     widgetMenu->addItem(widgetMenu,mi);
 
     mi=widgetMenuItem_create();
     mi->caption="(can be used for onClick evts)";
-    mi->widgetWidth=0;
     widgetMenu->addItem(widgetMenu,mi);
 
     mi=widgetMenuItem_create();
     mi->caption="This item can't be selected";
     mi->canFocus=false;
-    mi->widgetWidth=0;
     widgetMenu->addItem(widgetMenu,mi);
 
     for(i=1;i<101;++i){
@@ -257,7 +252,8 @@ void buildWidgetMenu(){
     widgetMenu->parentMenu=(MENU)mainMenu;
 
     // link mainMenu item to this menu
-    mainMenu->items[2]->subMenu=(MENU)widgetMenu;
+    
+    ((MENU_ITEM)mainMenu->widgetAt(mainMenu,2))->subMenu=(MENU)widgetMenu;
 }
 
 void buildIconMenu(){
@@ -275,10 +271,9 @@ void buildIconMenu(){
 
     iconMenu=iconMenu_create();
     iconMenu->setRect(iconMenu,0,20,220,156);
-    iconMenu->itemWidth=52;
-    iconMenu->itemHeight=64;
-    iconMenu->ownItems=true; // the menu will handle items destroy
+    iconMenu->ownWidgets=true; // the menu will handle items destroy
     iconMenu->onClick=(MENU_CLICKEVENT)menu_onClick;
+    iconMenu->setItemSize(iconMenu,52,64);
 
     mi=iconMenuItem_create();
     mi->caption="Example";
@@ -304,7 +299,7 @@ void buildIconMenu(){
     iconMenu->parentMenu=(MENU)mainMenu;
 
     // link mainMenu item to this menu
-    mainMenu->items[1]->subMenu=(MENU)iconMenu;
+    ((MENU_ITEM)mainMenu->widgetAt(mainMenu,2))->subMenu=(MENU)iconMenu;
 }
 
 void buildWidgetList(){
@@ -321,7 +316,7 @@ void buildWidgetList(){
     l=label_create();
     l->setRect(l,0,25,220,13);
     l->font=STD8X13;
-    l->alignment=LA_CENTER;
+    l->alignment=WA_CENTER;
     l->foreColor=COLOR_RED;
     l->caption="widgetList demo";
     widgetList->addWidget(widgetList,l);
@@ -335,27 +330,22 @@ void buildWidgetList(){
 
     b=button_create();
     b->setRect(b,10,155,100,15);
-    b->focusPosition=5;
     b->onClick=(BUTTON_CLICKEVENT)menuDemoButton_onClick;
     b->caption="Go to menu demo";
     widgetList->addWidget(widgetList,b);
 
     c=checkbox_create();
     c->setRect(c,10,55,150,15);
-    c->focusPosition=1;
-    c->caption="Example checkbox";
     widgetList->addWidget(widgetList,c);
 
     t=trackbar_create();
     t->setRect(t,10,75,150,15);
-    t->focusPosition=2;
     t->numTicks=7;
     t->minimum=-10;
     widgetList->addWidget(widgetList,t);
 
     h=chooser_create();
     h->setRect(h,10,95,150,15);
-    h->focusPosition=3;
     h->items=chooser_items;
     h->itemCount=6;
     h->index=0;
@@ -363,7 +353,6 @@ void buildWidgetList(){
 
     b=button_create();
     b->setRect(b,10,115,100,15);
-    b->focusPosition=4;
     b->onClick=(BUTTON_CLICKEVENT)exampleButton_onClick;
     b->caption="Example button";
     widgetList->addWidget(widgetList,b);

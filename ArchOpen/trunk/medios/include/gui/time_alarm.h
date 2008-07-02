@@ -1,5 +1,5 @@
 /*
-* include/gui/settings_bgImg.h
+* include/gui/time_alarm.h
 *
 * MediOS project
 * Copyright (c) 2005 by Christophe THOMAS
@@ -11,18 +11,9 @@
 *
 */
 
-#ifndef __SETTINGS_BGIMG_H
-#define __SETTINGS_BGIMG_H
+#ifndef __TIME_ALARM_H
+#define __TIME_ALARM_H
 
-extern int has_bgImg;
-extern int bgImg_enable;
-extern int blendMode;
-extern int blendFactor;
-
-void chg_BG_enable(int state,int mode, int factor);
-void restoreBG(void);
-
-void bgImg_setting(void);
-void bgImg_loadPref(void);
+void time_alarm(void);
 
 #endif

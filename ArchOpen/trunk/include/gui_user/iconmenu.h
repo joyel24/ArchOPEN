@@ -30,9 +30,15 @@ typedef enum {IM_HAS_CAPTION, IM_NO_CAPTION} IM_CAPTION;
     /* we inherit from MENUITEM */     \
     MENU_ITEM_MEMBERS                  \
                                        \
+    ICONMENU_ITEM_IPOSETTER setIPosition; \
+                                       \
     BITMAP icon;                       \
+    int iw,ih,ix,iy;                   \
+    int tx,ty;                         \
     IM_CAPTION itemCaption;            \
     IM_ICONPOSITION iconPosition;
+
+typedef void(*ICONMENU_ITEM_IPOSETTER)(void *,int);
 
 typedef struct {
     ICONMENU_ITEM_MEMBERS
@@ -47,10 +53,18 @@ typedef struct {
     /* we inherit from MENU */         \
     MENU_MEMBERS                       \
                                        \
+    ICONMENU_ITEMSIZESETTER setItemSize; \
+    ICONMENU_STATUSFONTSETTER setStatusFont; \
+    ICONMENU_CAPTIONTYPESETTER setCaptionType; \
     int itemWidth;                     \
     int itemHeight;                    \
     IM_CAPTION itemCaption;            \
+    int statusFont;                    \
     int btm_line_h;
+
+typedef void(*ICONMENU_ITEMSIZESETTER)(void*,int,int);
+typedef void(*ICONMENU_STATUSFONTSETTER)(void*,int);
+typedef void(*ICONMENU_CAPTIONTYPESETTER)(void*,int);
 
 typedef struct {
     ICONMENU_MEMBERS

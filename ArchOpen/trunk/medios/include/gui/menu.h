@@ -17,6 +17,9 @@
 #include <gui_user/menu.h>
 
 #include <gui/widget.h>
+#include <gui/widgetlist.h>
+
+
 
 //*****************************************************************************
 // MENU_ITEM
@@ -26,6 +29,10 @@ MENU_ITEM menuItem_create();
 void menuItem_destroy(MENU_ITEM mi);
 void menuItem_init(MENU_ITEM mi);
 bool menuItem_isVisible(MENU_ITEM mi);
+void menuItem_setPos(MENU_ITEM mi,int x,int y);
+void menuItem_setSize(MENU_ITEM mi,int width,int height);
+void menuItem_setCaption(MENU_ITEM mi,char * caption);
+void menuItem_autoSize(MENU_ITEM mi);
 
 //*****************************************************************************
 // MENU
@@ -37,8 +44,17 @@ void menu_init(MENU m);
 bool menu_handleEvent(MENU m,int evt);
 void menu_paint(MENU m);
 void menu_addItem(MENU m, MENU_ITEM item);
+int menu_delItem(MENU m, MENU_ITEM item);
 void menu_clearItems(MENU m);
 int menu_indexOf(MENU m, MENU_ITEM item);
 int menu_indexFromCaption(MENU m, char * caption);
+MENU_ITEM menu_itemFromCaption(MENU m,char * caption);
+void menu_update(MENU parent,MENU_ITEM child);
+void menu_setSize(MENU m,int width,int height);
+void menu_setFont(MENU m, int font);
+void menu_setPos(MENU m,int x,int y);
+void menu_updatePos(MENU m,bool fast);
+void menu_autoSize(MENU m);
+void menu_setAlign(MENU m, W_ALIGNMENT alignment);
 
 #endif

@@ -105,6 +105,11 @@ void chg_BG_enable(int state,int mode, int factor)
     }
 }
 
+void restoreBG(void)
+{
+    chg_BG_enable(bgImg_enable,blendMode,blendFactor);
+}
+
 void chg_blendMode(int mode)
 {
     int curState=gfx_planeGetState(BMAP1);
@@ -443,7 +448,7 @@ void reset_button_click(BUTTON b)
             bgImg_enable=0;
         }
     }
-    chg_BG_enable(bgImg_enable,blendMode,blendFactor);
+    restoreBG();
     needClean=0;
     bgImg_disp_chk->checkbox->checked=bgImg_enable;
     blendTrsp->chooser->index=blendMode;
@@ -484,14 +489,13 @@ void bgImg_setting(void)
 
     widgetMenu=widgetMenu_create();
     widgetMenu->setRect(widgetMenu,minX,minY,LCD_WIDTH-minX,LCD_HEIGHT-minY);
-    widgetMenu->ownItems=true; // the menu will handle items destroy
+    widgetMenu->ownWidgets=true; // the menu will handle items destroy
+    widgetMenu->font=WIDGET_CONFIG_FONT;
     
     bgImg_disp_chk=widgetMenuCheckbox_create();
-    bgImg_disp_chk->caption=NULL;
-    bgImg_disp_chk->checkbox->caption=getLangStr(STRLNG_BG_ENABLE);
+    bgImg_disp_chk->caption=getLangStr(STRLNG_BG_ENABLE);
     bgImg_disp_chk->checkbox->checked=bgImg_enable;
     bgImg_disp_chk->checkbox->onChange=(CHECKBOX_CHANGEEVENT)bgImg_disp_chk_chg;
-    bgImg_disp_chk->doAutoSize=true;
     widgetMenu->addItem(widgetMenu,bgImg_disp_chk);    
     if(!has_bgImg) bgImg_disp_chk->canFocus=0;
         
@@ -503,7 +507,6 @@ void bgImg_setting(void)
     blendTrsp->chooser->wrap=WIDGET_WRAP_ON;
     blendTrsp->chooser->orientation=WIDGET_ORIENTATION_HORIZ;
     blendTrsp->chooser->onChange=(CHOOSER_CHANGEEVENT)blendTrsp_chg;
-    blendTrsp->doAutoSize=true;
     widgetMenu->addItem(widgetMenu,blendTrsp);
     if(!bgImg_enable) blendTrsp->canFocus=0;
     
@@ -514,13 +517,11 @@ void bgImg_setting(void)
     trspVal->trackbar->maximum=OSD_BITMAP_BLEND_FACTOR_MAX; /* mas is probably different on DSC21 */
     trspVal->trackbar->increment=1;
     trspVal->trackbar->onChange=(TRACKBAR_CHANGEEVENT)trspVal_chg;
-    trspVal->doAutoSize=true;
     widgetMenu->addItem(widgetMenu,trspVal);
     if(!bgImg_enable) trspVal->canFocus=0;
     
     discardBg_button=widgetMenuButton_create();
     discardBg_button->caption=NULL;
-    discardBg_button->doAutoSize=true;
     discardBg_button->button->caption=getLangStr(STRLNG_DISCARD_BG_IMAGE);
     discardBg_button->button->onClick=(BUTTON_CLICKEVENT)discardBgItem_click;
     widgetMenu->addItem(widgetMenu,discardBg_button);
@@ -528,7 +529,6 @@ void bgImg_setting(void)
     
     discardFileImg_button=widgetMenuButton_create();
     discardFileImg_button->caption=NULL;
-    discardFileImg_button->doAutoSize=true;
     discardFileImg_button->button->caption=getLangStr(STRLNG_DISCARD_FILE_IMAGE);
     discardFileImg_button->button->onClick=(BUTTON_CLICKEVENT)discardFileImgItem_click;
     widgetMenu->addItem(widgetMenu,discardFileImg_button);
@@ -536,20 +536,17 @@ void bgImg_setting(void)
     
     fName=widgetMenuItem_create();
     fName->caption=getLangStr(STRLNG_NO_FILE_SELECTED);
-    fName->widgetWidth=0;
     widgetMenu->addItem(widgetMenu,fName);
     fName->canFocus=0;
     
     brw_button=widgetMenuButton_create();
     brw_button->caption=NULL;
-    brw_button->doAutoSize=true;
     brw_button->button->caption=getLangStr(STRLNG_BROWSE);
     brw_button->button->onClick=(BUTTON_CLICKEVENT)brwBtnBgImg_click;
     widgetMenu->addItem(widgetMenu,brw_button);
     
     reset_button=widgetMenuButton_create();
     reset_button->caption=NULL;
-    reset_button->doAutoSize=true;
     reset_button->button->caption=getLangStr(STRLNG_RESET);
     reset_button->button->onClick=(BUTTON_CLICKEVENT)reset_button_click;
     widgetMenu->addItem(widgetMenu,reset_button);
@@ -674,7 +671,7 @@ void bgImg_loadPref(void)
         
     /* chging img state */
     
-    chg_BG_enable(bgImg_enable,blendMode,blendFactor);
+    restoreBG();
     
     BG_MENU_STATE("Loading cfg",0);
     

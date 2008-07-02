@@ -123,15 +123,14 @@ void shell_setting(void)
     // menuList
     widgetMenu=widgetMenu_create();
     widgetMenu->setRect(widgetMenu,minX,minY,LCD_WIDTH-minX,LCD_HEIGHT-minY);
-    widgetMenu->ownItems=true; // the menu will handle items destroy
+    widgetMenu->ownWidgets=true; // the menu will handle items destroy
+    widgetMenu->font=WIDGET_CONFIG_FONT;
     
     // standardMenu
     
     hasCaption=widgetMenuCheckbox_create();
-    hasCaption->caption=NULL;
-    hasCaption->checkbox->caption=getLangStr(STRLNG_SHELL_CAPTION);
+    hasCaption->caption=getLangStr(STRLNG_SHELL_CAPTION);
     hasCaption->checkbox->checked=shellHasCaption;
-    hasCaption->doAutoSize=true;
     widgetMenu->addItem(widgetMenu,hasCaption);
         
     iconSize=widgetMenuChooser_create();
@@ -141,19 +140,17 @@ void shell_setting(void)
     iconSize->chooser->index=folderType;
     iconSize->chooser->wrap=WIDGET_WRAP_ON;
     iconSize->chooser->orientation=WIDGET_ORIENTATION_HORIZ;
-    iconSize->doAutoSize=true;
     widgetMenu->addItem(widgetMenu,iconSize);
             
     init_bright=lcd_getBrightness();
     brightVal=widgetMenuTrackbar_create();
     brightVal->caption=NULL;
-    brightVal->trackbar->value=init_bright;
-    brightVal->trackbar->minimum=0;
-    brightVal->trackbar->maximum=100; /* mas is probably different on DSC21 */
-    brightVal->trackbar->increment=5;
+    /* max is probably different on DSC21 */
     brightVal->trackbar->onChange=(TRACKBAR_CHANGEEVENT)brightVal_chg;
-    brightVal->doAutoSize=true;
     widgetMenu->addItem(widgetMenu,brightVal);
+    brightVal->trackbar->setParam(brightVal->trackbar,0,100,10);
+    brightVal->trackbar->setValue(brightVal->trackbar,init_bright);
+    brightVal->useMaxWidth=true;
     
     // intial paint
     // set focus

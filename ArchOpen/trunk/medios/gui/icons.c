@@ -316,6 +316,8 @@ MED_RET_T icon_convIco(char * fname,char * filename)
     struct ico_struct icon_data;
     struct ico_bmap_head icon_bitmap_head;
     
+    printk("[icon|convIco] %s,%s\n",fname,filename);
+    
     infile = open(fname, O_RDONLY);
     if(infile<0)
     {
@@ -565,6 +567,7 @@ ICON icon_loadFlag(char * filename,int force,int other)
         {
             if(force)
             {
+                printk("[icon_load] force loading icon %s\n",name);
                 kfree(ptr->data);
                 kfree(name);
                 found=1;
@@ -616,7 +619,7 @@ ICON icon_loadFlag(char * filename,int force,int other)
     }
     
     len=ptr->bmap_data.width*ptr->bmap_data.height;
-       
+#if 0
     for(i=0;i<ptr->bmap_data.height;i++)
     {
         if(read(infile,ptr->data+ptr->bmap_data.width*i,ptr->bmap_data.width)<ptr->bmap_data.width)
@@ -625,7 +628,13 @@ ICON icon_loadFlag(char * filename,int force,int other)
             goto err4;
         }
     }
-    
+#else
+    if(read(infile,ptr->data,len)<len)
+    {
+        printk("[icon_load] end of file reached - Step6\n");
+        goto err4;
+    }              
+#endif    
     /* fill BITMAP structure */
     ptr->bmap_data.data=(unsigned int)ptr->data;
     ptr->bmap_data.type=0;

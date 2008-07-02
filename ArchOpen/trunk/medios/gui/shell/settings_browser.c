@@ -93,32 +93,26 @@ void browser_setting(void)
 
     widgetMenu=widgetMenu_create();
     widgetMenu->setRect(widgetMenu,minX,minY,LCD_WIDTH-minX,LCD_HEIGHT-minY);
-    widgetMenu->ownItems=true; // the menu will handle items destroy
+    widgetMenu->ownWidgets=true; // the menu will handle items destroy
+    widgetMenu->font=WIDGET_CONFIG_FONT;
     
     hasBack=widgetMenuCheckbox_create();
-    hasBack->caption=NULL;
-    hasBack->checkbox->caption=getLangStr(STRLNG_HAS_BACK_ENTRY);
+    hasBack->setCaption(hasBack,getLangStr(STRLNG_HAS_BACK_ENTRY));
     hasBack->checkbox->checked=browser_has_back_entry;
-    hasBack->doAutoSize=true;
     widgetMenu->addItem(widgetMenu,hasBack);
         
     scrollSelected=widgetMenuCheckbox_create();
-    scrollSelected->caption=NULL;
-    scrollSelected->checkbox->caption=getLangStr(STRLNG_SCROLL_ONLY_SELECTED);
+    scrollSelected->setCaption(scrollSelected,getLangStr(STRLNG_SCROLL_ONLY_SELECTED));
     scrollSelected->checkbox->checked=browser_scroll_only_selected;
-    scrollSelected->doAutoSize=true;
     widgetMenu->addItem(widgetMenu,scrollSelected);
     
     hasStatus=widgetMenuCheckbox_create();
-    hasStatus->caption=NULL;
-    hasStatus->checkbox->caption=getLangStr(STRLNG_BRW_HAS_STATUSBAR);
+    hasStatus->setCaption(hasStatus,getLangStr(STRLNG_BRW_HAS_STATUSBAR));
     hasStatus->checkbox->checked=browser_has_statusbar;
-    hasStatus->doAutoSize=true;
     widgetMenu->addItem(widgetMenu,hasStatus);
         
     it=widgetMenuItem_create();
-    it->caption=getLangStr(STRLNG_BRW_SCROLL_SPEED);
-    it->widgetWidth=0;
+    it->setCaption(it,getLangStr(STRLNG_BRW_SCROLL_SPEED));
     it->canFocus=0;
     widgetMenu->addItem(widgetMenu,it);
     
@@ -132,7 +126,6 @@ void browser_setting(void)
     txtScrollSpeed->trackbar->minimum=1;
     txtScrollSpeed->trackbar->maximum=MAX_STEP; /* mas is probably different on DSC21 */
     txtScrollSpeed->trackbar->increment=1;
-    txtScrollSpeed->doAutoSize=true;
     widgetMenu->addItem(widgetMenu,txtScrollSpeed);
             
     // intial paint

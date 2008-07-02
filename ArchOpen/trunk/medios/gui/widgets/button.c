@@ -15,6 +15,7 @@
 
 #include <kernel/malloc.h>
 #include <kernel/evt.h>
+#include <kernel/kernel.h>
 
 #include <gfx/kfont.h>
 
@@ -25,7 +26,7 @@ BUTTON button_create(){
 
     // allocate widget memory
     b=malloc(sizeof(*b));
-
+    DEBUGWI_CD("btn create => %x\n",b);
     // init members
     button_init(b);
 
@@ -33,6 +34,7 @@ BUTTON button_create(){
 }
 
 void button_destroy(BUTTON b){
+    DEBUGWI_CD("btn bar destroy=>call widget\n");
     widget_destroy((WIDGET)b);
 }
 
@@ -44,11 +46,16 @@ void button_init(BUTTON b){
     b->handleEvent=(WIDGET_EVENTHANDLER)button_handleEvent;
     b->paint=(WIDGET_PAINTHANDLER)button_paint;
     b->autoSize=(WIDGET_AUTOSIZE)button_autoSize;
+    b->setText=(WIDGET_TEXTSETTER)button_setText;
     b->onClick=NULL;
     b->clickOnRightLeft=1;
+    b->needSelection=false;
 
     // properties
-    b->caption="Button";
+    b->caption=NULL; /*starting with an empty caption*/
+    
+    // init size
+    button_autoSize(b);
 }
 
 bool button_handleEvent(BUTTON b,int evt){
@@ -80,15 +87,22 @@ void button_autoSize(BUTTON b)
     int w,h,of;
     of=gfx_fontGet(); // save previous font
     gfx_fontSet(b->font);
-    if(b->caption && (*b->caption)!='\0')
-        gfx_getStringSize(b->caption,&w,&h);
+    if(b->caption && (*b->caption)!='\0')  /*do we have the string and is it empty ?*/
+        gfx_getStringSize(b->caption,&w,&h); /* none empty string */
     else
-        gfx_getStringSize("H",&w,&h);
+        gfx_getStringSize("H",&w,&h); /*empty string => draw as if there was one char*/
+    gfx_fontSet(of); /* restoring previous font */
     
-    b->width=2*b->margin+2*BUTTON_INTERNAL_SPACE+w;
-    b->height=2*b->margin+2*BUTTON_INTERNAL_SPACE+h;
+    b->internalWidth=2*b->margin+2*BUTTON_INTERNAL_WSPACE+w;
+    b->internalHeight=2*b->margin+2*BUTTON_INTERNAL_HSPACE+h;    
     
-    gfx_fontSet(of);
+    if(b->internalHeight>b->height)
+        b->height=b->internalHeight;
+    
+    if(b->useMaxWidth && b->internalWidth<b->width)
+        b->internalWidth=b->width;
+    
+    //b->updateSize(b,2*b->margin+2*BUTTON_INTERNAL_WSPACE+w,2*b->margin+2*BUTTON_INTERNAL_HSPACE+h);
 }
 
 void button_paint(BUTTON b){
@@ -97,29 +111,53 @@ void button_paint(BUTTON b){
     int color;
     int of;
 
+    /* widget paint*/
     widget_paint((WIDGET)b);
 
+    /* are we focused ?*/
     color=(b->focused)?b->focusColor:b->fillColor;
 
     // frame
-    x=b->x+b->margin;
-    y=b->y+b->margin;
-    w=b->width-2*b->margin;
-    h=b->height-2*b->margin;
+    x=b->x;
+    y=b->y;
+    w=b->internalWidth;
+    h=b->internalHeight;
 
-    gfx_drawRect(b->foreColor,x,y,w,h);
+    /*
+    gfx_drawRect(b->foreColor,x,y,w,h);    
     if (b->focused) gfx_fillRect(color,x+1,y+1,w-2,h-2);
+    */
+    
+    gfx_drawLine(b->foreColor,x+2,y,x+(w-1)-2,y);
+    gfx_drawLine(b->foreColor,x+2,y+(h-1),x+(w-1)-2,y+(h-1));
+    gfx_drawLine(b->foreColor,x,y+2,x,y+(h-1)-2);
+    gfx_drawLine(b->foreColor,x+(w-1),y+2,x+(w-1),y+(h-1)-2);
+    
+    gfx_drawPixel(b->foreColor,x+1,y+1);
+    gfx_drawPixel(b->foreColor,x+w-1-1,y+1);
+    gfx_drawPixel(b->foreColor,x+1,y+h-1-1);
+    gfx_drawPixel(b->foreColor,x+w-1-1,y+h-1-1);
+    
+    /*always fill */
+    gfx_fillRect(color,x+2,y+1,w-4,h-2);
+    gfx_drawLine(color,x+1,y+2,x+1,y+h-2-1);
+    gfx_drawLine(color,x+w-1-1,y+2,x+w-1-1,y+h-2-1);
+        
+    /* caption */
+    if(b->caption && (*b->caption)!='\0')  /*do we have the string and is it empty ?*/
+    {
+        of=gfx_fontGet(); // save previous font
+        gfx_fontSet(b->font);
+        gfx_getStringSize(b->caption,&w,&h);    
+        x=b->x+(b->internalWidth-w)/2;
+        y=b->y+(b->internalHeight-h)/2;
+        gfx_putS(b->foreColor,color,x,y,b->caption);
+        gfx_fontSet(of); // restore previous font
+    }    
+}
 
-    // caption
-    of=gfx_fontGet(); // save previous font
-
-    gfx_fontSet(b->font);
-
-    gfx_getStringSize(b->caption,&w,&h);
-    x=b->x+(b->width-w)/2;
-    y=b->y+(b->height-h)/2;
-
-    gfx_putS(b->foreColor,color,x,y,b->caption);
-
-    gfx_fontSet(of); // restore previous font
+void button_setText(BUTTON b,char * txt)
+{
+    b->caption=txt;
+    b->autoSize(b);
 }

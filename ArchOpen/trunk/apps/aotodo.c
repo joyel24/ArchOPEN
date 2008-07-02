@@ -69,46 +69,53 @@ int f;
 	}
 	
 }
-
 void SaveToArr(int dataLengh) {
 
-strcpy(data[dataLengh].topic,editMenu->items[1]->caption);
-strcpy(data[dataLengh].description,editMenu->items[4]->caption);
+    WIDGETMENU_ITEM mi;
+    
+    mi=(WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,1);
+    strcpy(data[dataLengh].topic,mi->caption);
+    mi=(WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,4);
+    strcpy(data[dataLengh].description,mi->caption);
 
-data[dataLengh].day=editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Day"))->value;
-data[dataLengh].month=editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Month"))->value;
-data[dataLengh].year=2000+editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Year 20**"))->value;
+    data[dataLengh].day=editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Day"))->value;
+    data[dataLengh].month=editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Month"))->value;
+    data[dataLengh].year=2000 + 
+            editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Year 20**"))->value;
 
-strcpy(data[dataLengh].dayName,editMenu->items[10]->caption);
+    mi=(WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,10);
+    strcpy(data[dataLengh].dayName,mi->caption);
 
-data[dataLengh].importance=editMenu->getChooser(editMenu,editMenu->indexFromCaption(editMenu,"Priorite"))->index;
+    data[dataLengh].importance=editMenu->getChooser(editMenu,editMenu->indexFromCaption(editMenu,"Priorite"))->index;
 
 }
 
 void displayItems(void) {
 
-int dataLengh;
-int i;
-char * s;
+    int dataLengh;
+    int i;
+    char * s;
 
 	dataLengh=data[1].dataLengh;
 	
 	for(i=1;i<=dataLengh;++i) {
 	
 		s=malloc(20);
-		sprintf(s,"- %s: %s (%s: %d.%d.%d)",data[i].topic,data[i].description,data[i].dayName,data[i].day,data[i].month,data[i].year);
-		textMenu->items[i-1]->caption=s;
+		sprintf(s,"- %s: %s (%s: %d.%d.%d)",
+                data[i].topic,data[i].description,data[i].dayName,data[i].day,data[i].month,data[i].year);
+		
+        ((TEXTMENU_ITEM)textMenu->widgetAt(textMenu,i-1))->caption=s;
 		
 		switch(data[i].importance) {
-			case 0: {textMenu->items[i-1]->foreColor=colorLOW;break;}
-			case 1: {textMenu->items[i-1]->foreColor=colorNORMAL;break;}
-			case 2: {textMenu->items[i-1]->foreColor=colorHIGH;break;}
+			case 0: {((MENU_ITEM)textMenu->widgetAt(textMenu,i-1))->foreColor=colorLOW;break;}
+			case 1: {((MENU_ITEM)textMenu->widgetAt(textMenu,i-1))->foreColor=colorNORMAL;break;}
+			case 2: {((MENU_ITEM)textMenu->widgetAt(textMenu,i-1))->foreColor=colorHIGH;break;}
 		}
 		
 	}
 	
 	/**clear last**/
-	textMenu->items[dataLengh]->caption=" ";
+	((TEXTMENU_ITEM)textMenu->widgetAt(textMenu,dataLengh))->caption=" ";
 	
 	mainMenu->paint(mainMenu);
 	mainMenu->setFocusedWidget(mainMenu,textMenu);
@@ -156,24 +163,29 @@ int getDaysInMonth(int uMonth, int uYear){
 
 void handleeditMenu(bool load) {
 
-int stop=0;
+int stop=0;int index;
 	
 	if (load==true){
-		editMenu->items[1]->caption=data[textMenu->index+1].topic;
-		editMenu->items[4]->caption=data[textMenu->index+1].description;
-		editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Day"))->value=data[textMenu->index+1].day;
-		editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Month"))->value=data[textMenu->index+1].month;
-		editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Year 20**"))->value=data[textMenu->index+1].year-2000;
-		editMenu->items[10]->caption=data[textMenu->index+1].dayName;
-		editMenu->getChooser(editMenu,editMenu->indexFromCaption(editMenu,"Priorite"))->index=data[textMenu->index+1].importance;
+        index=textMenu->indexOf(textMenu,textMenu->index);
+		((WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,1))->caption=data[index+1].topic;
+		((WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,4))->caption=data[index+1].description;
+		editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Day"))->value =
+                data[index+1].day;
+		editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Month"))->value =
+                data[index+1].month;
+		editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Year 20**"))->value =
+                data[index+1].year-2000;
+		((WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,10))->caption=data[index+1].dayName;
+		editMenu->getChooser(editMenu,editMenu->indexFromCaption(editMenu,"Priorite"))->index =
+                data[index+1].importance;
 	}
 	else {	/**default**/
-		editMenu->items[1]->caption="...";
-		editMenu->items[4]->caption="...";
+		((WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,1))->caption="...";
+		((WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,4))->caption="...";
 		editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Day"))->value=1;
 		editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Month"))->value=1;
 		editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Year 20**"))->value=8;
-		editMenu->items[10]->caption=" ";
+		((WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,10))->caption=" ";
 		editMenu->getChooser(editMenu,editMenu->indexFromCaption(editMenu,"Priorite"))->index=1;
 	}
 	
@@ -200,12 +212,12 @@ int stop=0;
 					editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Year 20**"))->value)>=
 					editMenu->getTrackbar(editMenu,editMenu->indexFromCaption(editMenu,"Day"))->value)
 					{
-				
+				        index=textMenu->indexOf(textMenu,textMenu->index);
 						if (load==false) {
 							data[1].dataLengh+=1;
 							SaveToArr(data[1].dataLengh);
 						} else {
-							SaveToArr(textMenu->index+1);
+							SaveToArr(index+1);
 						}
 						displayItems();
 						stop=1;
@@ -271,28 +283,30 @@ void getDay(void) {
 	
 	switch(h) {
 		
-		case 0: {editMenu->items[10]->caption="Sunday";break;}
-		case 1: {editMenu->items[10]->caption="Monday";break;}
-		case 2: {editMenu->items[10]->caption="Tuesday";break;}
-		case 3: {editMenu->items[10]->caption="Wednesday";break;}
-		case 4: {editMenu->items[10]->caption="Thursday";break;}
-		case 5: {editMenu->items[10]->caption="Friday";break;}
-		case 6: {editMenu->items[10]->caption="Saturday";break;}
-		default: {editMenu->items[10]->caption=" ";break;}
+		case 0: {((WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,10))->caption="Sunday";break;}
+		case 1: {((WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,10))->caption="Monday";break;}
+		case 2: {((WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,10))->caption="Tuesday";break;}
+		case 3: {((WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,10))->caption="Wednesday";break;}
+		case 4: {((WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,10))->caption="Thursday";break;}
+		case 5: {((WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,10))->caption="Friday";break;}
+		case 6: {((WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,10))->caption="Saturday";break;}
+		default: {((WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,10))->caption=" ";break;}
 		
 	}
 	
-	editMenu->handleEvent(editMenu,EVT_REDRAW);
-	
+	//editMenu->handleEvent(editMenu,EVT_REDRAW);
+	((WIDGETMENU_ITEM)editMenu->widgetAt(editMenu,10))->paint(editMenu->widgetAt(editMenu,10));
 }
 
 void editMenu_onClick(WIDGETMENU m, WIDGETMENU_ITEM mi){
+int index = m->indexOf(m,m->index);
+int index2 = textMenu->indexOf(textMenu,textMenu->index);
 
-if (m->index==1) {
-
+if (index==1) 
+{
 	gfx_clearScreen(COLOR_GREY);
 	
-    strcpy(a,data[textMenu->index+1].topic);
+    strcpy(a,data[index2+1].topic);
 	
 	virtKbd(evt_handler,a);
 	
@@ -300,15 +314,14 @@ if (m->index==1) {
 	
 	/**Draw Editmenu**/
 	gfx_clearScreen(COLOR_GREY);
-	editList->paint(editList);
-	
+	editList->paint(editList);	
 }
 
-if  (m->index==4) {
+if  (index==4) {
 
 	gfx_clearScreen(COLOR_GREY);
 	
-	strcpy(b,data[textMenu->index+1].description);
+	strcpy(b,data[index2+1].description);
 	
 	virtKbd(evt_handler,b);
 	
@@ -362,8 +375,8 @@ int stop=0;
 void deleteItem(void) {
 
 int i,a,dataLengh;
-
-	a=textMenu->index+1;
+int index=textMenu->indexOf(textMenu,textMenu->index);
+	a=index+1;
 	dataLengh=data[1].dataLengh; /**whole lengh**/
 
 	if (msgBox_show("Item delete?","Are you sure that you want to delete the selected item?",MSGBOX_TYPE_YESNO,MSGBOX_ICON_QUESTION,evt_handler)==MSGBOX_YES && dataLengh>0) {
@@ -392,15 +405,15 @@ int i,a,dataLengh;
 			data[1].dataLengh=data[1].dataLengh-1;
 			
 			/**select one over deleted**/
-			if (textMenu->index>=1) {
-				textMenu->index--;
-				textMenu->items[textMenu->index+1]->focused=false;
-				textMenu->items[textMenu->index]->focused=true;
+			if (index>=1) {
+				textMenu->index=textMenu->index->prev;
+				((WIDGET)textMenu->index->nxt)->focused=false;
+				textMenu->index->focused=true;
 			}
 			else {
-				textMenu->index=0;
-				textMenu->items[1]->focused=false;
-				textMenu->items[0]->focused=true;
+				textMenu->index=(MENU_ITEM)textMenu->firstWidget;
+				((WIDGET)textMenu->index->nxt)->focused=false;
+				textMenu->index->focused=true;
 			}
 	}		
 	//else data[1].dataLengh=data[1].dataLengh;
@@ -411,6 +424,7 @@ int i,a,dataLengh;
 void handletextMenu(void) {
 
 int stop=0;
+int index;
 	
 	/**Paint Icons**/
 	gfx_drawBitmap (&add_bitmap,7,(screen_height-23));
@@ -421,16 +435,17 @@ int stop=0;
 		evt=evt_getStatus(evt_handler);
 		
 		if (!evt) continue;
-		
+		index=textMenu->indexOf(textMenu,textMenu->index);
 		switch(evt) {
 			/**select**/		
 			case BTN_DOWN: {
-				if(textMenu->index<data[1].dataLengh-1)
+                
+				if(index<data[1].dataLengh-1)
 					textMenu->handleEvent(textMenu,evt);
 				break;
 			}
 			case BTN_UP: {
-				if (textMenu->index>0)
+				if (index>0)
 					textMenu->handleEvent(textMenu,evt);
 				break;
 			}
@@ -480,7 +495,7 @@ void app_main(int argc, char ** argv) {
 	
 	gfx_putS(COLOR_BLACK,COLOR_GREY,10,25,"Canceling...");
 	
-	textMenu->destroy(textMenu);
+	//textMenu->destroy(textMenu);
 	mainMenu->destroy(mainMenu);
 	editList->destroy(editList);
 	helpList->destroy(helpList);

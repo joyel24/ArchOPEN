@@ -22,10 +22,15 @@
     WIDGET_MEMBERS                     \
                                        \
     CHECKBOX_CHANGEEVENT onChange;     \
-    char * caption;                    \
+    CHECKBOX_STATESETTER setState;     \
+    CHECKBOX_STATEGETTER getState;     \
+    int clickOnRightLeft;              \
     bool checked;
 
 typedef void(*CHECKBOX_CHANGEEVENT)(void *);
+typedef void(*CHECKBOX_STATESETTER)(void *,int);
+typedef int(*CHECKBOX_STATEGETTER)(void *);
+
 
 typedef struct {
     CHECKBOX_MEMBERS

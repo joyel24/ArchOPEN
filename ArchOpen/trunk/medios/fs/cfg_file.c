@@ -131,6 +131,8 @@ static CFG_ITEM * cfg_addItem(CFG_DATA * data){
 void cfg_clear(CFG_DATA * data){
     int i;
 
+    if(!data) return;
+    
     if (data->items!=NULL){
 
         // clear items data

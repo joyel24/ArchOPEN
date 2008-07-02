@@ -278,7 +278,8 @@ void lang_setting(void)
     // menuList
     widgetMenu=widgetMenu_create();
     widgetMenu->setRect(widgetMenu,minX,minY,LCD_WIDTH-minX,LCD_HEIGHT-minY);
-    widgetMenu->ownItems=true; // the menu will handle items destroy
+    widgetMenu->ownWidgets=true; // the menu will handle items destroy
+    widgetMenu->font=WIDGET_CONFIG_FONT;
 
     if(lng_langNum==0 || nbLang==1)
         curIndex=0;
@@ -302,12 +303,10 @@ void lang_setting(void)
     langList->chooser->index=curIndex;
     langList->chooser->wrap=WIDGET_WRAP_ON;
     langList->chooser->orientation=WIDGET_ORIENTATION_HORIZ;
-    langList->doAutoSize=true;
     widgetMenu->addItem(widgetMenu,langList);
         
     mib=widgetMenuButton_create();
     mib->caption=NULL;
-    mib->doAutoSize=true;
     mib->button->caption=getLangStr(STRLNG_OTHER);
     mib->button->onClick=(BUTTON_CLICKEVENT)browserLang_click;
     widgetMenu->addItem(widgetMenu,mib);

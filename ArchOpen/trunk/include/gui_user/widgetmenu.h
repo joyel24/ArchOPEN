@@ -21,10 +21,14 @@
 #include <gui_user/chooser.h>
 #include <gui_user/button.h>
 #include <gui_user/spinbox.h>
+#include <gui_user/date_time.h>
+#include <gui_user/widgetmenuline.h>
 
 //*****************************************************************************
 // WIDGETMENU_ITEM
 //*****************************************************************************
+
+#define NO_ALIGN_AT -1
 
 // members of the WIDGETMENUITEM object
 #define WIDGETMENU_ITEM_MEMBERS                            \
@@ -34,15 +38,17 @@
     WIDGETMENU_ITEM_CFGGETTER cfgToString;                 \
     WIDGETMENU_ITEM_CFGSETTER cfgFromString;               \
     WIDGETMENU_ITEM_REPAINT   rePaint;                     \
+    WIDGETMENU_ITEM_ALIGNSETTER setAlignAt;                  \
     WIDGET widget;                                         \
-    bool doAutoSize;                                       \
+    int tx,ty;                                             \
+    int alignAt;                                           \
     bool cfgStored;                                        \
-    char * cfgName;                                        \
-    int widgetWidth;  /* in 1/256th of the item width */
+    char * cfgName;
 
 typedef void(*WIDGETMENU_ITEM_CFGGETTER)(void *,char *);
 typedef void(*WIDGETMENU_ITEM_CFGSETTER)(void *,char *);
 typedef void(*WIDGETMENU_ITEM_REPAINT)(void *);
+typedef void(*WIDGETMENU_ITEM_ALIGNSETTER)(void *,int);
 
 typedef struct {
     WIDGETMENU_ITEM_MEMBERS
@@ -62,6 +68,36 @@ typedef struct {
 typedef struct {
     WIDGETMENU_BUTTON_MEMBERS
 } * WIDGETMENU_BUTTON;
+
+//*****************************************************************************
+// WIDGETMENU_MENULINE
+//*****************************************************************************
+
+// members of the WIDGETMENU_MENULINE object
+#define WIDGETMENU_MENULINE_MEMBERS                        \
+    /* we inherit from WIDGETMENU_ITEM */                  \
+    WIDGETMENU_ITEM_MEMBERS                                \
+                                                           \
+    WIDGETMENULINE menuLine;
+
+typedef struct {
+    WIDGETMENU_MENULINE_MEMBERS
+} * WIDGETMENU_MENULINE;
+
+//*****************************************************************************
+// WIDGETMENU_DATE_TIME
+//*****************************************************************************
+
+// members of the WIDGETMENU_DATE_TIME object
+#define WIDGETMENU_DATE_TIME_MEMBERS                        \
+    /* we inherit from WIDGETMENU_ITEM */                  \
+    WIDGETMENU_ITEM_MEMBERS                                \
+                                                           \
+    DATE_TIME dateTime;
+
+typedef struct {
+    WIDGETMENU_DATE_TIME_MEMBERS
+} * WIDGETMENU_DATE_TIME;
 
 //*****************************************************************************
 // WIDGETMENU_CHECKBOX
@@ -135,6 +171,9 @@ typedef struct {
     /* we inherit from TEXTMENU */                         \
     TEXTMENU_MEMBERS                                       \
                                                            \
+    WIDGETMENU_ALIGNSETTER setAlignAt;                     \
+    int alignAt;                                           \
+                                                           \
     WIDGETMENU_BUTTONGETTER getButton;                     \
     WIDGETMENU_SPINBOXGETTER getSpinbox;                   \
     WIDGETMENU_CHECKBOXGETTER getCheckbox;                 \
@@ -150,6 +189,7 @@ typedef TRACKBAR(*WIDGETMENU_TRACKBARGETTER)(void *,int);
 typedef CHOOSER(*WIDGETMENU_CHOOSERGETTER)(void *,int);
 typedef bool(*WIDGETMENU_CFGLOADER)(void *,char *);
 typedef bool(*WIDGETMENU_CFGSAVER)(void *,char *);
+typedef void(*WIDGETMENU_ALIGNSETTER)(void *,int);
 
 typedef struct {
     WIDGETMENU_MEMBERS

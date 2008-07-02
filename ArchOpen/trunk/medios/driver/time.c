@@ -174,6 +174,12 @@ void normalizeDay(struct med_tm * val_time)
     }
 }
 
+int time_getMaxDay_month(int month,int year)
+{
+    if(month<1 || month >12) return 0;
+    return month_tab[isLeap(year)][month];
+}
+
 void time_calcOffset(struct med_tm * val_time,int offset_val)
 {
     int offset=offset_val;
@@ -241,8 +247,8 @@ int time_getDayOfWeek(int day,int month,int year)
 }
 void time_print(struct med_tm * now)
 {
-    printk("%02d:%02d:%02d %02d/%02d/%04d",now->tm_hour,now->tm_min,now->tm_sec,
-           now->tm_mday,now->tm_mon,now->tm_year);
+    printk("%02d:%02d:%02d(%02d) %02d/%02d/%04d (%d)",now->tm_hour,now->tm_min,now->tm_sec,now->tm_ms,
+           now->tm_mday,now->tm_mon,now->tm_year,now->tm_wday);
 }
 
 MED_RET_T time_init(void)

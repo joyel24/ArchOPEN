@@ -114,34 +114,36 @@ void settings_screen()
 {
     int h,w,event,y;
     char tmp[50];
-    CHOOSER mSize;
-    WIDGETLIST menuList; 
+    WIDGETMENU_CHOOSER mSize;
+    WIDGETMENU widgetMenu; 
        
     gfx_clearScreen(BG_COLOR); // clear    
     gfx_getStringSize("SETTINGS",&w,&h);
     gfx_putS(COLOR_BLACK, BG_COLOR, (screen_width-w)/2, 5,  "SETTINGS");
     
     y=5+h+2;
-    gfx_getStringSize("Size: ",&w,&h);
-    gfx_putS(COLOR_BLACK, BG_COLOR, 5,y, "Size: ");
     
-    menuList=widgetList_create();
-    menuList->ownWidgets=true;
-    mSize = chooser_create();
-    mSize->items = size_str;
-    mSize->itemCount=NB_SIZE;
-    mSize->index=matrixSize;
-    mSize->font=STD6X9;
-    mSize->wrap=WIDGET_WRAP_OFF; /* can't enable wrap because all values are not allowed*/
-    mSize->onChange=(CHOOSER_CHANGEEVENT)mSize_onChange;
-    gfx_getStringSize(size_str[0],&w,&h);
-    mSize->setRect(mSize,5+w+15,y,w+35,h+1);
-    menuList->addWidget(menuList,mSize);
+    widgetMenu=widgetMenu_create();
+    widgetMenu->backColor=BG_COLOR;
+    widgetMenu->fillColor=BG_COLOR;
+    widgetMenu->setRect(widgetMenu,5,y,screen_width-5,h+4);
+    widgetMenu->ownWidgets=true; // the menu will handle items destroy
+    widgetMenu->font=STD6X9;
     
-    menuList->setFocusedWidget(menuList,mSize);
-    menuList->paint(menuList);
     
-    y = y+h+2;
+    mSize = widgetMenuChooser_create();
+    mSize->caption="Size:";
+    mSize->chooser->items=size_str;
+    mSize->chooser->itemCount=NB_SIZE;
+    mSize->chooser->index=matrixSize;
+    mSize->chooser->wrap=WIDGET_WRAP_OFF;
+    mSize->chooser->onChange=(CHOOSER_CHANGEEVENT)mSize_onChange;
+    widgetMenu->addItem(widgetMenu,mSize);    
+    
+    widgetMenu->setFocusedWidget(widgetMenu,mSize);
+    widgetMenu->paint(widgetMenu);
+    
+    y = y+h+4+5;
     gfx_getStringSize("M",&w,&h);
     gfx_putS(COLOR_BLACK, BG_COLOR, 10,y, "Direction: Joystick");
     y = y+h+2;
@@ -157,22 +159,13 @@ void settings_screen()
     do{
         event=evt_getStatusBlocking(evt_handler);
         if (!event) continue; // no new events
-        switch(event)
-        {
-            case BTN_UP:
-                menuList->changeFocus(menuList,WLD_PREVIOUS);
-                break;
-            case BTN_DOWN:
-                menuList->changeFocus(menuList,WLD_NEXT);
-                break;    
-            default:
-                menuList->handleEvent(menuList,event);
-                break;
-        }
+        if(widgetMenu->handleEvent(widgetMenu,event))
+            continue;
     }while(event!=BTN_OFF); 
     
+    widgetMenu->destroy(widgetMenu);
     
-    matrixSize=mSize->index;
+    matrixSize=mSize->chooser->index;
     CUR_SIZE(width,height);
     x_start = (screen_width-(CURSORFRAME+width*(PIECE_DIM+CURSORFRAME)))/2;
     y_start = (screen_height-(CURSORFRAME+height*(PIECE_DIM+CURSORFRAME)+1+h))/2;

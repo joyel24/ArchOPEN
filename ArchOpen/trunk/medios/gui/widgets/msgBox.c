@@ -201,7 +201,7 @@ void msgBox_draw(unsigned char* caption, unsigned char* msg, int type, int icon,
     msg_label->margin=0;
     msg_label->setRect(msg_label,2+icon_w,0,LCD_WIDTH-2-icon_w-2,LCD_HEIGHT-2-caption_h-2-5-20);
     msg_label->backColor=MSGBOX_MAIN_BG_COLOR;
-    label_setTxt(msg_label,msg);
+    msg_label->setText(msg_label,msg);
     
     nbLines=msg_label->nbLines;
     

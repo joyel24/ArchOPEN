@@ -22,10 +22,12 @@
     WIDGET_MEMBERS                     \
                                        \
     BUTTON_CLICKEVENT onClick;         \
+    WIDGET_TEXTSETTER setText;         \
     int clickOnRightLeft;              \
     char * caption;
 
 typedef void(*BUTTON_CLICKEVENT)(void *);
+typedef void(*WIDGET_TEXTSETTER)(void *,char *);
 
 typedef struct {
     BUTTON_MEMBERS

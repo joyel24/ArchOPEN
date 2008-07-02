@@ -42,13 +42,13 @@
 #define INTC_EABASE0                      (INTC_BASE + 0x0038)
 #define INTC_EABASE1                      (INTC_BASE + 0x003A)
 
-#define INTC_IRQ_STATUS(val)              ((val < 16) ? INTC_IRQ0_STATUS : ((val<32) ? INTC_IRQ1_STATUS : INTC_IRQ2_STATUS))
-#define INTC_IRQ_ENABLE(val)              ((val < 16) ? INTC_INT0_ENABLE : ((val<32) ? INTC_INT1_ENABLE : INTC_INT2_ENABLE))
-#define INTC_FIQ_STATUS(val)              ((val < 16) ? INTC_FIQ0_STATUS : ((val<32) ? INTC_FIQ1_STATUS : INTC_FIQ2_STATUS))
-#define INTC_FIQ_ENABLE(val)              ((val < 16) ? INTC_INT0_ENABLE : ((val<32) ? INTC_INT1_ENABLE : INTC_INT2_ENABLE))
-#define INTC_SHIFT(val)                   (val & 0x0f)
-#define INTC_FIQ_SHIFT(val)               INTC_SHIFT(val)
-#define INTC_IRQ_SHIFT(val)               INTC_SHIFT(val)
+#define INTC_IRQ_STATUS(val) ((val < 16) ? INTC_IRQ0_STATUS : ((val<32) ? INTC_IRQ1_STATUS : INTC_IRQ2_STATUS))
+#define INTC_IRQ_ENABLE(val) ((val < 16) ? INTC_INT0_ENABLE : ((val<32) ? INTC_INT1_ENABLE : INTC_INT2_ENABLE))
+#define INTC_FIQ_STATUS(val) ((val < 16) ? INTC_FIQ0_STATUS : ((val<32) ? INTC_FIQ1_STATUS : INTC_FIQ2_STATUS))
+#define INTC_FIQ_ENABLE(val) ((val < 16) ? INTC_INT0_ENABLE : ((val<32) ? INTC_INT1_ENABLE : INTC_INT2_ENABLE))
+#define INTC_SHIFT(val)      (((val) < 16) ? (val) : (((val)<32) ? (val)-16 :(val)-32))
+#define INTC_FIQ_SHIFT(val)  INTC_SHIFT(val)
+#define INTC_IRQ_SHIFT(val)  INTC_SHIFT(val)
 
 
 #define IRQ_TMR_0            0

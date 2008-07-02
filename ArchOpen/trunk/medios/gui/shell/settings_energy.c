@@ -118,9 +118,11 @@ void resetBtnEnergy_click(BUTTON b)
     for(j=0;j<2;j++)
         for(i=0;i<3;i++)
             if(i==2)
-                chooser_list[i+j*3]->chooser->index=timer_status[i][j]==1?(timer_delay[i][j]/60)-1:9;
+                chooser_list[i+j*3]->chooser->setIndex(chooser_list[i+j*3]->chooser,
+                    timer_status[i][j]==1?(timer_delay[i][j]/60)-1:9);
             else
-                chooser_list[i+j*3]->chooser->index=timer_status[i][j]==1?(timer_delay[i][j]/10)-1:9;
+                chooser_list[i+j*3]->chooser->setIndex(chooser_list[i+j*3]->chooser,
+                    timer_status[i][j]==1?(timer_delay[i][j]/10)-1:9);
     widgetMenu->paint(widgetMenu);
 }
 
@@ -132,6 +134,8 @@ void energy_setting(void)
     char * valFormStr_2[10]={"1min","2min","3min","4min","5min","6min","7min","8min","9min",getLangStr(STRLNG_NRJ_NEVER)};
     
     int minX,minY;
+    int maxW=0;
+    int of,w;
         
     int i,j;
     
@@ -148,15 +152,24 @@ void energy_setting(void)
     // menuList
     widgetMenu=widgetMenu_create();
     widgetMenu->setRect(widgetMenu,minX,minY,LCD_WIDTH-minX,LCD_HEIGHT-minY);
-    widgetMenu->ownItems=true; // the menu will handle items destroy
-
-    // standardMenu
+    widgetMenu->ownWidgets=true; // the menu will handle items destroy
+    widgetMenu->font=WIDGET_CONFIG_FONT;
     
+    /* computing max size for alignAt */
+    of=gfx_fontGet(); // save previous font
+    gfx_fontSet(widgetMenu->font);
+    for(i=0;i<3;i++)
+    {
+        gfx_getStringSize(timer_type[i],&w,NULL);
+        if(w>maxW) maxW=w;
+    }    
+    gfx_fontSet(of); // restore previous font
+    
+       
     for(j=0;j<2;j++)
     {
         it=widgetMenuItem_create();
         it->caption=j==0?getLangStr(STRLNG_NRJ_ON_BATTERY):getLangStr(STRLNG_NRJ_ON_DC);
-        it->widgetWidth=0;
         it->canFocus=0;
         widgetMenu->addItem(widgetMenu,it);
         
@@ -173,23 +186,23 @@ void energy_setting(void)
             
             co->chooser->wrap=WIDGET_WRAP_ON;
             co->chooser->orientation=WIDGET_ORIENTATION_HORIZ;
-            co->doAutoSize=true;
             widgetMenu->addItem(widgetMenu,co);
+            co->setAlignAt(co,maxW);
         }
     }
     
     mib=widgetMenuButton_create();
+    
     mib->caption=NULL;
-    mib->doAutoSize=true;
     mib->button->caption=getLangStr(STRLNG_RESET);
-    mib->button->onClick=(BUTTON_CLICKEVENT)resetBtnEnergy_click;
+    mib->button->onClick=(BUTTON_CLICKEVENT)resetBtnEnergy_click;   
+    mib->useMaxWidth=true; 
     widgetMenu->addItem(widgetMenu,mib);
-        
+            
     // intial paint
     // set focus
     widgetMenu->setFocus(widgetMenu,chooser_list[0]);    
     widgetMenu->paint(widgetMenu);
-    
     settings_evtLoop(widgetMenu,energySet_sav,-1);
        
     widgetMenu->destroy(widgetMenu);

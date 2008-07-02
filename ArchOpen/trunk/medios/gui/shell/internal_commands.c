@@ -50,6 +50,8 @@
 #include <gui/settings_bgImg.h>
 #include <gui/settings_browser.h>
 #include <gui/settings_shell.h>
+#include <gui/time_alarm.h>
+#include <gui/status_line.h>
 
 #include <gui/player.h>
 #include <gui/playlistmenu.h>
@@ -77,6 +79,7 @@ static bool intCmd_doLoadJpg(char * param);
 static bool intCmd_doLoadBmp(char * param);
 static bool intCmd_doBrowserSetting(char * param);
 static bool intCmd_doSet_shell(char * param);
+static bool intCmd_doTime_Alarm(char * param);
 
 typedef struct{
     char * command;
@@ -167,6 +170,10 @@ INTERNAL_COMMAND intCmd_commands[] = {
     {
         command:  "loadBmp",
         function: intCmd_doLoadBmp
+    },
+    {
+        command: "timeAlarm",
+        function: intCmd_doTime_Alarm
     },
     /* should always be the last entry */
     {
@@ -298,6 +305,7 @@ static bool intCmd_doUsbMode(char * param){
             /* wait for repress */            
             do{
                 evt=evt_getStatus(eh);
+                statusLine_handleEvent(evt);
             }while(evt!=BTN_F3 && evt!=EVT_USB_OUT);
 
             if(!lcd_enabled())
@@ -542,5 +550,11 @@ bool intCmd_doLoadBmp(char * param)
 bool intCmd_doSet_shell(char * param)
 {
     shell_setting();
+    return true;   
+}
+
+bool intCmd_doTime_Alarm(char * param)
+{
+    time_alarm();
     return true;   
 }

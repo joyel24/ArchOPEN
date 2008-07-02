@@ -18,8 +18,6 @@
 
 #include <gui/widget.h>
 
-// paint parameters
-#define CHECKBOX_SPACING 2 // space between text and box
 
 CHECKBOX checkbox_create();
 void checkbox_destroy(CHECKBOX c);
@@ -27,5 +25,7 @@ void checkbox_init(CHECKBOX c);
 bool checkbox_handleEvent(CHECKBOX c,int evt);
 void checkbox_paint(CHECKBOX c);
 void checkbox_autoSize(CHECKBOX c);
-
+void checkbox_setState(CHECKBOX c,int val);
+int checkbox_getState(CHECKBOX c);
+        
 #endif

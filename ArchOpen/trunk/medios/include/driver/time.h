@@ -19,6 +19,7 @@ MED_RET_T time_init(void);
 void time_print(struct med_tm * now);
 
 int time_getDayOfWeek(int day,int month,int year);
+int time_getMaxDay_month(int month,int year);
 
 void time_time2rtc_Offset(struct med_tm * val_time,int offset_val);
 void time_rtc2time_Offset(struct med_tm * val_time,int offset_val);

@@ -127,6 +127,7 @@ void * internalMalloc(unsigned int  requested_size,int isKernel)
         b = b->free_list.nxt;
     }
     /* no space found */
+    printk("[KERN] Malloc : no more space left\n");
     return NULL;
 }
 
@@ -244,7 +245,7 @@ insert AFTER START block */
 }
 
 #define TEST_NULL(BUFF) {if(BUFF==NULL) {printk("[FREE] NULL buffer\n"); return;}}
-#define TEST_MAGIC(PTR) {if(PTR->magic_val!=MAGIC_MALLOC) {printk("[FREE] not a malloc buffer\n"); return;}}
+#define TEST_MAGIC(PTR) {if(PTR->magic_val!=MAGIC_MALLOC) {printk("[FREE] not a malloc buffer (%x)\n",PTR); return;}}
 /*  free  --  Release a buffer.  */
 void free(void *buf)
 {
@@ -272,7 +273,10 @@ int internalFree(struct bhead * b)
     struct bhead * b_nxt;
     /* Buffer size must be negative, indicating that the buffer is allocated. */
     if (b->size >= 0)
+    {
+        printk("[KERN] free internal error probably bad address (%x)\n",b);
         return 0;
+    }
 
     b->size = - b->size;
 

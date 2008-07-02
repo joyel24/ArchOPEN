@@ -26,7 +26,5 @@ struct msgBox_line {
     char * str;
     int width;   
 };
-    
-    int msgBox_cutLine(char * str,struct msgBox_line * res, char ** orgStr,int newFont, int max_width);
-    
+     
 #endif

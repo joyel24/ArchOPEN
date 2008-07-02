@@ -15,6 +15,7 @@
 
 #include <kernel/malloc.h>
 #include <kernel/evt.h>
+#include <kernel/kernel.h>
 
 #include <gfx/kfont.h>
 
@@ -25,7 +26,7 @@ CHECKBOX checkbox_create(){
 
     // allocate widget memory
     c=malloc(sizeof(*c));
-
+    DEBUGWI_CD("chkbox create => %x\n",c);
     // init members
     checkbox_init(c);
 
@@ -33,6 +34,7 @@ CHECKBOX checkbox_create(){
 }
 
 void checkbox_destroy(CHECKBOX c){
+    DEBUGWI_CD("chkbox bar destroy=>call widget\n");
     widget_destroy((WIDGET)c);
 }
 
@@ -44,11 +46,21 @@ void checkbox_init(CHECKBOX c){
     c->handleEvent=(WIDGET_EVENTHANDLER)checkbox_handleEvent;
     c->paint=(WIDGET_PAINTHANDLER)checkbox_paint;
     c->autoSize=(WIDGET_AUTOSIZE)checkbox_autoSize;
+    c->setState=(CHECKBOX_STATESETTER)checkbox_setState;
+    c->getState=(CHECKBOX_STATEGETTER)checkbox_getState;
     c->onChange=NULL;
 
     // properties
-    c->caption="Checkbox";
     c->checked=false;
+    checkbox_autoSize(c);
+}
+
+void checkbox_setState(CHECKBOX c,int val){
+    c->checked=(val?1:0);
+}
+
+int checkbox_getState(CHECKBOX c){
+    return (c->checked?1:0);
 }
 
 bool checkbox_handleEvent(CHECKBOX c,int evt){
@@ -60,6 +72,8 @@ bool checkbox_handleEvent(CHECKBOX c,int evt){
     switch(evt){
         case BTN_LEFT:
         case BTN_RIGHT:
+            if(!c->clickOnRightLeft)
+                break;
         case WIDGET_ACTION_BTN:
             c->checked=!c->checked;
             c->paint(c);
@@ -78,24 +92,20 @@ void checkbox_autoSize(CHECKBOX c)
     int w,h,of;
     of=gfx_fontGet(); // save previous font
     gfx_fontSet(c->font);
-    if(c->caption && (*c->caption)!='\0')
-    {
-        gfx_getStringSize(c->caption,&w,&h);
-        c->height=h+2*c->margin;
-        c->width=c->height-2*c->margin; /*box size*/
-        c->width=c->width+c->margin+CHECKBOX_SPACING+w;
-    }
-    else /* no caption */
-    {
-        gfx_getStringSize("H",NULL,&h);
-        c->height=h+2*c->margin;
-        c->width=c->height-2*c->margin;
-    }
+    gfx_getStringSize("H",&w,&h); /*getting txt size*/
     gfx_fontSet(of);
+    
+    c->internalWidth=h;
+    c->internalHeight=h+2*c->margin;
+    
+    if(c->internalHeight>c->height)
+        c->height=c->internalHeight;
+    
+    //c->updateSize(c,h,h+2*c->margin);
 }
 
 void checkbox_paint(CHECKBOX c){
-    int x,y,bs,of;
+    int x,y,bs;
     int color;
 
     widget_paint((WIDGET)c);
@@ -103,7 +113,7 @@ void checkbox_paint(CHECKBOX c){
     color=(c->focused)?c->focusColor:c->fillColor;
 
     // box
-    bs=c->height-2*c->margin;
+    bs=c->internalHeight-2*c->margin;
     x=c->x+c->margin;
     y=c->y+c->margin;
 
@@ -113,17 +123,5 @@ void checkbox_paint(CHECKBOX c){
     if (c->checked){
         gfx_drawLine(c->foreColor,x,y,x+bs-1,y+bs-1);
         gfx_drawLine(c->foreColor,x+bs-1,y,x,y+bs-1);
-    }
-
-    // text
-    x=c->x+c->margin+bs+CHECKBOX_SPACING;
-    y=c->y+(c->height-fnt_fontFromId(c->font)->height)/2;
-
-    of=gfx_fontGet(); // save previous font
-
-    gfx_fontSet(c->font);
-
-    gfx_putS(c->foreColor,c->backColor,x,y,c->caption);
-
-    gfx_fontSet(of); // restore previous font
+    }    
 }
