@@ -722,7 +722,7 @@ void menu_init(){
 
     menu=widgetMenu_create();
     menu->setRect(menu,0,0,screen_width,screen_height);
-    menu->ownItems=true;
+    menu->ownWidgets=true;
 
     mih=widgetMenuChooser_create();
     mih->caption="Font";
@@ -733,7 +733,7 @@ void menu_init(){
 
     mic=widgetMenuCheckbox_create();
     mic->caption="Line wrap";
-    mic->checkbox->caption="Wrap";
+    //mic->checkbox->caption="Wrap";
     mic->checkbox->checked=true;
     menu->addItem(menu,mic);
 
