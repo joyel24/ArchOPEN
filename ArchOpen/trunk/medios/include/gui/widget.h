@@ -20,8 +20,8 @@
 
 #include <gfx/graphics.h>
 
-#define DEBUG_WIDGET
-#define DEBUG_WIDGET_CREATE_DESTROY
+//#define DEBUG_WIDGET
+//#define DEBUG_WIDGET_CREATE_DESTROY
 
 #ifdef DEBUG_WIDGET
 #define DEBUGWI(s...)   printk(s)
