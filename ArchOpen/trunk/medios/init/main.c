@@ -30,6 +30,7 @@
 #include <kernel/thread.h>
 #include <kernel/cmd_line.h>
 #include <kernel/evt.h>
+#include <kernel/gdb.h>
 #include <kernel/lang.h>
 
 #include <fs/bflat.h>
@@ -186,6 +187,14 @@ void kernel_start (void)
     gfx_init();
     con_init();
     
+#ifdef BOOT_WITH_CONSOLE
+    screens_show(SCREEN_CONSOLE);
+#endif
+    
+#ifdef USE_GDB    
+    gdb_init();
+#endif
+    
 #ifdef TARGET_TYPE_STD
     icon_kernelInit();
 #endif
@@ -218,9 +227,7 @@ void kernel_start (void)
     splash_init();
 #endif
     
-#ifdef BOOT_WITH_CONSOLE
-    screens_show(SCREEN_CONSOLE);
-#else
+#ifndef BOOT_WITH_CONSOLE
 #ifndef NO_SPLASH
     screens_show(SCREEN_SPLASH);
 #endif
@@ -256,7 +263,10 @@ void kernel_start (void)
     lcd_init();
     
     /* cmd line over the uart/serial port*/
+#ifndef USE_GDB
     init_cmd_line();
+#endif
+    
    
 #ifdef HAVE_EVT
     evt_init();
@@ -274,8 +284,10 @@ void kernel_start (void)
     init_usb_fw();
 #endif
 
+#ifndef USE_GDB
 #ifdef TARGET_TYPE_STD    
     FM_init();
+#endif
 #endif
 
 #if defined(HAVE_EXT_MODULE) && defined(TARGET_TYPE_STD )

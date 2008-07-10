@@ -21,6 +21,7 @@
 #include <kernel/delay.h>
 #include <kernel/console.h>
 #include <kernel/lang.h>
+#include <kernel/gdb.h>
 
 #include <init/exit.h>
 
@@ -80,6 +81,9 @@ static bool intCmd_doLoadBmp(char * param);
 static bool intCmd_doBrowserSetting(char * param);
 static bool intCmd_doSet_shell(char * param);
 static bool intCmd_doTime_Alarm(char * param);
+#ifdef USE_GDB
+static bool intCmd_doBkpt(char * param);
+#endif
 
 typedef struct{
     char * command;
@@ -175,6 +179,12 @@ INTERNAL_COMMAND intCmd_commands[] = {
         command: "timeAlarm",
         function: intCmd_doTime_Alarm
     },
+#ifdef USE_GDB
+    {
+        command: "doBkpt",
+        function: intCmd_doBkpt
+    },
+#endif
     /* should always be the last entry */
     {
         command:  NULL,
@@ -558,3 +568,11 @@ bool intCmd_doTime_Alarm(char * param)
     time_alarm();
     return true;   
 }
+
+#ifdef USE_GDB
+bool intCmd_doBkpt(char * param)
+{
+    gdb_bkpt;
+    return true;   
+}
+#endif

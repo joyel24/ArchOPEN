@@ -14,10 +14,14 @@ ifeq ($(HAVE_EVT),1)
 	SRC += evt.c
 endif
 
+ifeq ($(USE_GDB),1)
+	SRC += gdb.c bkpt_dummy.c
+else
 ifeq ($(HAVE_DBUG),1)
 	SRC += bkpt.S
 else
 	SRC += bkpt_dummy.c
+endif
 endif
 
 lang_data.o : lang_data.bin

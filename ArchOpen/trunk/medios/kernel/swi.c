@@ -15,6 +15,10 @@
 #include <kernel/kernel.h>
 #include <kernel/swi.h>
 
+#ifdef USE_GDB
+#include <kernel/gdb.h>
+#endif
+
 #include "api_fct_list.h"
 
 void badFctName(void)
@@ -46,7 +50,12 @@ unsigned int swi_handler (
             printk("fct %s not found\n",name);
             return (unsigned int)badFctName;            
         }
-        else
+#ifdef USE_GDB
+        else if(nCmd == nGDB_BKPT)
+        {
+            gdb_processBkpt();   
+        }
+#endif
 	  // VP removed that for now because I'm flooded by some unknown swi (related to dsp probably)
 	  ;//printk("Unknown SWI %x\n",nCmd);
         return 0;

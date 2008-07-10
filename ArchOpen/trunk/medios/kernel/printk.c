@@ -23,6 +23,10 @@
 #include <kernel/console.h>
 #include <kernel/thread.h>
 
+#ifdef USE_GDB
+#include <kernel/gdb.h>
+#endif
+
 //int vsnprintf (char * buf, size_t size, const char * fmt, va_list args);
 static char debugmembuf[255];
 
@@ -38,8 +42,12 @@ void printk(char *fmt, ...)
     va_start(ap, fmt);
     vsnprintf(debugmembuf, sizeof(debugmembuf), fmt, ap);
     va_end(ap);
+#ifdef USE_GDB
+    gdb_outString(debugmembuf);    
+#else    
     if(printk_on_uart)
         uart_outString(debugmembuf,DEBUG_UART);
+#endif
     con_write(debugmembuf,COLOR_LIGHT_GREEN);
 
     printk_printing=false;
@@ -56,8 +64,12 @@ int printf(__const char * fmt, ...)
     va_start(ap, fmt);
     res = vsnprintf(debugmembuf, sizeof(debugmembuf), fmt, ap);
     va_end(ap);
+#ifdef USE_GDB
+    gdb_outString(debugmembuf);    
+#else    
     if(printk_on_uart)
         uart_outString(debugmembuf,DEBUG_UART);
+#endif
     con_write(debugmembuf,COLOR_WHITE);
 
     printk_printing=false;
@@ -73,8 +85,12 @@ int vprintf(__const char * fmt, va_list args)
     printk_printing=true;
 
     res = vsnprintf(debugmembuf, sizeof(debugmembuf), fmt, args);
+#ifdef USE_GDB
+    gdb_outString(debugmembuf);    
+#else    
     if(printk_on_uart)
         uart_outString(debugmembuf,DEBUG_UART);
+#endif
     con_write(debugmembuf,COLOR_WHITE);
 
     printk_printing=false;

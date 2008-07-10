@@ -89,6 +89,7 @@ CONFIGURE_IS_RELEASE=-1
 CONFIGURE_TARGET_LANG=-1
 CONFIGURE_AVLO=-1
 CONFIGURE_LCD_TYPE=-1
+CONFIGURE_USE_GDB=-1
 
 if [ "$1" == "-d" ]; then
 CONFIGURE_TARGET_DEVICE="$2"
@@ -138,6 +139,7 @@ fi
 
 if [ $HAS_DEFAULT == "1" ]; then
 CONFIGURE_IS_RELEASE="0"
+CONFIGURE_USE_GDB="0"
 fi
 
 if [ $CONFIGURE_TARGET_DEVICE == "1" ]; then
@@ -373,7 +375,10 @@ fi
 #fi
 fi
 
-CONFIG_QUERY_YN $CONFIGURE_HAVE_DBUG "Build with emu2 support? (adds bkpt for some arch)" "n"
+CONFIG_QUERY_YN $CONFIGURE_HAVE_DBUG "Build with GDB support?" "n"
+CONFIGURE_USE_GDB=$?
+
+CONFIG_QUERY_YN $CONFIGURE_HAVE_DBUG "Build with aoMulator support? (adds bkpt for some arch)" "n"
 CONFIGURE_HAVE_DBUG=$?
 
 CONFIG_QUERY_YN $CONFIGURE_CHK_USB_FW "CHK_USB_FW? note: if you choose no, HD timer might mess with USB when USB is plugged and enable" "y"
@@ -387,6 +392,12 @@ CONFIGURE_BOOT_WITH_CONSOLE=$?
 
 #CONFIG_QUERY_YN $CONFIGURE_IS_RELEASE "Build a release?" "n"
 #CONFIGURE_IS_RELEASE=$?
+
+if [ $CONFIGURE_USE_GDB == "1" ]; then
+CONFIGURE_HAVE_DBUG="0"
+CONFIGURE_BOOT_WITH_CONSOLE="1"
+echo "Forcing no support for aoMulator and boot with console"
+fi
 
 echo "-----------------------------------------"
 
@@ -412,6 +423,7 @@ cat ./Makefile.conf.template | sed > ./Makefile.conf \
  -e "s,%CONFIGURE_TARGET_LANG_NAME%,${CONFIGURE_TARGET_LANG_NAME},g" \
  -e "s,%CONFIGURE_AVLO%,${CONFIGURE_AVLO},g" \
  -e "s,%CONFIGURE_LCD_TYPE%,${CONFIGURE_LCD_TYPE},g" \
+ -e "s,%CONFIGURE_USE_GDB%,${CONFIGURE_USE_GDB},g" \
  -e "s,%CONFIGURE_HAVE_DBUG%,${CONFIGURE_HAVE_DBUG},g"
 
 #did everything work?

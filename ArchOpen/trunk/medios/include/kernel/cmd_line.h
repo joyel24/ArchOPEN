@@ -1,5 +1,5 @@
 /*
-*   include/kernel/uart.h
+*   include/kernel/cmd_line.h
 *
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)

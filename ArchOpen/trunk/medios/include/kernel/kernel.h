@@ -21,6 +21,8 @@
 
 #include <target/chip/arch/arch_def.h>
 
+#include <kernel/gdb.h>
+
 #define SVC_STACK_SIZE 0x200
 
 extern MED_RET_T errno;

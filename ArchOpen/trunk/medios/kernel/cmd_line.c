@@ -1,5 +1,5 @@
 /*
-*   kernel/core/cmd_line.c
+*   kernel/cmd_line.c
 *
 *   MediOS project
 *   Copyright (c) 2005 by Christophe THOMAS (oxygen77 at free.fr)

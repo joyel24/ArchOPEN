@@ -29,14 +29,19 @@
 
 #include <driver/lcd.h>
 #include <driver/speaker.h>
+
+#ifndef USE_GDB
 #include <driver/fm_remote.h>
+#endif
 
 #include <fs/cfg_file.h>
 
 #define MISC_GUIFONT RADONWIDE
 
 static WIDGETMENU widgetMenu;
+#ifndef USE_GDB
 static WIDGETMENU_CHECKBOX FmRemote;
+#endif
 static WIDGETMENU_CHECKBOX ExtSpkr;
 static WIDGETMENU_CHECKBOX develFct;
 static WIDGETMENU_CHECKBOX virtKbdLY;
@@ -47,11 +52,14 @@ int orgSpkr;
 void miscSet_sav(void)
 {
     int needSave=0;
+#ifndef USE_GDB
     int fmSate=FM_getState();
+#endif
     CFG_DATA * cfg;
     /* opening config file */
-    
+#ifndef USE_GDB    
     TEST_VAR(fmSate,FmRemote->checkbox->checked,needSave);
+#endif
     TEST_VAR(has_develFct,develFct->checkbox->checked,needSave);
     if(SPKR_AVAILABLE())
     {
@@ -80,7 +88,7 @@ void miscSet_sav(void)
     }
     
     /* setting the config */
-    
+#ifndef USE_GDB    
     if(FmRemote->checkbox->checked != FM_getState())
     {
         if(FmRemote->checkbox->checked)
@@ -91,6 +99,7 @@ void miscSet_sav(void)
     }
     
     cfg_writeInt(cfg,"fmRemote",FmRemote->checkbox->checked);
+#endif
     cfg_writeInt(cfg,"develFct",has_develFct);
     
     if(SPKR_AVAILABLE())
@@ -146,10 +155,12 @@ void misc_setting(void)
     widgetMenu->font=WIDGET_CONFIG_FONT;
     
     // standardMenu
+#ifndef USE_GDB
     FmRemote=widgetMenuCheckbox_create();
     FmRemote->caption=getLangStr(STRLNG_MISC_REMOTE);
     FmRemote->checkbox->checked=FM_getState();
     widgetMenu->addItem(widgetMenu,FmRemote);
+#endif
     
     develFct=widgetMenuCheckbox_create();
     develFct->caption=getLangStr(STRLNG_MISC_DEV);
@@ -173,7 +184,11 @@ void misc_setting(void)
             
     // intial paint
     // set focus
-    widgetMenu->setFocus(widgetMenu,FmRemote);    
+#ifndef USE_GDB
+    widgetMenu->setFocus(widgetMenu,FmRemote);
+#else
+    widgetMenu->setFocus(widgetMenu,develFct);
+#endif
     widgetMenu->paint(widgetMenu);
     
     settings_evtLoop(widgetMenu,miscSet_sav,-1);
@@ -198,6 +213,7 @@ void misc_loadPref(void)
             printk("Can't create new cfg file\n");
             return;
         }
+
         cfg_writeInt(cfg,"fmRemote",1);
         if(SPKR_AVAILABLE())
         {
@@ -211,6 +227,7 @@ void misc_loadPref(void)
     }
     else
     {
+#ifndef USE_GDB
         if(cfg_itemExists(cfg,"fmRemote"))
         {
             if(cfg_readInt(cfg,"fmRemote"))
@@ -226,6 +243,7 @@ void misc_loadPref(void)
             printk("no cfg for fmRemote\n");
             needWrite=1;
         }
+#endif
         
         if(cfg_itemExists(cfg,"develFct"))
         {
