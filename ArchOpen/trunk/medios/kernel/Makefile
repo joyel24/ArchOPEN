@@ -15,7 +15,7 @@ ifeq ($(HAVE_EVT),1)
 endif
 
 ifeq ($(USE_GDB),1)
-	SRC += gdb.c bkpt_dummy.c
+	SRC += bkpt_dummy.c
 else
 ifeq ($(HAVE_DBUG),1)
 	SRC += bkpt.S

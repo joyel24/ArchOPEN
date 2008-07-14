@@ -90,6 +90,7 @@ endif
 
 ifeq ($(USE_GDB),1)
 	GCCFLAGS += -DUSE_GDB -g
+	ASFLAGS  += --defsym USE_GDB=1
 endif
 
 ifeq ($(HAVE_EXT_MODULE),1)

@@ -24,7 +24,7 @@
 #include <kernel/thread.h>
 
 #ifdef USE_GDB
-#include <kernel/gdb.h>
+#include <lib/gdb.h>
 #endif
 
 //int vsnprintf (char * buf, size_t size, const char * fmt, va_list args);

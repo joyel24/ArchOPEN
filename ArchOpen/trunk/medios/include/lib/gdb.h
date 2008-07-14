@@ -1,5 +1,5 @@
 /*
-*   include/kernel/gdb.h
+*   include/lib/gdb.h
 *
 *   MediOS project
 *   Copyright (c) 2008 by Christophe THOMAS (oxygen77 at free.fr)
@@ -17,9 +17,21 @@
     
 #include <kernel/swi.h>
 
-#define gdb_bkpt  swi_call_noRet(nGDB_BKPT)
+#define gdb_bkpt  swi_call_noRet(nGDB_CODE_BKPT)
 
-void gdb_processBkpt(void);
+#define MAX_BREAKPOINTS 32
+
+//#define HAS_GDB_DEBUG
+#ifdef HAS_GDB_DEBUG
+#define DEBUG_GDB(s...)   printk(s)
+#else
+#define DEBUG_GDB(s...)
+#endif
+
+#define GDB_CODE_BKPT 1
+#define GDB_STEP_BKPT 2
+
+void gdb_processBkpt(int bkptType);
 
 void gdb_outString(char *msg);
 void gdb_doCmd(void);

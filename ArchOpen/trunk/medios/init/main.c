@@ -11,6 +11,7 @@
 */
 
 #include <lib/string.h>
+#include <lib/gdb.h>
 
 #include <sys_def/colordef.h>
 #include <sys_def/time.h>
@@ -30,7 +31,6 @@
 #include <kernel/thread.h>
 #include <kernel/cmd_line.h>
 #include <kernel/evt.h>
-#include <kernel/gdb.h>
 #include <kernel/lang.h>
 
 #include <fs/bflat.h>

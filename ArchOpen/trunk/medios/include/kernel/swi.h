@@ -37,11 +37,18 @@ struct user_fct_t {
         return (long) _r0;               \
     }) 
 
+/* SWI num managed in trap.S */
 #define nYIELD          0x0
-#define nAPI_INIAPI     0x1
 #define nTHREAD_NXT     0x2
 #define nYIELD_TO       0x3
-#define nGDB_BKPT       0x5
+
+#define nGDB_CODE_BKPT  0x5
+#define nGDB_STEP_BKPT  0x6
+
+/* SWI num managed in swi.c */
+#define nAPI_INIAPI     0x1
+
+
 
     
 #endif

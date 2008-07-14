@@ -21,7 +21,7 @@
 
 #include <target/chip/arch/arch_def.h>
 
-#include <kernel/gdb.h>
+#include <lib/gdb.h>
 
 #define SVC_STACK_SIZE 0x200
 

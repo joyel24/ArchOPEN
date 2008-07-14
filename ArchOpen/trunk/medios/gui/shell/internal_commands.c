@@ -11,6 +11,8 @@
 */
 
 #include <lib/string.h>
+#include <lib/gdb.h>
+
 #include <sys_def/stddef.h>
 #include <sys_def/types.h>
 #include <sys_def/colordef.h>
@@ -21,7 +23,6 @@
 #include <kernel/delay.h>
 #include <kernel/console.h>
 #include <kernel/lang.h>
-#include <kernel/gdb.h>
 
 #include <init/exit.h>
 

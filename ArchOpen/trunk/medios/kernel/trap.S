@@ -43,7 +43,7 @@ trap_swi:
     @ switching to SVC mode with FIQ
     msr    cpsr_c, #0x93    
     @ store remaining regs: R0, R1 and CPSR   
-    mov    r7, r2
+    mov    r7, r2                @ SPSR
     mov    r5, r0                @ saving ptr on reg struct 
     mov    r6, r3                @ saving swi code
     mov    r8, r4
@@ -58,6 +58,12 @@ trap_swi:
     beq yielding
     cmp r3, #3
     beq yielding_to
+.ifdef USE_GDB
+    cmp r3, #5
+    beq bkpt_code
+    cmp r3, #6
+    beq bkpt_step
+.endif
 .ifdef DSC21
     ldr r5, __trap_swi_ptr
     mov lr, pc
@@ -85,7 +91,17 @@ yielding_to:
     ldr    r1, =threadCurrent
     str    r0, [r1]
     b      thread_loadContext
-            
+.ifdef USE_GDB
+bkpt_code:
+    mov    r0, #1
+    bl     gdb_processBkpt
+    b      thread_loadContext
+bkpt_step:
+    mov    r0, #2
+    bl     gdb_processBkpt
+    b      thread_loadContext
+.endif
+          
 __trap_swi_ptr:  .word swi_handler
 
 @.align	5

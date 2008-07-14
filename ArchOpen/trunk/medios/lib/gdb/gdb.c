@@ -1,5 +1,5 @@
 /*
-*   kernel/gdb.c
+*   lib/gdb.c
 *
 *   MediOS project
 *   Copyright (c) 2008 by Christophe THOMAS (oxygen77 at free.fr)
@@ -10,16 +10,19 @@
 * KIND, either express of implied.
 */
 
-#include <driver/uart.h>
 
 #include <kernel/kernel.h>
 #include <kernel/thread.h>
-#include <kernel/gdb.h>
 #include <kernel/swi.h>
 
 #include <lib/string.h>
+#include <lib/gdb.h>
+#include <lib/breakpoints.h>
+#include <lib/opcode_decode.h>
 
 #include <driver/buttons.h>
+#include <driver/uart.h>
+#include <driver/cache.h>
 
 #define BUFF_SIZE 1024
 
@@ -39,6 +42,17 @@ static const char hexchars[] = "0123456789abcdef";
 static int debugActive;
 
 static int blockingUartPoll=0;
+
+/** The pool of breakpoint descriptors */
+struct breakpoint_descr breakpoint_pool[MAX_BREAKPOINTS];
+/** the pool of free breakpoint descriptors */
+struct breakpoint_descr *free_breakpts;
+/** the active breakpoint descriptors */
+struct breakpoint_descr *active_breakpts;
+/** the active stepping breakpoint descriptors */
+struct breakpoint_descr *stepping_breakpts;
+/** the breakpoint descriptors of breakpoint disabled by stepping */
+struct breakpoint_descr *disabled_breakpts;
 
 /****************************/
 /* UART Interuption handler */
@@ -165,11 +179,13 @@ gdbPacketRestart:
     if ((chk & 0xff) != chk2)
     {
         uart_out('-',GDB_UART);
+        DEBUG_GDB("UART|Bad CRC: %s (%x instead of %x)\n",inBuff,chk&0xff,chk2);
         goto gdbPacketRestart;
     }
     else
     {
         uart_out('+',GDB_UART);
+        DEBUG_GDB("UART|New cmd:%s\n",inBuff);
     }
     return 1;
 }
@@ -201,7 +217,7 @@ void gdb_putPacket(int check)
         
         while(!uart_in(&c,GDB_UART))
         {
-            if(!check && i>100)
+            if(!check && i>1000)
                 return;
             i++;
         }
@@ -240,13 +256,24 @@ void gdb_sendSig(int sigNum)
     gdb_putPacket(GDB_DO_CHECK);
 }
 
-void gdb_processBkpt(void)
+void gdb_processBkpt(int bkptType)
 {
+    if(debugActive)
+    {
+        DEBUG_GDB("GDB already active\n");
+        return;
+    }
+    
+    if(bkptType==GDB_STEP_BKPT)
+        threadCurrent->regs[PC]-=4;
+    DEBUG_GDB("Gdb bkpt at %x\n",threadCurrent->regs[PC]);
     debugActive=1;
-    printk("Gdb bkpt\n");
     gdb_sendSig(5);
     gdb_doCmd();
     debugActive=0;
+    /*DEBUG_GDB("Gdb bkpt exit: PC=%x (%x) nxt PC (%x)\n",threadCurrent->regs[PC],
+              *((unsigned int*)threadCurrent->regs[PC]),
+              *((unsigned int*)threadCurrent->regs[PC]+1));*/
 }
 
 void gdb_getReg(void)
@@ -277,7 +304,7 @@ void gdb_getReg(void)
         outBuff[8]='\0';
     }
     gdb_putPacket(GDB_DO_CHECK);
-    printk("Cmd get reg %x\n",num);
+    DEBUG_GDB("Cmd get reg %x\n",num);
 }
 
 void gdb_setReg(void)
@@ -304,7 +331,7 @@ void gdb_setReg(void)
         threadCurrent->regs[0]=val;
     }
     gdb_replyOK();
-    printk("Cmd set reg %x to %x\n",num,val);
+    DEBUG_GDB("Cmd set reg %x to %x\n",num,val);
 }
 
 void gdb_getRegs(void)
@@ -318,11 +345,7 @@ void gdb_getRegs(void)
         gdb_hexWord(ptr,regs[i+1]); /*cpsr is reg[0]*/
         ptr+=8;
     }
-    
-    /* special process for PC */
-    /*gdb_hexWord(ptr,regs[16]-4);
-    ptr+=8;*/
-        
+
     for (i = 0; i < 8; i++) {
         memset(ptr, 0, 16);
         ptr += 16;
@@ -331,12 +354,12 @@ void gdb_getRegs(void)
     gdb_hexWord(ptr, 0);
     ptr += 8;
     gdb_hexWord(ptr, regs[0]);
-    printk("cpsr=%x\n",regs[0]);
     ptr[8] = 0;
     gdb_putPacket(GDB_DO_CHECK);
+    DEBUG_GDB("Cmd read regs\n");
 }
 
-void gdb_setRegs(void)
+void gdb_setRegs()
 {
     char *buff;
     int i, len;
@@ -356,6 +379,7 @@ void gdb_setRegs(void)
         threadCurrent->regs[0]=gdb_getHexWord(buff);
     }
     gdb_replyOK();
+    DEBUG_GDB("Cmd write regs\n");
 }
 
 void gdb_readMem(void)
@@ -378,7 +402,7 @@ void gdb_readMem(void)
 
     outBuff[len * 2] = '\0';
     gdb_putPacket(GDB_DO_CHECK);
-    printk("Cmd read Mem (@%x, len=%x)\n",addr,len);
+    DEBUG_GDB("Cmd read Mem (@%x, len=%x)\n",addr,len);
 }
 
 void gdb_writeMem(void)
@@ -397,8 +421,168 @@ void gdb_writeMem(void)
         *((unsigned char *)(addr + i)) = gdb_getHexByte(inBuff + 1 + pos + i * 2);
     
     gdb_replyOK();
-    printk("Cmd write Mem at %x, len %x\n",addr,len);
+    DEBUG_GDB("Cmd write Mem at %x, len %x\n",addr,len);
+    print_data(inBuff + 1 + pos,len*2);
 }
+
+void gdb_stepping(void)
+{
+    /* the address to insert the step breakpoint */
+    unsigned long * regs = threadCurrent->regs;
+    unsigned int ret_addr = regs[PC];
+    int step_thumb_state = regs[CPSR] & 0x20;
+    int thumb_state = regs[CPSR] & 0x20;
+    unsigned int step_addr = ret_addr + (thumb_state ? 2 : 4);
+    struct breakpoint_descr *step_bkpt;
+    uint32_t reg_set[17];
+    int i;
+
+    DEBUG_GDB("Stepping (%s)\n",inBuff);
+
+    /* if the next to be executed instruction will cause a branch the step
+    * address must be set to the resulting destination address.
+    */
+    if ( instructionExecuted_opcode( ret_addr, thumb_state, regs[CPSR]))
+    {
+        uint32_t branch_addr;
+
+        for ( i = 0; i < 15; i++) reg_set[i] = regs[i+1];
+
+        if ( thumb_state) /* the PC is expected to be current address + 4 */
+            reg_set[15] = ret_addr + 4;
+        else  /* the PC is expected to be current address + 8 */
+            reg_set[15] = ret_addr + 8;
+
+        reg_set[16]=regs[0];
+        
+        if ( causeJump_opcode( ret_addr, &step_thumb_state, reg_set, &branch_addr))
+        {
+            step_addr = branch_addr;
+            //DEBUG_GDB("Branch instruction, dest %08x, thumb %d\n", step_addr, step_thumb_state);
+        }
+    }
+    else
+        DEBUG_GDB("Instruction not executed\n");
+
+
+    /* see if the step break already exists */
+    step_bkpt = removeFromList_breakpoint( &stepping_breakpts,step_addr);
+    if (step_bkpt)
+        DEBUG_GDB("Step bk at %08x already exists\n", step_addr);
+    else
+        step_bkpt = removeHead_breakpoint( &free_breakpts);
+
+    if (step_bkpt)
+    {
+        struct breakpoint_descr *disable_bkpt;    
+        initDescr_breakpoint( step_bkpt, step_addr, step_thumb_state);
+
+        addHead_breakpoint(&stepping_breakpts, step_bkpt);
+
+        /* disable any breakpoints at the current return addr */
+        disable_bkpt = removeFromList_breakpoint( &active_breakpts,ret_addr);
+        if (disable_bkpt)
+            addHead_breakpoint( &disabled_breakpts, disable_bkpt);
+    }
+    else
+    {
+    /*
+    * no more breakpoint descriptors left, send a stop packet so the
+    * debugger sits on the current instruction until the user does something.
+    * That is about the best option available.
+    */
+        gdb_sendSig(5);
+    }
+}
+
+void gdb_addBkpt(void)
+{
+    int type;
+    unsigned int addr;
+    int len;
+    struct breakpoint_descr *active_bkpt;
+    
+    if(sscanf(inBuff+1, "%d,%lx,%d", &type,&addr, &len)!=3)
+    {
+        gdb_replyKO(0);
+        return;
+    }
+
+    DEBUG_GDB("Bkpt ADD cmd addr=%x, type=%d, len=%x\n", addr,type,len);
+    
+    switch(type)
+    {
+        case 0:
+            active_bkpt = removeFromList_breakpoint( &active_breakpts,addr);
+            if (active_bkpt)
+                DEBUG_GDB("SW bk at %08x already exists\n", addr);
+            else
+                active_bkpt = removeHead_breakpoint( &free_breakpts);
+
+            if (active_bkpt)
+            {
+                initDescr_breakpoint( active_bkpt, addr, 0); /*forcing ARM mode */
+                
+                addHead_breakpoint(&active_breakpts, active_bkpt);
+                gdb_replyOK();
+            }
+            else
+            {
+            /*
+            * no more breakpoint descriptors left, send a stop packet so the
+            * debugger sits on the current instruction until the user does something.
+            * That is about the best option available.
+            */
+                gdb_replyKO(0);
+            }
+            break;
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+            outBuff[0]='\0';
+            gdb_putPacket(GDB_DO_CHECK);
+            break;
+    }
+}
+
+void gdb_delBkpt(void)
+{
+    int type;
+    unsigned int addr;
+    int len;
+    struct breakpoint_descr *rm_bkpt;
+    
+    if(sscanf(inBuff+1, "%d,%lx,%d", &type,&addr, &len)!=3)
+    {
+        gdb_replyKO(0);
+        return;
+    }
+
+    DEBUG_GDB("Bkpt DEL cmd addr=%x, type=%d, len=%x\n", addr,type,len);
+    
+    switch(type)
+    {
+        case 0:
+            rm_bkpt = removeFromList_breakpoint( &active_breakpts,addr);
+            if (rm_bkpt)
+                addHead_breakpoint(&free_breakpts, rm_bkpt);
+            
+            rm_bkpt = removeFromList_breakpoint( &disabled_breakpts,addr);
+            if (rm_bkpt)
+                addHead_breakpoint(&free_breakpts, rm_bkpt);
+            gdb_replyOK();
+            break;
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+            outBuff[0]='\0';
+            gdb_putPacket(GDB_DO_CHECK);
+            break;
+    }
+}
+
 
 /******************************/
 /* Gdb command parsing        */
@@ -408,9 +592,32 @@ void gdb_doCmd(void)
 {
     int stop=0;
 
+    struct breakpoint_descr *found;
+
+    /* Remove all the breakpoints from memory so the
+    * code is seen as written.   */
+    removeAll_breakpoint(stepping_breakpts);
+    removeAll_breakpoint(active_breakpts);
+
+    /*DEBUG_GDB( "Flushing caches\n");
+    CACHE_INVALIDATE(CACHE_CODE);
+    CACHE_INVALIDATE(CACHE_DATA);*/
+
+    /* put the disabled breakpoints back on the active list. */
+    catLists_breakpoint(&active_breakpts,disabled_breakpts);
+    disabled_breakpts = NULL;
+
+
+   /* Remove any stepping breakpoints that match the current address */
+    found = removeFromList_breakpoint( &stepping_breakpts, threadCurrent->regs[PC]);
+    if (found) addHead_breakpoint( &free_breakpts, found);
+
+    found = removeFromList_breakpoint( &active_breakpts, threadCurrent->regs[PC]);
+    if (found) addHead_breakpoint( &disabled_breakpts, found);
+    
     while(!stop)
     {
-        if(!gdb_getPacket()) return;
+        if(!gdb_getPacket()) stop=1;
         
         switch(inBuff[0])
         {
@@ -422,11 +629,9 @@ void gdb_doCmd(void)
                 break;
             case 'g':
                 gdb_getRegs();
-                printk("Cmd read regs\n");
                 break;
             case 'G':
-                gdb_setRegs();         
-                printk("Cmd write regs\n");
+                gdb_setRegs();
                 break;
             case 'm':
                 gdb_readMem();    
@@ -435,25 +640,43 @@ void gdb_doCmd(void)
                 gdb_writeMem();
                 break;
             case 'D':
-                printk("Cmd detach\n");
+                DEBUG_GDB("Cmd detach\n");
                 stop=1;
                 break;
             case 'c':   
-                printk("Cmd continue\n");             
+                DEBUG_GDB("Cmd continue\n");
                 stop=1;
                 break;
             case 's':
-                gdb_replyKO(1);
+                gdb_stepping();
+                stop=1;
                 break;
             case '?':
                 gdb_sendSig(5);
+                DEBUG_GDB("Cmd last Sig\n");
+                break;
+            case 'Z':
+                gdb_addBkpt();
+                break;
+            case 'z':
+                gdb_delBkpt();
                 break;
             default:
                 outBuff[0]='\0';
                 gdb_putPacket(GDB_DO_CHECK);
+                DEBUG_GDB("UKN cmd: %s\n",inBuff);
                 break;
         }        
     }
+    DEBUG_GDB( "Inserting active breakpoints\n");
+    insertAll_breakpoint( active_breakpts);
+    DEBUG_GDB( "Inserting stepping breakpoints\n");
+    insertAll_breakpoint( stepping_breakpts);
+
+    DEBUG_GDB( "Flushing caches\n");
+    CACHE_INVALIDATE(CACHE_CODE);
+    CACHE_INVALIDATE(CACHE_DATA);
+    //regs[PC]=ret_addr;
 }
 
 /****************************/
@@ -481,14 +704,27 @@ void gdb_outString(char *msg)
 
 void gdb_init(void)
 {
-       
+    int i;
     uart_need(GDB_UART);              /* request UART */
     uart_changeSpeed(115200,GDB_UART);
     blockingUartPoll=0;
     debugActive=1;
+
+    for ( i = 0; i < MAX_BREAKPOINTS; i++)
+    {
+        breakpoint_pool[i].next = NULL;
+        if ( i > 0) breakpoint_pool[i - 1].next = &breakpoint_pool[i];
+    }
+    free_breakpts = &breakpoint_pool[0];
+    stepping_breakpts = NULL;
+    active_breakpts = NULL;
+    disabled_breakpts = NULL;
+    
     printk("Starting GDB first\nWaiting for its connexion - press F1 key to skip\n");
     gdb_sendSig(5);
-    gdb_doCmd(); 
+    
+    gdb_doCmd();
+
     debugActive=0;
     blockingUartPoll=1;
     //irq_changeHandler(UART_IRQ_NUM(GDB_UART),gbd_uartInt);
