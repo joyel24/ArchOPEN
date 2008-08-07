@@ -189,9 +189,9 @@ void D_ProcessEvents (void)
     event_t*    ev;
         
     // IF STORE DEMO, DO NOT ACCEPT INPUT
-    if ( ( gamemode == commercial )
+    /*if ( ( gamemode == commercial )
          && (W_CheckNumForName("map01")<0) )
-      return;
+      return;*/
         
     for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) )
     {

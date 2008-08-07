@@ -299,12 +299,29 @@ void P_PlayerThink (player_t* player)
 
 	//newweapon = (cmd->buttons&BT_WEAPONMASK)>>BT_WEAPONSHIFT;
 
-        //gli
+        //gli + oxy
         newweapon=player->readyweapon;
-        do{
-         newweapon++;
-         if (newweapon>=NUMWEAPONS) newweapon=0;
-        }while(!player->weaponowned[newweapon]);
+        while(1)
+        {
+            newweapon++;
+            if (newweapon>=NUMWEAPONS) newweapon=0;
+
+            if(player->weaponowned[newweapon])
+            {
+                if(newweapon == player->readyweapon) /*we've looped => exit*/
+                    break;
+                
+                if ((newweapon != wp_plasma
+                && newweapon != wp_bfg
+                     && newweapon != wp_supershotgun)
+                || (gamemode != shareware) )
+                {
+                    player->pendingweapon = newweapon;
+                    break;
+                }
+
+            }
+        }
 
         /*
 	if (newweapon == wp_fist
@@ -323,7 +340,7 @@ void P_PlayerThink (player_t* player)
 	    newweapon = wp_supershotgun;
 	}
         */
-
+/*
 	if (player->weaponowned[newweapon]
 	    && newweapon != player->readyweapon)
 	{
@@ -335,7 +352,7 @@ void P_PlayerThink (player_t* player)
 	    {
 		player->pendingweapon = newweapon;
 	    }
-	}
+	}*/
     }
 
     // check for use

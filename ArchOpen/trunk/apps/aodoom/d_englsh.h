@@ -68,7 +68,7 @@
 #define ENDGAME	"are you sure you want to end the game?\n\n"PRESSYN
 
 #if defined(PMA) || defined(AV4XX) || defined(AV5XX)
-#define DOSY		"(press F2 to quit)"
+#define DOSY		"(press F3 to quit)"
 #else
 #define DOSY		"(press cross to quit)"
 #endif

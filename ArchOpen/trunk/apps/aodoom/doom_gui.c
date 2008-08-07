@@ -110,7 +110,6 @@ void gui_init(){
     mi->caption="Picture settings:";
     mi->foreColor=GUI_TITLE_COLOR;
     mi->canFocus=false;
-    mi->widgetWidth=0;
     menu->addItem(menu,mi);
 
     mit=widgetMenuTrackbar_create();
@@ -151,14 +150,13 @@ void gui_init(){
     mi->caption="Overclocking:";
     mi->foreColor=GUI_TITLE_COLOR;
     mi->canFocus=false;
-    mi->widgetWidth=0;
     menu->addItem(menu,mi);
 
     mic=widgetMenuCheckbox_create();
     mic->caption="Enable OC";
     mic->cfgStored=true;
     mic->cfgName="overclocking";
-    mic->checkbox->caption="Enabled";
+    //mic->checkbox->caption="Enabled";
     menu->addItem(menu,mic);
 
     mit=widgetMenuTrackbar_create();
@@ -178,37 +176,31 @@ void gui_init(){
     mi->caption="Cheats:";
     mi->foreColor=GUI_TITLE_COLOR;
     mi->canFocus=false;
-    mi->widgetWidth=0;
     menu->addItem(menu,mi);
 
     mi=widgetMenuItem_create();
     mi->caption="God mode";
     mi->cfgName="iddqd";
-    mi->widgetWidth=0;
     menu->addItem(menu,mi);
 
     mi=widgetMenuItem_create();
     mi->caption="No clipping";
     mi->cfgName="idclip";
-    mi->widgetWidth=0;
     menu->addItem(menu,mi);
 
     mi=widgetMenuItem_create();
     mi->caption="Full ammo";
     mi->cfgName="idfa";
-    mi->widgetWidth=0;
     menu->addItem(menu,mi);
 
     mi=widgetMenuItem_create();
     mi->caption="Full ammo & keys";
     mi->cfgName="idkfa";
-    mi->widgetWidth=0;
     menu->addItem(menu,mi);
 
     mi=widgetMenuItem_create();
     mi->caption="Powerups";
     mi->cfgName="idbehold";
-    mi->widgetWidth=0;
     menu->addItem(menu,mi);
 
 
@@ -315,7 +307,7 @@ void gui_welcomeScreen(){
     gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "  Off:      Doom menu");
 #endif
 
-#if defined(AV4XX) || defined(PMA) || defined(AV5XX)
+#if defined(AV4XX) || defined(PMA)
     gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=18,   "Keys:");
     gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "  D-Pad:  Move");
     gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "  LCD/TV: Shoot");
@@ -326,6 +318,19 @@ void gui_welcomeScreen(){
     gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "  Off:    Activate");
 #endif
 
+#if defined(AV5XX)
+    gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=18,   "Keys:");
+    gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "  D-Pad:  Move");
+    gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "  LCD/TV: Shoot");
+    gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "  F1:     Doom menu, Ingame menu (while in doom menu)");
+    gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "  F2:     Map");
+    gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "  F3:     Change weapon");
+    gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "  On:     Strafe");
+    gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "  Off:    Mark MAP");
+    gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "  BTN1:   Run");
+    gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "  BTN2:   Activate");
+#endif
+    
     gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=18,   "Choose the WAD file you want to");
     gfx_putS(COLOR_BLACK,COLOR_WHITE,0,y+=9,    "play using the browser.");
 
@@ -345,4 +350,9 @@ void gui_PWADScreen(){
 
     while(btn_readState());
     while(!btn_readState());
+};
+
+void gui_LoadScreen(void){
+    gfx_clearScreen(COLOR_WHITE);
+    gfx_putS(COLOR_BLACK,COLOR_WHITE,0,18,      "Loading file");
 };

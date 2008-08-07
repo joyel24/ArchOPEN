@@ -75,6 +75,9 @@ __attribute__((section(".fwuncomp_code"))) void arch_reload_firmware(void){
     firmware_header header=*(firmware_header*)0x140000;
     unsigned char * fwdata=(unsigned char *)0x140010;
 
+    halt_device();
+#if 0
+    
     // disable interrupts
     cli();
 
@@ -107,6 +110,7 @@ __attribute__((section(".fwuncomp_code"))) void arch_reload_firmware(void){
 
     //jump to sdram start (where the uncompressed firmware is)
     firmware_start();
+#endif
 }
 
 void arch_HaltMsg(void)

@@ -114,11 +114,13 @@ char button_to_key[2][NB_DOOM_BUTTONS]=
 {{DOOM_KEY_UP,DOOM_KEY_DOWN,DOOM_KEY_LEFT,DOOM_KEY_RIGHT,
   DOOM_KEY_INGAMEMENU,DOOM_KEY_WEAPON,DOOM_KEY_RUN, // F1 F2 F3
   DOOM_KEY_SHOOT,DOOM_KEY_STRAFE,                   // BTN1 BTN2
+  DOOM_KEY_NONE, DOOM_KEY_NONE,                     // BTN3, BTN4
   DOOM_KEY_ACTIVATE,DOOM_KEY_DOOMMENU},             // ON OFF
   // menus
  {DOOM_KEY_UP,DOOM_KEY_DOWN,DOOM_KEY_LEFT,DOOM_KEY_RIGHT,
   DOOM_KEY_NONE,DOOM_KEY_NONE,DOOM_KEY_NONE,
   DOOM_KEY_MENUOK,DOOM_KEY_MENUYES,
+  DOOM_KEY_NONE, DOOM_KEY_NONE,                     // BTN3, BTN4
   DOOM_KEY_MENUOK,DOOM_KEY_DOOMMENU}};
 #endif
 
@@ -128,27 +130,47 @@ char button_to_key[2][NB_DOOM_BUTTONS]=
 {{DOOM_KEY_UP,DOOM_KEY_DOWN,DOOM_KEY_LEFT,DOOM_KEY_RIGHT,
   DOOM_KEY_SHOOT,DOOM_KEY_STRAFE,DOOM_KEY_WEAPON,
   DOOM_KEY_RUN,DOOM_KEY_NONE,
+  DOOM_KEY_NONE, DOOM_KEY_NONE,                     // BTN3, BTN4
   DOOM_KEY_ACTIVATE,DOOM_KEY_DOOMMENU},
   // menus
  {DOOM_KEY_UP,DOOM_KEY_DOWN,DOOM_KEY_LEFT,DOOM_KEY_RIGHT,
   DOOM_KEY_INGAMEMENU,DOOM_KEY_MENUYES,DOOM_KEY_MENUYES,
   DOOM_KEY_MENUOK,DOOM_KEY_NONE,
+  DOOM_KEY_NONE, DOOM_KEY_NONE,                     // BTN3, BTN4
   DOOM_KEY_MENUOK,DOOM_KEY_DOOMMENU}};
 #endif
-#if defined(AV4XX) || defined(PMA) || defined(AV5XX)
+#if defined(AV4XX) || defined(PMA)
   char button_to_key[2][NB_DOOM_BUTTONS]=
   // ingame
 {{DOOM_KEY_UP,DOOM_KEY_DOWN,DOOM_KEY_LEFT,DOOM_KEY_RIGHT,
   DOOM_KEY_DOOMMENU,DOOM_KEY_STRAFE,DOOM_KEY_WEAPON,
   DOOM_KEY_SHOOT,DOOM_KEY_NONE,
+  DOOM_KEY_NONE, DOOM_KEY_NONE,                     // BTN3, BTN4
   DOOM_KEY_RUN,DOOM_KEY_ACTIVATE},
   // menus
  {DOOM_KEY_UP,DOOM_KEY_DOWN,DOOM_KEY_LEFT,DOOM_KEY_RIGHT,
   DOOM_KEY_INGAMEMENU,DOOM_KEY_MENUYES,DOOM_KEY_MENUYES,
   DOOM_KEY_MENUOK,DOOM_KEY_NONE,
+  DOOM_KEY_NONE, DOOM_KEY_NONE,                     // BTN3, BTN4
   DOOM_KEY_MENUOK,DOOM_KEY_DOOMMENU}};
 #endif
 
+#if defined(AV5XX)
+  char button_to_key[2][NB_DOOM_BUTTONS]=
+  // ingame
+{{DOOM_KEY_UP,DOOM_KEY_DOWN,DOOM_KEY_LEFT,DOOM_KEY_RIGHT,
+  DOOM_KEY_DOOMMENU,DOOM_KEY_MAP,DOOM_KEY_WEAPON,
+  DOOM_KEY_RUN,DOOM_KEY_ACTIVATE,
+  DOOM_KEY_SHOOT, DOOM_KEY_NONE,                     // LCD BTN, NO BTN4
+  DOOM_KEY_STRAFE,DOOM_KEY_MARK},
+  // menus
+ {DOOM_KEY_UP,DOOM_KEY_DOWN,DOOM_KEY_LEFT,DOOM_KEY_RIGHT,
+  DOOM_KEY_INGAMEMENU,DOOM_KEY_MENUYES,DOOM_KEY_MENUYES,
+  DOOM_KEY_MENUOK,DOOM_KEY_NONE,
+  DOOM_KEY_NONE, DOOM_KEY_NONE,                     // BTN3, BTN4
+  DOOM_KEY_MENUOK,DOOM_KEY_DOOMMENU}};
+#endif
+  
 #if defined(GMINI4XX) || defined(GMINI402)
 // 320px -> 220px clever resize of the HUD (thx to WireDDD for the idea)
 int hud_resize_table[224]={
@@ -334,6 +356,8 @@ void I_StartTic (void)
     if(pressed & BTMASK_F3)     DoButtonEvent(DOOM_BUTTON_MENU3,false);
     if(pressed & BTMASK_BTN1)   DoButtonEvent(DOOM_BUTTON_1,false);
     if(pressed & BTMASK_BTN2)   DoButtonEvent(DOOM_BUTTON_2,false);
+    if(pressed & BTMASK_BTN3)   DoButtonEvent(DOOM_BUTTON_3,false);
+    if(pressed & BTMASK_BTN4)   DoButtonEvent(DOOM_BUTTON_4,false);
     if(pressed & BTMASK_ON)     DoButtonEvent(DOOM_BUTTON_ON,false);
     if(pressed & BTMASK_OFF)    DoButtonEvent(DOOM_BUTTON_OFF,false);
   }
@@ -348,6 +372,8 @@ void I_StartTic (void)
     if(released & BTMASK_F3)    DoButtonEvent(DOOM_BUTTON_MENU3,true);
     if(released & BTMASK_BTN1)  DoButtonEvent(DOOM_BUTTON_1,true);
     if(released & BTMASK_BTN2)  DoButtonEvent(DOOM_BUTTON_2,true);
+    if(released & BTMASK_BTN3)   DoButtonEvent(DOOM_BUTTON_3,true);
+    if(released & BTMASK_BTN4)   DoButtonEvent(DOOM_BUTTON_4,true);
     if(released & BTMASK_ON)    DoButtonEvent(DOOM_BUTTON_ON,true);
     if(released & BTMASK_OFF)   DoButtonEvent(DOOM_BUTTON_OFF,true);
   }

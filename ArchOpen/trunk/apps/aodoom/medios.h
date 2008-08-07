@@ -80,10 +80,12 @@
 #define DOOM_BUTTON_MENU3  6
 #define DOOM_BUTTON_1      7
 #define DOOM_BUTTON_2      8
-#define DOOM_BUTTON_ON     9
-#define DOOM_BUTTON_OFF    10
+#define DOOM_BUTTON_3      9
+#define DOOM_BUTTON_4      10
+#define DOOM_BUTTON_ON     11
+#define DOOM_BUTTON_OFF    12
 
-#define NB_DOOM_BUTTONS    11
+#define NB_DOOM_BUTTONS    13
 
 // keys
 #define DOOM_KEY_UP         KEY_UPARROW
@@ -100,7 +102,8 @@
 #define DOOM_KEY_MENUOK     KEY_ENTER
 #define DOOM_KEY_MENUYES    'y'
 #define DOOM_KEY_NONE       '\0'
-
+#define DOOM_KEY_MAP        KEY_TAB
+#define DOOM_KEY_MARK       'm'
 extern void app_exit();
 
 // stubs

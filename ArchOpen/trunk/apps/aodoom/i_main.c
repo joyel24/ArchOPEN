@@ -155,6 +155,7 @@ int app_main(){
     gui_welcomeScreen();
 
     if (browser_simpleBrowse("/aoDoom",wadname)!=MED_OK) app_exit(true);
+    gui_LoadScreen();
     strlwr(wadname);
 
     if(!IsPWAD(wadname)){
@@ -170,7 +171,7 @@ int app_main(){
 
         if (browser_simpleBrowse("/aoDoom",wadname)!=MED_OK) app_exit(true);
         strlwr(wadname);
-
+        gui_LoadScreen();
         modifiedgame = true;
         MyIdentifyVersion(wadname);
         D_AddFile(wadname);

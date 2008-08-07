@@ -12,5 +12,6 @@ void gui_applySettings();
 
 void gui_welcomeScreen();
 void gui_PWADScreen();
+void gui_LoadScreen(void);
 
 #endif
