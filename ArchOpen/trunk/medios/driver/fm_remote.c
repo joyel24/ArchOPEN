@@ -11,6 +11,7 @@
 */
 
 #include <lib/string.h>
+
 #include <sys_def/evt.h>
 
 #include <kernel/evt.h>
@@ -24,7 +25,7 @@
 #include <driver/uart.h>
 #include <driver/lcd.h>
 
-#define INI_TXT       "--mediOS--"
+#define INI_TXT       "--0000--"
 
 int inHold=0;
 
@@ -58,14 +59,14 @@ int bat_state_array[]={0x0000,0x0002,0x000A,0x000E,0x001E};
 int vol_state_array[]={0x0000,0x0004,0x0006,0x0007,0x0807,0x0C07,0x0D07};
 
 int key_evt_array[NB_KEY][2] = {
-    { BTN_FM_REC   , 0x20 }, /* REC */
+    { BTN_OFF   , 0x20 }, /* REC */ //BTN_FM_REC BERORE
     { -1           , 0x80 }, /* HOLD => no event*/
-    { BTN_FM_MP3FM , 0x10 }, /* MP3_FM */
+    { BTN_ON , 0x10 }, /* MP3_FM */ //BTN_FM_MP3FM BEFORE
     { BTN_UP       , 0x08 }, /* UP */
     { BTN_DOWN     , 0x40 }, /* DOWN */
     { BTN_LEFT     , 0x04 }, /* LEFT */
     { BTN_RIGHT    , 0x01 }, /* RIGHT */
-    { BTN_ON       , 0x02 }  /* PRESS */
+    { BTN_1       , 0x02 }  /* PRESS */ //BTN_ON BEFORE CHANGES
 };
 
 struct tmr_s fmRemote_tmr;

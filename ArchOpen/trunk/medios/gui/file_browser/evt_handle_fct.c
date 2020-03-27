@@ -211,7 +211,7 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
                         else // not going up, scrolling
                         {
                             gfx_scrollWindowVert(COLOR_TRSP,
-                                    bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0), 
+                                    bdata->x_start+(bdata->scroll_pos==LEFT_SCROLL?BROWSER_SCROLLBAR_WIDTH:0),
                                     bdata->y_start,
                                     bdata->width-10, (h)*(bdata->nb_disp_entry), h,0);
                             printAName(bdata,bdata->pos+bdata->nselect+1,bdata->nselect+1,1,0);
@@ -370,5 +370,4 @@ MED_RET_T browserEvt(struct browser_data * mainBdata)
     }
     return ret;
 }
-
 
