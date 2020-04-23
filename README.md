@@ -1,4 +1,8 @@
-# archOpen - mediOS for old generations of Archos MP3/MP4 players.
+# archOpen - mediOS
+
+Alternativ firmware for old generations of Archos MP3/MP4 players.
+
+Including some retro-gaming emulators.
 
 Archived Archopen.org: https://web.archive.org/web/20081111113148/http://archopen.org/tiki-index.php
 
