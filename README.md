@@ -1,6 +1,6 @@
 # archOpen - mediOS
 
-Alternativ firmware for old generations of Archos MP3/MP4 players.
+Alternative firmware for old generations of Archos MP3/MP4 players.
 
 Including some retro-gaming emulators.
 
